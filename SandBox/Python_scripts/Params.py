@@ -3,23 +3,21 @@
 Paramètres pour tous les scripts
 """
 import configparser
+from pathlib import Path
 # Using OAuth1 auth helper
 from requests_oauthlib import OAuth1
 
 # Read configuration parameters
 config = configparser.ConfigParser()
-config.read('~/.evn.ini')
+config.read(str(Path.home()) + '/.evn.ini')
 
+# Import parameters in local variables
 evn_client_key = config['faune-isere.org']['evn_client_key']
 evn_client_secret = config['faune-isere.org']['evn_client_secret']
 evn_user_email = config['faune-isere.org']['evn_user_email']
 evn_user_pw = config['faune-isere.org']['evn_user_pw']
-
-# URL to request oauth token, not used for single query
-#request_token_url = 'http://www.faune-isere.org/index.php?m_id=1200&cmd=request_token'
-
-# URL to GET observation
-protected_url = 'http://www.faune-isere.org/api/observations/'
+evn_base_url = config['faune-isere.org']['evn_site']
+evn_file_store = config['faune-isere.org']['evn_file_store']
 
 # Using OAuth1 auth helper
 oauth = OAuth1(evn_client_key,

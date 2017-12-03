@@ -6,22 +6,27 @@ import sys, getopt
 import json
 import pprint
 import csv
-from beautifultable import BeautifulTable
 import requests
+
+import logging
+logging.basicConfig(level="INFO")
+logger = logging.getLogger(__name__)  # __name__=projectA.moduleB
 
 from Params import *
 
 # Get all taxo groups
 def get_taxo():
+
     # URL to GET taxo_groups
-    protected_url = 'http://www.faune-isere.org/api/taxo_groups/'
+    protected_url = evn_base_url + 'api/taxo_groups/'
+    logger.info("Getting data from '%s'",  protected_url)
 
     # GET taxo groups
     resp = requests.get(url=protected_url, auth=oauth, params=params)
 
-    # print(resp.url)
-    # print(resp.request.headers)
-    # print(resp.text)
+    logger.debug(resp.url)
+    logger.debug(resp.request.headers)
+    logger.debug(resp.text)
     if resp.status_code != 200:
         print('GET status code = {}, for taxo_groups {}'.format(resp.status_code))
         return('')
@@ -30,11 +35,11 @@ def get_taxo():
 
 # Print usage message
 def usage():
-    print('GetObs -i|--input <list of observations>')
+    print('GetObs -o|--output <taxo_file_basename>')
 
 # Main
-# Parse arguments and call site_list for each Oracle DC
 def main(argv):
+
     try:
         opts, args = getopt.getopt(argv, 'ho:', ['help', 'output='])
     except getopt.GetoptError:
@@ -57,7 +62,9 @@ def main(argv):
     taxo_list = get_taxo()
 
     # Save in json file
-    with open(taxo_file + '.json', 'w', newline='') as jsonfile:
+    taxo_json = str(Path.home()) + '/' + evn_file_store + '/json/' + taxo_file + '.json'
+    logger.info("Storing json data to '%s'",  taxo_json)
+    with open(taxo_json, 'w', newline='') as jsonfile:
         jsonfile.write(taxo_list)
 
     # Decode in dict
@@ -66,10 +73,11 @@ def main(argv):
     # pp = pprint.PrettyPrinter(indent=1, width=120)
     # pp.pprint(data_decoded)
 
-    with open(taxo_file + '.csv', 'w', newline='') as csvout:
+    taxo_csv = str(Path.home()) + '/' + evn_file_store + '/csv/' + taxo_file + '.csv'
+    logger.info("Storing csv data to '%s'",  taxo_csv)
+    with open(taxo_csv, 'w', newline='') as csvout:
         fieldnames = ['id', 'latin_name', 'name', 'access_mode', 'name_constant']
         spamwriter = csv.DictWriter(csvout, fieldnames=fieldnames, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        print('Opened output')
         for row in data_decoded['data']:
             spamwriter.writerow(row)
 
