@@ -4,9 +4,9 @@
 
 import sys, getopt
 import json
-import pprint
-import csv
 import requests
+# Using OAuth1 auth helper
+from requests_oauthlib import OAuth1
 
 import logging
 logging.basicConfig(level="INFO")
