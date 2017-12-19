@@ -64,7 +64,7 @@ class DownloadTable:
 
         # Create range based on type of get_table
         if (self.by_list == self.NO_LIST):
-            api_range = range(1, 1)
+            api_range = range(1, 2)
         elif (self.by_list == self.TAXO_GROUPS_LIST):
             api_range = range(1, self.max_download)
         elif (self.by_list ==  self.ADMIN_UNITS_LIST):
@@ -73,7 +73,7 @@ class DownloadTable:
             logger.error('Unknown list {}'.format(self.by_list))
             return(self.by_list)
 
-        for i in range(1, self.max_download):
+        for i in api_range:
             nb_xfer = 1  # Sequence number for transfers, restarting for each group
 
             # Add specific parameters if needed
@@ -179,14 +179,30 @@ def main(argv):
     # Using OAuth1 auth helper
     oauth = OAuth1(evn_client_key, client_secret=evn_client_secret)
 
+    # -------------------
+    # Organizational data
+    # -------------------
+    # Get entities in json format
+    t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'entities', evn_file_store, \
+                       DownloadTable.NO_LIST, 5)
+    t1.get_table()
+
+    # Get export_organizations in json format
+    t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'export_organizations', evn_file_store, \
+                       DownloadTable.NO_LIST, 5)
+    t1.get_table()
+
+    # -------------------
+    # Organizational data
+    # -------------------
     # Get taxo_groups in json format
     t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'taxo_groups', evn_file_store, \
-                       DownloadTable.NO_LIST, 2)
+                       DownloadTable.NO_LIST, 5)
     t1.get_table()
 
     # Get species in json format
     t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'species', evn_file_store, \
-                       DownloadTable.TAXO_GROUPS_LIST, 2)
+                       DownloadTable.TAXO_GROUPS_LIST, 50)
     t1.get_table()
 
 
