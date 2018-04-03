@@ -73,6 +73,7 @@ class DownloadTable:
             logger.error('Unknown list {}'.format(self.by_list))
             return(self.by_list)
 
+        nb_elements = 0  # Totalizer for all elements received
         for i in api_range:
             nb_xfer = 1  # Sequence number for transfers, restarting for each group
 
@@ -114,6 +115,7 @@ class DownloadTable:
 
                 # Save in json file, if not empty
                 if (len(resp_dict['data']) > 0):
+                    nb_elements += len(resp_dict['data'])
                     file_json = str(Path.home()) + '/' + self.file_store + '/json/' + \
                         self.table + '_' + str(i) + '_' + str(nb_xfer) + '.json.gz'
                     logger.info('Received {} elements, storing json data to {}'.format(len(resp_dict['data']), file_json))
@@ -130,7 +132,7 @@ class DownloadTable:
                     logger.info('Non-chunked transfer => finished requests')
                     break
 
-        return
+        return nb_elements
 
 
 def usage():
@@ -184,27 +186,39 @@ def main(argv):
     # -------------------
     # Get entities in json format
     t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'entities', evn_file_store, \
-                       DownloadTable.NO_LIST, 5)
-    t1.get_table()
+                       DownloadTable.NO_LIST, 50)
+    nb_entities = t1.get_table()
+    logger.info('Received {} entities'.format(nb_entities))
 
     # Get export_organizations in json format
     t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'export_organizations', evn_file_store, \
-                       DownloadTable.NO_LIST, 5)
-    t1.get_table()
+                       DownloadTable.NO_LIST, 50)
+    nb_export_organizations = t1.get_table()
+    logger.info('Received {} export_organizations'.format(nb_export_organizations))
 
-    # -------------------
-    # Organizational data
-    # -------------------
+    # --------------
+    # Taxonomic data
+    # --------------
     # Get taxo_groups in json format
     t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'taxo_groups', evn_file_store, \
-                       DownloadTable.NO_LIST, 5)
-    t1.get_table()
+                       DownloadTable.NO_LIST, 50)
+    nb_taxo_groups = t1.get_table()
+    logger.info('Received {} taxo_groups'.format(nb_taxo_groups))
 
     # Get species in json format
     t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'species', evn_file_store, \
-                       DownloadTable.TAXO_GROUPS_LIST, 50)
-    t1.get_table()
+                       DownloadTable.TAXO_GROUPS_LIST, nb_taxo_groups + 10)  # Assuming 10 empty groups
+    nb_species = t1.get_table()
+    logger.info('Received {} species'.format(nb_species))
 
+    # ------------------------
+    # Geographical information
+    # ------------------------
+    # Get territorial_units in json format
+    t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'territorial_units', evn_file_store, \
+                       DownloadTable.NO_LIST, 10)
+    nb_territorial_units = t1.get_table()
+    logger.info('Received {} territorial_units'.format(nb_territorial_units))
 
 # Main wrapper
 if __name__ == "__main__":
