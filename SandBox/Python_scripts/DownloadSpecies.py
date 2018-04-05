@@ -30,6 +30,29 @@ from pathlib import Path
 logging.basicConfig(level="INFO")
 logger = logging.getLogger(__name__)
 
+def getTaxoGroups(file_store):
+    """
+    Read the taxo_groups file and return the list of taxo groups
+    """
+    file_json = str(Path.home()) + '/' + file_store + '/json/' + \
+        'taxo_groups_1_1.json.gz'
+    logger.info('Reading taxo_groups file {}'.format(file_json))
+    with gzip.open(file_json, 'rb') as g:
+        taxo_groups = json.loads(g.read().decode('utf-8'))
+
+    return list(map(lambda x: x['id'], taxo_groups['data']))
+
+def getLocalAdminUnits(file_store):
+    """
+    Read the local_admin_units file and return the list of units
+    """
+    file_json = str(Path.home()) + '/' + file_store + '/json/' + \
+        'local_admin_units_1_1.json.gz'
+    logger.info('Reading local_admin_units file {}'.format(file_json))
+    with gzip.open(file_json, 'rb') as g:
+        local_admin_units = json.loads(g.read().decode('utf-8'))
+
+    return list(map(lambda x: x['id'], local_admin_units['data']))
 
 class DownloadTable:
     """
@@ -66,9 +89,9 @@ class DownloadTable:
         if (self.by_list == self.NO_LIST):
             api_range = range(1, 2)
         elif (self.by_list == self.TAXO_GROUPS_LIST):
-            api_range = range(1, self.max_download)
+            api_range = getTaxoGroups(self.file_store)
         elif (self.by_list ==  self.ADMIN_UNITS_LIST):
-            api_range = range(1, self.max_download)
+            api_range = getLocalAdminUnits(self.file_store)
         else:
             logger.error('Unknown list {}'.format(self.by_list))
             return(self.by_list)
@@ -126,10 +149,12 @@ class DownloadTable:
                 if (('transfer-encoding' in resp.headers) and (resp.headers['transfer-encoding'] == 'chunked')):
                     logger.info('Chunked transfer => requesting for more, with key: {}'.format(resp.headers['pagination_key']))
                     # Update request parameters to get next chunk
-                    params ['pagination_key'] = resp.headers['pagination_key']
+                    params['pagination_key'] = resp.headers['pagination_key']
                     nb_xfer += 1
                 else:
                     logger.info('Non-chunked transfer => finished requests')
+                    if ('pagination_key' in params):
+                        del params['pagination_key']
                     break
 
         return nb_elements
@@ -219,6 +244,24 @@ def main(argv):
                        DownloadTable.NO_LIST, 10)
     nb_territorial_units = t1.get_table()
     logger.info('Received {} territorial_units'.format(nb_territorial_units))
+
+    # Get grids in json format
+    t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'grids', evn_file_store, \
+                       DownloadTable.NO_LIST, 10)
+    nb_grids = t1.get_table()
+    logger.info('Received {} grids'.format(nb_grids))
+
+    # Get local_admin_units in json format
+    t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'local_admin_units', evn_file_store, \
+                       DownloadTable.NO_LIST, 10)
+    nb_local_admin_units = t1.get_table()
+    logger.info('Received {} local_admin_units'.format(nb_local_admin_units))
+
+    # Get places in json format
+    t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'places', evn_file_store, \
+                       DownloadTable.ADMIN_UNITS_LIST, nb_local_admin_units + 50)  # Assuming 50 empty local_admin_units
+    nb_places = t1.get_table()
+    logger.info('Received {} places'.format(nb_places))
 
 # Main wrapper
 if __name__ == "__main__":
