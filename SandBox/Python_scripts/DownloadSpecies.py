@@ -32,27 +32,64 @@ logger = logging.getLogger(__name__)
 
 def getTaxoGroups(file_store):
     """
-    Read the taxo_groups file and return the list of taxo groups
+    Read the taxo_groups files and return the list of taxo groups
     """
+    # TODO: loop on all possible files
     file_json = str(Path.home()) + '/' + file_store + '/json/' + \
         'taxo_groups_1_1.json.gz'
     logger.info('Reading taxo_groups file {}'.format(file_json))
     with gzip.open(file_json, 'rb') as g:
         taxo_groups = json.loads(g.read().decode('utf-8'))
 
-    return list(map(lambda x: x['id'], taxo_groups['data']))
+    taxo_groups_list = list(map(lambda x: x['id'], taxo_groups['data']))
+    logger.info('Found {} taxo_groups in downloaded files'.format(len(taxo_groups_list)))
+    logger.debug(taxo_groups_list)
+    return taxo_groups_list
+
+def getSpecies(file_store):
+    """
+    Read the species files and return the list of species
+    """
+
+    # Get list of taxo_groups to iterate over
+    taxo_groups = getTaxoGroups(file_store)
+
+    # Loop on available taxo_groups
+    species_list = []
+    for taxo in taxo_groups:
+        i = 1
+        while (i < 999):
+            file_json = str(Path.home()) + '/' + file_store + '/json/' + \
+                'species_' + taxo + '_' + str(i) + '.json.gz'
+            if not Path(file_json).is_file():
+                break
+
+            logger.info('Reading species file {}'.format(file_json))
+            with gzip.open(file_json, 'rb') as g:
+                species = json.loads(g.read().decode('utf-8'))
+
+            i += 1
+
+        species_list.append(list(map(lambda x: x['id'], species['data'])))
+
+    logger.info('Found {} species in downloaded files'.format(len(species_list)))
+    logger.debug(species_list)
+    return species_list
 
 def getLocalAdminUnits(file_store):
     """
-    Read the local_admin_units file and return the list of units
+    Read the local_admin_units files and return the list of units
     """
+    # TODO: loop on all possible files
     file_json = str(Path.home()) + '/' + file_store + '/json/' + \
         'local_admin_units_1_1.json.gz'
     logger.info('Reading local_admin_units file {}'.format(file_json))
     with gzip.open(file_json, 'rb') as g:
         local_admin_units = json.loads(g.read().decode('utf-8'))
 
-    return list(map(lambda x: x['id'], local_admin_units['data']))
+    local_admin_units_list = list(map(lambda x: x['id'], local_admin_units['data']))
+    logger.debug(local_admin_units_list)
+    return local_admin_units_list
 
 class DownloadTable:
     """
@@ -206,20 +243,20 @@ def main(argv):
     # Using OAuth1 auth helper
     oauth = OAuth1(evn_client_key, client_secret=evn_client_secret)
 
-    # -------------------
-    # Organizational data
-    # -------------------
-    # Get entities in json format
-    t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'entities', evn_file_store, \
-                       DownloadTable.NO_LIST, 50)
-    nb_entities = t1.get_table()
-    logger.info('Received {} entities'.format(nb_entities))
-
-    # Get export_organizations in json format
-    t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'export_organizations', evn_file_store, \
-                       DownloadTable.NO_LIST, 50)
-    nb_export_organizations = t1.get_table()
-    logger.info('Received {} export_organizations'.format(nb_export_organizations))
+    # # -------------------
+    # # Organizational data
+    # # -------------------
+    # # Get entities in json format
+    # t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'entities', evn_file_store, \
+    #                    DownloadTable.NO_LIST, 50)
+    # nb_entities = t1.get_table()
+    # logger.info('Received {} entities'.format(nb_entities))
+    #
+    # # Get export_organizations in json format
+    # t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'export_organizations', evn_file_store, \
+    #                    DownloadTable.NO_LIST, 50)
+    # nb_export_organizations = t1.get_table()
+    # logger.info('Received {} export_organizations'.format(nb_export_organizations))
 
     # --------------
     # Taxonomic data
@@ -236,32 +273,34 @@ def main(argv):
     nb_species = t1.get_table()
     logger.info('Received {} species'.format(nb_species))
 
-    # ------------------------
-    # Geographical information
-    # ------------------------
-    # Get territorial_units in json format
-    t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'territorial_units', evn_file_store, \
-                       DownloadTable.NO_LIST, 10)
-    nb_territorial_units = t1.get_table()
-    logger.info('Received {} territorial_units'.format(nb_territorial_units))
+    getSpecies(evn_file_store)
 
-    # Get grids in json format
-    t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'grids', evn_file_store, \
-                       DownloadTable.NO_LIST, 10)
-    nb_grids = t1.get_table()
-    logger.info('Received {} grids'.format(nb_grids))
-
-    # Get local_admin_units in json format
-    t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'local_admin_units', evn_file_store, \
-                       DownloadTable.NO_LIST, 10)
-    nb_local_admin_units = t1.get_table()
-    logger.info('Received {} local_admin_units'.format(nb_local_admin_units))
-
-    # Get places in json format
-    t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'places', evn_file_store, \
-                       DownloadTable.ADMIN_UNITS_LIST, nb_local_admin_units + 50)  # Assuming 50 empty local_admin_units
-    nb_places = t1.get_table()
-    logger.info('Received {} places'.format(nb_places))
+    # # ------------------------
+    # # Geographical information
+    # # ------------------------
+    # # Get territorial_units in json format
+    # t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'territorial_units', evn_file_store, \
+    #                    DownloadTable.NO_LIST, 10)
+    # nb_territorial_units = t1.get_table()
+    # logger.info('Received {} territorial_units'.format(nb_territorial_units))
+    #
+    # # Get grids in json format
+    # t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'grids', evn_file_store, \
+    #                    DownloadTable.NO_LIST, 10)
+    # nb_grids = t1.get_table()
+    # logger.info('Received {} grids'.format(nb_grids))
+    #
+    # # Get local_admin_units in json format
+    # t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'local_admin_units', evn_file_store, \
+    #                    DownloadTable.NO_LIST, 10)
+    # nb_local_admin_units = t1.get_table()
+    # logger.info('Received {} local_admin_units'.format(nb_local_admin_units))
+    #
+    # # Get places in json format
+    # t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'places', evn_file_store, \
+    #                    DownloadTable.ADMIN_UNITS_LIST, nb_local_admin_units + 50)  # Assuming 50 empty local_admin_units
+    # nb_places = t1.get_table()
+    # logger.info('Received {} places'.format(nb_places))
 
 # Main wrapper
 if __name__ == "__main__":
