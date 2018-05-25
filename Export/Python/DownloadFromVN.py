@@ -263,23 +263,6 @@ def main(argv):
                      )
 
     (options, args) = parser.parse_args()
-    # options: the options-object
-    # args: list of left-over args
-
-    # try:
-    #     opts, args = getopt.getopt(argv, 'h:', ['help'])
-    # except getopt.GetoptError:
-    #     usage()
-    #     return(2)
-    #
-    # for opt, arg in opts:
-    #     # print(opt, arg)
-    #     if opt in ('-h', '--help'):
-    #         usage()
-    #         return()
-    #     else:
-    #         assert False, 'Unknown option'
-    #         return(2)
 
     # Read configuration parameters
     config = configparser.ConfigParser()
@@ -299,73 +282,74 @@ def main(argv):
     # Using OAuth1 auth helper
     oauth = OAuth1(evn_client_key, client_secret=evn_client_secret)
 
-    # # -------------------
-    # # Organizational data
-    # # -------------------
-    # # Get entities in json format
-    # t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'entities', evn_file_store, \
-    #                    DownloadTable.NO_LIST, 50)
-    # nb_entities = t1.get_table()
-    # logger.info('Received {} entities'.format(nb_entities))
-    #
-    # # Get export_organizations in json format
-    # t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'export_organizations', evn_file_store, \
-    #                    DownloadTable.NO_LIST, 50)
-    # nb_export_organizations = t1.get_table()
-    # logger.info('Received {} export_organizations'.format(nb_export_organizations))
-    #
-    # # --------------
-    # # Taxonomic data
-    # # --------------
-    # # Get taxo_groups in json format
-    # t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'taxo_groups', evn_file_store, \
-    #                    DownloadTable.NO_LIST, 50)
-    # nb_taxo_groups = t1.get_table()
-    # logger.info('Received {} taxo_groups'.format(nb_taxo_groups))
-    # # getTaxoGroups(evn_file_store)
-    #
-    # # Get species in json format
-    # t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'species', evn_file_store, \
-    #                    DownloadTable.TAXO_GROUPS_LIST, 50)
-    # nb_species = t1.get_table()
-    # logger.info('Received {} species'.format(nb_species))
-    # # getSpecies(evn_file_store)
-    #
-    # # ----------------
-    # # Observation data
-    # # ----------------
-    # # Get observations in json format
-    # t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'observations', evn_file_store, \
-    #                    DownloadTable.SPECIES_LIST, 50)  # test limit
-    # nb_species = t1.get_table()
-    # logger.info('Received {} observations'.format(nb_species))
-    #
-    # # ------------------------
-    # # Geographical information
-    # # ------------------------
-    # # Get territorial_units in json format
-    # t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'territorial_units', evn_file_store, \
-    #                    DownloadTable.NO_LIST, 10)
-    # nb_territorial_units = t1.get_table()
-    # logger.info('Received {} territorial_units'.format(nb_territorial_units))
-    #
-    # # Get grids in json format
-    # t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'grids', evn_file_store, \
-    #                    DownloadTable.NO_LIST, 10)
-    # nb_grids = t1.get_table()
-    # logger.info('Received {} grids'.format(nb_grids))
-    #
-    # # Get local_admin_units in json format
-    # t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'local_admin_units', evn_file_store, \
-    #                    DownloadTable.NO_LIST, 10)
-    # nb_local_admin_units = t1.get_table()
-    # logger.info('Received {} local_admin_units'.format(nb_local_admin_units))
-    #
-    # # Get places in json format
-    # t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'places', evn_file_store, \
-    #                    DownloadTable.ADMIN_UNITS_LIST, nb_local_admin_units + 50)  # Assuming 50 empty local_admin_units
-    # nb_places = t1.get_table()
-    # logger.info('Received {} places'.format(nb_places))
+    # -------------------
+    # Organizational data
+    # -------------------
+    # Get entities in json format
+    t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'entities', evn_file_store, \
+                       DownloadTable.NO_LIST, 50)
+    nb_entities = t1.get_table()
+    logger.info('Received {} entities'.format(nb_entities))
+
+    # Get export_organizations in json format
+    t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'export_organizations', evn_file_store, \
+                       DownloadTable.NO_LIST, 50)
+    nb_export_organizations = t1.get_table()
+    logger.info('Received {} export_organizations'.format(nb_export_organizations))
+
+    # --------------
+    # Taxonomic data
+    # --------------
+    # Get taxo_groups in json format
+    t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'taxo_groups', evn_file_store, \
+                       DownloadTable.NO_LIST, 50)
+    nb_taxo_groups = t1.get_table()
+    logger.info('Received {} taxo_groups'.format(nb_taxo_groups))
+    # getTaxoGroups(evn_file_store)
+
+    # Get species in json format
+    t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'species', evn_file_store, \
+                       # DownloadTable.NO_LIST, 50)
+                       DownloadTable.TAXO_GROUPS_LIST, 50)
+    nb_species = t1.get_table()
+    logger.info('Received {} species'.format(nb_species))
+    # getSpecies(evn_file_store)
+
+    # ----------------
+    # Observation data
+    # ----------------
+    # Get observations in json format
+    t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'observations', evn_file_store, \
+                       DownloadTable.SPECIES_LIST, 50)  # test limit
+    nb_species = t1.get_table()
+    logger.info('Received {} observations'.format(nb_species))
+
+    # ------------------------
+    # Geographical information
+    # ------------------------
+    # Get territorial_units in json format
+    t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'territorial_units', evn_file_store, \
+                       DownloadTable.NO_LIST, 10)
+    nb_territorial_units = t1.get_table()
+    logger.info('Received {} territorial_units'.format(nb_territorial_units))
+
+    # Get grids in json format
+    t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'grids', evn_file_store, \
+                       DownloadTable.NO_LIST, 10)
+    nb_grids = t1.get_table()
+    logger.info('Received {} grids'.format(nb_grids))
+
+    # Get local_admin_units in json format
+    t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'local_admin_units', evn_file_store, \
+                       DownloadTable.NO_LIST, 10)
+    nb_local_admin_units = t1.get_table()
+    logger.info('Received {} local_admin_units'.format(nb_local_admin_units))
+
+    # Get places in json format
+    t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'places', evn_file_store, \
+                       DownloadTable.ADMIN_UNITS_LIST, nb_local_admin_units + 50)  # Assuming 50 empty local_admin_units
+    nb_places = t1.get_table()
+    logger.info('Received {} places'.format(nb_places))
 
 # Main wrapper
 if __name__ == "__main__":
