@@ -45,7 +45,7 @@ evn_db_pw = config['database']['evn_db_pw']
 
 -- Delete existing DB and roles
 DROP DATABASE IF EXISTS $(evn_db_name);
-DROP ROLE IF EXISTS $(evn_db_user);
+-- DROP ROLE IF EXISTS $(evn_db_user);
 DROP ROLE IF EXISTS $(evn_db_group);
 
 -- Group role: $(evn_db_group)
@@ -53,9 +53,9 @@ CREATE ROLE $(evn_db_group)
   NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION;
 
 -- Import role: $(evn_db_user)
-CREATE ROLE $(evn_db_user) LOGIN
-  PASSWORD '$(evn_db_pw)'
-  NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION;
+-- CREATE ROLE $(evn_db_user) LOGIN
+--   PASSWORD '$(evn_db_pw)'
+--   NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION;
 GRANT $(evn_db_group) TO $(evn_db_user);
 
 -- Database: $(evn_db_name)
