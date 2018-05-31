@@ -49,6 +49,8 @@ case "$cmd" in
     echo "1. Base de données"
     expander3.py --file Sql/InitDB.sql > $HOME/tmp/InitDB.sql
     psql --dbname=postgres --file=$HOME/tmp/InitDB.sql
+    expander3.py --file Sql/CreateObsTable.sql > $HOME/tmp/CreateObsTable.sql
+    psql --dbname=postgres --file=$HOME/tmp/CreateObsTable.sql
     ;;
 
   download)
