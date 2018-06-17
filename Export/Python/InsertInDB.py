@@ -29,7 +29,7 @@ import psycopg2
 # version of the program:
 __version__= "0.1.1" #VERSION#
 
-logging.basicConfig(level="INFO")
+logging.basicConfig(level="DEBUG")
 logger = logging.getLogger(__name__)
 
 
@@ -84,6 +84,18 @@ def main(argv):
     evn_db_pw = config['database']['evn_db_pw']
     evn_sql_scripts = config['database']['evn_sql_scripts']
 
+    # Read observations in json file
+    i = 9070
+    nb_xfer = 1
+    file_json = str(Path.home()) + '/' + evn_file_store + '/json/' + \
+    'observations' + '_' + str(i) + '_' + str(nb_xfer) + '.json'
+    file_json_gz = file_json + '.gz'
+    logger.info('Reading from {}'.format(file_json_gz))
+    with gzip.open(file_json_gz, 'rb', 9) as g:
+        obs_chunk = json.loads(g.read().decode())
+
+    logger.info('Read {} observations'.format(len(obs_chunk['data']['sightings'])))
+
     logger.info('Opening database {}'.format(evn_db_name))
     # Connect to an existing database
     conn = psycopg2.connect('dbname={} user={} password={}'.format(evn_db_name, evn_db_user, evn_db_pw))
@@ -92,8 +104,13 @@ def main(argv):
     cur = conn.cursor()
 
     # Insert 1 row, with id and json body
-    cur.execute('INSERT INTO import.observations (id_sighting, sightings) VALUES (%s, %s)',
-    (1, "{}"))
+    for i in range(0, len(obs_chunk['data']['sightings'])):
+        cur.execute('INSERT INTO import.obs_json (id_sighting, sightings) VALUES (%s, %s)',
+            (obs_chunk['data']['sightings'][i]['observers'][0]['id_sighting'],
+             json.dumps(obs_chunk['data']['sightings'][i])))
+
+    # Commit to database
+    conn.commit()
 
     # Close communication with the database
     cur.close()
