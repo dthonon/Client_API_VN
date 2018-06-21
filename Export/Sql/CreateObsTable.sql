@@ -48,10 +48,10 @@ evn_db_pw = config['database']['evn_db_pw']
 SET search_path TO $(evn_db_schema),public,topology;
 
 -- Delete existing table
-DROP TABLE IF EXISTS observations;
+DROP TABLE IF EXISTS obs_json;
 
 -- Create observations table and access rights
-CREATE TABLE observations (
+CREATE TABLE obs_json (
     id_sighting integer PRIMARY KEY,
     sightings jsonb
 );
