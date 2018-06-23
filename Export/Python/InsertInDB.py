@@ -100,12 +100,17 @@ def main(argv):
 
         # Insert 1 row, with id and json body
         for i in range(0, len(obs_chunk['data']['sightings'])):
-            cur.execute('INSERT INTO import.obs_json (id_sighting, sightings) VALUES (%s, %s)',
+-           cur.execute('INSERT INTO {}.obs_json (id_sighting, sightings) VALUES (%s, %s, %s)'.format(evn_db_schema),
                 (obs_chunk['data']['sightings'][i]['observers'][0]['id_sighting'],
-                 json.dumps(obs_chunk['data']['sightings'][i])))
+                 json.dumps(obs_chunk['data']['sightings'][i]),
+                 (obs_chunk['data']['sightings'][i]['observers'][0]['id_sighting']))
 
         # Commit to database
         conn.commit()
+
+    # Refresh view
+    cur.execute('REFRESH MATERIALIZED VIEW {}.observations WITH DATA'.format(evn_db_schema))
+    conn.commit()
 
     # Close communication with the database
     cur.close()

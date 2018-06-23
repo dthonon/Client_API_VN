@@ -45,7 +45,6 @@ evn_db_pw = config['database']['evn_db_pw']
 
 -- Delete existing DB and roles
 DROP DATABASE IF EXISTS $(evn_db_name);
--- DROP ROLE IF EXISTS $(evn_db_user);
 DROP ROLE IF EXISTS $(evn_db_group);
 
 -- Group role: $(evn_db_group)
@@ -53,20 +52,18 @@ CREATE ROLE $(evn_db_group)
   NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION;
 
 -- Import role: $(evn_db_user)
--- CREATE ROLE $(evn_db_user) LOGIN
---   PASSWORD '$(evn_db_pw)'
---   NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION;
 GRANT $(evn_db_group) TO $(evn_db_user);
 
 -- Database: $(evn_db_name)
 CREATE DATABASE $(evn_db_name)
   WITH OWNER = $(evn_db_group)
-       ENCODING = 'UTF8'
-       TABLESPACE = pg_default
-       LC_COLLATE = 'fr_FR.UTF-8'
-       LC_CTYPE = 'fr_FR.UTF-8'
-       CONNECTION LIMIT = -1
-       TEMPLATE template0;
+       -- ENCODING = 'UTF8'
+       -- TABLESPACE = pg_default
+       -- LC_COLLATE = 'fr_FR.UTF-8'
+       -- LC_CTYPE = 'fr_FR.UTF-8'
+       -- CONNECTION LIMIT = -1
+       -- TEMPLATE template0
+       ;
 GRANT ALL ON DATABASE $(evn_db_name) TO $(evn_db_group);
 
 \c $(evn_db_name)
