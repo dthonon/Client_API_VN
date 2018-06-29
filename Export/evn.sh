@@ -84,7 +84,7 @@ case "$CMD" in
 
   init)
     # Create directories as needed
-    INFO "Initialisation de l'environnement"
+    INFO "Initialisation de l'environnement : début"
     INFO "1. Base de données"
     expander3.py --file Sql/InitDB.sql > $HOME/tmp/InitDB.sql
     psql --dbname=postgres --file=$HOME/tmp/InitDB.sql
@@ -94,6 +94,7 @@ case "$CMD" in
     INFO "3. Vues"
     expander3.py --file Sql/CreateViews.sql > $HOME/tmp/CreateViews.sql
     psql --dbname=postgres --file=$HOME/tmp/CreateViews.sql
+    INFO "Initialisation de l'environnement : fin"
     ;;
 
   edit)
@@ -104,14 +105,16 @@ case "$CMD" in
 
   download)
     # Create directories as needed
-    INFO "Téléchargement depuis l'API du site VisioNature"
+    INFO "Téléchargement depuis l'API du site VisioNature : début"
     python3 Python/DownloadFromVN.py 2>> $evn_log
+    INFO "Téléchargement depuis l'API du site VisioNature : fin"
     ;;
 
   store)
     # Store json files to Postgresql database
-    INFO "Chargement des données JSON dans Postgresql"
+    INFO "Chargement des données JSON dans Postgresql : début"
     python3 Python/InsertInDB.py 2>> $evn_log
+    INFO "Chargement des données JSON dans Postgresql : fin"
     ;;
 
   all)

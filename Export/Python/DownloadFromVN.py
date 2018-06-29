@@ -31,8 +31,8 @@ import gzip
 # version of the program:
 __version__= "0.1.1" #VERSION#
 
-logging.basicConfig(level="INFO")
-logger = logging.getLogger(__name__)
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level = logging.INFO)
 
 def getTaxoGroups(file_store):
     """
@@ -41,7 +41,7 @@ def getTaxoGroups(file_store):
     # TODO: loop on all possible files
     file_json = str(Path.home()) + '/' + file_store + '/json/' + \
         'taxo_groups_1_1.json.gz'
-    logger.debug('Reading taxo_groups file {}'.format(file_json))
+    logging.debug('Reading taxo_groups file {}'.format(file_json))
     with gzip.open(file_json, 'rb') as g:
         taxo_groups = json.loads(g.read().decode('utf-8'))
 
@@ -49,8 +49,8 @@ def getTaxoGroups(file_store):
     for taxo in taxo_groups['data']:
         if (taxo['access_mode'] != 'none'):
             taxo_groups_list.append(taxo['id'])
-    logger.info('Found {} taxo_groups in downloaded files'.format(len(taxo_groups_list)))
-    logger.debug(taxo_groups_list)
+    logging.info('Found {} taxo_groups in downloaded files'.format(len(taxo_groups_list)))
+    logging.debug(taxo_groups_list)
     return taxo_groups_list
 
 # def appendNoDuplicates(init_dict, duplicate):
@@ -80,20 +80,20 @@ def getSpecies(file_store):
             if not Path(file_json).is_file():
                 break
 
-            logger.debug('Reading species file {}'.format(file_json))
+            logging.debug('Reading species file {}'.format(file_json))
             with gzip.open(file_json, 'rb') as g:
                 species = json.loads(g.read().decode('utf-8'))
 
             i += 1
 
             for sp in species['data']:
-                logger.debug('Adding species {}, from taxo_groups {} '.format(sp['id'], taxo))
+                logging.debug('Adding species {}, from taxo_groups {} '.format(sp['id'], taxo))
                 species_list[sp['id']] = taxo
 
-    logger.info('Found {} species in downloaded files'.format(len(species_list)))
+    logging.info('Found {} species in downloaded files'.format(len(species_list)))
 
     # species_list = {508:1, 3260:3}
-    logger.debug(species_list)
+    logging.debug(species_list)
     return species_list
 
 def getLocalAdminUnits(file_store):
@@ -103,12 +103,12 @@ def getLocalAdminUnits(file_store):
     # TODO: loop on all possible files
     file_json = str(Path.home()) + '/' + file_store + '/json/' + \
         'local_admin_units_1_1.json.gz'
-    logger.info('Reading local_admin_units file {}'.format(file_json))
+    logging.info('Reading local_admin_units file {}'.format(file_json))
     with gzip.open(file_json, 'rb') as g:
         local_admin_units = json.loads(g.read().decode('utf-8'))
 
     local_admin_units_list = list(map(lambda x: x['id'], local_admin_units['data']))
-    logger.debug(local_admin_units_list)
+    logging.debug(local_admin_units_list)
     return local_admin_units_list
 
 class DownloadTable:
@@ -153,7 +153,7 @@ class DownloadTable:
         elif (self.by_list ==  self.ADMIN_UNITS_LIST):
             api_range = getLocalAdminUnits(self.file_store)
         else:
-            logger.error('Unknown list {}'.format(self.by_list))
+            logging.error('Unknown list {}'.format(self.by_list))
             return(self.by_list)
 
         nb_elements = 0  # Totalizer for all elements received
@@ -162,40 +162,40 @@ class DownloadTable:
 
             # Add specific parameters if needed
             if (self.by_list == self.NO_LIST):
-                logger.info('Getting data from table {} direct'.format(self.table))
+                logging.info('Getting data from table {} direct'.format(self.table))
             elif (self.by_list == self.TAXO_GROUPS_LIST):
-                logger.info('Getting data from table {}, id_taxo_group {}'.format(self.table, i))
+                logging.info('Getting data from table {}, id_taxo_group {}'.format(self.table, i))
                 params['id_taxo_group'] = str(i)
                 params['is_used'] = '1'
             elif (self.by_list == self.SPECIES_LIST):
-                logger.info('Getting data from table {}, id_species {}, id_taxo {}'.format(self.table, i, api_range[i]))
+                logging.info('Getting data from table {}, id_species {}, id_taxo {}'.format(self.table, i, api_range[i]))
                 params['id_taxo_group'] = api_range[i]
                 params['id_species'] = i
             elif (self.by_list ==  self.ADMIN_UNITS_LIST):
-                logger.info('Getting data from table {}, id_commune {}'.format(self.table, i))
+                logging.info('Getting data from table {}, id_commune {}'.format(self.table, i))
                 params['id_commune'] = str(i)
             else:
-                logger.error('Unknown list {}'.format(self.by_list))
+                logging.error('Unknown list {}'.format(self.by_list))
                 return(self.by_list)
 
             # Loop on data requests until end of transfer
             while True:
 
                 # GET from API
-                logger.debug('Params: {}'.format(params))
+                logging.debug('Params: {}'.format(params))
                 resp = requests.get(url=self.site+self.table+'/', auth=self.oauth, params=params)
-                logger.debug(resp.url)
-                logger.debug(resp.request.headers)
-                logger.debug(resp.headers)
+                logging.debug(resp.url)
+                logging.debug(resp.request.headers)
+                logging.debug(resp.headers)
                 if resp.status_code != 200:
                     print('GET status code = {}, for table {}'.format(resp.status_code, self.table))
                     return(resp.status_code)
 
                 # Is the content zipped or compressed?
                 if ('content_encoding' in resp.headers):
-                    logger.debug(resp.headers['content_encoding'])
+                    logging.debug(resp.headers['content_encoding'])
                 else:
-                    logger.debug('No content_encoding')
+                    logging.debug('No content_encoding')
 
                 # Pretty print to string before store
                 resp_dict = resp.json()
@@ -207,7 +207,7 @@ class DownloadTable:
                     file_json = str(Path.home()) + '/' + self.file_store + '/json/' + \
                         self.table + '_' + str(i) + '_' + str(nb_xfer) + '.json'
                     file_json_gz = file_json + '.gz'
-                    logger.info('Received {} elements, storing json data to {}'.format(len(resp_dict['data']), file_json_gz))
+                    logging.info('Received {} elements, storing json data to {}'.format(len(resp_dict['data']), file_json_gz))
                     # with open(file_json.encode(), 'w') as outfile:
                     #     json.dump(resp_dict, outfile)
                     with gzip.open(file_json_gz, 'wb', 9) as g:
@@ -215,12 +215,12 @@ class DownloadTable:
 
                 # Is there more data to come?
                 if (('transfer-encoding' in resp.headers) and (resp.headers['transfer-encoding'] == 'chunked')):
-                    logger.info('Chunked transfer => requesting for more, with key: {}'.format(resp.headers['pagination_key']))
+                    logging.info('Chunked transfer => requesting for more, with key: {}'.format(resp.headers['pagination_key']))
                     # Update request parameters to get next chunk
                     params['pagination_key'] = resp.headers['pagination_key']
                     nb_xfer += 1
                 else:
-                    logger.info('Non-chunked transfer => finished requests')
+                    logging.info('Non-chunked transfer => finished requests')
                     if ('pagination_key' in params):
                         del params['pagination_key']
                     break
@@ -277,7 +277,7 @@ def main(argv):
     evn_file_store = config['site']['evn_file_store']
 
     protected_url = evn_base_url + 'api/'  # URL to GET species
-    logger.info('Getting data from {}'.format(protected_url))
+    logging.info('Getting data from {}'.format(protected_url))
 
     # Using OAuth1 auth helper
     oauth = OAuth1(evn_client_key, client_secret=evn_client_secret)
@@ -289,13 +289,13 @@ def main(argv):
     t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'entities', evn_file_store, \
                        DownloadTable.NO_LIST, 50)
     nb_entities = t1.get_table()
-    logger.info('Received {} entities'.format(nb_entities))
+    logging.info('Received {} entities'.format(nb_entities))
 
     # Get export_organizations in json format
     t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'export_organizations', evn_file_store, \
                        DownloadTable.NO_LIST, 50)
     nb_export_organizations = t1.get_table()
-    logger.info('Received {} export_organizations'.format(nb_export_organizations))
+    logging.info('Received {} export_organizations'.format(nb_export_organizations))
 
     # --------------
     # Taxonomic data
@@ -304,7 +304,7 @@ def main(argv):
     t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'taxo_groups', evn_file_store, \
                        DownloadTable.NO_LIST, 50)
     nb_taxo_groups = t1.get_table()
-    logger.info('Received {} taxo_groups'.format(nb_taxo_groups))
+    logging.info('Received {} taxo_groups'.format(nb_taxo_groups))
     # getTaxoGroups(evn_file_store)
 
     # Get species in json format
@@ -312,7 +312,7 @@ def main(argv):
                        # DownloadTable.NO_LIST, 50)
                        DownloadTable.TAXO_GROUPS_LIST, 50)
     nb_species = t1.get_table()
-    logger.info('Received {} species'.format(nb_species))
+    logging.info('Received {} species'.format(nb_species))
     # getSpecies(evn_file_store)
 
     # ----------------
@@ -322,7 +322,7 @@ def main(argv):
     t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'observations', evn_file_store, \
                        DownloadTable.SPECIES_LIST, 50)  # test limit
     nb_species = t1.get_table()
-    logger.info('Received {} observations'.format(nb_species))
+    logging.info('Received {} observations'.format(nb_species))
 
     # ------------------------
     # Geographical information
@@ -331,25 +331,25 @@ def main(argv):
     t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'territorial_units', evn_file_store, \
                        DownloadTable.NO_LIST, 10)
     nb_territorial_units = t1.get_table()
-    logger.info('Received {} territorial_units'.format(nb_territorial_units))
+    logging.info('Received {} territorial_units'.format(nb_territorial_units))
 
     # Get grids in json format
     t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'grids', evn_file_store, \
                        DownloadTable.NO_LIST, 10)
     nb_grids = t1.get_table()
-    logger.info('Received {} grids'.format(nb_grids))
+    logging.info('Received {} grids'.format(nb_grids))
 
     # Get local_admin_units in json format
     t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'local_admin_units', evn_file_store, \
                        DownloadTable.NO_LIST, 10)
     nb_local_admin_units = t1.get_table()
-    logger.info('Received {} local_admin_units'.format(nb_local_admin_units))
+    logging.info('Received {} local_admin_units'.format(nb_local_admin_units))
 
     # Get places in json format
     t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'places', evn_file_store, \
                        DownloadTable.ADMIN_UNITS_LIST, nb_local_admin_units + 50)  # Assuming 50 empty local_admin_units
     nb_places = t1.get_table()
-    logger.info('Received {} places'.format(nb_places))
+    logging.info('Received {} places'.format(nb_places))
 
 # Main wrapper
 if __name__ == "__main__":

@@ -29,9 +29,8 @@ import psycopg2
 # version of the program:
 __version__= "0.1.1" #VERSION#
 
-logging.basicConfig(level="DEBUG")
-logger = logging.getLogger(__name__)
-
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level = logging.DEBUG)
 
 def script_shortname():
     """return the name of this script without a path component."""
@@ -84,7 +83,7 @@ def main(argv):
     evn_db_pw = config['database']['evn_db_pw']
     evn_sql_scripts = config['database']['evn_sql_scripts']
 
-    logger.info('Opening database {}'.format(evn_db_name))
+    logging.info('Opening database {}'.format(evn_db_name))
     # Connect to evn database
     conn = psycopg2.connect('dbname={} user={} password={}'.format(evn_db_name, evn_db_user, evn_db_pw))
 
@@ -94,16 +93,40 @@ def main(argv):
     # Read observations from json file
     # Iterate over observation files
     for f in [pth for pth in Path.home().joinpath(evn_file_store + "/json").glob('observations*')]:
-        logger.info('Reading from {}'.format(str(f)))
+        logging.info('Reading from {}'.format(str(f)))
         with gzip.open(str(f), 'rb', 9) as g:
             obs_chunk = json.loads(g.read().decode())
 
-        # Insert 1 row, with id and json body
+        # Insert simple sightings, each row contains id, update timestamp and full json body
         for i in range(0, len(obs_chunk['data']['sightings'])):
--           cur.execute('INSERT INTO {}.obs_json (id_sighting, sightings) VALUES (%s, %s, %s)'.format(evn_db_schema),
-                (obs_chunk['data']['sightings'][i]['observers'][0]['id_sighting'],
-                 json.dumps(obs_chunk['data']['sightings'][i]),
-                 (obs_chunk['data']['sightings'][i]['observers'][0]['id_sighting']))
+            json_obs = obs_chunk['data']['sightings'][i]
+            # Find last update timestamp
+            if ('update_date' in json_obs['observers'][0]):
+                update_date = json_obs['observers'][0]['update_date']['@timestamp']
+            else:
+                update_date = json_obs['observers'][0]['insert_date']['@timestamp']
+            # Insert row
+            cur.execute('INSERT INTO {}.obs_json (id_sighting, sightings, update_ts) VALUES (%s, %s, %s)'.format(evn_db_schema),
+                        (json_obs['observers'][0]['id_sighting'],
+                         json.dumps(json_obs),
+                         update_date))
+
+        # Insert sightings from forms, each row contains id, update timestamp and full json body
+        # TODO: create forms record in another table
+        if ('forms' in obs_chunk['data']):
+            for f in range(0, len(obs_chunk['data']['forms'])):
+                for i in range(0, len(obs_chunk['data']['forms'][f]['sightings'])):
+                    json_obs = obs_chunk['data']['forms'][f]['sightings'][i]
+                    # Find last update timestamp
+                    if ('update_date' in json_obs['observers'][0]):
+                        update_date = json_obs['observers'][0]['update_date']['@timestamp']
+                    else:
+                        update_date = json_obs['observers'][0]['insert_date']['@timestamp']
+                    # Insert row
+                    cur.execute('INSERT INTO {}.obs_json (id_sighting, sightings, update_ts) VALUES (%s, %s, %s)'.format(evn_db_schema),
+                                (json_obs['observers'][0]['id_sighting'],
+                                 json.dumps(json_obs),
+                                 update_date))
 
         # Commit to database
         conn.commit()

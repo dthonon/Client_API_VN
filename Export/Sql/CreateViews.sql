@@ -53,14 +53,26 @@ DROP MATERIALIZED VIEW IF EXISTS $(evn_db_schema).observations CASCADE;
 CREATE MATERIALIZED VIEW $(evn_db_schema).observations
 TABLESPACE pg_default
 AS
- SELECT obs_json.id_sighting,
-    obs_json.sightings #>> '{species,@id}'::text[] AS id_species,
-    obs_json.sightings #>> '{species,name}'::text[] AS name_species,
-    obs_json.sightings #>> '{species,latin_name}'::text[] AS latin_species,
-    to_date(obs_json.sightings #>> '{date,@ISO8601}'::text[], 'YYYY-MM-DD'::text) AS date,
-    ((obs_json.sightings -> 'observers'::text) -> 0) ->> 'name'::text AS name,
-    obs_json.sightings #>> '{place,@id}'::text[] AS id_place,
-    obs_json.sightings #>> '{place,name}'::text[] AS place,
-    obs_json.sightings #>> '{place,municipality}'::text[] AS municipality
+ SELECT
+    obs_json.id_sighting AS id_sighting,
+    cast(obs_json.sightings #>> '{species,@id}' AS INTEGER) AS id_species,
+    obs_json.sightings #>> '{species,name}' AS name_species,
+    obs_json.sightings #>> '{species,latin_name}' AS latin_species,
+    to_date(obs_json.sightings #>> '{date,@ISO8601}', 'YYYY-MM-DD') AS date,
+    cast(extract(YEAR from
+      to_date(obs_json.sightings #>> '{date,@ISO8601}', 'YYYY-MM-DD'))
+      AS INTEGER) AS date_year,
+    -- Missing time_start & time_stop
+    to_timestamp(((obs_json.sightings -> 'observers') -> 0) #>> '{timing,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS')
+      AS timing,
+    cast(obs_json.sightings #>> '{place,@id}' AS INTEGER) AS id_place,
+    obs_json.sightings #>> '{place,name}' AS place,
+    obs_json.sightings #>> '{place,municipality}' AS municipality,
+    obs_json.sightings #>> '{place,county}' AS county,
+    obs_json.sightings #>> '{place,country}' AS country,
+    obs_json.sightings #>> '{place,insee}' AS insee,
+    cast(((obs_json.sightings -> 'observers') -> 0) ->> 'coord_lat' AS double precision) AS coord_lat,
+    cast(((obs_json.sightings -> 'observers') -> 0) ->> 'coord_lon' AS double precision) AS coord_lon,
+    ((obs_json.sightings -> 'observers') -> 0) ->> 'name' AS name
    FROM import.obs_json
 WITH DATA;
