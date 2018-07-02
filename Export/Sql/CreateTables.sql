@@ -47,6 +47,15 @@ evn_db_pw = config['database']['evn_db_pw']
 \c $(evn_db_name)
 SET search_path TO $(evn_db_schema),public,topology;
 
+-- Trigger function to add or update geometry
+CREATE OR REPLACE FUNCTION update_geom_triggerfn()
+RETURNS trigger AS \$body\$
+    BEGIN
+    NEW.the_geom := ST_Transform(ST_SetSRID(ST_MakePoint(NEW.coord_lon, NEW.coord_lat), 4326), 2154);
+    RETURN NEW;
+    END;
+\$body\$ LANGUAGE plpgsql;
+
 -- Delete existing table
 DROP TABLE IF EXISTS obs_json CASCADE;
 
@@ -54,5 +63,17 @@ DROP TABLE IF EXISTS obs_json CASCADE;
 CREATE TABLE obs_json (
     id_sighting integer PRIMARY KEY,
     sightings jsonb,   -- Complete json sighting as downloaded
-    update_ts integer  -- Last update of json data timestamp
+    update_ts integer,  -- Last update of json data timestamp
+    coord_lat double precision, -- WGS84 coordinates
+    coord_lon double precision
 );
+-- Add geometry column
+\o /dev/null
+SELECT AddGeometryColumn('obs_json', 'the_geom', 2154, 'POINT', 2);
+\o
+
+-- Add trigger
+DROP TRIGGER IF EXISTS trg_geom ON obs_json ;
+CREATE TRIGGER trg_geom BEFORE INSERT or UPDATE
+    ON obs_json FOR EACH ROW
+    EXECUTE PROCEDURE update_geom_triggerfn();

@@ -87,13 +87,16 @@ case "$CMD" in
     INFO "Initialisation de l'environnement : début"
     INFO "1. Base de données"
     expander3.py --file Sql/InitDB.sql > $HOME/tmp/InitDB.sql
-    psql --dbname=postgres --file=$HOME/tmp/InitDB.sql
+    env PGOPTIONS="-c client-min-messages=WARNING" \
+        psql --quiet --dbname=postgres --file=$HOME/tmp/InitDB.sql
     INFO "2. Tables"
     expander3.py --file Sql/CreateTables.sql > $HOME/tmp/CreateTables.sql
-    psql --dbname=postgres --file=$HOME/tmp/CreateTables.sql
+    env PGOPTIONS="-c client-min-messages=WARNING" \
+        psql --quiet --dbname=postgres --file=$HOME/tmp/CreateTables.sql
     INFO "3. Vues"
     expander3.py --file Sql/CreateViews.sql > $HOME/tmp/CreateViews.sql
-    psql --dbname=postgres --file=$HOME/tmp/CreateViews.sql
+    env PGOPTIONS="-c client-min-messages=WARNING" \
+        psql --quiet --dbname=postgres --file=$HOME/tmp/CreateViews.sql
     INFO "Initialisation de l'environnement : fin"
     ;;
 

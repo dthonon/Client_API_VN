@@ -106,10 +106,12 @@ def main(argv):
             else:
                 update_date = json_obs['observers'][0]['insert_date']['@timestamp']
             # Insert row
-            cur.execute('INSERT INTO {}.obs_json (id_sighting, sightings, update_ts) VALUES (%s, %s, %s)'.format(evn_db_schema),
+            cur.execute('INSERT INTO {}.obs_json (id_sighting, sightings, update_ts, coord_lat, coord_lon) VALUES (%s, %s, %s, %s, %s)'.format(evn_db_schema),
                         (json_obs['observers'][0]['id_sighting'],
                          json.dumps(json_obs),
-                         update_date))
+                         update_date,
+                         json_obs['observers'][0]['coord_lat'],
+                         json_obs['observers'][0]['coord_lon']))
 
         # Insert sightings from forms, each row contains id, update timestamp and full json body
         # TODO: create forms record in another table
@@ -123,10 +125,12 @@ def main(argv):
                     else:
                         update_date = json_obs['observers'][0]['insert_date']['@timestamp']
                     # Insert row
-                    cur.execute('INSERT INTO {}.obs_json (id_sighting, sightings, update_ts) VALUES (%s, %s, %s)'.format(evn_db_schema),
+                    cur.execute('INSERT INTO {}.obs_json (id_sighting, sightings, update_ts, coord_lat, coord_lon) VALUES (%s, %s, %s, %s, %s)'.format(evn_db_schema),
                                 (json_obs['observers'][0]['id_sighting'],
                                  json.dumps(json_obs),
-                                 update_date))
+                                 update_date,
+                                 json_obs['observers'][0]['coord_lat'],
+                                 json_obs['observers'][0]['coord_lon']))
 
         # Commit to database
         conn.commit()
@@ -136,6 +140,7 @@ def main(argv):
     conn.commit()
 
     # Close communication with the database
+    logging.info('Closing database {}'.format(evn_db_name))
     cur.close()
     conn.close()
 

@@ -71,8 +71,17 @@ AS
     obs_json.sightings #>> '{place,county}' AS county,
     obs_json.sightings #>> '{place,country}' AS country,
     obs_json.sightings #>> '{place,insee}' AS insee,
-    cast(((obs_json.sightings -> 'observers') -> 0) ->> 'coord_lat' AS double precision) AS coord_lat,
-    cast(((obs_json.sightings -> 'observers') -> 0) ->> 'coord_lon' AS double precision) AS coord_lon,
-    ((obs_json.sightings -> 'observers') -> 0) ->> 'name' AS name
+    -- cast(((obs_json.sightings -> 'observers') -> 0) ->> 'coord_lat' AS double precision) AS coord_lat,
+    obs_json.coord_lat AS coord_lat_wgs,
+    obs_json.coord_lon AS coord_lon_wgs,
+    ST_X(the_geom) AS coord_lon_l93,
+    ST_Y(the_geom) AS coord_lon_lat,
+    ((obs_json.sightings -> 'observers') -> 0) ->> 'precision' AS precision,
+    ((obs_json.sightings -> 'observers') -> 0) ->> 'atlas_grid_name' AS atlas_grid_name,
+    ((obs_json.sightings -> 'observers') -> 0) ->> 'estimation_code' AS estimation_code,
+    ((obs_json.sightings -> 'observers') -> 0) ->> 'count' AS count,
+    ((obs_json.sightings -> 'observers') -> 0) #>> '{atlas_code,#text}' AS atlas_code,
+    ((obs_json.sightings -> 'observers') -> 0) ->> 'altitude' AS altitude,
+    obs_json.the_geom AS the_geom
    FROM import.obs_json
 WITH DATA;
