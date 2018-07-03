@@ -73,6 +73,30 @@ done
 INFO VERBOSE=$VERBOSE
 INFO CMD=$CMD
 
+# Load configuration file, if present, else ask for configuration
+evn_conf=~/.evn.ini
+unset config      # clear parameter array
+typeset -A config # init array
+
+# echo "commande = $cmd"
+if [[ -f $evn_conf ]]  # Check if exists and load existing config
+then
+    INFO "Analyse des paramètres"
+    # Parse configuration file
+    while read line
+    do
+        # echo ">>>$(echo "$line" | cut -d '=' -f 1 | xargs)<<<"
+        if echo $line | grep -F = &>/dev/null
+        then
+            varname=$(echo "$line" | cut -d '=' -f 1 | xargs)
+            config[$varname]=$(echo "$line" | cut -d '=' -f 2- | xargs)
+        fi
+    done < $evn_conf
+else
+    INFO "Configuration initiale"
+    cmd=edit
+fi
+
 # When running from crontab. To be improved
 #cd ~/ExportVN
 
@@ -80,10 +104,12 @@ INFO CMD=$CMD
 case "$CMD" in
   help)
     # Create directories as needed
+    INFO "Aide en ligne à rédiger"
+    INFO "Mail admin : ${config[evn_admin_mail]}"
     ;;
 
   init)
-    # Create directories as needed
+    # Create database, tables, views...
     INFO "Initialisation de l'environnement : début"
     INFO "1. Base de données"
     expander3.py --file Sql/InitDB.sql > $HOME/tmp/InitDB.sql
@@ -108,21 +134,35 @@ case "$CMD" in
 
   download)
     # Create directories as needed
-    INFO "Téléchargement depuis l'API du site VisioNature : début"
+    INFO "Début téléchargement depuis le site ${config[evn_site]} : début"
     python3 Python/DownloadFromVN.py 2>> $evn_log
-    INFO "Téléchargement depuis l'API du site VisioNature : fin"
+    INFO "Téléchargement depuis l'API du site ${config[evn_site]} : fin"
     ;;
 
   store)
     # Store json files to Postgresql database
-    INFO "Chargement des données JSON dans Postgresql : début"
+    INFO "Chargement des données JSON dans Postgresql ${config[evn_db_name]} : début"
     python3 Python/InsertInDB.py 2>> $evn_log
-    INFO "Chargement des données JSON dans Postgresql : fin"
+    INFO "Chargement des données JSON dans Postgresql ${config[evn_db_name]} : fin"
     ;;
 
   all)
     # Download and then Store
-    WARN "Non implémenté"
+    INFO "Début téléchargement depuis le site : ${config[evn_site]}"
+    $0 download
+    INFO "Chargement des fichiers json dans la base ${config[evn_db_name]}"
+    $0 store
+    INFO "Fin transfert depuis le site : ${config[evn_site]}"
+    links -dump ${config[evn_site]}index.php?m_id=23 | fgrep "Les part" | sed 's/Les partenaires       /Total des contributions :/' > ~/mail_fin.txt
+    fgrep -c "observations:" $evn_log  >> ~/mail_fin.txt
+    echo "Bilan du script : ERROR / WARN :" >> ~/mail_fin.txt
+    fgrep -c "ERROR" $evn_log >> ~/mail_fin.txt
+    fgrep -c "WARN" $evn_log >> ~/mail_fin.txt
+    tail -15 $evn_log >> ~/mail_fin.txt
+    gzip -f $evn_log
+    INFO "Fin de l'export des données"
+    mailx -s "Chargement de ${config[evn_site]}" -a $evn_log.gz ${config[evn_admin_mail]} < ~/mail_fin.txt
+    rm -f ~/mail_fin.txt
     ;;
 
   *)
