@@ -65,7 +65,8 @@ AS
     -- Missing time_start & time_stop
     to_timestamp(((obs_json.sightings -> 'observers') -> 0) #>> '{timing,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS')
       AS timing,
-    cast(obs_json.sightings #>> '{place,@id}' AS INTEGER) AS id_place,
+    cast(obs_json.sightings #>> '{place,@id}'
+      AS INTEGER) AS id_place,
     obs_json.sightings #>> '{place,name}' AS place,
     obs_json.sightings #>> '{place,municipality}' AS municipality,
     obs_json.sightings #>> '{place,county}' AS county,
@@ -82,6 +83,9 @@ AS
     ((obs_json.sightings -> 'observers') -> 0) ->> 'count' AS count,
     ((obs_json.sightings -> 'observers') -> 0) #>> '{atlas_code,#text}' AS atlas_code,
     ((obs_json.sightings -> 'observers') -> 0) ->> 'altitude' AS altitude,
+    ((obs_json.sightings -> 'observers') -> 0) ->> 'hidden' AS hidden,
+    to_timestamp(((obs_json.sightings -> 'observers') -> 0) #>> '{update_date,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS')
+      AS update_date,
     obs_json.the_geom AS the_geom
    FROM import.obs_json
 WITH DATA;
