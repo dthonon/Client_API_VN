@@ -94,6 +94,7 @@ then
     done < $evn_conf
 else
     INFO "Configuration initiale"
+    cp --update ./evn_template.ini $evn_conf
     cmd=edit
 fi
 
@@ -142,7 +143,12 @@ case "$CMD" in
   store)
     # Store json files to Postgresql database
     INFO "Chargement des données JSON dans Postgresql ${config[evn_db_name]} : début"
+    INFO "1. Insertion dans la base"
     python3 Python/InsertInDB.py 2>> $evn_log
+    INFO "2. Mise à jour des vues et indexation des tables et vues"
+    expander3.py --file Sql/UpdateIndex.sql > $HOME/tmp/UpdateIndex.sql
+    env PGOPTIONS="-c client-min-messages=WARNING" \
+        psql --quiet --dbname=postgres --file=$HOME/tmp/UpdateIndex.sql
     INFO "Chargement des données JSON dans Postgresql ${config[evn_db_name]} : fin"
     ;;
 
