@@ -70,7 +70,7 @@ while true; do
   esac
 done
 
-INFO VERBOSE=$VERBOSE
+# INFO VERBOSE=$VERBOSE
 INFO CMD=$CMD
 
 # Load configuration file, if present, else ask for configuration
@@ -154,10 +154,12 @@ case "$CMD" in
 
   all)
     # Download and then Store
+    INFO "Initialisation de la base : ${config[evn_db_name]}"
+    $0 --init
     INFO "Début téléchargement depuis le site : ${config[evn_site]}"
-    $0 download
+    $0 --download
     INFO "Chargement des fichiers json dans la base ${config[evn_db_name]}"
-    $0 store
+    $0 --store
     INFO "Fin transfert depuis le site : ${config[evn_site]}"
     links -dump ${config[evn_site]}index.php?m_id=23 | fgrep "Les part" | sed 's/Les partenaires       /Total des contributions :/' > ~/mail_fin.txt
     fgrep -c "observations:" $evn_log  >> ~/mail_fin.txt
