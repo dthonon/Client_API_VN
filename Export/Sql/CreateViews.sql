@@ -1,7 +1,3 @@
-
--- Create views, template for pyexpander3
---  - observations, with selected fields from obs_json
-
 -- Copyright (c) 2018 Daniel Thonon <d.thonon9@gmail.com>
 -- All rights reserved.
 
@@ -29,6 +25,10 @@
 
 -- @license http://www.opensource.org/licenses/mit-license.html MIT License
 
+-- Create views, template for pyexpander3
+--  - observations, with selected fields from observations_json
+
+-- Macros for pyexpander3
 $py(
 import configparser
 from pathlib import Path
@@ -47,6 +47,7 @@ evn_db_pw = config['database']['evn_db_pw']
 \c $(evn_db_name)
 SET search_path TO $(evn_db_schema),public,topology;
 
+-- Observations table
 -- Delete existing table
 DROP MATERIALIZED VIEW IF EXISTS $(evn_db_schema).observations CASCADE;
 
@@ -54,38 +55,52 @@ CREATE MATERIALIZED VIEW $(evn_db_schema).observations
 TABLESPACE pg_default
 AS
  SELECT
-    obs_json.id_sighting AS id_sighting,
-    cast(obs_json.sightings #>> '{species,@id}' AS INTEGER) AS id_species,
-    obs_json.sightings #>> '{species,name}' AS name_species,
-    obs_json.sightings #>> '{species,latin_name}' AS latin_species,
-    to_date(obs_json.sightings #>> '{date,@ISO8601}', 'YYYY-MM-DD') AS date,
+    observations_json.id_sighting AS id_sighting,
+    cast(observations_json.sightings #>> '{species,@id}' AS INTEGER) AS id_species,
+    observations_json.sightings #>> '{species,name}' AS name_species,
+    observations_json.sightings #>> '{species,latin_name}' AS latin_species,
+    to_date(observations_json.sightings #>> '{date,@ISO8601}', 'YYYY-MM-DD') AS date,
     cast(extract(YEAR from
-      to_date(obs_json.sightings #>> '{date,@ISO8601}', 'YYYY-MM-DD'))
+      to_date(observations_json.sightings #>> '{date,@ISO8601}', 'YYYY-MM-DD'))
       AS INTEGER) AS date_year,
     -- Missing time_start & time_stop
-    to_timestamp(((obs_json.sightings -> 'observers') -> 0) #>> '{timing,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS')
+    to_timestamp(((observations_json.sightings -> 'observers') -> 0) #>> '{timing,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS')
       AS timing,
-    cast(obs_json.sightings #>> '{place,@id}'
+    cast(observations_json.sightings #>> '{place,@id}'
       AS INTEGER) AS id_place,
-    obs_json.sightings #>> '{place,name}' AS place,
-    obs_json.sightings #>> '{place,municipality}' AS municipality,
-    obs_json.sightings #>> '{place,county}' AS county,
-    obs_json.sightings #>> '{place,country}' AS country,
-    obs_json.sightings #>> '{place,insee}' AS insee,
-    -- cast(((obs_json.sightings -> 'observers') -> 0) ->> 'coord_lat' AS double precision) AS coord_lat,
-    obs_json.coord_lat AS coord_lat_wgs,
-    obs_json.coord_lon AS coord_lon_wgs,
+    observations_json.sightings #>> '{place,name}' AS place,
+    observations_json.sightings #>> '{place,municipality}' AS municipality,
+    observations_json.sightings #>> '{place,county}' AS county,
+    observations_json.sightings #>> '{place,country}' AS country,
+    observations_json.sightings #>> '{place,insee}' AS insee,
+    -- cast(((observations_json.sightings -> 'observers') -> 0) ->> 'coord_lat' AS double precision) AS coord_lat,
+    observations_json.coord_lat AS coord_lat_wgs,
+    observations_json.coord_lon AS coord_lon_wgs,
     ST_X(the_geom) AS coord_lon_l93,
     ST_Y(the_geom) AS coord_lon_lat,
-    ((obs_json.sightings -> 'observers') -> 0) ->> 'precision' AS precision,
-    ((obs_json.sightings -> 'observers') -> 0) ->> 'atlas_grid_name' AS atlas_grid_name,
-    ((obs_json.sightings -> 'observers') -> 0) ->> 'estimation_code' AS estimation_code,
-    ((obs_json.sightings -> 'observers') -> 0) ->> 'count' AS count,
-    ((obs_json.sightings -> 'observers') -> 0) #>> '{atlas_code,#text}' AS atlas_code,
-    ((obs_json.sightings -> 'observers') -> 0) ->> 'altitude' AS altitude,
-    ((obs_json.sightings -> 'observers') -> 0) ->> 'hidden' AS hidden,
-    to_timestamp(((obs_json.sightings -> 'observers') -> 0) #>> '{update_date,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS')
+    ((observations_json.sightings -> 'observers') -> 0) ->> 'precision' AS precision,
+    ((observations_json.sightings -> 'observers') -> 0) ->> 'atlas_grid_name' AS atlas_grid_name,
+    ((observations_json.sightings -> 'observers') -> 0) ->> 'estimation_code' AS estimation_code,
+    ((observations_json.sightings -> 'observers') -> 0) ->> 'count' AS count,
+    ((observations_json.sightings -> 'observers') -> 0) #>> '{atlas_code,#text}' AS atlas_code,
+    ((observations_json.sightings -> 'observers') -> 0) ->> 'altitude' AS altitude,
+    ((observations_json.sightings -> 'observers') -> 0) ->> 'hidden' AS hidden,
+    to_timestamp(((observations_json.sightings -> 'observers') -> 0) #>> '{update_date,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS')
       AS update_date,
-    obs_json.the_geom AS the_geom
-   FROM import.obs_json
+    observations_json.the_geom AS the_geom
+   FROM import.observations_json
+WITH DATA;
+
+
+-- Species table
+-- Delete existing table
+DROP MATERIALIZED VIEW IF EXISTS $(evn_db_schema).species CASCADE;
+
+CREATE MATERIALIZED VIEW $(evn_db_schema).species
+TABLESPACE pg_default
+AS
+ SELECT
+    species_json.id_specie AS id_specie,
+    species_json.specie #>> '{french_name}' AS french_name
+   FROM import.species_json
 WITH DATA;

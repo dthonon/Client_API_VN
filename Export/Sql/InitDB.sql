@@ -1,6 +1,4 @@
 
--- Initialize Postgresql database, template for pyexpander3
-
 -- Copyright (c) 2018 Daniel Thonon <d.thonon9@gmail.com>
 -- All rights reserved.
 
@@ -28,6 +26,9 @@
 
 -- @license http://www.opensource.org/licenses/mit-license.html MIT License
 
+-- Initialize Postgresql database, template for pyexpander3
+
+-- Macros for pyexpander3
 $py(
 import configparser
 from pathlib import Path

@@ -1,7 +1,4 @@
 
--- Create tables, template for pyexpander3
---  - obs_json is loaded with id and json and other columns are created by json queries
-
 -- Copyright (c) 2018 Daniel Thonon <d.thonon9@gmail.com>
 -- All rights reserved.
 
@@ -29,6 +26,12 @@
 
 -- @license http://www.opensource.org/licenses/mit-license.html MIT License
 
+-- Create tables, template for pyexpander3
+--  - observations_json is loaded with id, json, coordinates and then other columns are created by json queries
+--  - species_json is loaded with id, json and then other columns are created by json queries
+--  - places_json is loaded with id, json, coordinates and then other columns are created by json queries
+
+-- Macros for pyexpander3
 $py(
 import configparser
 from pathlib import Path
@@ -56,11 +59,12 @@ RETURNS trigger AS \$body\$
     END;
 \$body\$ LANGUAGE plpgsql;
 
+-- Observations table in json format
 -- Delete existing table
-DROP TABLE IF EXISTS obs_json CASCADE;
+DROP TABLE IF EXISTS observations_json CASCADE;
 
 -- Create observations table and access rights
-CREATE TABLE obs_json (
+CREATE TABLE observations_json (
     id_sighting integer PRIMARY KEY,
     sightings jsonb,   -- Complete json sighting as downloaded
     update_ts integer,  -- Last update of json data timestamp
@@ -69,11 +73,43 @@ CREATE TABLE obs_json (
 );
 -- Add geometry column
 \o /dev/null
-SELECT AddGeometryColumn('obs_json', 'the_geom', 2154, 'POINT', 2);
+SELECT AddGeometryColumn('observations_json', 'the_geom', 2154, 'POINT', 2);
 \o
 
 -- Add trigger
-DROP TRIGGER IF EXISTS trg_geom ON obs_json ;
+DROP TRIGGER IF EXISTS trg_geom ON observations_json ;
 CREATE TRIGGER trg_geom BEFORE INSERT or UPDATE
-    ON obs_json FOR EACH ROW
+    ON observations_json FOR EACH ROW
+    EXECUTE PROCEDURE update_geom_triggerfn();
+
+-- Species table in json format
+-- Delete existing table
+DROP TABLE IF EXISTS species_json CASCADE;
+
+-- Create observations table and access rights
+CREATE TABLE species_json (
+    id_specie integer PRIMARY KEY,
+    specie jsonb   -- Complete json sighting as downloaded
+);
+
+-- Places table in json format
+-- Delete existing table
+DROP TABLE IF EXISTS places_json CASCADE;
+
+-- Create observations table and access rights
+CREATE TABLE places_json (
+    id_place integer PRIMARY KEY,
+    place jsonb,   -- Complete json sighting as downloaded
+    coord_lat double precision, -- WGS84 coordinates
+    coord_lon double precision
+);
+-- Add geometry column
+\o /dev/null
+SELECT AddGeometryColumn('places_json', 'the_geom', 2154, 'POINT', 2);
+\o
+
+-- Add trigger
+DROP TRIGGER IF EXISTS trg_geom ON places_json ;
+CREATE TRIGGER trg_geom BEFORE INSERT or UPDATE
+    ON places_json FOR EACH ROW
     EXECUTE PROCEDURE update_geom_triggerfn();
