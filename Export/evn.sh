@@ -27,11 +27,8 @@
 
 # global parameters
 set -e          # kill script if a command fails
-set -o nounset  # unset values give error
+# set -o nounset  # unset values give error
 set -o pipefail # prevents errors in a pipeline from being masked
-
-# Logging file
-evn_log=~/tmp/evn_all_$(date '+%Y-%m-%d').log
 
 # Logging script
 log_path=$HOME/b-log # the path to the script
@@ -45,43 +42,50 @@ source "${log_path}"/b-log.sh   # include the log script
 
 # Logging options
 B_LOG -o true
-B_LOG -f $evn_log --file-prefix-enable --file-suffix-enable
 LOG_LEVEL_ALL
 
 # Analyze script options
-OPTS=`getopt -o vicedsah --long verbose,init,create,edit,download,store,all,help -- "$@"`
+OPTS=`getopt -o v --long all,create,download,edit,help,init,site:,store,verbose -- "$@"`
 if [ $? != 0 ] ; then echo "Option non reconnue" >&2 ; exit 1 ; fi
 # echo "$OPTS"
 eval set -- "$OPTS"
 VERBOSE=false
 CMD="help"
+SITE=
 while true; do
   case "$1" in
+    --all ) CMD="all"; shift ;;
+    --create ) CMD="create"; shift ;;
+    --download ) CMD="download"; shift ;;
+    --edit ) CMD="edit"; shift ;;
+    --help ) CMD="help"; shift ;;
+    --init ) CMD="init"; shift ;;
+    --site ) SITE="$2"; shift 2 ;;
+    --store ) CMD="store"; shift ;;
     -v | --verbose ) VERBOSE=true; shift ;;
-    -i | --init ) CMD="init"; shift ;;
-    -c | --create ) CMD="create"; shift ;;
-    -e | --edit ) CMD="edit"; shift ;;
-    -d | --download ) CMD="download"; shift ;;
-    -s | --store ) CMD="store"; shift ;;
-    -a | --all ) CMD="all"; shift ;;
-    -h | --help ) CMD="help"; shift ;;
-    -- ) shift; break ;;
+    -- ) shift ; if [ -n "$1" ] ; then ERROR "Option inconnue $1 !" ; exit 1 ; fi ; break ;;
+#     -- ) shift ; ERROR "Option inconnue !" ; break ;;
     * ) ERROR "Erreur de fonctionnement !" ; exit 1 ;;
   esac
 done
 
+if [ -z "$SITE" ] ; then ERROR "Le site de téléchargement doit être spécifié par l'option --site=SITE" ; exit 1 ; fi
+
+# Logging file
+evn_log=~/tmp/evn_all_$SITE_$(date '+%Y-%m-%d').log
+B_LOG -f $evn_log --file-prefix-enable --file-suffix-enable
+
 # INFO VERBOSE=$VERBOSE
-INFO CMD=$CMD
+INFO "Exécution du script avec la commance $CMD, sur le site $SITE"
 
 # Load configuration file, if present, else ask for configuration
-evn_conf=~/.evn.ini
+evn_conf=~/.evn_$SITE.ini
 unset config      # clear parameter array
 typeset -A config # init array
 
-# echo "commande = $cmd"
 if [[ -f $evn_conf ]]  # Check if exists and load existing config
 then
-    INFO "Analyse des paramètres"
+    INFO "Analyse des paramètres de configuration $evn_conf"
     # Parse configuration file
     while read line
     do
@@ -90,12 +94,13 @@ then
         then
             varname=$(echo "$line" | cut -d '=' -f 1 | xargs)
             config[$varname]=$(echo "$line" | cut -d '=' -f 2- | xargs)
+            if $VERBOSE ; then DEBUG "$config[$varname] = ${config[$varname]}" ; fi
         fi
     done < $evn_conf
 else
     INFO "Configuration initiale"
     cp --update ./evn_template.ini $evn_conf
-    cmd=edit
+    cmd="edit"
 fi
 
 # When running from crontab. To be improved
