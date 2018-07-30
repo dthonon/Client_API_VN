@@ -88,7 +88,7 @@ AS
     to_timestamp(((observations_json.sightings -> 'observers') -> 0) #>> '{update_date,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS')
       AS update_date,
     observations_json.the_geom AS the_geom
-   FROM import.observations_json
+   FROM $(evn_db_schema).observations_json
 WITH DATA;
 
 
@@ -102,5 +102,26 @@ AS
  SELECT
     species_json.id_specie AS id_specie,
     species_json.specie #>> '{french_name}' AS french_name
-   FROM import.species_json
+   FROM $(evn_db_schema).species_json
+WITH DATA;
+
+-- Places table
+-- Delete existing table
+DROP MATERIALIZED VIEW IF EXISTS $(evn_db_schema).placees CASCADE;
+
+CREATE MATERIALIZED VIEW $(evn_db_schema).places
+TABLESPACE pg_default
+AS
+ SELECT
+    places_json.id_specie AS id_place,
+    places_json #>> '{name}' AS name,
+    places_json #>> '{coord_lat}' AS coord_lat,
+    places_json #>> '{coord_lon}' AS coord_lon,
+    ST_X(the_geom) AS coord_lon_l93,
+    ST_Y(the_geom) AS coord_lon_lat,
+    places_json #>> '{altitude}' AS altitude,
+    places_json #>> '{visible}' AS visible,
+    places_json #>> '{is_private}' AS is_private,
+    places_json #>> '{place_type}' AS place_type
+  FROM $(evn_db_schema).places_json
 WITH DATA;

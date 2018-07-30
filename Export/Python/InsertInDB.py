@@ -90,54 +90,54 @@ def main(argv):
     # Open a cursor to perform database operations
     cur = conn.cursor()
 
-    # # Read observations from json file
-    # # Iterate over observation files
-    # for f in [pth for pth in Path.home().joinpath(evn_file_store + "/json").glob('observations*')]:
-    #     logging.info('Reading from {}'.format(str(f)))
-    #     with gzip.open(str(f), 'rb', 9) as g:
-    #         obs_chunk = json.loads(g.read().decode())
-    #
-    #     # Insert simple sightings, each row contains id, update timestamp and full json body
-    #     for i in range(0, len(obs_chunk['data']['sightings'])):
-    #         json_obs = obs_chunk['data']['sightings'][i]
-    #         # Find last update timestamp
-    #         if ('update_date' in json_obs['observers'][0]):
-    #             update_date = json_obs['observers'][0]['update_date']['@timestamp']
-    #         else:
-    #             update_date = json_obs['observers'][0]['insert_date']['@timestamp']
-    #         # Insert row
-    #         cur.execute('INSERT INTO {}.observations_json (id_sighting, sightings, update_ts, coord_lat, coord_lon) VALUES (%s, %s, %s, %s, %s)'.format(evn_db_schema),
-    #                     (json_obs['observers'][0]['id_sighting'],
-    #                      json.dumps(json_obs),
-    #                      update_date,
-    #                      json_obs['observers'][0]['coord_lat'],
-    #                      json_obs['observers'][0]['coord_lon']))
-    #
-    #     # Insert sightings from forms, each row contains id, update timestamp and full json body
-    #     # TODO: create forms record in another table
-    #     if ('forms' in obs_chunk['data']):
-    #         for f in range(0, len(obs_chunk['data']['forms'])):
-    #             for i in range(0, len(obs_chunk['data']['forms'][f]['sightings'])):
-    #                 json_obs = obs_chunk['data']['forms'][f]['sightings'][i]
-    #                 # Find last update timestamp
-    #                 if ('update_date' in json_obs['observers'][0]):
-    #                     update_date = json_obs['observers'][0]['update_date']['@timestamp']
-    #                 else:
-    #                     update_date = json_obs['observers'][0]['insert_date']['@timestamp']
-    #                 # Insert row
-    #                 cur.execute('INSERT INTO {}.observations_json (id_sighting, sightings, update_ts, coord_lat, coord_lon) VALUES (%s, %s, %s, %s, %s)'.format(evn_db_schema),
-    #                             (json_obs['observers'][0]['id_sighting'],
-    #                              json.dumps(json_obs),
-    #                              update_date,
-    #                              json_obs['observers'][0]['coord_lat'],
-    #                              json_obs['observers'][0]['coord_lon']))
-    #
-    #     # Commit to database
-    #     conn.commit()
-    #
-    # # Refresh view
-    # cur.execute('REFRESH MATERIALIZED VIEW {}.observations WITH DATA'.format(evn_db_schema))
-    # conn.commit()
+    # Read observations from json file
+    # Iterate over observation files
+    for f in [pth for pth in Path.home().joinpath(evn_file_store + "/json").glob('observations*')]:
+        logging.info('Reading from {}'.format(str(f)))
+        with gzip.open(str(f), 'rb', 9) as g:
+            obs_chunk = json.loads(g.read().decode())
+
+        # Insert simple sightings, each row contains id, update timestamp and full json body
+        for i in range(0, len(obs_chunk['data']['sightings'])):
+            json_obs = obs_chunk['data']['sightings'][i]
+            # Find last update timestamp
+            if ('update_date' in json_obs['observers'][0]):
+                update_date = json_obs['observers'][0]['update_date']['@timestamp']
+            else:
+                update_date = json_obs['observers'][0]['insert_date']['@timestamp']
+            # Insert row
+            cur.execute('INSERT INTO {}.observations_json (id_sighting, sightings, update_ts, coord_lat, coord_lon) VALUES (%s, %s, %s, %s, %s)'.format(evn_db_schema),
+                        (json_obs['observers'][0]['id_sighting'],
+                         json.dumps(json_obs),
+                         update_date,
+                         json_obs['observers'][0]['coord_lat'],
+                         json_obs['observers'][0]['coord_lon']))
+
+        # Insert sightings from forms, each row contains id, update timestamp and full json body
+        # TODO: create forms record in another table
+        if ('forms' in obs_chunk['data']):
+            for f in range(0, len(obs_chunk['data']['forms'])):
+                for i in range(0, len(obs_chunk['data']['forms'][f]['sightings'])):
+                    json_obs = obs_chunk['data']['forms'][f]['sightings'][i]
+                    # Find last update timestamp
+                    if ('update_date' in json_obs['observers'][0]):
+                        update_date = json_obs['observers'][0]['update_date']['@timestamp']
+                    else:
+                        update_date = json_obs['observers'][0]['insert_date']['@timestamp']
+                    # Insert row
+                    cur.execute('INSERT INTO {}.observations_json (id_sighting, sightings, update_ts, coord_lat, coord_lon) VALUES (%s, %s, %s, %s, %s)'.format(evn_db_schema),
+                                (json_obs['observers'][0]['id_sighting'],
+                                 json.dumps(json_obs),
+                                 update_date,
+                                 json_obs['observers'][0]['coord_lat'],
+                                 json_obs['observers'][0]['coord_lon']))
+
+        # Commit to database
+        conn.commit()
+
+    # Refresh view
+    cur.execute('REFRESH MATERIALIZED VIEW {}.observations WITH DATA'.format(evn_db_schema))
+    conn.commit()
 
     # Read species from json file
     # Iterate over species files
@@ -160,6 +160,31 @@ def main(argv):
 
     # Refresh view
     cur.execute('REFRESH MATERIALIZED VIEW {}.species WITH DATA'.format(evn_db_schema))
+    conn.commit()
+
+    # Read places from json file
+    # Iterate over species files
+    for f in [pth for pth in Path.home().joinpath(evn_file_store + "/json").glob('places*')]:
+        logging.info('Reading from {}'.format(str(f)))
+        with gzip.open(str(f), 'rb', 9) as g:
+            places_chunk = json.loads(g.read().decode())
+
+        # Insert simple sightings, each row contains id and full json body
+        for i in range(0, len(places_chunk['data'])):
+            json_place = places_chunk['data'][i]
+            # Insert row
+            cur.execute('INSERT INTO {}.places_json (id_place, place, coord_lat, coord_lon) VALUES (%s, %s, %s, %s)'.format(evn_db_schema),
+                        (json_place['id'],
+                         json.dumps(json_place),
+                         json_place['coord_lat'],
+                         json_place['coord_lon']
+                         ))
+
+        # Commit to database
+        conn.commit()
+
+    # Refresh view
+    cur.execute('REFRESH MATERIALIZED VIEW {}.tables WITH DATA'.format(evn_db_schema))
     conn.commit()
 
     # Close communication with the database
