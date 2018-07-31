@@ -118,15 +118,15 @@ case "$CMD" in
     # Create database, tables, views...
     INFO "Initialisation de l'environnement : début"
     INFO "1. Base de données"
-    expander3.py --file Sql/InitDB.sql > $HOME/tmp/InitDB.sql
+    expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/InitDB.sql > $HOME/tmp/InitDB.sql
     env PGOPTIONS="-c client-min-messages=WARNING" \
         psql --quiet --dbname=postgres --file=$HOME/tmp/InitDB.sql
     INFO "2. Tables"
-    expander3.py --file Sql/CreateTables.sql > $HOME/tmp/CreateTables.sql
+    expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/CreateTables.sql > $HOME/tmp/CreateTables.sql
     env PGOPTIONS="-c client-min-messages=WARNING" \
         psql --quiet --dbname=postgres --file=$HOME/tmp/CreateTables.sql
     INFO "3. Vues"
-    expander3.py --file Sql/CreateViews.sql > $HOME/tmp/CreateViews.sql
+    expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/CreateViews.sql > $HOME/tmp/CreateViews.sql
     env PGOPTIONS="-c client-min-messages=WARNING" \
         psql --quiet --dbname=postgres --file=$HOME/tmp/CreateViews.sql
     INFO "Initialisation de l'environnement : fin"
@@ -149,9 +149,9 @@ case "$CMD" in
     # Store json files to Postgresql database
     INFO "Chargement des données JSON dans Postgresql ${config[evn_db_name]} : début"
     INFO "1. Insertion dans la base"
-    python3 Python/InsertInDB.py 2>> $evn_log
+    Python/InsertInDB.py --verbose --site=$SITE 2>> $evn_log
     INFO "2. Mise à jour des vues et indexation des tables et vues"
-    expander3.py --file Sql/UpdateIndex.sql > $HOME/tmp/UpdateIndex.sql
+    expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/UpdateIndex.sql > $HOME/tmp/UpdateIndex.sql
     env PGOPTIONS="-c client-min-messages=WARNING" \
         psql --quiet --dbname=postgres --file=$HOME/tmp/UpdateIndex.sql
     INFO "Chargement des données JSON dans Postgresql ${config[evn_db_name]} : fin"

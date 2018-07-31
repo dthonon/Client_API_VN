@@ -29,21 +29,6 @@
 
 -- @license http://www.opensource.org/licenses/mit-license.html MIT License
 
-$py(
-import configparser
-from pathlib import Path
-# Read configuration parameters
-config = configparser.ConfigParser()
-config.read(str(Path.home()) + '/.evn.ini')
-
-# Import parameters in local variables
-evn_db_name = config['database']['evn_db_name']
-evn_db_schema = config['database']['evn_db_schema']
-evn_db_group = config['database']['evn_db_group']
-evn_db_user = config['database']['evn_db_user']
-evn_db_pw = config['database']['evn_db_pw']
-)
-
 \c $(evn_db_name)
 SET search_path TO $(evn_db_schema),public,topology;
 

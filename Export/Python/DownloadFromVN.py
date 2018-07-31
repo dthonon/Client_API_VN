@@ -256,17 +256,16 @@ def main(argv):
                       help='Traces de mise au point.',
                      )
 
-    parser.add_option('-q', '--quiet',
-                      action='store_false',
-                      dest='verbose',
-                      help='Traces de suivi minimales.',
+    parser.add_option('-s', '--site',
+                      dest='site',
+                      help='Nom du site, utilisé pour sélectionner le fichier de paramétrage.',
                      )
 
     (options, args) = parser.parse_args()
 
     # Read configuration parameters
     config = configparser.ConfigParser()
-    config.read(str(Path.home()) + '/.evn.ini')
+    config.read(str(Path.home()) + '/.evn' + site + '.ini')
 
     # Import parameters in local variables
     evn_client_key = config['site']['evn_client_key']

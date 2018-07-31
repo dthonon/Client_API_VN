@@ -28,22 +28,6 @@
 -- Create views, template for pyexpander3
 --  - observations, with selected fields from observations_json
 
--- Macros for pyexpander3
-$py(
-import configparser
-from pathlib import Path
-# Read configuration parameters
-config = configparser.ConfigParser()
-config.read(str(Path.home()) + '/.evn.ini')
-
-# Import parameters in local variables
-evn_db_name = config['database']['evn_db_name']
-evn_db_schema = config['database']['evn_db_schema']
-evn_db_group = config['database']['evn_db_group']
-evn_db_user = config['database']['evn_db_user']
-evn_db_pw = config['database']['evn_db_pw']
-)
-
 \c $(evn_db_name)
 SET search_path TO $(evn_db_schema),public,topology;
 
@@ -85,6 +69,11 @@ AS
     ((observations_json.sightings -> 'observers') -> 0) #>> '{atlas_code,#text}' AS atlas_code,
     ((observations_json.sightings -> 'observers') -> 0) ->> 'altitude' AS altitude,
     ((observations_json.sightings -> 'observers') -> 0) ->> 'hidden' AS hidden,
+    ((observations_json.sightings -> 'observers') -> 0) ->> 'details' AS details,
+    (((observations_json.sightings -> 'observers'::text) -> 0) #>> '{extended_info,mortality}'::text[]) IS NOT NULL AS mortality,
+    ((observations_json.sightings -> 'observers') -> 0) #>> '{extended_info, mortality, death_cause2}' AS death_cause2,
+    to_timestamp(((observations_json.sightings -> 'observers') -> 0) #>> '{insert_date,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS')
+      AS insert_date,
     to_timestamp(((observations_json.sightings -> 'observers') -> 0) #>> '{update_date,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS')
       AS update_date,
     observations_json.the_geom AS the_geom
@@ -113,15 +102,15 @@ CREATE MATERIALIZED VIEW $(evn_db_schema).places
 TABLESPACE pg_default
 AS
  SELECT
-    places_json.id_specie AS id_place,
-    places_json #>> '{name}' AS name,
-    places_json #>> '{coord_lat}' AS coord_lat,
-    places_json #>> '{coord_lon}' AS coord_lon,
+    places_json.id_place AS id_place,
+    places_json.place #>> '{name}' AS name,
+    places_json.place #>> '{coord_lat}' AS coord_lat,
+    places_json.place #>> '{coord_lon}' AS coord_lon,
     ST_X(the_geom) AS coord_lon_l93,
     ST_Y(the_geom) AS coord_lon_lat,
-    places_json #>> '{altitude}' AS altitude,
-    places_json #>> '{visible}' AS visible,
-    places_json #>> '{is_private}' AS is_private,
-    places_json #>> '{place_type}' AS place_type
+    places_json.place #>> '{altitude}' AS altitude,
+    places_json.place #>> '{visible}' AS visible,
+    places_json.place #>> '{is_private}' AS is_private,
+    places_json.place #>> '{place_type}' AS place_type
   FROM $(evn_db_schema).places_json
 WITH DATA;

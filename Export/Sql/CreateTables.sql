@@ -31,22 +31,6 @@
 --  - species_json is loaded with id, json and then other columns are created by json queries
 --  - places_json is loaded with id, json, coordinates and then other columns are created by json queries
 
--- Macros for pyexpander3
-$py(
-import configparser
-from pathlib import Path
-# Read configuration parameters
-config = configparser.ConfigParser()
-config.read(str(Path.home()) + '/.evn.ini')
-
-# Import parameters in local variables
-evn_db_name = config['database']['evn_db_name']
-evn_db_schema = config['database']['evn_db_schema']
-evn_db_group = config['database']['evn_db_group']
-evn_db_user = config['database']['evn_db_user']
-evn_db_pw = config['database']['evn_db_pw']
-)
-
 \c $(evn_db_name)
 SET search_path TO $(evn_db_schema),public,topology;
 
@@ -96,7 +80,7 @@ CREATE TABLE species_json (
 -- Delete existing table
 DROP TABLE IF EXISTS places_json CASCADE;
 
--- Create observations table and access rights
+-- Create places table and access rights
 CREATE TABLE places_json (
     id_place integer PRIMARY KEY,
     place jsonb,   -- Complete json sighting as downloaded

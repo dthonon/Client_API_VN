@@ -28,22 +28,6 @@
 
 -- Initialize Postgresql database, template for pyexpander3
 
--- Macros for pyexpander3
-$py(
-import configparser
-from pathlib import Path
-# Read configuration parameters
-config = configparser.ConfigParser()
-config.read(str(Path.home()) + '/.evn.ini')
-
-# Import parameters in local variables
-evn_db_name = config['database']['evn_db_name']
-evn_db_schema = config['database']['evn_db_schema']
-evn_db_group = config['database']['evn_db_group']
-evn_db_user = config['database']['evn_db_user']
-evn_db_pw = config['database']['evn_db_pw']
-)
-
 -- Delete existing DB and roles
 DROP DATABASE IF EXISTS $(evn_db_name);
 DROP ROLE IF EXISTS $(evn_db_group);

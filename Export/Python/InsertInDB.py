@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 InsertInDB: stores json sightings in PG database.
 
@@ -57,20 +58,22 @@ def main(argv):
     parser.add_option('-v', '--verbose',
                       action='store_true',
                       dest='verbose',
-                      help='Traces de mise au point.',
-                     )
+                      help='Traces de mise au point.')
 
-    parser.add_option('-q', '--quiet',
-                      action='store_false',
-                      dest='verbose',
-                      help='Traces de suivi minimales.',
-                     )
+    parser.add_option('-s', '--site',
+                      action='store',
+                      dest='site',
+                      help='Nom du site, utilisé pour sélectionner le fichier de paramétrage.')
 
     (options, args) = parser.parse_args()
+    # print(sys.argv[1:])
+    # print(options)
+    # print(args)
+    # sys.exit()
 
     # Read configuration parameters
     config = configparser.ConfigParser()
-    config.read(str(Path.home()) + '/.evn.ini')
+    config.read(str(Path.home()) + '/.evn_' + options.site + '.ini')
 
     # Import parameters in local variables
     evn_file_store = config['site']['evn_file_store']
@@ -92,7 +95,7 @@ def main(argv):
 
     # Read observations from json file
     # Iterate over observation files
-    for f in [pth for pth in Path.home().joinpath(evn_file_store + "/json").glob('observations*')]:
+    for f in [pth for pth in Path.home().joinpath(evn_file_store + "/json").glob('observations*.json.gz')]:
         logging.info('Reading from {}'.format(str(f)))
         with gzip.open(str(f), 'rb', 9) as g:
             obs_chunk = json.loads(g.read().decode())
@@ -141,7 +144,7 @@ def main(argv):
 
     # Read species from json file
     # Iterate over species files
-    for f in [pth for pth in Path.home().joinpath(evn_file_store + "/json").glob('species*')]:
+    for f in [pth for pth in Path.home().joinpath(evn_file_store + "/json").glob('species*.json.gz')]:
         logging.info('Reading from {}'.format(str(f)))
         with gzip.open(str(f), 'rb', 9) as g:
             species_chunk = json.loads(g.read().decode())
@@ -164,7 +167,7 @@ def main(argv):
 
     # Read places from json file
     # Iterate over species files
-    for f in [pth for pth in Path.home().joinpath(evn_file_store + "/json").glob('places*')]:
+    for f in [pth for pth in Path.home().joinpath(evn_file_store + "/json").glob('places*.json.gz')]:
         logging.info('Reading from {}'.format(str(f)))
         with gzip.open(str(f), 'rb', 9) as g:
             places_chunk = json.loads(g.read().decode())
@@ -184,7 +187,7 @@ def main(argv):
         conn.commit()
 
     # Refresh view
-    cur.execute('REFRESH MATERIALIZED VIEW {}.tables WITH DATA'.format(evn_db_schema))
+    cur.execute('REFRESH MATERIALIZED VIEW {}.places WITH DATA'.format(evn_db_schema))
     conn.commit()
 
     # Close communication with the database
