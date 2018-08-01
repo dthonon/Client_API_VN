@@ -135,7 +135,7 @@ case "$CMD" in
   edit)
     # Edit configuration file
     INFO "Edition du fichier de configuration"
-    editor $HOME/.evn.ini
+    editor $evn_conf
     ;;
 
   download)
