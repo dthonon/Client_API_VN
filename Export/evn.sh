@@ -141,7 +141,7 @@ case "$CMD" in
   download)
     # Create directories as needed
     INFO "Début téléchargement depuis le site ${config[evn_site]} : début"
-    python3 Python/DownloadFromVN.py 2>> $evn_log
+    python3 Python/DownloadFromVN.py --site=$SITE 2>> $evn_log
     INFO "Téléchargement depuis l'API du site ${config[evn_site]} : fin"
     ;;
 
