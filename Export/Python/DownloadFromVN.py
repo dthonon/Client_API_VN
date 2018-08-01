@@ -265,8 +265,8 @@ def main(argv):
 
     # Read configuration parameters
     config = configparser.ConfigParser()
-    config.read(str(Path.home()) + '/.evn' + site + '.ini')
-
+    config.read(str(Path.home()) + '/.evn_' + options.site + '.ini')
+    
     # Import parameters in local variables
     evn_client_key = config['site']['evn_client_key']
     evn_client_secret = config['site']['evn_client_secret']
