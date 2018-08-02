@@ -6,7 +6,7 @@
 Sur un serveur Debian Stretch (9)
 ``` sh
 # Ajout du dépot PostgreSQL et de la clé 
-sudo echo "deb http://apt.postgresql.org/pub/repos/apt xenial-pgdg main" >> /etc/apt/sources.list.d/postgresql.list
+sudo echo "deb http://apt.postgresql.org/pub/repos/apt stretch-pgdg main" >> /etc/apt/sources.list.d/postgresql.list
 wget --quiet -O - http://apt.postgresql.org/pub/repos/apt/ACCC4CF8.asc | sudo apt-key add -
 
 # Mise à jour des dépots
@@ -35,7 +35,7 @@ cd Client_API_VN/Export
 ./evn.sh --site vn07 --edit
 ```
 
-L'application créée alors à la racine de votre dossier utilisateur un fichier de configuration qui dans le cas de cet exemple sera `~/.evn_vn07.ini` et l'ouvre dans un éditeur de texte (par défaut `nano`
+L'application créée alors à la racine de votre dossier utilisateur un fichier de configuration qui dans le cas de cet exemple sera `~/.evn_vn07.ini` et l'ouvre dans un éditeur de texte (par défaut `nano`, quelques infos sur cet éditeur [ici](https://korben.info/utiliser-nano.html))
 
 ## Création de l'utilisateur de la bdd
 
