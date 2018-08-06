@@ -30,6 +30,9 @@ set -e          # kill script if a command fails
 # set -o nounset  # unset values give error
 set -o pipefail # prevents errors in a pipeline from being masked
 
+# Required when running from crontab
+cd "$(dirname "$0")";
+
 # Logging script
 log_path=$HOME/b-log # the path to the script
 if [ ! -f "${log_path}"/b-log.sh ]
@@ -45,7 +48,7 @@ B_LOG -o true
 LOG_LEVEL_ALL
 
 # Analyze script options
-OPTS=`getopt -o v --long all,create,download,edit,help,init,site:,store,verbose -- "$@"`
+OPTS=`getopt -o v --long all,create,download,edit,help,init,site:,store,test,verbose -- "$@"`
 if [ $? != 0 ] ; then echo "Option non reconnue" >&2 ; exit 1 ; fi
 # echo "$OPTS"
 eval set -- "$OPTS"
@@ -53,33 +56,34 @@ VERBOSE=false
 CMD="help"
 SITE=
 while true; do
-  case "$1" in
-    --all ) CMD="all"; shift ;;
-    --create ) CMD="create"; shift ;;
-    --download ) CMD="download"; shift ;;
-    --edit ) CMD="edit"; shift ;;
-    --help ) CMD="help"; shift ;;
-    --init ) CMD="init"; shift ;;
-    --site ) SITE="$2"; shift 2 ;;
-    --store ) CMD="store"; shift ;;
-    -v | --verbose ) VERBOSE=true; shift ;;
-    -- ) shift ; if [ -n "$1" ] ; then ERROR "Option inconnue $1 !" ; exit 1 ; fi ; break ;;
-#     -- ) shift ; ERROR "Option inconnue !" ; break ;;
-    * ) ERROR "Erreur de fonctionnement !" ; exit 1 ;;
-  esac
+    case "$1" in
+        --all ) CMD="all"; shift ;;
+        --create ) CMD="create"; shift ;;
+        --download ) CMD="download"; shift ;;
+        --edit ) CMD="edit"; shift ;;
+        --help ) CMD="help"; shift ;;
+        --init ) CMD="init"; shift ;;
+        --site ) SITE="$2"; shift 2 ;;
+        --store ) CMD="store"; shift ;;
+        -v | --verbose ) VERBOSE=true; shift ;;
+        --test ) CMD="test"; shift ;;
+        -- ) shift ; if [ -n "$1" ] ; then ERROR "Option inconnue $1 !" ; exit 1 ; fi ; break ;;
+        #     -- ) shift ; ERROR "Option inconnue !" ; break ;;
+        * ) ERROR "Erreur de fonctionnement !" ; exit 1 ;;
+    esac
 done
 
 if [ -z "$SITE" ] ; then ERROR "Le site de téléchargement doit être spécifié par l'option --site=SITE" ; exit 1 ; fi
 
 # Logging file
-evn_log=~/tmp/evn_all_$SITE_$(date '+%Y-%m-%d').log
+evn_log=$HOME/tmp/evn_all_$SITE_$(date '+%Y-%m-%d').log
 B_LOG -f $evn_log --file-prefix-enable --file-suffix-enable
 
 # INFO VERBOSE=$VERBOSE
-INFO "Exécution du script avec la commance $CMD, sur le site $SITE"
+INFO "Exécution du script avec la commande $CMD, sur le site $SITE"
 
 # Load configuration file, if present, else ask for configuration
-evn_conf=~/.evn_$SITE.ini
+evn_conf=$HOME/.evn_$SITE.ini
 unset config      # clear parameter array
 typeset -A config # init array
 
@@ -103,49 +107,56 @@ else
     cmd="edit"
 fi
 
-# When running from crontab. To be improved
-#cd ~/ExportVN
-
 # Switch on possible actions
 case "$CMD" in
-  help)
+    help)
     # Create directories as needed
     INFO "Aide en ligne à rédiger"
     INFO "Mail admin : ${config[evn_admin_mail]}"
     ;;
 
-  init)
+    test)
+    # Create directories as needed
+    INFO "Test de la configuration"
+    INFO "Working directory $(pwd)"
+    INFO "Mail admin : ${config[evn_admin_mail]}"
+    INFO "Logging : ${config[evn_logging]}"
+    INFO "URL site : ${config[evn_site]}"
+    INFO "Database name : ${config[evn_db_name]}"
+    ;;
+
+    init)
     # Create database, tables, views...
     INFO "Initialisation de l'environnement : début"
     INFO "1. Base de données"
     expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/InitDB.sql > $HOME/tmp/InitDB.sql
     env PGOPTIONS="-c client-min-messages=WARNING" \
-        psql --quiet --dbname=postgres --file=$HOME/tmp/InitDB.sql
+    psql --quiet --dbname=postgres --file=$HOME/tmp/InitDB.sql
     INFO "2. Tables"
     expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/CreateTables.sql > $HOME/tmp/CreateTables.sql
     env PGOPTIONS="-c client-min-messages=WARNING" \
-        psql --quiet --dbname=postgres --file=$HOME/tmp/CreateTables.sql
+    psql --quiet --dbname=postgres --file=$HOME/tmp/CreateTables.sql
     INFO "3. Vues"
     expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/CreateViews.sql > $HOME/tmp/CreateViews.sql
     env PGOPTIONS="-c client-min-messages=WARNING" \
-        psql --quiet --dbname=postgres --file=$HOME/tmp/CreateViews.sql
+    psql --quiet --dbname=postgres --file=$HOME/tmp/CreateViews.sql
     INFO "Initialisation de l'environnement : fin"
     ;;
 
-  edit)
+    edit)
     # Edit configuration file
     INFO "Edition du fichier de configuration"
     editor $evn_conf
     ;;
 
-  download)
+    download)
     # Create directories as needed
     INFO "Début téléchargement depuis le site ${config[evn_site]} : début"
     python3 Python/DownloadFromVN.py --site=$SITE 2>> $evn_log
     INFO "Téléchargement depuis l'API du site ${config[evn_site]} : fin"
     ;;
 
-  store)
+    store)
     # Store json files to Postgresql database
     INFO "Chargement des données JSON dans Postgresql ${config[evn_db_name]} : début"
     INFO "1. Insertion dans la base"
@@ -153,11 +164,11 @@ case "$CMD" in
     INFO "2. Mise à jour des vues et indexation des tables et vues"
     expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/UpdateIndex.sql > $HOME/tmp/UpdateIndex.sql
     env PGOPTIONS="-c client-min-messages=WARNING" \
-        psql --quiet --dbname=postgres --file=$HOME/tmp/UpdateIndex.sql
+    psql --quiet --dbname=postgres --file=$HOME/tmp/UpdateIndex.sql
     INFO "Chargement des données JSON dans Postgresql ${config[evn_db_name]} : fin"
     ;;
 
-  all)
+    all)
     # Download and then Store
     INFO "Initialisation de la base : ${config[evn_db_name]}"
     $0 --init
@@ -178,7 +189,7 @@ case "$CMD" in
     rm -f ~/mail_fin.txt
     ;;
 
-  *)
+    *)
     # Unknown option
     ERROR "ERREUR: option inconnue"
     ;;

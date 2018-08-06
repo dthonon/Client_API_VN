@@ -76,6 +76,28 @@ CREATE TABLE species_json (
     specie jsonb   -- Complete json sighting as downloaded
 );
 
+-- local_admin_units table in json format
+-- Delete existing table
+DROP TABLE IF EXISTS local_admin_units_json CASCADE;
+
+-- Create places table and access rights
+CREATE TABLE local_admin_units_json (
+    id_local_admin_unit integer PRIMARY KEY,
+    local_admin_unit jsonb,   -- Complete json sighting as downloaded
+    coord_lat double precision, -- WGS84 coordinates
+    coord_lon double precision
+);
+-- Add geometry column
+\o /dev/null
+SELECT AddGeometryColumn('local_admin_units_json', 'the_geom', 2154, 'POINT', 2);
+\o
+
+-- Add trigger
+DROP TRIGGER IF EXISTS trg_geom ON places_json ;
+CREATE TRIGGER trg_geom BEFORE INSERT or UPDATE
+    ON places_json FOR EACH ROW
+    EXECUTE PROCEDURE update_geom_triggerfn();
+
 -- Places table in json format
 -- Delete existing table
 DROP TABLE IF EXISTS places_json CASCADE;
