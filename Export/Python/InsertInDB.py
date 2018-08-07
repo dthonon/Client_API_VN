@@ -158,8 +158,8 @@ def main(argv):
                          json.dumps(json_specie)
                          ))
 
-        # Commit to database
-        conn.commit()
+    # Commit to database, once for all species
+    conn.commit()
 
     # Refresh view
     cur.execute('REFRESH MATERIALIZED VIEW {}.species WITH DATA'.format(evn_db_schema))
@@ -183,8 +183,8 @@ def main(argv):
                          json_place['coord_lon']
                          ))
 
-        # Commit to database
-        conn.commit()
+    # Commit to database, once for all places
+    conn.commit()
 
     # Refresh view
     cur.execute('REFRESH MATERIALIZED VIEW {}.places WITH DATA'.format(evn_db_schema))

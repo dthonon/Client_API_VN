@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Main shell to call the different Export PHP scripts.
 #
@@ -77,7 +77,7 @@ done
 if [ -z "$SITE" ] ; then ERROR "Le site de téléchargement doit être spécifié par l'option --site=SITE" ; exit 1 ; fi
 
 # Logging file
-evn_log=$HOME/tmp/evn_all_$SITE_$(date '+%Y-%m-%d').log
+evn_log=$HOME/tmp/evn_all_$SITE_$(date '+%Y-%m-%d_%H:%M:%S').log
 B_LOG -f $evn_log --file-prefix-enable --file-suffix-enable
 
 # INFO VERBOSE=$VERBOSE
@@ -179,16 +179,18 @@ case "$CMD" in
     INFO "Chargement des fichiers json dans la base ${config[evn_db_name]}"
     $0 --store --site=$SITE
     INFO "Fin transfert depuis le site : ${config[evn_site]}"
-    links -dump ${config[evn_site]}index.php?m_id=23 | fgrep "Les part" | sed 's/Les partenaires       /Total des contributions :/' > ~/mail_fin.txt
-    fgrep -c "observations:" $evn_log  >> ~/mail_fin.txt
-    echo "Bilan du script : ERROR / WARN :" >> ~/mail_fin.txt
-    fgrep -c "ERROR" $evn_log >> ~/mail_fin.txt
-    fgrep -c "WARN" $evn_log >> ~/mail_fin.txt
-    tail -15 $evn_log >> ~/mail_fin.txt
-    gzip -f $evn_log
+    links -dump ${config[evn_site]}index.php?m_id=23 | fgrep "Les part" | sed 's/Les partenaires/Total des observations du site :/' > $HOME/tmp/mail_fin.txt
+    expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/CountRows.sql > $HOME/tmp/CountRows.sql
+    env PGOPTIONS="-c client-min-messages=WARNING" \
+    psql --quiet --dbname=postgres --file=$HOME/tmp/CountRows.sql > $HOME/tmp/counted_rows.log
+    fgrep "nb_" $HOME/tmp/counted_rows.log >> $HOME/tmp/mail_fin.txt
+    echo "Bilan du script : ERROR / WARN :" >> $HOME/tmp/mail_fin.txt
+    ! fgrep -c "ERROR" $evn_log >> $HOME/tmp/mail_fin.txt
+    ! fgrep -c "WARN" $evn_log >> $HOME/tmp/mail_fin.txt
+    #gzip -f $evn_log
     INFO "Fin de l'export des données"
-    mailx -s "Chargement de ${config[evn_site]}" -a $evn_log.gz ${config[evn_admin_mail]} < ~/mail_fin.txt
-    rm -f ~/mail_fin.txt
+    mailx -s "Chargement de ${config[evn_site]}" -a $evn_log.gz ${config[evn_admin_mail]} < $HOME/mail_fin.txt
+    #rm -f $HOME/tmp/mail_fin.txt
     ;;
 
     *)

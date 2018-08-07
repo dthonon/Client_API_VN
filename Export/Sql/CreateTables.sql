@@ -93,9 +93,9 @@ SELECT AddGeometryColumn('local_admin_units_json', 'the_geom', 2154, 'POINT', 2)
 \o
 
 -- Add trigger
-DROP TRIGGER IF EXISTS trg_geom ON places_json ;
+DROP TRIGGER IF EXISTS trg_geom ON local_admin_units_json ;
 CREATE TRIGGER trg_geom BEFORE INSERT or UPDATE
-    ON places_json FOR EACH ROW
+    ON local_admin_units_json FOR EACH ROW
     EXECUTE PROCEDURE update_geom_triggerfn();
 
 -- Places table in json format

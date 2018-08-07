@@ -266,7 +266,7 @@ def main(argv):
     # Read configuration parameters
     config = configparser.ConfigParser()
     config.read(str(Path.home()) + '/.evn_' + options.site + '.ini')
-    
+
     # Import parameters in local variables
     evn_client_key = config['site']['evn_client_key']
     evn_client_secret = config['site']['evn_client_secret']
@@ -321,7 +321,7 @@ def main(argv):
     t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'observations', evn_file_store, \
                        DownloadTable.SPECIES_LIST, 50)  # test limit
     nb_species = t1.get_table()
-    logging.info('Received {} observations'.format(nb_species))
+    logging.info('Received {} groups of observations'.format(nb_species))
 
     # ------------------------
     # Geographical information
