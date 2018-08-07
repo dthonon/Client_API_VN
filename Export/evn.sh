@@ -32,6 +32,7 @@ set -o pipefail # prevents errors in a pipeline from being masked
 
 # Required when running from crontab
 cd "$(dirname "$0")";
+PATH="/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games"
 
 # Logging script
 log_path=$HOME/b-log # the path to the script
@@ -118,6 +119,7 @@ case "$CMD" in
     test)
     # Create directories as needed
     INFO "Test de la configuration"
+    INFO "Site : $SITE"
     INFO "Working directory $(pwd)"
     INFO "Mail admin : ${config[evn_admin_mail]}"
     INFO "Logging : ${config[evn_logging]}"
@@ -171,11 +173,11 @@ case "$CMD" in
     all)
     # Download and then Store
     INFO "Initialisation de la base : ${config[evn_db_name]}"
-    $0 --init
+    $0 --init --site=$SITE
     INFO "Début téléchargement depuis le site : ${config[evn_site]}"
-    $0 --download
+    $0 --download --site=$SITE
     INFO "Chargement des fichiers json dans la base ${config[evn_db_name]}"
-    $0 --store
+    $0 --store --site=$SITE
     INFO "Fin transfert depuis le site : ${config[evn_site]}"
     links -dump ${config[evn_site]}index.php?m_id=23 | fgrep "Les part" | sed 's/Les partenaires       /Total des contributions :/' > ~/mail_fin.txt
     fgrep -c "observations:" $evn_log  >> ~/mail_fin.txt
