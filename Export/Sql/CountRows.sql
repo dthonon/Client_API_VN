@@ -1,6 +1,5 @@
 
--- Create or update indexes, template for pyexpander3
---  - observations, with selected fields from obs_json
+-- Count rows of created tables, template for pyexpander3
 
 -- Copyright (c) 2018 Daniel Thonon <d.thonon9@gmail.com>
 -- All rights reserved.
@@ -32,18 +31,11 @@
 \c $(evn_db_name)
 SET search_path TO $(evn_db_schema),public,topology;
 
---REFRESH MATERIALIZED VIEW $(evn_db_schema).observations;
 
--- Index on id_sighting
-DROP INDEX IF EXISTS $(evn_db_schema).observations_idx_id_sighting;
-CREATE UNIQUE INDEX observations_idx_id_sighting
-    ON $(evn_db_schema).observations USING btree
-    (id_sighting)
-    TABLESPACE pg_default;
-
--- Index on name_species
-DROP INDEX IF EXISTS $(evn_db_schema).observations_idx_name_species;
-CREATE INDEX observations_idx_name_species
-    ON $(evn_db_schema).observations USING btree
-    (name_species COLLATE pg_catalog."default" varchar_pattern_ops)
-    TABLESPACE pg_default;
+\pset footer off
+\pset expanded on
+\pset format unaligned
+\pset fieldsep '='
+SELECT count(id_place) AS nb_places FROM $(evn_db_schema).places;
+SELECT count(id_specie) AS nb_species FROM $(evn_db_schema).species;
+SELECT count(id_sighting) AS nb_observations FROM $(evn_db_schema).observations;
