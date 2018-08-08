@@ -34,23 +34,9 @@ set -o pipefail # prevents errors in a pipeline from being masked
 cd "$(dirname "$0")";
 PATH="/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games"
 
-# Logging script
-log_path=$HOME/b-log # the path to the script
-if [ ! -f "${log_path}"/b-log.sh ]
-then
-    pushd $HOME
-    git clone https://github.com/idelsink/b-log.git
-    popd
-fi
-source "${log_path}"/b-log.sh   # include the log script
-
-# Logging options
-B_LOG -o true
-LOG_LEVEL_ALL
-
 # Analyze script options
-OPTS=`getopt -o v --long all,create,download,edit,help,init,site:,store,test,verbose -- "$@"`
-if [ $? != 0 ] ; then echo "Option non reconnue" >&2 ; exit 1 ; fi
+OPTS=`getopt -o v --long all,create,download,edit,help,init,logfile:,site:,store,test,verbose -- "$@"`
+if [ "$?" != 0 ] ; then echo "Option non reconnue" >&2 ; exit 1 ; fi
 # echo "$OPTS"
 eval set -- "$OPTS"
 VERBOSE=false
@@ -64,47 +50,69 @@ while true; do
         --edit ) CMD="edit"; shift ;;
         --help ) CMD="help"; shift ;;
         --init ) CMD="init"; shift ;;
+        --logfile ) EVN_LOG="$2"; shift 2 ;;
         --site ) SITE="$2"; shift 2 ;;
         --store ) CMD="store"; shift ;;
         -v | --verbose ) VERBOSE=true; shift ;;
         --test ) CMD="test"; shift ;;
-        -- ) shift ; if [ -n "$1" ] ; then ERROR "Option inconnue $1 !" ; exit 1 ; fi ; break ;;
-        #     -- ) shift ; ERROR "Option inconnue !" ; break ;;
-        * ) ERROR "Erreur de fonctionnement !" ; exit 1 ;;
+        -- ) shift ; if [ -n "$1" ] ; then echo "Option inconnue $1 !" ; exit 1 ; fi ; break ;;
+        * ) echo "Erreur de fonctionnement !" ; exit 1 ;;
     esac
 done
 
-if [ -z "$SITE" ] ; then ERROR "Le site de téléchargement doit être spécifié par l'option --site=SITE" ; exit 1 ; fi
+if [ -z "$SITE" ]
+then
+    ERROR "Le site de téléchargement doit être spécifié par l'option --site=SITE"
+    exit 1
+fi
 
-# Logging file
-evn_log=$HOME/tmp/evn_all_$SITE_$(date '+%Y-%m-%d_%H:%M:%S').log
-B_LOG -f $evn_log --file-prefix-enable --file-suffix-enable
+# Logging script
+log_path="$HOME/b-log" # the path to the script
+if [ ! -f "${log_path}"/b-log.sh ]
+then
+    pushd "$HOME"
+    git clone https://github.com/idelsink/b-log.git
+    popd
+fi
+source "${log_path}"/b-log.sh   # include the log script
+
+# Logging options
+B_LOG -o true
+LOG_LEVEL_ALL
+
+# Logging file, created if not given by --logfile parameter
+if [ -z "$EVN_LOG" ]
+then
+    EVN_LOG="$HOME/tmp/evn_all_$(date '+%Y-%m-%d_%H:%M:%S').log"
+    touch "$EVN_LOG"
+fi
+B_LOG -f "$EVN_LOG" --file-prefix-enable --file-suffix-enable
 
 # INFO VERBOSE=$VERBOSE
 INFO "Exécution du script avec la commande $CMD, sur le site $SITE"
 
 # Load configuration file, if present, else ask for configuration
-evn_conf=$HOME/.evn_$SITE.ini
+evn_conf="$HOME/.evn_$SITE.ini"
 unset config      # clear parameter array
 typeset -A config # init array
 
-if [[ -f $evn_conf ]]  # Check if exists and load existing config
+if [[ -f "$evn_conf" ]]  # Check if exists and load existing config
 then
     INFO "Analyse des paramètres de configuration $evn_conf"
     # Parse configuration file
     while read line
     do
         # echo ">>>$(echo "$line" | cut -d '=' -f 1 | xargs)<<<"
-        if echo $line | grep -F = &>/dev/null
+        if echo "$line" | grep -F = &>/dev/null
         then
             varname=$(echo "$line" | cut -d '=' -f 1 | xargs)
             config[$varname]=$(echo "$line" | cut -d '=' -f 2- | xargs)
             if $VERBOSE ; then DEBUG "$config[$varname] = ${config[$varname]}" ; fi
         fi
-    done < $evn_conf
+    done < "$evn_conf"
 else
     INFO "Configuration initiale"
-    cp --update ./evn_template.ini $evn_conf
+    cp --update ./evn_template.ini "$evn_conf"
     cmd="edit"
 fi
 
@@ -148,13 +156,13 @@ case "$CMD" in
     edit)
     # Edit configuration file
     INFO "Edition du fichier de configuration"
-    editor $evn_conf
+    editor "$evn_conf"
     ;;
 
     download)
     # Create directories as needed
     INFO "Début téléchargement depuis le site ${config[evn_site]} : début"
-    python3 Python/DownloadFromVN.py --site=$SITE 2>> $evn_log
+    python3 Python/DownloadFromVN.py --site=$SITE 2>> "$EVN_LOG"
     INFO "Téléchargement depuis l'API du site ${config[evn_site]} : fin"
     ;;
 
@@ -162,7 +170,7 @@ case "$CMD" in
     # Store json files to Postgresql database
     INFO "Chargement des données JSON dans Postgresql ${config[evn_db_name]} : début"
     INFO "1. Insertion dans la base"
-    Python/InsertInDB.py --verbose --site=$SITE 2>> $evn_log
+    Python/InsertInDB.py --verbose --site=$SITE 2>> "$EVN_LOG"
     INFO "2. Mise à jour des vues et indexation des tables et vues"
     expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/UpdateIndex.sql > $HOME/tmp/UpdateIndex.sql
     env PGOPTIONS="-c client-min-messages=WARNING" \
@@ -173,24 +181,24 @@ case "$CMD" in
     all)
     # Download and then Store
     INFO "Initialisation de la base : ${config[evn_db_name]}"
-    $0 --init --site=$SITE
+    $0 --init --site="$SITE" --logfile="$EVN_LOG"
     INFO "Début téléchargement depuis le site : ${config[evn_site]}"
-    $0 --download --site=$SITE
+    $0 --download --site="$SITE" --logfile="$EVN_LOG"
     INFO "Chargement des fichiers json dans la base ${config[evn_db_name]}"
-    $0 --store --site=$SITE
+    $0 --store --site="$SITE" --logfile="$EVN_LOG"
     INFO "Fin transfert depuis le site : ${config[evn_site]}"
-    links -dump ${config[evn_site]}index.php?m_id=23 | fgrep "Les part" | sed 's/Les partenaires/Total des observations du site :/' > $HOME/tmp/mail_fin.txt
+    links -dump "${config[evn_site]}index.php?m_id=23" | fgrep "Les part" | sed 's/Les partenaires/Total des observations du site :/' > $HOME/tmp/mail_fin.txt
     expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/CountRows.sql > $HOME/tmp/CountRows.sql
     env PGOPTIONS="-c client-min-messages=WARNING" \
-    psql --quiet --dbname=postgres --file=$HOME/tmp/CountRows.sql > $HOME/tmp/counted_rows.log
-    fgrep "nb_" $HOME/tmp/counted_rows.log >> $HOME/tmp/mail_fin.txt
-    echo "Bilan du script : ERROR / WARN :" >> $HOME/tmp/mail_fin.txt
-    ! fgrep -c "ERROR" $evn_log >> $HOME/tmp/mail_fin.txt
-    ! fgrep -c "WARN" $evn_log >> $HOME/tmp/mail_fin.txt
-    gzip -f $evn_log
+    psql --quiet --dbname=postgres --file="$HOME/tmp/CountRows.sql" > "$HOME/tmp/counted_rows.log"
+    fgrep "nb_" "$HOME/tmp/counted_rows.log" >> "$HOME/tmp/mail_fin.txt"
+    echo "Bilan du script : ERROR / WARN :" >> "$HOME/tmp/mail_fin.txt"
+    ! fgrep -c "ERROR" "$EVN_LOG" >> "$HOME/tmp/mail_fin.txt"
+    ! fgrep -c "WARN" "$EVN_LOG" >> "$HOME/tmp/mail_fin.txt"
+    gzip "$EVN_LOG"
     INFO "Fin de l'export des données"
-    mailx -s "Chargement de ${config[evn_site]}" -a $evn_log.gz ${config[evn_admin_mail]} < $HOME/tmp/mail_fin.txt
-    #rm -f $HOME/tmp/mail_fin.txt
+    mailx --subject="Chargement de ${config[evn_site]}" --attach="$EVN_LOG.gz" ${config[evn_admin_mail]} < "$HOME/tmp/mail_fin.txt"
+    #rm -f "$HOME/tmp/mail_fin.txt"
     ;;
 
     *)
