@@ -187,9 +187,9 @@ case "$CMD" in
     echo "Bilan du script : ERROR / WARN :" >> $HOME/tmp/mail_fin.txt
     ! fgrep -c "ERROR" $evn_log >> $HOME/tmp/mail_fin.txt
     ! fgrep -c "WARN" $evn_log >> $HOME/tmp/mail_fin.txt
-    #gzip -f $evn_log
+    gzip -f $evn_log
     INFO "Fin de l'export des données"
-    mailx -s "Chargement de ${config[evn_site]}" -a $evn_log.gz ${config[evn_admin_mail]} < $HOME/mail_fin.txt
+    mailx -s "Chargement de ${config[evn_site]}" -a $evn_log.gz ${config[evn_admin_mail]} < $HOME/tmp/mail_fin.txt
     #rm -f $HOME/tmp/mail_fin.txt
     ;;
 
