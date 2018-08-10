@@ -165,14 +165,39 @@ def main(argv):
     cur.execute('REFRESH MATERIALIZED VIEW {}.species WITH DATA'.format(evn_db_schema))
     conn.commit()
 
+    # Read local_admin_units from json file
+    # Iterate over files
+    for f in [pth for pth in Path.home().joinpath(evn_file_store + "/json").glob('local_admin_units*.json.gz')]:
+        logging.info('Reading from {}'.format(str(f)))
+        with gzip.open(str(f), 'rb', 9) as g:
+            local_admin_units_chunk = json.loads(g.read().decode())
+
+        # Insert simple local_admin_unit, each row contains id and full json body
+        for i in range(0, len(local_admin_units_chunk['data'])):
+            json_local_admin_unit = local_admin_units_chunk['data'][i]
+            # Insert row
+            cur.execute('INSERT INTO {}.local_admin_units_json (id_local_admin_unit, local_admin_unit, coord_lat, coord_lon) VALUES (%s, %s, %s, %s)'.format(evn_db_schema),
+                        (json_local_admin_unit['id'],
+                         json.dumps(json_local_admin_unit),
+                         json_local_admin_unit['coord_lat'],
+                         json_local_admin_unit['coord_lon']
+                         ))
+
+    # Commit to database, once for all local_admin_units
+    conn.commit()
+
+    # Refresh view
+    cur.execute('REFRESH MATERIALIZED VIEW {}.local_admin_units WITH DATA'.format(evn_db_schema))
+    conn.commit()
+
     # Read places from json file
-    # Iterate over species files
+    # Iterate over files
     for f in [pth for pth in Path.home().joinpath(evn_file_store + "/json").glob('places*.json.gz')]:
         logging.info('Reading from {}'.format(str(f)))
         with gzip.open(str(f), 'rb', 9) as g:
             places_chunk = json.loads(g.read().decode())
 
-        # Insert simple sightings, each row contains id and full json body
+        # Insert simple place, each row contains id and full json body
         for i in range(0, len(places_chunk['data'])):
             json_place = places_chunk['data'][i]
             # Insert row

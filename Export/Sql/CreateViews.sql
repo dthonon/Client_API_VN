@@ -39,44 +39,44 @@ CREATE MATERIALIZED VIEW $(evn_db_schema).observations
 TABLESPACE pg_default
 AS
  SELECT
-    observations_json.id_sighting AS id_sighting,
-    cast(observations_json.sightings #>> '{species,@id}' AS INTEGER) AS id_species,
-    observations_json.sightings #>> '{species,name}' AS name_species,
-    observations_json.sightings #>> '{species,latin_name}' AS latin_species,
-    to_date(observations_json.sightings #>> '{date,@ISO8601}', 'YYYY-MM-DD') AS date,
+    id_sighting AS id_sighting,
+    cast(sightings #>> '{species,@id}' AS INTEGER) AS id_species,
+    sightings #>> '{species,name}' AS name_species,
+    sightings #>> '{species,latin_name}' AS latin_species,
+    to_date(sightings #>> '{date,@ISO8601}', 'YYYY-MM-DD') AS date,
     cast(extract(YEAR from
-      to_date(observations_json.sightings #>> '{date,@ISO8601}', 'YYYY-MM-DD'))
+      to_date(sightings #>> '{date,@ISO8601}', 'YYYY-MM-DD'))
       AS INTEGER) AS date_year,
     -- Missing time_start & time_stop
-    to_timestamp(((observations_json.sightings -> 'observers') -> 0) #>> '{timing,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS')
+    to_timestamp(((sightings -> 'observers') -> 0) #>> '{timing,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS')
       AS timing,
-    cast(observations_json.sightings #>> '{place,@id}'
+    cast(sightings #>> '{place,@id}'
       AS INTEGER) AS id_place,
-    observations_json.sightings #>> '{place,name}' AS place,
-    observations_json.sightings #>> '{place,municipality}' AS municipality,
-    observations_json.sightings #>> '{place,county}' AS county,
-    observations_json.sightings #>> '{place,country}' AS country,
-    observations_json.sightings #>> '{place,insee}' AS insee,
+    sightings #>> '{place,name}' AS place,
+    sightings #>> '{place,municipality}' AS municipality,
+    sightings #>> '{place,county}' AS county,
+    sightings #>> '{place,country}' AS country,
+    sightings #>> '{place,insee}' AS insee,
     -- cast(((observations_json.sightings -> 'observers') -> 0) ->> 'coord_lat' AS double precision) AS coord_lat,
-    observations_json.coord_lat AS coord_lat,
-    observations_json.coord_lon AS coord_lon,
+    coord_lat AS coord_lat,
+    coord_lon AS coord_lon,
     ST_X(the_geom) AS coord_x_l93,
     ST_Y(the_geom) AS coord_y_l93,
-    ((observations_json.sightings -> 'observers') -> 0) ->> 'precision' AS precision,
-    ((observations_json.sightings -> 'observers') -> 0) ->> 'atlas_grid_name' AS atlas_grid_name,
-    ((observations_json.sightings -> 'observers') -> 0) ->> 'estimation_code' AS estimation_code,
-    ((observations_json.sightings -> 'observers') -> 0) ->> 'count' AS count,
-    ((observations_json.sightings -> 'observers') -> 0) #>> '{atlas_code,#text}' AS atlas_code,
-    ((observations_json.sightings -> 'observers') -> 0) ->> 'altitude' AS altitude,
-    ((observations_json.sightings -> 'observers') -> 0) ->> 'hidden' AS hidden,
-    ((observations_json.sightings -> 'observers') -> 0) ->> 'details' AS details,
-    (((observations_json.sightings -> 'observers'::text) -> 0) #>> '{extended_info,mortality}'::text[]) IS NOT NULL AS mortality,
-    ((observations_json.sightings -> 'observers') -> 0) #>> '{extended_info, mortality, death_cause2}' AS death_cause2,
-    to_timestamp(((observations_json.sightings -> 'observers') -> 0) #>> '{insert_date,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS')
+    ((sightings -> 'observers') -> 0) ->> 'precision' AS precision,
+    ((sightings -> 'observers') -> 0) ->> 'atlas_grid_name' AS atlas_grid_name,
+    ((sightings -> 'observers') -> 0) ->> 'estimation_code' AS estimation_code,
+    ((sightings -> 'observers') -> 0) ->> 'count' AS count,
+    ((sightings -> 'observers') -> 0) #>> '{atlas_code,#text}' AS atlas_code,
+    ((sightings -> 'observers') -> 0) ->> 'altitude' AS altitude,
+    ((sightings -> 'observers') -> 0) ->> 'hidden' AS hidden,
+    ((sightings -> 'observers') -> 0) ->> 'details' AS details,
+    (((sightings -> 'observers'::text) -> 0) #>> '{extended_info,mortality}'::text[]) IS NOT NULL AS mortality,
+    ((sightings -> 'observers') -> 0) #>> '{extended_info, mortality, death_cause2}' AS death_cause2,
+    to_timestamp(((sightings -> 'observers') -> 0) #>> '{insert_date,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS')
       AS insert_date,
-    to_timestamp(((observations_json.sightings -> 'observers') -> 0) #>> '{update_date,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS')
+    to_timestamp(((sightings -> 'observers') -> 0) #>> '{update_date,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS')
       AS update_date,
-    observations_json.the_geom AS the_geom
+    the_geom AS the_geom
    FROM $(evn_db_schema).observations_json
 WITH DATA;
 
@@ -89,28 +89,48 @@ CREATE MATERIALIZED VIEW $(evn_db_schema).species
 TABLESPACE pg_default
 AS
  SELECT
-    species_json.id_specie AS id_specie,
-    species_json.specie #>> '{french_name}' AS french_name
+    id_specie AS id_specie,
+    specie #>> '{french_name}' AS french_name
    FROM $(evn_db_schema).species_json
+WITH DATA;
+
+-- Local_admin_units table
+-- Delete existing table
+DROP MATERIALIZED VIEW IF EXISTS $(evn_db_schema).local_admin_units CASCADE;
+
+CREATE MATERIALIZED VIEW $(evn_db_schema).local_admin_units
+TABLESPACE pg_default
+AS
+ SELECT
+    id_local_admin_unit AS id_local_admin_unit,
+    local_admin_unit #>> '{name}' AS name,
+    local_admin_unit #>> '{insee}' AS insee,
+    local_admin_unit #>> '{coord_lat}' AS coord_lat,
+    local_admin_unit #>> '{coord_lon}' AS coord_lon,
+    ST_X(the_geom) AS coord_x_l93,
+    ST_Y(the_geom) AS coord_y_l93,
+    the_geom AS the_geom
+  FROM $(evn_db_schema).local_admin_units_json
 WITH DATA;
 
 -- Places table
 -- Delete existing table
-DROP MATERIALIZED VIEW IF EXISTS $(evn_db_schema).placees CASCADE;
+DROP MATERIALIZED VIEW IF EXISTS $(evn_db_schema).places CASCADE;
 
 CREATE MATERIALIZED VIEW $(evn_db_schema).places
 TABLESPACE pg_default
 AS
  SELECT
-    places_json.id_place AS id_place,
-    places_json.place #>> '{name}' AS name,
-    places_json.place #>> '{coord_lat}' AS coord_lat,
-    places_json.place #>> '{coord_lon}' AS coord_lon,
+    id_place AS id_place,
+    place #>> '{name}' AS name,
+    place #>> '{coord_lat}' AS coord_lat,
+    place #>> '{coord_lon}' AS coord_lon,
     ST_X(the_geom) AS coord_x_l93,
     ST_Y(the_geom) AS coord_y_l93,
-    places_json.place #>> '{altitude}' AS altitude,
-    places_json.place #>> '{visible}' AS visible,
-    places_json.place #>> '{is_private}' AS is_private,
-    places_json.place #>> '{place_type}' AS place_type
+    place #>> '{altitude}' AS altitude,
+    place #>> '{visible}' AS visible,
+    place #>> '{is_private}' AS is_private,
+    place #>> '{place_type}' AS place_type,
+    the_geom AS the_geom
   FROM $(evn_db_schema).places_json
 WITH DATA;

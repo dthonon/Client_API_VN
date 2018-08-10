@@ -80,7 +80,7 @@ CREATE TABLE species_json (
 -- Delete existing table
 DROP TABLE IF EXISTS local_admin_units_json CASCADE;
 
--- Create places table and access rights
+-- Create local_admin_units table and access rights
 CREATE TABLE local_admin_units_json (
     id_local_admin_unit integer PRIMARY KEY,
     local_admin_unit jsonb,   -- Complete json sighting as downloaded
