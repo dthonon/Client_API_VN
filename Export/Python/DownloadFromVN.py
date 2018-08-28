@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 DownloadFromVN: retrieves main data from VisioNature website and store to json files.
 
@@ -39,7 +40,7 @@ def getTaxoGroups(file_store):
     Read the taxo_groups files and return the list of taxo groups
     """
     # TODO: loop on all possible files
-    file_json = str(Path.home()) + '/' + file_store + '/json/' + \
+    file_json = str(Path.home()) + '/' + file_store + \
         'taxo_groups_1_1.json.gz'
     logging.debug('Reading taxo_groups file {}'.format(file_json))
     with gzip.open(file_json, 'rb') as g:
@@ -75,7 +76,7 @@ def getSpecies(file_store):
     for taxo in taxo_groups:
         i = 1
         while (i < 999):
-            file_json = str(Path.home()) + '/' + file_store + '/json/' + \
+            file_json = str(Path.home()) + '/' + file_store + \
                 'species_' + taxo + '_' + str(i) + '.json.gz'
             if not Path(file_json).is_file():
                 break
@@ -101,7 +102,7 @@ def getLocalAdminUnits(file_store):
     Read the local_admin_units files and return the list of units
     """
     # TODO: loop on all possible files
-    file_json = str(Path.home()) + '/' + file_store + '/json/' + \
+    file_json = str(Path.home()) + '/' + file_store + \
         'local_admin_units_1_1.json.gz'
     logging.info('Reading local_admin_units file {}'.format(file_json))
     with gzip.open(file_json, 'rb') as g:
@@ -204,7 +205,7 @@ class DownloadTable:
                 # Save in json file, if not empty
                 if (len(resp_dict['data']) > 0):
                     nb_elements += len(resp_dict['data'])
-                    file_json = str(Path.home()) + '/' + self.file_store + '/json/' + \
+                    file_json = str(Path.home()) + '/' + self.file_store + \
                         self.table + '_' + str(i) + '_' + str(nb_xfer) + '.json'
                     file_json_gz = file_json + '.gz'
                     logging.info('Received {} elements, storing json data to {}'.format(len(resp_dict['data']), file_json_gz))
@@ -273,7 +274,7 @@ def main(argv):
     evn_user_email = config['site']['evn_user_email']
     evn_user_pw = config['site']['evn_user_pw']
     evn_base_url = config['site']['evn_site']
-    evn_file_store = config['site']['evn_file_store']
+    evn_file_store = config['site']['evn_file_store'] + '/' + options.site + '/'
 
     protected_url = evn_base_url + 'api/'  # URL to GET species
     logging.info('Getting data from {}'.format(protected_url))

@@ -32,18 +32,62 @@
 \c $(evn_db_name)
 SET search_path TO $(evn_db_schema),public,topology;
 
---REFRESH MATERIALIZED VIEW $(evn_db_schema).observations;
+-- Indexes on $(evn_db_schema).observations;
+REFRESH MATERIALIZED VIEW $(evn_db_schema).observations WITH DATA;
 
--- Index on id_sighting
 DROP INDEX IF EXISTS $(evn_db_schema).observations_idx_id_sighting;
 CREATE UNIQUE INDEX observations_idx_id_sighting
     ON $(evn_db_schema).observations USING btree
     (id_sighting)
     TABLESPACE pg_default;
 
--- Index on name_species
-DROP INDEX IF EXISTS $(evn_db_schema).observations_idx_name_species;
-CREATE INDEX observations_idx_name_species
+DROP INDEX IF EXISTS $(evn_db_schema).observations_idx_date_year;
+CREATE INDEX observations_idx_date_year
     ON $(evn_db_schema).observations USING btree
-    (name_species COLLATE pg_catalog."default" varchar_pattern_ops)
+    (date_year)
+    TABLESPACE pg_default;
+
+DROP INDEX IF EXISTS $(evn_db_schema).observations_idx_french_name;
+CREATE INDEX observations_idx_french_name
+    ON $(evn_db_schema).observations USING btree
+    (french_name COLLATE pg_catalog."default" varchar_pattern_ops)
+    TABLESPACE pg_default;
+
+DROP INDEX IF EXISTS $(evn_db_schema).observations_idx_latin_name;
+CREATE INDEX observations_idx_latin_name
+    ON $(evn_db_schema).observations USING btree
+    (latin_name COLLATE pg_catalog."default" varchar_pattern_ops)
+    TABLESPACE pg_default;
+
+DROP INDEX IF EXISTS $(evn_db_schema).observations_idx_place;
+CREATE INDEX observations_idx_place
+    ON $(evn_db_schema).observations USING btree
+    (place COLLATE pg_catalog."default" varchar_pattern_ops)
+    TABLESPACE pg_default;
+
+-- Indexes on $(evn_db_schema).species;
+REFRESH MATERIALIZED VIEW $(evn_db_schema).species WITH DATA;
+
+DROP INDEX IF EXISTS $(evn_db_schema).species_idx_id_specie;
+CREATE UNIQUE INDEX species_idx_id_specie
+    ON $(evn_db_schema).species USING btree
+    (id_specie)
+    TABLESPACE pg_default;
+
+-- Indexes on $(evn_db_schema).local_admin_units;
+REFRESH MATERIALIZED VIEW $(evn_db_schema).local_admin_units WITH DATA;
+
+DROP INDEX IF EXISTS $(evn_db_schema).local_admin_units_idx_id_local_admin_unit;
+CREATE UNIQUE INDEX local_admin_units_idx_id_local_admin_unit
+    ON $(evn_db_schema).local_admin_units USING btree
+    (id_local_admin_unit)
+    TABLESPACE pg_default;
+
+-- Indexes on $(evn_db_schema).places;
+REFRESH MATERIALIZED VIEW $(evn_db_schema).places WITH DATA;
+
+DROP INDEX IF EXISTS $(evn_db_schema).places_idx_id_place;
+CREATE UNIQUE INDEX places_idx_id_place
+    ON $(evn_db_schema).places USING btree
+    (id_place)
     TABLESPACE pg_default;

@@ -41,8 +41,8 @@ AS
  SELECT
     id_sighting AS id_sighting,
     cast(sightings #>> '{species,@id}' AS INTEGER) AS id_species,
-    sightings #>> '{species,name}' AS name_species,
-    sightings #>> '{species,latin_name}' AS latin_species,
+    sightings #>> '{species,name}' AS french_name,
+    sightings #>> '{species,latin_name}' AS latin_name,
     to_date(sightings #>> '{date,@ISO8601}', 'YYYY-MM-DD') AS date,
     cast(extract(YEAR from
       to_date(sightings #>> '{date,@ISO8601}', 'YYYY-MM-DD'))
@@ -90,7 +90,17 @@ TABLESPACE pg_default
 AS
  SELECT
     id_specie AS id_specie,
-    specie #>> '{french_name}' AS french_name
+    specie #>> '{french_name}' AS french_name,
+    specie #>> '{french_name_plur}' AS french_name_plur,
+    specie #>> '{latin_name}' AS latin_name,
+    specie #>> '{is_used}' AS is_used,
+    specie #>> '{sempach_id_family}' AS sempach_id_family,
+    specie #>> '{category_1}' AS category_1,
+    specie #>> '{id_taxo_group}' AS id_taxo_group,
+    specie #>> '{rarity}' AS rarity,
+    specie #>> '{sys_order}' AS sys_order,
+    specie #>> '{atlas_start}' AS atlas_start,
+    specie #>> '{atlas_end}' AS atlas_end
    FROM $(evn_db_schema).species_json
 WITH DATA;
 
@@ -131,6 +141,8 @@ AS
     place #>> '{visible}' AS visible,
     place #>> '{is_private}' AS is_private,
     place #>> '{place_type}' AS place_type,
+    place #>> '{id_commune}' AS id_commune,
+    place #>> '{id_region}' AS id_region,
     the_geom AS the_geom
   FROM $(evn_db_schema).places_json
 WITH DATA;

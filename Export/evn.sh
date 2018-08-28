@@ -80,12 +80,12 @@ B_LOG -o true
 if "$VERBOSE"
 then
     LOG_LEVEL_ALL
-    SQL_QUITE=""
+    SQL_QUIET=""
     CLIENT_MIN_MESSAGE="debug1"
     PYTHON_VERBOSE="--verbose"
 else
     LOG_LEVEL_INFO
-    SQL_QUITE="--quiet"
+    SQL_QUIET="--quiet"
     CLIENT_MIN_MESSAGE="warning"
     PYTHON_VERBOSE=""
 fi
@@ -116,7 +116,7 @@ then
         then
             varname=$(echo "$line" | cut -d '=' -f 1 | xargs)
             config[$varname]=$(echo "$line" | cut -d '=' -f 2- | xargs)
-            if $VERBOSE ; then DEBUG "$config[$varname] = ${config[$varname]}" ; fi
+            # if $VERBOSE ; then DEBUG "$config[$varname] = ${config[$varname]}" ; fi
         fi
     done < "$evn_conf"
 else
@@ -150,15 +150,15 @@ case "$CMD" in
     DEBUG "1. Base de données"
     expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/InitDB.sql > $HOME/tmp/InitDB.sql
     env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
-    psql "$SQL_QUITE" --dbname=postgres --file=$HOME/tmp/InitDB.sql
+    psql "$SQL_QUIET" --dbname=postgres --file=$HOME/tmp/InitDB.sql
     DEBUG "2. Tables"
     expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/CreateTables.sql > $HOME/tmp/CreateTables.sql
     env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
-    psql "$SQL_QUITE" --dbname=postgres --file=$HOME/tmp/CreateTables.sql
+    psql "$SQL_QUIET" --dbname=postgres --file=$HOME/tmp/CreateTables.sql
     DEBUG "3. Vues"
     expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/CreateViews.sql > $HOME/tmp/CreateViews.sql
     env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
-    psql "$SQL_QUITE" --dbname=postgres --file=$HOME/tmp/CreateViews.sql
+    psql "$SQL_QUIET" --dbname=postgres --file=$HOME/tmp/CreateViews.sql
     INFO "Création de la base de données : fin"
     ;;
 
@@ -171,6 +171,7 @@ case "$CMD" in
     download)
     # Create directories as needed
     INFO "Début téléchargement depuis le site ${config[evn_site]} : début"
+    rm -f "$HOME/${config[evn_file_store]}/${config[evn_site]}/*.json.gz"
     python3 Python/DownloadFromVN.py $PYTHON_VERBOSE --site=$SITE 2>> "$EVN_LOG"
     INFO "Téléchargement depuis l'API du site ${config[evn_site]} : fin"
     ;;
@@ -179,27 +180,36 @@ case "$CMD" in
     # Store json files to Postgresql database
     INFO "Chargement des données JSON dans Postgresql ${config[evn_db_name]} : début"
     DEBUG "1. Insertion dans la base"
-    Python/InsertInDB.py $PYTHON_VERBOSE  --site=$SITE 2>> "$EVN_LOG"
+    Python/InsertInDB.py "$PYTHON_VERBOSE" --site="$SITE"
     DEBUG "2. Mise à jour des vues et indexation des tables et vues"
-    expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/UpdateIndex.sql > $HOME/tmp/UpdateIndex.sql
+    expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" \
+      --file Sql/UpdateIndex.sql > "$HOME/tmp/UpdateIndex.sql"
     env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
-    psql "$SQL_QUITE" --dbname=postgres --file=$HOME/tmp/UpdateIndex.sql
+      psql "$SQL_QUIET" --dbname=postgres --file="$HOME/tmp/UpdateIndex.sql"
+    if [ -f "$HOME/${config[evn_sql_scripts]}/$SITE.sql" ]
+    then
+      DEBUG "3. Execution du script local : $HOME/${config[evn_sql_scripts]}/$SITE.sql"
+      expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" \
+        --file "$HOME/${config[evn_sql_scripts]}/$SITE.sql" > "$HOME/tmp/$SITE.sql"
+      env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
+        psql "$SQL_QUIET" --dbname=postgres --file="$HOME/tmp/$SITE.sql"
+    fi
     INFO "Chargement des données JSON dans Postgresql ${config[evn_db_name]} : fin"
     ;;
 
     all)
     # Download and then Store
     INFO "Initialisation de la base : ${config[evn_db_name]}"
-    $0 --init --site="$SITE" --logfile="$EVN_LOG"
+    $0 --init $PYTHON_VERBOSE --site="$SITE" --logfile="$EVN_LOG"
     DEBUG "Début téléchargement depuis le site : ${config[evn_site]}"
-    $0 --download --site="$SITE" --logfile="$EVN_LOG"
+    $0 --download $PYTHON_VERBOSE --site="$SITE" --logfile="$EVN_LOG"
     DEBUG "Chargement des fichiers json dans la base ${config[evn_db_name]}"
-    $0 --store --site="$SITE" --logfile="$EVN_LOG"
+    $0 --store $PYTHON_VERBOSE --site="$SITE" --logfile="$EVN_LOG"
     DEBUG "Fin transfert depuis le site : ${config[evn_site]}"
     links -dump "${config[evn_site]}index.php?m_id=23" | fgrep "Les part" | sed 's/Les partenaires/Total des observations du site :/' > $HOME/tmp/mail_fin.txt
     expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/CountRows.sql > $HOME/tmp/CountRows.sql
     env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
-    psql "$SQL_QUITE" --dbname=postgres --file="$HOME/tmp/CountRows.sql" > "$HOME/tmp/counted_rows.log"
+    psql "$SQL_QUIET" --dbname=postgres --file="$HOME/tmp/CountRows.sql" > "$HOME/tmp/counted_rows.log"
     fgrep "nb_" "$HOME/tmp/counted_rows.log" >> "$HOME/tmp/mail_fin.txt"
     echo "Bilan du script : ERROR / WARN :" >> "$HOME/tmp/mail_fin.txt"
     ! fgrep -c "ERROR" "$EVN_LOG" >> "$HOME/tmp/mail_fin.txt"

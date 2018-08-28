@@ -7,12 +7,12 @@ from pathlib import Path
 
 # Read configuration parameters
 config = configparser.ConfigParser()
-config.read(str(Path.home()) + '/.evn.ini')
+config.read(str(Path.home()) + '/.evn_faune-isere.org.ini')
 
 # Import parameters in local variables
-evn_client_key = config['faune-isere.org']['evn_client_key']
-evn_client_secret = config['faune-isere.org']['evn_client_secret']
-evn_user_email = config['faune-isere.org']['evn_user_email']
-evn_user_pw = config['faune-isere.org']['evn_user_pw']
-evn_base_url = config['faune-isere.org']['evn_site']
-evn_file_store = config['faune-isere.org']['evn_file_store']
+evn_client_key = config['site']['evn_client_key']
+evn_client_secret = config['site']['evn_client_secret']
+evn_user_email = config['site']['evn_user_email']
+evn_user_pw = config['site']['evn_user_pw']
+evn_base_url = config['site']['evn_site']
+evn_file_store = config['site']['evn_file_store'] 

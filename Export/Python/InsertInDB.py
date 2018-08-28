@@ -67,9 +67,12 @@ def main(argv):
 
     (options, args) = parser.parse_args()
     # print(sys.argv[1:])
-    # print(options)
+    print(options)
     # print(args)
     # sys.exit()
+
+    # if (options.verbose) :
+    #     logger.setLevel(logging.DEBUG)
 
     # Read configuration parameters
     config = configparser.ConfigParser()
@@ -95,8 +98,9 @@ def main(argv):
 
     # Read observations from json file
     # Iterate over observation files
-    for f in [pth for pth in Path.home().joinpath(evn_file_store + "/json").glob('observations*.json.gz')]:
-        logging.info('Reading from {}'.format(str(f)))
+    logging.info('Inserting observations in database {}'.format(evn_db_name))
+    for f in [pth for pth in Path.home().joinpath(evn_file_store + '/' + options.site).glob('observations*.json.gz')]:
+        logging.debug('Reading from {}'.format(str(f)))
         with gzip.open(str(f), 'rb', 9) as g:
             obs_chunk = json.loads(g.read().decode())
 
@@ -138,14 +142,11 @@ def main(argv):
         # Commit to database
         conn.commit()
 
-    # Refresh view
-    cur.execute('REFRESH MATERIALIZED VIEW {}.observations WITH DATA'.format(evn_db_schema))
-    conn.commit()
-
     # Read species from json file
     # Iterate over species files
-    for f in [pth for pth in Path.home().joinpath(evn_file_store + "/json").glob('species*.json.gz')]:
-        logging.info('Reading from {}'.format(str(f)))
+    logging.info('Inserting species in database {}'.format(evn_db_name))
+    for f in [pth for pth in Path.home().joinpath(evn_file_store + '/' + options.site).glob('species*.json.gz')]:
+        logging.debug('Reading from {}'.format(str(f)))
         with gzip.open(str(f), 'rb', 9) as g:
             species_chunk = json.loads(g.read().decode())
 
@@ -161,14 +162,11 @@ def main(argv):
     # Commit to database, once for all species
     conn.commit()
 
-    # Refresh view
-    cur.execute('REFRESH MATERIALIZED VIEW {}.species WITH DATA'.format(evn_db_schema))
-    conn.commit()
-
     # Read local_admin_units from json file
     # Iterate over files
-    for f in [pth for pth in Path.home().joinpath(evn_file_store + "/json").glob('local_admin_units*.json.gz')]:
-        logging.info('Reading from {}'.format(str(f)))
+    logging.info('Inserting local_admin_units in database {}'.format(evn_db_name))
+    for f in [pth for pth in Path.home().joinpath(evn_file_store + '/' + options.site).glob('local_admin_units*.json.gz')]:
+        logging.debug('Reading from {}'.format(str(f)))
         with gzip.open(str(f), 'rb', 9) as g:
             local_admin_units_chunk = json.loads(g.read().decode())
 
@@ -186,14 +184,11 @@ def main(argv):
     # Commit to database, once for all local_admin_units
     conn.commit()
 
-    # Refresh view
-    cur.execute('REFRESH MATERIALIZED VIEW {}.local_admin_units WITH DATA'.format(evn_db_schema))
-    conn.commit()
-
     # Read places from json file
     # Iterate over files
-    for f in [pth for pth in Path.home().joinpath(evn_file_store + "/json").glob('places*.json.gz')]:
-        logging.info('Reading from {}'.format(str(f)))
+    logging.info('Inserting places in database {}'.format(evn_db_name))
+    for f in [pth for pth in Path.home().joinpath(evn_file_store + '/' + options.site).glob('places*.json.gz')]:
+        logging.debug('Reading from {}'.format(str(f)))
         with gzip.open(str(f), 'rb', 9) as g:
             places_chunk = json.loads(g.read().decode())
 
@@ -209,10 +204,6 @@ def main(argv):
                          ))
 
     # Commit to database, once for all places
-    conn.commit()
-
-    # Refresh view
-    cur.execute('REFRESH MATERIALIZED VIEW {}.places WITH DATA'.format(evn_db_schema))
     conn.commit()
 
     # Close communication with the database
