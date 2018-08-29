@@ -57,6 +57,10 @@ GRANT ALL ON DATABASE $(evn_db_name) TO $(evn_db_group);
 CREATE SCHEMA $(evn_db_schema)
   AUTHORIZATION $(evn_db_group);
 
+-- Schema : reference, for external reference sources
+CREATE SCHEMA reference
+  AUTHORIZATION $(evn_db_group);
+
 -- Extension d'administration pgAdmin
 CREATE EXTENSION adminpack;
 
