@@ -141,8 +141,8 @@ AS
     place #>> '{visible}' AS visible,
     place #>> '{is_private}' AS is_private,
     place #>> '{place_type}' AS place_type,
-    place #>> '{id_commune}' AS id_commune,
-    place #>> '{id_region}' AS id_region,
+    (place #>> '{id_commune}')::INTEGER AS id_commune,
+    (place #>> '{id_region}')::INTEGER AS id_region,
     the_geom AS the_geom
   FROM $(evn_db_schema).places_json
 WITH DATA;

@@ -54,15 +54,6 @@ def getTaxoGroups(file_store):
     logging.debug(taxo_groups_list)
     return taxo_groups_list
 
-# def appendNoDuplicates(init_dict, duplicate):
-#     """
-#     Add elements from duplicate to init_dict, removing elements already in init_list
-#     """
-#     for sp in duplicate:
-#         if (sp['is_used'] == '1') and (sp['id'] not in init_list):
-#             init_list[sp['id']] =
-#     return init_list
-
 def getSpecies(file_store):
     """
     Read the species files and return the list of species
@@ -122,9 +113,11 @@ class DownloadTable:
     TAXO_GROUPS_LIST = 1  # Loop subquery on taxo_groups
     SPECIES_LIST = 2  # Loop subquery on species
     ADMIN_UNITS_LIST = 3  # Loop subquery on local_admin_units (communes)
+    DATE_RANGE = 4  # Loop on date range, using /search API
 
     def __init__(self, site, user_email, user_pw, oauth, table, file_store,
-                 by_list = NO_LIST, max_download=10):
+                 by_list = NO_LIST, max_download=10,
+                 date_start='15/07/2018', date_offset=15):
       self.site = site
       self.user_email = user_email
       self.user_pw = user_pw
@@ -133,6 +126,8 @@ class DownloadTable:
       self.file_store = file_store
       self.by_list = by_list
       self.max_download = max_download
+      self.date_start = date_start
+      self.date_offset = date_offset
 
     def get_table(self):
         """
@@ -153,6 +148,8 @@ class DownloadTable:
             api_range = getSpecies(self.file_store)
         elif (self.by_list ==  self.ADMIN_UNITS_LIST):
             api_range = getLocalAdminUnits(self.file_store)
+        elif (self.by_list ==  self.DATE_RANGE):
+            api_range = getTaxoGroups(self.file_store)
         else:
             logging.error('Unknown list {}'.format(self.by_list))
             return(self.by_list)
@@ -174,6 +171,10 @@ class DownloadTable:
                 params['id_species'] = i
             elif (self.by_list ==  self.ADMIN_UNITS_LIST):
                 logging.info('Getting data from table {}, id_commune {}'.format(self.table, i))
+                params['id_commune'] = str(i)
+            elif (self.by_list ==  self.DATE_RANGE):
+                logging.info('Getting data from id_taxo_group {}, date_from {}, date_to
+                             {}'.format(self.table, i))
                 params['id_commune'] = str(i)
             else:
                 logging.error('Unknown list {}'.format(self.by_list))
