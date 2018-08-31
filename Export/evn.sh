@@ -90,6 +90,12 @@ else
     PYTHON_VERBOSE=""
 fi
 
+if [[ ! -d "$HOME/tmp" ]]
+then
+    INFO "Création du répertoire $HOME/tmp"
+    mkdir "$HOME/tmp"
+fi
+
 # Logging file, created if not given by --logfile parameter
 if [ -z "$EVN_LOG" ]
 then
@@ -137,15 +143,15 @@ case "$CMD" in
     # Testing configuration file
     INFO "Test de la configuration"
     DEBUG "Site : $SITE"
+    DEBUG "Logging : $VERBOSE"
     DEBUG "Working directory $(pwd)"
     DEBUG "Mail admin : ${config[evn_admin_mail]}"
-    DEBUG "Logging : ${config[evn_logging]}"
     DEBUG "URL site : ${config[evn_site]}"
     DEBUG "Database name : ${config[evn_db_name]}"
     ;;
 
     init)
-    #
+    # Delete and create database
     INFO "Création de la base de données : début"
     DEBUG "1. Base de données"
     expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/InitDB.sql > $HOME/tmp/InitDB.sql
@@ -166,6 +172,7 @@ case "$CMD" in
     # Edit configuration file
     INFO "Edition du fichier de configuration"
     editor "$evn_conf"
+    INFO "Il faut créer le compte $(whoami) dans postres, avec les droits SUPERUSER, "
     ;;
 
     download)
