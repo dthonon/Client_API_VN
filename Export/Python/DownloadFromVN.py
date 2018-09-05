@@ -148,8 +148,6 @@ class DownloadTable:
             api_range = getSpecies(self.file_store)
         elif (self.by_list ==  self.ADMIN_UNITS_LIST):
             api_range = getLocalAdminUnits(self.file_store)
-        elif (self.by_list ==  self.DATE_RANGE):
-            api_range = getTaxoGroups(self.file_store)
         else:
             logging.error('Unknown list {}'.format(self.by_list))
             return(self.by_list)
@@ -164,17 +162,13 @@ class DownloadTable:
             elif (self.by_list == self.TAXO_GROUPS_LIST):
                 logging.info('Getting data from table {}, id_taxo_group {}'.format(self.table, i))
                 params['id_taxo_group'] = str(i)
-                params['is_used'] = '1'
+                # params['is_used'] = '1'
             elif (self.by_list == self.SPECIES_LIST):
                 logging.info('Getting data from table {}, id_species {}, id_taxo {}'.format(self.table, i, api_range[i]))
                 params['id_taxo_group'] = api_range[i]
                 params['id_species'] = i
             elif (self.by_list ==  self.ADMIN_UNITS_LIST):
                 logging.info('Getting data from table {}, id_commune {}'.format(self.table, i))
-                params['id_commune'] = str(i)
-            elif (self.by_list ==  self.DATE_RANGE):
-                logging.info('Getting data from id_taxo_group {}, date_from {}, date_to
-                             {}'.format(self.table, i))
                 params['id_commune'] = str(i)
             else:
                 logging.error('Unknown list {}'.format(self.by_list))
@@ -310,7 +304,6 @@ def main(argv):
 
     # Get species in json format
     t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'species', evn_file_store, \
-                       # DownloadTable.NO_LIST, 50)
                        DownloadTable.TAXO_GROUPS_LIST, 50)
     nb_species = t1.get_table()
     logging.info('Received {} species'.format(nb_species))
@@ -348,7 +341,8 @@ def main(argv):
 
     # Get places in json format
     t1 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'places', evn_file_store, \
-                       DownloadTable.ADMIN_UNITS_LIST, nb_local_admin_units + 50)  # Assuming 50 empty local_admin_units
+                       DownloadTable.NO_LIST, 50)
+                       # DownloadTable.ADMIN_UNITS_LIST, nb_local_admin_units + 50)  # Assuming 50 empty local_admin_units
     nb_places = t1.get_table()
     logging.info('Received {} places'.format(nb_places))
 

@@ -50,8 +50,7 @@ AS
     -- Missing time_start & time_stop
     to_timestamp(((sightings -> 'observers') -> 0) #>> '{timing,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS')
       AS timing,
-    cast(sightings #>> '{place,@id}'
-      AS INTEGER) AS id_place,
+    cast(sightings #>> '{place,@id}' AS INTEGER) AS id_place,
     sightings #>> '{place,name}' AS place,
     sightings #>> '{place,municipality}' AS municipality,
     sightings #>> '{place,county}' AS county,
@@ -65,10 +64,11 @@ AS
     ((sightings -> 'observers') -> 0) ->> 'precision' AS precision,
     ((sightings -> 'observers') -> 0) ->> 'atlas_grid_name' AS atlas_grid_name,
     ((sightings -> 'observers') -> 0) ->> 'estimation_code' AS estimation_code,
-    ((sightings -> 'observers') -> 0) ->> 'count' AS count,
-    ((sightings -> 'observers') -> 0) #>> '{atlas_code,#text}' AS atlas_code,
-    ((sightings -> 'observers') -> 0) ->> 'altitude' AS altitude,
+    cast(((sightings -> 'observers') -> 0) ->> 'count' AS INTEGER) AS count,
+    cast(((sightings -> 'observers') -> 0) #>> '{atlas_code,#text}' AS INTEGER) AS atlas_code,
+    cast(((sightings -> 'observers') -> 0) ->> 'altitude' AS INTEGER) AS altitude,
     ((sightings -> 'observers') -> 0) ->> 'hidden' AS hidden,
+    ((sightings -> 'observers') -> 0) ->> 'entity' AS entity,
     ((sightings -> 'observers') -> 0) ->> 'details' AS details,
     (((sightings -> 'observers'::text) -> 0) #>> '{extended_info,mortality}'::text[]) IS NOT NULL AS mortality,
     ((sightings -> 'observers') -> 0) #>> '{extended_info, mortality, death_cause2}' AS death_cause2,
