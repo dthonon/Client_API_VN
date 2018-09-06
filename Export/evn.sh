@@ -131,16 +131,22 @@ else
     cmd="edit"
 fi
 
+# Create required repositories, if not existing
 if [[ ! -d "$HOME/${config[evn_file_store]}" ]]
 then
     INFO "Création du répertoire $HOME/${config[evn_file_store]}"
     mkdir "$HOME/${config[evn_file_store]}"
 fi
-
 if [[ ! -d "$HOME/${config[evn_file_store]}/$SITE" ]]
 then
     INFO "Création du répertoire $HOME/${config[evn_file_store]}/$SITE"
     mkdir "$HOME/${config[evn_file_store]}/$SITE"
+fi
+SVG="${SITE}_svg"
+if [[ ! -d "$HOME/${config[evn_file_store]}/$SVG" ]]
+then
+    INFO "Création du répertoire $HOME/${config[evn_file_store]}/$SVG"
+    mkdir "$HOME/${config[evn_file_store]}/$SVG"
 fi
 
 # Switch on possible actions
@@ -183,7 +189,8 @@ case "$CMD" in
     # Create directories as needed
     INFO "Début téléchargement depuis le site ${config[evn_site]} : début"
     DEBUG "Vers le répertoire $HOME/${config[evn_file_store]}/$SITE/"
-    rm -v "$HOME/${config[evn_file_store]}/$SITE/"*.json.gz
+    ! rm -f "$HOME/${config[evn_file_store]}/$SVG/"*.json.gz
+    ! mv -f "$HOME/${config[evn_file_store]}/$SITE/"*.json.gz "$HOME/${config[evn_file_store]}/$SVG/"
     python3 Python/DownloadFromVN.py $PYTHON_VERBOSE --site=$SITE
     INFO "Téléchargement depuis l'API du site ${config[evn_site]} : fin"
     ;;

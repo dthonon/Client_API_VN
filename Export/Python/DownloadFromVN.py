@@ -116,8 +116,8 @@ class DownloadTable:
     DATE_RANGE = 4  # Loop on date range, using /search API
 
     def __init__(self, site, user_email, user_pw, oauth, table, file_store,
-                 by_list = NO_LIST, max_download=10,
-                 date_start='15/07/2018', date_offset=15):
+                 by_list = NO_LIST, max_retry=5,
+                 date_start='01/01/1900', date_offset=15):
       self.site = site
       self.user_email = user_email
       self.user_pw = user_pw
@@ -125,7 +125,7 @@ class DownloadTable:
       self.table = table
       self.file_store = file_store
       self.by_list = by_list
-      self.max_download = max_download
+      self.max_retry = max_retry
       self.date_start = date_start
       self.date_offset = date_offset
 
@@ -153,7 +153,9 @@ class DownloadTable:
             return(self.by_list)
 
         nb_elements = 0  # Totalizer for all elements received
-        for i in api_range:
+        ii = 0
+        while ii < len(api_range):
+            i = api_range[ii]
             nb_xfer = 1  # Sequence number for transfers, restarting for each group
 
             # Add specific parameters if needed
@@ -175,6 +177,8 @@ class DownloadTable:
                 return(self.by_list)
 
             # Loop on data requests until end of transfer
+            # With retry on error
+            transferError = 0
             while True:
 
                 # GET from API
@@ -185,7 +189,8 @@ class DownloadTable:
                 logging.debug(resp.headers)
                 if resp.status_code != 200:
                     logging.error('GET status code = {}, for table {}'.format(resp.status_code, self.table))
-                    return(resp.status_code)
+                    transferError += 1
+                    break
 
                 # Is the content zipped or compressed?
                 if ('content_encoding' in resp.headers):
@@ -220,6 +225,16 @@ class DownloadTable:
                     if ('pagination_key' in params):
                         del params['pagination_key']
                     break
+
+            if (transferError == 0):
+                # No errors, moving to next item
+                ii += 1
+            elif (transferError < self.max_retry):
+                # Errors, retrying same item
+                logging.info('Retrying transfer for {} time'.format(transferError))
+            else:
+                logging.error('Too many retries, quitting')
+                return(transferError)
 
         return nb_elements
 
