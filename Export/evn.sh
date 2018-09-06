@@ -182,7 +182,8 @@ case "$CMD" in
     download)
     # Create directories as needed
     INFO "Début téléchargement depuis le site ${config[evn_site]} : début"
-    rm -f "$HOME/${config[evn_file_store]}/$SITE/*.json.gz"
+    DEBUG "Vers le répertoire $HOME/${config[evn_file_store]}/$SITE/"
+    rm -v "$HOME/${config[evn_file_store]}/$SITE/"*.json.gz
     python3 Python/DownloadFromVN.py $PYTHON_VERBOSE --site=$SITE
     INFO "Téléchargement depuis l'API du site ${config[evn_site]} : fin"
     ;;
@@ -218,11 +219,14 @@ case "$CMD" in
 
     all)
     # Download and then Store
+    DEBUG "Début téléchargement depuis le site : ${config[evn_site]}"
     DEBUG "Début téléchargement depuis le site : ${config[evn_site]}" &> "$EVN_LOG"
     $0 --download $PYTHON_VERBOSE --site="$SITE" --logfile="$EVN_LOG" &>> "$EVN_LOG"
+    DEBUG "Chargement des fichiers json dans la base ${config[evn_db_name]}"
     DEBUG "Chargement des fichiers json dans la base ${config[evn_db_name]}" &>> "$EVN_LOG"
     $0 --store $PYTHON_VERBOSE --site="$SITE" --logfile="$EVN_LOG" &>> "$EVN_LOG"
     DEBUG "Fin transfert depuis le site : ${config[evn_site]}" &>> "$EVN_LOG"
+    DEBUG "Fin transfert depuis le site : ${config[evn_site]}"
     links -dump "${config[evn_site]}index.php?m_id=23" | fgrep "Les part" | sed 's/Les partenaires/Total des observations du site :/' > $HOME/tmp/mail_fin.txt
     expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/CountRows.sql > $HOME/tmp/CountRows.sql
     env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
@@ -231,8 +235,9 @@ case "$CMD" in
     echo "Bilan du script : ERROR / WARN :" >> "$HOME/tmp/mail_fin.txt"
     ! fgrep -c "ERROR" "$EVN_LOG" >> "$HOME/tmp/mail_fin.txt"
     ! fgrep -c "WARN" "$EVN_LOG" >> "$HOME/tmp/mail_fin.txt"
-    gzip "$EVN_LOG"
+    INFO "Fin de l'export des données"
     INFO "Fin de l'export des données"  >> "$EVN_LOG"
+    gzip "$EVN_LOG"
     mailx --subject="Chargement de ${config[evn_site]}" --attach="$EVN_LOG.gz" ${config[evn_admin_mail]} < "$HOME/tmp/mail_fin.txt"
     #rm -f "$HOME/tmp/mail_fin.txt"
     ;;
