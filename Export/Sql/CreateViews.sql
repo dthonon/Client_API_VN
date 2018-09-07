@@ -68,6 +68,7 @@ AS
     cast(((sightings -> 'observers') -> 0) #>> '{atlas_code,#text}' AS INTEGER) AS atlas_code,
     cast(((sightings -> 'observers') -> 0) ->> 'altitude' AS INTEGER) AS altitude,
     ((sightings -> 'observers') -> 0) ->> 'hidden' AS hidden,
+    ((sightings -> 'observers') -> 0) ->> 'admin_hidden' AS admin_hidden,
     ((sightings -> 'observers') -> 0) ->> 'entity' AS entity,
     ((sightings -> 'observers') -> 0) ->> 'details' AS details,
     (((sightings -> 'observers'::text) -> 0) #>> '{extended_info,mortality}'::text[]) IS NOT NULL AS mortality,
