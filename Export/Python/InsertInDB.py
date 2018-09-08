@@ -367,8 +367,8 @@ def main(argv):
                                      json_obs['observers'][0]['coord_lat'],
                                      json_obs['observers'][0]['coord_lon']))
 
-        # Commit to database
-        conn.commit()
+    # Commit to database
+    conn.commit()
 
     # Read species from json file
     # Iterate over species files
@@ -378,13 +378,33 @@ def main(argv):
         with gzip.open(str(f), 'rb', 9) as g:
             species_chunk = json.loads(g.read().decode())
 
-        # Insert simple sightings, each row contains id and full json body
+        # Insert simple species, each row contains id and full json body
         for i in range(0, len(species_chunk['data'])):
             json_specie = species_chunk['data'][i]
             # Insert row
             cur.execute('INSERT INTO {}.species_json (id_specie, specie) VALUES (%s, %s)'.format(evn_db_schema),
                         (json_specie['id'],
                          json.dumps(json_specie)
+                         ))
+
+    # Commit to database, once for all species
+    conn.commit()
+
+    # Read taxo_groups from json file
+    # Iterate over taxo_groups files
+    logging.info('Inserting taxo_groups in database {}'.format(evn_db_name))
+    for f in [pth for pth in Path.home().joinpath(evn_file_store + '/' + options.site).glob('taxo_groups*.json.gz')]:
+        logging.debug('Reading from {}'.format(str(f)))
+        with gzip.open(str(f), 'rb', 9) as g:
+            taxo_groups_chunk = json.loads(g.read().decode())
+
+        # Insert simple taxo_groups, each row contains id and full json body
+        for i in range(0, len(taxo_groups_chunk['data'])):
+            json_taxo_group = taxo_groups_chunk['data'][i]
+            # Insert row
+            cur.execute('INSERT INTO {}.taxo_groups_json (id_taxo_group, taxo_group) VALUES (%s, %s)'.format(evn_db_schema),
+                        (json_taxo_group['id'],
+                         json.dumps(json_taxo_group)
                          ))
 
     # Commit to database, once for all species
