@@ -79,12 +79,12 @@ def getSpecies(file_store):
             i += 1
 
             for sp in species['data']:
-                logging.debug('Adding species {}, from taxo_groups {} '.format(sp['id'], taxo))
-                species_list[sp['id']] = taxo
+                if (sp['is_used'] == '1'):
+                    logging.debug('Adding species {}, from taxo_groups {} '.format(sp['id'], taxo))
+                    species_list[sp['id']] = taxo
 
     logging.info('Found {} species in downloaded files'.format(len(species_list)))
 
-    # species_list = {508:1, 3260:3}
     logging.debug(species_list)
     return species_list
 
@@ -116,7 +116,7 @@ class DownloadTable:
     DATE_RANGE = 4  # Loop on date range, using /search API
 
     def __init__(self, site, user_email, user_pw, oauth, table, file_store,
-                 by_list = NO_LIST, max_retry=5,
+                 by_list = NO_LIST, max_retry=5, max_requests=sys.maxsize,
                  date_start='01/01/1900', date_offset=15):
       self.site = site
       self.user_email = user_email
@@ -126,6 +126,7 @@ class DownloadTable:
       self.file_store = file_store
       self.by_list = by_list
       self.max_retry = max_retry
+      self.max_requests = max_requests
       self.date_start = date_start
       self.date_offset = date_offset
 
@@ -152,13 +153,22 @@ class DownloadTable:
             logging.error('Unknown list {}'.format(self.by_list))
             return(self.by_list)
 
-        nb_elements = 0  # Totalizer for all elements received
         ii = 0
         r = iter(api_range)
+        transferError = 0
         try:
-            while True:
-                i = next(r)
+            while ii < self.max_requests:
                 nb_xfer = 1  # Sequence number for transfers, restarting for each group
+                if (transferError == 0):
+                    # No errors, moving to next item
+                    ii += 1
+                    i = next(r)
+                elif (transferError < self.max_retry):
+                    # Errors, retrying same item
+                    logging.info('Retrying transfer for {} time'.format(transferError))
+                else:
+                    logging.error('Too many retries, quitting')
+                    raise ConnectionError('Too many retries, quitting')
 
                 # Add specific parameters if needed
                 if (self.by_list == self.NO_LIST):
@@ -182,7 +192,6 @@ class DownloadTable:
                 # With retry on error
                 transferError = 0
                 while True:
-
                     # GET from API
                     logging.debug('Params: {}'.format(params))
                     resp = requests.get(url=self.site+self.table+'/', auth=self.oauth, params=params)
@@ -206,13 +215,9 @@ class DownloadTable:
 
                     # Save in json file, if not empty
                     if (len(resp_dict['data']) > 0):
-                        nb_elements += len(resp_dict['data'])
-                        file_json = str(Path.home()) + '/' + self.file_store + \
-                            self.table + '_' + str(i) + '_' + str(nb_xfer) + '.json'
-                        file_json_gz = file_json + '.gz'
-                        logging.info('Received {} elements, storing json data to {}'.format(len(resp_dict['data']), file_json_gz))
-                        # with open(file_json.encode(), 'w') as outfile:
-                        #     json.dump(resp_dict, outfile)
+                        file_json_gz = str(Path.home()) + '/' + self.file_store + \
+                            self.table + '_' + str(i) + '_' + str(nb_xfer) + '.json.gz'
+                        logging.info('Received data, storing json to {}'.format(file_json_gz))
                         with gzip.open(file_json_gz, 'wb', 9) as g:
                             g.write(resp_pretty.encode())
 
@@ -228,19 +233,10 @@ class DownloadTable:
                             del params['pagination_key']
                         break
 
-                if (transferError == 0):
-                    # No errors, moving to next item
-                    ii += 1
-                elif (transferError < self.max_retry):
-                    # Errors, retrying same item
-                    logging.info('Retrying transfer for {} time'.format(transferError))
-                else:
-                    logging.error('Too many retries, quitting')
-                    return(transferError)
         except StopIteration:
             logging.info('End of loop for {} API'.format(self.table))
 
-        return nb_elements
+        return
 
 
 def script_shortname():
@@ -296,73 +292,65 @@ def main(argv):
     # Using OAuth1 auth helper
     oauth = OAuth1(evn_client_key, client_secret=evn_client_secret)
 
+    # MAX_REQUESTS = 10 # Limit nb of API requests for quicker test
+    MAX_REQUESTS = sys.maxsize # No limit, for production
+
     # -------------------
     # Organizational data
     # -------------------
     # Get entities in json format
     t01 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'entities', evn_file_store, \
-                        DownloadTable.NO_LIST)
-    nb_entities = t01.get_table()
-    logging.info('Received {} entities'.format(nb_entities))
+                        DownloadTable.NO_LIST, max_requests = MAX_REQUESTS)
+    t01.get_table()
 
     # Get export_organizations in json format
     t02 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'export_organizations', evn_file_store, \
-                        DownloadTable.NO_LIST)
-    nb_export_organizations = t02.get_table()
-    logging.info('Received {} export_organizations'.format(nb_export_organizations))
+                        DownloadTable.NO_LIST, max_requests = MAX_REQUESTS)
+    t02.get_table()
 
     # --------------
     # Taxonomic data
     # --------------
     # Get taxo_groups in json format
     t11 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'taxo_groups', evn_file_store, \
-                        DownloadTable.NO_LIST)
-    nb_taxo_groups = t11.get_table()
-    logging.info('Received {} taxo_groups'.format(nb_taxo_groups))
-    # getTaxoGroups(evn_file_store)
+                        DownloadTable.NO_LIST, max_requests = MAX_REQUESTS)
+    t11.get_table()
 
     # Get species in json format
     t12 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'species', evn_file_store, \
-                        DownloadTable.TAXO_GROUPS_LIST)
-    nb_species = t12.get_table()
-    logging.info('Received {} species'.format(nb_species))
-    # getSpecies(evn_file_store)
+                        DownloadTable.TAXO_GROUPS_LIST, max_requests = MAX_REQUESTS)
+    t12.get_table()
 
     # ----------------
     # Observation data
     # ----------------
     # Get observations in json format
     t21 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'observations', evn_file_store, \
-                        DownloadTable.SPECIES_LIST)
-    nb_species = t21.get_table()
-    logging.info('Received {} groups of observations'.format(nb_species))
+                        DownloadTable.SPECIES_LIST, max_requests = MAX_REQUESTS)
+    t21.get_table()
 
     # ------------------------
     # Geographical information
     # ------------------------
     # Get territorial_units in json format
     t31 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'territorial_units', evn_file_store, \
-                        DownloadTable.NO_LIST)
-    nb_territorial_units = t31.get_table()
-    logging.info('Received {} territorial_units'.format(nb_territorial_units))
+                        DownloadTable.NO_LIST, max_requests = MAX_REQUESTS)
+    t31.get_table()
 
     # Get grids in json format
     t32 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'grids', evn_file_store, \
-                        DownloadTable.NO_LIST)
-    nb_grids = t32.get_table()
-    logging.info('Received {} grids'.format(nb_grids))
+                        DownloadTable.NO_LIST, max_requests = MAX_REQUESTS)
+    t32.get_table()
 
     # Get local_admin_units in json format
     t33 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'local_admin_units', evn_file_store, \
-                        DownloadTable.NO_LIST)
-    nb_local_admin_units = t33.get_table()
-    logging.info('Received {} local_admin_units'.format(nb_local_admin_units))
+                        DownloadTable.NO_LIST, max_requests = MAX_REQUESTS)
+    t33.get_table()
 
     # Get places in json format
     t34 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'places', evn_file_store, \
-                       DownloadTable.NO_LIST)
-    nb_places = t34.get_table()
-    logging.info('Received {} places'.format(nb_places))
+                       DownloadTable.NO_LIST, max_requests = MAX_REQUESTS)
+    t34.get_table()
 
 # Main wrapper
 if __name__ == "__main__":
