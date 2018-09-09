@@ -35,7 +35,7 @@ cd "$(dirname "$0")";
 PATH="/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games"
 
 # Analyze script options
-OPTS=`getopt -o v --long all,download,edit,help,init,logfile:,site:,store,test,verbose -- "$@"`
+OPTS=`getopt -o v --long all,download,edit,help,init,logfile:,site:,store,test,update,verbose -- "$@"`
 if [ "$?" != 0 ] ; then echo "Option non reconnue" >&2 ; exit 1 ; fi
 # echo "$OPTS"
 eval set -- "$OPTS"
@@ -52,8 +52,9 @@ while true; do
         --logfile ) EVN_LOG="$2"; shift 2 ;;
         --site ) SITE="$2"; shift 2 ;;
         --store ) CMD="store"; shift ;;
-        -v | --verbose ) VERBOSE=true; shift ;;
         --test ) CMD="test"; shift ;;
+        --update ) CMD="update"; shift ;;
+        -v | --verbose ) VERBOSE=true; shift ;;
         -- ) shift ; if [ -n "$1" ] ; then echo "Option inconnue $1 !" ; exit 1 ; fi ; break ;;
         * ) echo "Erreur de fonctionnement !" ; exit 1 ;;
     esac
@@ -182,16 +183,19 @@ case "$CMD" in
     # Edit configuration file
     INFO "Edition du fichier de configuration"
     editor "$evn_conf"
-    INFO "Il faut créer le compte $(whoami) dans postres, avec les droits SUPERUSER, "
+    INFO "Il faut aussi créer le compte $(whoami) dans postres, avec les droits SUPERUSER, "
     ;;
 
     download)
     # Create directories as needed
     INFO "Début téléchargement depuis le site ${config[evn_site]} : début"
     DEBUG "Vers le répertoire $HOME/${config[evn_file_store]}/$SITE/"
-    ! rm -f "$HOME/${config[evn_file_store]}/$SVG/"*.json.gz
-    ! mv -f "$HOME/${config[evn_file_store]}/$SITE/"*.json.gz "$HOME/${config[evn_file_store]}/$SVG/"
-    python3 Python/DownloadFromVN.py $PYTHON_VERBOSE --site=$SITE
+    # ! rm -f "$HOME/${config[evn_file_store]}/$SVG/"*.json.gz
+    # ! mv -f "$HOME/${config[evn_file_store]}/$SITE/"*.json.gz "$HOME/${config[evn_file_store]}/$SVG/"
+    expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/CreateLog.sql > $HOME/tmp/CreateLog.sql
+    env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
+    psql "$SQL_QUIET" --dbname=postgres --file=$HOME/tmp/CreateLog.sql
+    # python3 Python/DownloadFromVN.py $PYTHON_VERBOSE --site=$SITE
     INFO "Téléchargement depuis l'API du site ${config[evn_site]} : fin"
     ;;
 
@@ -202,17 +206,21 @@ case "$CMD" in
     expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/CreateTables.sql > $HOME/tmp/CreateTables.sql
     env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
     psql "$SQL_QUIET" --dbname=postgres --file=$HOME/tmp/CreateTables.sql
+
     DEBUG "2. Insertion dans la base"
     Python/InsertInDB.py "$PYTHON_VERBOSE" --site="$SITE"
+
     DEBUG "3. Création des vues"
     expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/CreateViews.sql > $HOME/tmp/CreateViews.sql
     env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
     psql "$SQL_QUIET" --dbname=postgres --file=$HOME/tmp/CreateViews.sql
+
     DEBUG "4. Mise à jour des vues et indexation des tables et vues"
     expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" \
       --file Sql/UpdateIndex.sql > "$HOME/tmp/UpdateIndex.sql"
     env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
       psql "$SQL_QUIET" --dbname=postgres --file="$HOME/tmp/UpdateIndex.sql"
+
     if [ -f "$HOME/${config[evn_sql_scripts]}/$SITE.sql" ]
     then
       DEBUG "5. Execution du script local : $HOME/${config[evn_sql_scripts]}/$SITE.sql"
@@ -226,15 +234,17 @@ case "$CMD" in
 
     all)
     # Download and then Store
-    DEBUG "Début téléchargement depuis le site : ${config[evn_site]}"
+    DEBUG "Début téléchargement depuis le site : ${config[evn_site]}" | tee "$HOME/tmp/mail_fin.txt"
     DEBUG "Début téléchargement depuis le site : ${config[evn_site]}" &> "$EVN_LOG"
     $0 --download $PYTHON_VERBOSE --site="$SITE" --logfile="$EVN_LOG" &>> "$EVN_LOG"
-    DEBUG "Chargement des fichiers json dans la base ${config[evn_db_name]}"
+
+    DEBUG "Chargement des fichiers json dans la base ${config[evn_db_name]}" | tee -a "$HOME/tmp/mail_fin.txt"
     DEBUG "Chargement des fichiers json dans la base ${config[evn_db_name]}" &>> "$EVN_LOG"
     $0 --store $PYTHON_VERBOSE --site="$SITE" --logfile="$EVN_LOG" &>> "$EVN_LOG"
+
+    DEBUG "Fin transfert depuis le site : ${config[evn_site]}" | tee -a "$HOME/tmp/mail_fin.txt"
     DEBUG "Fin transfert depuis le site : ${config[evn_site]}" &>> "$EVN_LOG"
-    DEBUG "Fin transfert depuis le site : ${config[evn_site]}"
-    links -dump "${config[evn_site]}index.php?m_id=23" | fgrep "Les part" | sed 's/Les partenaires/Total des observations du site :/' > $HOME/tmp/mail_fin.txt
+    links -dump "${config[evn_site]}index.php?m_id=23" | fgrep "Les part" | sed 's/   Les partenaires/Total des observations du site :/' >> $HOME/tmp/mail_fin.txt
     expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/CountRows.sql > $HOME/tmp/CountRows.sql
     env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
     psql "$SQL_QUIET" --dbname=postgres --file="$HOME/tmp/CountRows.sql" > "$HOME/tmp/counted_rows.log"
@@ -242,11 +252,18 @@ case "$CMD" in
     echo "Bilan du script : ERROR / WARN :" >> "$HOME/tmp/mail_fin.txt"
     ! fgrep -c "ERROR" "$EVN_LOG" >> "$HOME/tmp/mail_fin.txt"
     ! fgrep -c "WARN" "$EVN_LOG" >> "$HOME/tmp/mail_fin.txt"
-    INFO "Fin de l'export des données"
+    INFO "Fin de l'export des données" | tee -a "$HOME/tmp/mail_fin.txt"
     INFO "Fin de l'export des données"  >> "$EVN_LOG"
     gzip "$EVN_LOG"
     mailx --subject="Chargement de ${config[evn_site]}" --attach="$EVN_LOG.gz" ${config[evn_admin_mail]} < "$HOME/tmp/mail_fin.txt"
     #rm -f "$HOME/tmp/mail_fin.txt"
+    ;;
+
+    update)
+    # Update observations since previous download
+    INFO "Mise à jour des données JSON dans Postgresql ${config[evn_db_name]} : début"
+    Python/UpdateFromVN.py "$PYTHON_VERBOSE" --site="$SITE"
+    INFO "Mise à jour des données JSON dans Postgresql ${config[evn_db_name]} : fin"
     ;;
 
     *)

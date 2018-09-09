@@ -31,73 +31,14 @@ from bisect import bisect_left, bisect_right
 from operator import itemgetter
 from pprint import pprint
 
+# version of the program:
+__version__= "0.1.1" #VERSION#
+
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level = logging.DEBUG)
+
 class SortedCollection(object):
     '''Sequence sorted by a key function.
-
-    SortedCollection() is much easier to work with than using bisect() directly.
-    It supports key functions like those use in sorted(), min(), and max().
-    The result of the key function call is saved so that keys can be searched
-    efficiently.
-
-    Instead of returning an insertion-point which can be hard to interpret, the
-    five find-methods return a specific item in the sequence. They can scan for
-    exact matches, the last item less-than-or-equal to a key, or the first item
-    greater-than-or-equal to a key.
-
-    Once found, an item's ordinal position can be located with the index() method.
-    New items can be added with the insert() and insert_right() methods.
-    Old items can be deleted with the remove() method.
-
-    The usual sequence methods are provided to support indexing, slicing,
-    length lookup, clearing, copying, forward and reverse iteration, contains
-    checking, item counts, item removal, and a nice looking repr.
-
-    Finding and indexing are O(log n) operations while iteration and insertion
-    are O(n).  The initial sort is O(n log n).
-
-    The key function is stored in the 'key' attibute for easy introspection or
-    so that you can assign a new key function (triggering an automatic re-sort).
-
-    In short, the class was designed to handle all of the common use cases for
-    bisect but with a simpler API and support for key functions.
-
-    >>> from pprint import pprint
-    >>> from operator import itemgetter
-
-    >>> s = SortedCollection(key=itemgetter(2))
-    >>> for record in [
-    ...         ('roger', 'young', 30),
-    ...         ('angela', 'jones', 28),
-    ...         ('bill', 'smith', 22),
-    ...         ('david', 'thomas', 32)]:
-    ...     s.insert(record)
-
-    >>> pprint(list(s))         # show records sorted by age
-    [('bill', 'smith', 22),
-     ('angela', 'jones', 28),
-     ('roger', 'young', 30),
-     ('david', 'thomas', 32)]
-
-    >>> s.find_le(29)           # find oldest person aged 29 or younger
-    ('angela', 'jones', 28)
-    >>> s.find_lt(28)           # find oldest person under 28
-    ('bill', 'smith', 22)
-    >>> s.find_gt(28)           # find youngest person over 28
-    ('roger', 'young', 30)
-
-    >>> r = s.find_ge(32)       # find youngest person aged 32 or older
-    >>> s.index(r)              # get the index of their record
-    3
-    >>> s[3]                    # fetch the record at that index
-    ('david', 'thomas', 32)
-
-    >>> s.key = itemgetter(0)   # now sort by first name
-    >>> pprint(list(s))
-    [('angela', 'jones', 28),
-     ('bill', 'smith', 22),
-     ('david', 'thomas', 32),
-     ('roger', 'young', 30)]
-
     '''
 
     def __init__(self, iterable=(), key=None):
@@ -232,13 +173,6 @@ class SortedCollection(object):
         raise ValueError('No item found with key above: %r' % (k,))
 
 
-
-# version of the program:
-__version__= "0.1.1" #VERSION#
-
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    level = logging.DEBUG)
-
 def script_shortname():
     """return the name of this script without a path component."""
     return os.path.basename(sys.argv[0])
@@ -281,7 +215,7 @@ def main(argv):
     config.read(str(Path.home()) + '/.evn_' + options.site + '.ini')
 
     # Import parameters in local variables
-    evn_file_store = config['site']['evn_file_store']
+    evn_file_store = config['site']['evn_file_store'] + '/' + options.site + '/'
     evn_db_host = config['database']['evn_db_host']
     evn_db_port = config['database']['evn_db_port']
     evn_db_name = config['database']['evn_db_name']
@@ -304,7 +238,7 @@ def main(argv):
     inserted_obs = SortedCollection(key=itemgetter(0))
     logging.info('Inserting observations in database {}'.format(evn_db_name))
     # Iterate over observation files
-    for f in [pth for pth in Path.home().joinpath(evn_file_store + '/' + options.site).glob('observations*.json.gz')]:
+    for f in [pth for pth in Path.home().joinpath(evn_file_store).glob('observations*.json.gz')]:
         # Read observations from json file
         logging.debug('Reading from {}'.format(str(f)))
         with gzip.open(str(f), 'rb', 9) as g:
@@ -373,7 +307,7 @@ def main(argv):
     # Read species from json file
     # Iterate over species files
     logging.info('Inserting species in database {}'.format(evn_db_name))
-    for f in [pth for pth in Path.home().joinpath(evn_file_store + '/' + options.site).glob('species*.json.gz')]:
+    for f in [pth for pth in Path.home().joinpath(evn_file_store).glob('species*.json.gz')]:
         logging.debug('Reading from {}'.format(str(f)))
         with gzip.open(str(f), 'rb', 9) as g:
             species_chunk = json.loads(g.read().decode())
@@ -393,7 +327,7 @@ def main(argv):
     # Read taxo_groups from json file
     # Iterate over taxo_groups files
     logging.info('Inserting taxo_groups in database {}'.format(evn_db_name))
-    for f in [pth for pth in Path.home().joinpath(evn_file_store + '/' + options.site).glob('taxo_groups*.json.gz')]:
+    for f in [pth for pth in Path.home().joinpath(evn_file_store).glob('taxo_groups*.json.gz')]:
         logging.debug('Reading from {}'.format(str(f)))
         with gzip.open(str(f), 'rb', 9) as g:
             taxo_groups_chunk = json.loads(g.read().decode())
@@ -413,7 +347,7 @@ def main(argv):
     # Read local_admin_units from json file
     # Iterate over files
     logging.info('Inserting local_admin_units in database {}'.format(evn_db_name))
-    for f in [pth for pth in Path.home().joinpath(evn_file_store + '/' + options.site).glob('local_admin_units*.json.gz')]:
+    for f in [pth for pth in Path.home().joinpath(evn_file_store).glob('local_admin_units*.json.gz')]:
         logging.debug('Reading from {}'.format(str(f)))
         with gzip.open(str(f), 'rb', 9) as g:
             local_admin_units_chunk = json.loads(g.read().decode())
@@ -435,7 +369,7 @@ def main(argv):
     # Read places from json file
     # Iterate over files
     logging.info('Inserting places in database {}'.format(evn_db_name))
-    for f in [pth for pth in Path.home().joinpath(evn_file_store + '/' + options.site).glob('places*.json.gz')]:
+    for f in [pth for pth in Path.home().joinpath(evn_file_store).glob('places*.json.gz')]:
         logging.debug('Reading from {}'.format(str(f)))
         with gzip.open(str(f), 'rb', 9) as g:
             places_chunk = json.loads(g.read().decode())

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-DownloadFromVN: retrieves main data from VisioNature website and store to json files.
+UpdateFromVN: retrieves incremental data from VisioNature website and update database
 
 Copyright (C) 2018, Daniel Thonon
 
@@ -18,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import sys
-# import getopt
 import logging
 from optparse import OptionParser
 import configparser
@@ -29,11 +28,17 @@ from requests_oauthlib import OAuth1
 import json
 import gzip
 
+import psycopg2
+
+from bisect import bisect_left, bisect_right
+from operator import itemgetter
+from pprint import pprint
+
 # version of the program:
-__version__= "1.0" #VERSION#
+__version__= "0.1.1" #VERSION#
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    level = logging.INFO)
+                    level = logging.DEBUG)
 
 def getTaxoGroups(file_store):
     """
@@ -54,81 +59,23 @@ def getTaxoGroups(file_store):
     logging.debug(taxo_groups_list)
     return taxo_groups_list
 
-def getSpecies(file_store):
-    """
-    Read the species files and return the list of species
-    """
-
-    # Get list of taxo_groups to iterate over
-    taxo_groups = getTaxoGroups(file_store)
-
-    # Loop on available taxo_groups
-    species_list = dict()
-    for taxo in taxo_groups:
-        i = 1
-        while (i < 999):
-            file_json = str(Path.home()) + '/' + file_store + \
-                'species_' + taxo + '_' + str(i) + '.json.gz'
-            if not Path(file_json).is_file():
-                break
-
-            logging.debug('Reading species file {}'.format(file_json))
-            with gzip.open(file_json, 'rb') as g:
-                species = json.loads(g.read().decode('utf-8'))
-
-            i += 1
-
-            for sp in species['data']:
-                if (sp['is_used'] == '1'):
-                    logging.debug('Adding species {}, from taxo_groups {} '.format(sp['id'], taxo))
-                    species_list[sp['id']] = taxo
-
-    logging.info('Found {} species in downloaded files'.format(len(species_list)))
-
-    logging.debug(species_list)
-    return species_list
-
-def getLocalAdminUnits(file_store):
-    """
-    Read the local_admin_units files and return the list of units
-    """
-    # TODO: loop on all possible files
-    file_json = str(Path.home()) + '/' + file_store + \
-        'local_admin_units_1_1.json.gz'
-    logging.info('Reading local_admin_units file {}'.format(file_json))
-    with gzip.open(file_json, 'rb') as g:
-        local_admin_units = json.loads(g.read().decode('utf-8'))
-
-    local_admin_units_list = list(map(lambda x: x['id'], local_admin_units['data']))
-    logging.debug(local_admin_units_list)
-    return local_admin_units_list
 
 class DownloadTable:
     """
     Download from an API controler, named table (i.e. species).
     """
 
-    # Constants for different lists of subqueries
-    NO_LIST = 0  # No subquery, just request all data
-    TAXO_GROUPS_LIST = 1  # Loop subquery on taxo_groups
-    SPECIES_LIST = 2  # Loop subquery on species
-    ADMIN_UNITS_LIST = 3  # Loop subquery on local_admin_units (communes)
-    DATE_RANGE = 4  # Loop on date range, using /search API
-
-    def __init__(self, site, user_email, user_pw, oauth, table, file_store,
-                 by_list = NO_LIST, max_retry=5, max_requests=sys.maxsize,
-                 date_start='01/01/1900', date_offset=15):
+    def __init__(self, site, user_email, user_pw, oauth, file_store,
+                 from_date, max_retry=5, max_requests=sys.maxsize):
       self.site = site
       self.user_email = user_email
       self.user_pw = user_pw
       self.oauth = oauth
-      self.table = table
+      self.table = 'observations'
       self.file_store = file_store
-      self.by_list = by_list
+      self.from_date = from_date
       self.max_retry = max_retry
       self.max_requests = max_requests
-      self.date_start = date_start
-      self.date_offset = date_offset
 
     def get_table(self):
         """
@@ -141,17 +88,8 @@ class DownloadTable:
         params = {'user_email': self.user_email, 'user_pw': self.user_pw}
 
         # Create range based on type of get_table
-        if (self.by_list == self.NO_LIST):
-            api_range = range(1, 2)
-        elif (self.by_list == self.TAXO_GROUPS_LIST):
-            api_range = getTaxoGroups(self.file_store)
-        elif (self.by_list == self.SPECIES_LIST):
-            api_range = getSpecies(self.file_store)
-        elif (self.by_list ==  self.ADMIN_UNITS_LIST):
-            api_range = getLocalAdminUnits(self.file_store)
-        else:
-            logging.error('Unknown list {}'.format(self.by_list))
-            return(self.by_list)
+        # api_range = getTaxoGroups(self.file_store)
+        api_range = list('1')
 
         ii = 0
         r = iter(api_range)
@@ -171,22 +109,10 @@ class DownloadTable:
                     raise ConnectionError('Too many retries, quitting')
 
                 # Add specific parameters if needed
-                if (self.by_list == self.NO_LIST):
-                    logging.info('Getting data from table {} direct'.format(self.table))
-                elif (self.by_list == self.TAXO_GROUPS_LIST):
-                    logging.info('Getting data from table {}, id_taxo_group {}'.format(self.table, i))
-                    params['id_taxo_group'] = str(i)
-                    # params['is_used'] = '1'
-                elif (self.by_list == self.SPECIES_LIST):
-                    logging.info('Getting data from table {}, id_species {}, id_taxo {}'.format(self.table, i, api_range[i]))
-                    params['id_taxo_group'] = api_range[i]
-                    params['id_species'] = i
-                elif (self.by_list ==  self.ADMIN_UNITS_LIST):
-                    logging.info('Getting data from table {}, id_commune {}'.format(self.table, i))
-                    params['id_commune'] = str(i)
-                else:
-                    logging.error('Unknown list {}'.format(self.by_list))
-                    return(self.by_list)
+                logging.info('Getting data from table {}, id_taxo_group {}'.format(self.table, i))
+                params['id_taxo_group'] = str(i)
+                params['modification_type'] = 'all'
+                params['date'] = self.from_date.strftime('%H:%M:%S %d.%m.%Y')
 
                 # Loop on data requests until end of transfer
                 # With retry on error
@@ -194,7 +120,7 @@ class DownloadTable:
                 while True:
                     # GET from API
                     logging.debug('Params: {}'.format(params))
-                    resp = requests.get(url=self.site+self.table+'/', auth=self.oauth, params=params)
+                    resp = requests.get(url=self.site, auth=self.oauth, params=params)
                     logging.debug(resp.url)
                     logging.debug(resp.request.headers)
                     logging.debug(resp.headers)
@@ -245,7 +171,7 @@ def script_shortname():
 
 def print_usage():
     """print a short summary of the scripts function."""
-    print(('%-20s: Téléchargement des données Biolovision '+\
+    print(('%-20s: Téléchargement incrémental des données Biolovision '+\
            'Ecrit en python ...\n') % script_shortname())
 
 def main(argv):
@@ -285,72 +211,45 @@ def main(argv):
     evn_user_pw = config['site']['evn_user_pw']
     evn_base_url = config['site']['evn_site']
     evn_file_store = config['site']['evn_file_store'] + '/' + options.site + '/'
+    evn_db_host = config['database']['evn_db_host']
+    evn_db_port = config['database']['evn_db_port']
+    evn_db_name = config['database']['evn_db_name']
+    evn_db_schema = config['database']['evn_db_schema']
+    evn_db_group = config['database']['evn_db_group']
+    evn_db_user = config['database']['evn_db_user']
+    evn_db_pw = config['database']['evn_db_pw']
+    evn_sql_scripts = config['database']['evn_sql_scripts']
 
-    protected_url = evn_base_url + 'api/'  # URL to GET species
+    # Connect to evn database
+    conn = psycopg2.connect('dbname={} user={} password={}'.format(evn_db_name, evn_db_user, evn_db_pw))
+    # Open a cursor to perform database operations
+    cur = conn.cursor()
+    # Fetch last modification date
+    cur.execute('SELECT download_ts FROM {}.download_log ORDER BY download_ts DESC LIMIT 1;'.format(evn_db_schema))
+    # retrieve the records from the database
+    records = cur.fetchall()
+    last_update = records[0][0]
+    logging.info('Getting updates since {}'.format(last_update))
+    # Close communication with the database
+    logging.info('Closing database {}'.format(evn_db_name))
+    cur.close()
+    conn.close()
+
+    protected_url = evn_base_url + 'api/observations/diff/'  # URL to GET species
     logging.info('Getting data from {}'.format(protected_url))
 
     # Using OAuth1 auth helper
     oauth = OAuth1(evn_client_key, client_secret=evn_client_secret)
 
-    # MAX_REQUESTS = 10 # Limit nb of API requests for quicker test
-    MAX_REQUESTS = sys.maxsize # No limit, for production
-
-    # -------------------
-    # Organizational data
-    # -------------------
-    # Get entities in json format
-    t01 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'entities', evn_file_store, \
-                        DownloadTable.NO_LIST, max_requests = MAX_REQUESTS)
-    t01.get_table()
-
-    # Get export_organizations in json format
-    t02 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'export_organizations', evn_file_store, \
-                        DownloadTable.NO_LIST, max_requests = MAX_REQUESTS)
-    t02.get_table()
-
-    # --------------
-    # Taxonomic data
-    # --------------
-    # Get taxo_groups in json format
-    t11 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'taxo_groups', evn_file_store, \
-                        DownloadTable.NO_LIST, max_requests = MAX_REQUESTS)
-    t11.get_table()
-
-    # Get species in json format
-    t12 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'species', evn_file_store, \
-                        DownloadTable.TAXO_GROUPS_LIST, max_requests = MAX_REQUESTS)
-    t12.get_table()
-
+    MAX_REQUESTS = 10 # Limit nb of API requests for quicker test
+    # MAX_REQUESTS = sys.maxsize # No limit, for production
     # ----------------
     # Observation data
     # ----------------
     # Get observations in json format
-    t21 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'observations', evn_file_store, \
-                        DownloadTable.SPECIES_LIST, max_requests = MAX_REQUESTS)
+    t21 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, evn_file_store, \
+                        last_update, max_retry = 1, max_requests = MAX_REQUESTS)
     t21.get_table()
-
-    # ------------------------
-    # Geographical information
-    # ------------------------
-    # Get territorial_units in json format
-    t31 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'territorial_units', evn_file_store, \
-                        DownloadTable.NO_LIST, max_requests = MAX_REQUESTS)
-    t31.get_table()
-
-    # Get grids in json format
-    t32 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'grids', evn_file_store, \
-                        DownloadTable.NO_LIST, max_requests = MAX_REQUESTS)
-    t32.get_table()
-
-    # Get local_admin_units in json format
-    t33 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'local_admin_units', evn_file_store, \
-                        DownloadTable.NO_LIST, max_requests = MAX_REQUESTS)
-    t33.get_table()
-
-    # Get places in json format
-    t34 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'places', evn_file_store, \
-                       DownloadTable.NO_LIST, max_requests = MAX_REQUESTS)
-    t34.get_table()
 
 # Main wrapper
 if __name__ == "__main__":
