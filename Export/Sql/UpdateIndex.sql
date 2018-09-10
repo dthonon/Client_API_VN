@@ -35,8 +35,8 @@ SET search_path TO $(evn_db_schema),public,topology;
 -- Indexes on $(evn_db_schema).observations;
 REFRESH MATERIALIZED VIEW $(evn_db_schema).observations WITH DATA;
 
-ALTER TABLE $(evn_db_schema).observations DROP CONSTRAINT IF EXISTS observations_pkey,
-ALTER TABLE $(evn_db_schema).observations ADD PRIMARY KEY (id_sighting);
+ALTER TABLE $(evn_db_schema).observations_json DROP CONSTRAINT IF EXISTS observations_pkey;
+ALTER TABLE $(evn_db_schema).observations_json ADD PRIMARY KEY (id_sighting);
 
 -- Indexes on $(evn_db_schema).observations;
 DROP INDEX IF EXISTS $(evn_db_schema).observations_idx_id_sighting;
