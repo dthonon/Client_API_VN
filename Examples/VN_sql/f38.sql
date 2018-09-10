@@ -32,7 +32,13 @@
 \c $(evn_db_name)
 SET search_path TO public;
 
--- View: public.espece_nature_isere
+
+-- Delete and create nature_isere role 
+DROP OWNED BY nature_isere;
+DROP ROLE IF EXISTS nature_isere;
+CREATE ROLE nature_isere LOGIN PASSWORD 'o57TED5Ugqft';
+
+-- View: public.espece_nature_isere 
 CREATE OR REPLACE VIEW public.espece_nature_isere AS
     SELECT species.id_specie AS id_species,
         species.french_name AS name,
