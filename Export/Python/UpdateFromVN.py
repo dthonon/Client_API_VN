@@ -24,6 +24,7 @@ import configparser
 from pathlib import Path
 
 import requests
+import urllib
 from requests_oauthlib import OAuth1
 import json
 import gzip
@@ -38,7 +39,7 @@ from pprint import pprint
 __version__= "0.1.1" #VERSION#
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    level = logging.DEBUG)
+                    level = logging.INFO)
 
 def getTaxoGroups(file_store):
     """
@@ -54,42 +55,76 @@ def getTaxoGroups(file_store):
     taxo_groups_list = list()
     for taxo in taxo_groups['data']:
         if (taxo['access_mode'] != 'none'):
-            taxo_groups_list.append(taxo['id'])
+            taxo_groups_list.append(taxo)
     logging.info('Found {} taxo_groups in downloaded files'.format(len(taxo_groups_list)))
     logging.debug(taxo_groups_list)
     return taxo_groups_list
 
 
-class DownloadTable:
+class UpdateObs:
     """
-    Download from an API controler, named table (i.e. species).
+    Download incremental list of changes from site and update database.
     """
 
-    def __init__(self, site, user_email, user_pw, oauth, file_store,
-                 from_date, max_retry=5, max_requests=sys.maxsize):
-      self.site = site
-      self.user_email = user_email
-      self.user_pw = user_pw
-      self.oauth = oauth
-      self.table = 'observations'
-      self.file_store = file_store
-      self.from_date = from_date
-      self.max_retry = max_retry
-      self.max_requests = max_requests
+    def __init__(self, site, max_retry = 5, max_requests = sys.maxsize):
 
-    def get_table(self):
+        # Read configuration parameters
+        config = configparser.ConfigParser()
+        config.read(str(Path.home()) + '/.evn_' + site + '.ini')
+
+        # Import parameters in local variables
+        self.client_key = config['site']['evn_client_key']
+        self.client_secret = config['site']['evn_client_secret']
+        self.user_email = config['site']['evn_user_email']
+        self.user_pw = config['site']['evn_user_pw']
+        self.base_url = config['site']['evn_site']
+        self.file_store = config['site']['evn_file_store'] + '/' + site + '/'
+        self.db_host = config['database']['evn_db_host']
+        self.db_port = config['database']['evn_db_port']
+        self.db_name = config['database']['evn_db_name']
+        self.db_schema = config['database']['evn_db_schema']
+        self.db_group = config['database']['evn_db_group']
+        self.db_user = config['database']['evn_db_user']
+        self.db_pw = config['database']['evn_db_pw']
+
+        self.protected_url = self.base_url + 'api/observations/diff/'  # URL to GET species
+
+        # Using OAuth1 auth helper to get access
+        self.oauth = OAuth1(self.client_key, client_secret=self.client_secret)
+
+        # self.from_date = TODO
+        self.max_retry = max_retry
+        self.max_requests = max_requests
+
+        # # Connect to evn database
+        # conn = psycopg2.connect('dbname={} user={} password={}'.format(evn_db_name, evn_db_user, evn_db_pw))
+        # # Open a cursor to perform database operations
+        # cur = conn.cursor()
+        # # Fetch last modification date
+        # cur.execute('SELECT download_ts FROM {}.download_log ORDER BY download_ts DESC LIMIT 1;'.format(evn_db_schema))
+        # # retrieve the records from the database
+        # records = cur.fetchall()
+        # last_update = records[0][0]
+        # logging.info('Getting updates since {}'.format(last_update))
+        # # Close communication with the database
+        # logging.info('Closing database {}'.format(evn_db_name))
+        # cur.close()
+        # conn.close()
+
+    def get_changes(self):
         """
-        Get all date from one API controler.
+        Get incremental changes through observations/diff.
 
         Loop on calling API for chunks of data and store result in compressed json files.
         """
+
+        logging.info('Getting increment data from {}'.format(self.protected_url))
 
         # Mandatory parameters.
         params = {'user_email': self.user_email, 'user_pw': self.user_pw}
 
         # Create range based on type of get_table
-        # api_range = getTaxoGroups(self.file_store)
-        api_range = list('1')
+        api_range = getTaxoGroups(self.file_store)
 
         ii = 0
         r = iter(api_range)
@@ -109,18 +144,21 @@ class DownloadTable:
                     raise ConnectionError('Too many retries, quitting')
 
                 # Add specific parameters if needed
-                logging.info('Getting data from table {}, id_taxo_group {}'.format(self.table, i))
-                params['id_taxo_group'] = str(i)
+                logging.info('Getting incremental data for taxo_group {} : {}'.format(i['id'], i['name']))
+                params['id_taxo_group'] = str(i['id'])
                 params['modification_type'] = 'all'
-                params['date'] = self.from_date.strftime('%H:%M:%S %d.%m.%Y')
+                # params['date'] = self.from_date.strftime('%H:%M:%S %d.%m.%Y')
+                params['date'] = '10:58:40 12.09.2018'
 
                 # Loop on data requests until end of transfer
                 # With retry on error
                 transferError = 0
                 while True:
                     # GET from API
-                    logging.debug('Params: {}'.format(params))
-                    resp = requests.get(url=self.site, auth=self.oauth, params=params)
+                    payload = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
+                    logging.debug('Params: {}'.format(payload))
+                    headers = {'Content-Type': 'application/json;charset=UTF-8'}
+                    resp = requests.get(url=self.protected_url, auth=self.oauth, params=payload, headers=headers)
                     logging.debug(resp.url)
                     logging.debug(resp.request.headers)
                     logging.debug(resp.headers)
@@ -137,15 +175,18 @@ class DownloadTable:
 
                     # Pretty print to string before store
                     resp_dict = resp.json()
-                    resp_pretty = json.dumps(resp_dict, sort_keys=True, indent=4, separators=(',', ': '))
+                    # logging.debug(json.dumps(resp_dict, sort_keys=True, indent=4, separators=(',', ': ')))
 
-                    # Save in json file, if not empty
-                    if (len(resp_dict['data']) > 0):
-                        file_json_gz = str(Path.home()) + '/' + self.file_store + \
-                            self.table + '_' + str(i) + '_' + str(nb_xfer) + '.json.gz'
-                        logging.info('Received data, storing json to {}'.format(file_json_gz))
-                        with gzip.open(file_json_gz, 'wb', 9) as g:
-                            g.write(resp_pretty.encode())
+                    logging.info('Number of increments : {}'.format(len(resp_dict)))
+
+                    # Loop on list of changes and either insert/update or delete row in database
+                    for diff in resp_dict:
+                        if (diff['modification_type'] == 'updated'):
+                            logging.debug('Création ou mise à jour de {}'.format(diff['id_sighting']))
+                        elif (diff['modification_type'] == 'deleted'):
+                            logging.debug('Suppression de {}'.format(diff['id_sighting']))
+                        else:
+                            logging.error('Type de modification inconnu : {}'.format(diff))
 
                     # Is there more data to come?
                     if (('transfer-encoding' in resp.headers) and (resp.headers['transfer-encoding'] == 'chunked')):
@@ -200,56 +241,14 @@ def main(argv):
 
     (options, args) = parser.parse_args()
 
-    # Read configuration parameters
-    config = configparser.ConfigParser()
-    config.read(str(Path.home()) + '/.evn_' + options.site + '.ini')
-
-    # Import parameters in local variables
-    evn_client_key = config['site']['evn_client_key']
-    evn_client_secret = config['site']['evn_client_secret']
-    evn_user_email = config['site']['evn_user_email']
-    evn_user_pw = config['site']['evn_user_pw']
-    evn_base_url = config['site']['evn_site']
-    evn_file_store = config['site']['evn_file_store'] + '/' + options.site + '/'
-    evn_db_host = config['database']['evn_db_host']
-    evn_db_port = config['database']['evn_db_port']
-    evn_db_name = config['database']['evn_db_name']
-    evn_db_schema = config['database']['evn_db_schema']
-    evn_db_group = config['database']['evn_db_group']
-    evn_db_user = config['database']['evn_db_user']
-    evn_db_pw = config['database']['evn_db_pw']
-    evn_sql_scripts = config['database']['evn_sql_scripts']
-
-    # Connect to evn database
-    conn = psycopg2.connect('dbname={} user={} password={}'.format(evn_db_name, evn_db_user, evn_db_pw))
-    # Open a cursor to perform database operations
-    cur = conn.cursor()
-    # Fetch last modification date
-    cur.execute('SELECT download_ts FROM {}.download_log ORDER BY download_ts DESC LIMIT 1;'.format(evn_db_schema))
-    # retrieve the records from the database
-    records = cur.fetchall()
-    last_update = records[0][0]
-    logging.info('Getting updates since {}'.format(last_update))
-    # Close communication with the database
-    logging.info('Closing database {}'.format(evn_db_name))
-    cur.close()
-    conn.close()
-
-    protected_url = evn_base_url + 'api/observations/diff/'  # URL to GET species
-    logging.info('Getting data from {}'.format(protected_url))
-
-    # Using OAuth1 auth helper
-    oauth = OAuth1(evn_client_key, client_secret=evn_client_secret)
-
-    MAX_REQUESTS = 10 # Limit nb of API requests for quicker test
+    MAX_REQUESTS = 2 # Limit nb of taxo_groups API requests for quicker test
     # MAX_REQUESTS = sys.maxsize # No limit, for production
     # ----------------
     # Observation data
     # ----------------
-    # Get observations in json format
-    t21 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, evn_file_store, \
-                        last_update, max_retry = 1, max_requests = MAX_REQUESTS)
-    t21.get_table()
+    # Get incremental observations in json format
+    t21 = UpdateObs(options.site, max_retry = 1, max_requests = MAX_REQUESTS)
+    t21.get_changes()
 
 # Main wrapper
 if __name__ == "__main__":

@@ -190,12 +190,12 @@ case "$CMD" in
     # Create directories as needed
     INFO "Début téléchargement depuis le site ${config[evn_site]} : début"
     DEBUG "Vers le répertoire $HOME/${config[evn_file_store]}/$SITE/"
-    # ! rm -f "$HOME/${config[evn_file_store]}/$SVG/"*.json.gz
-    # ! mv -f "$HOME/${config[evn_file_store]}/$SITE/"*.json.gz "$HOME/${config[evn_file_store]}/$SVG/"
+    ! rm -f "$HOME/${config[evn_file_store]}/$SVG/"*.json.gz
+    ! mv -f "$HOME/${config[evn_file_store]}/$SITE/"*.json.gz "$HOME/${config[evn_file_store]}/$SVG/"
     expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/CreateLog.sql > $HOME/tmp/CreateLog.sql
     env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
     psql "$SQL_QUIET" --dbname=postgres --file=$HOME/tmp/CreateLog.sql
-    # python3 Python/DownloadFromVN.py $PYTHON_VERBOSE --site=$SITE
+    python3 Python/DownloadFromVN.py $PYTHON_VERBOSE --site=$SITE
     INFO "Téléchargement depuis l'API du site ${config[evn_site]} : fin"
     ;;
 
@@ -224,7 +224,7 @@ case "$CMD" in
     if [ -f "$HOME/${config[evn_sql_scripts]}/$SITE.sql" ]
     then
       DEBUG "5. Execution du script local : $HOME/${config[evn_sql_scripts]}/$SITE.sql"
-      expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" \
+      expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\";evn_external1_name=\"${config[evn_external1_name]}\";evn_external1_pw=\"${config[evn_external1_pw]}\"" \
         --file "$HOME/${config[evn_sql_scripts]}/$SITE.sql" > "$HOME/tmp/$SITE.sql"
       env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
         psql "$SQL_QUIET" --dbname=postgres --file="$HOME/tmp/$SITE.sql"

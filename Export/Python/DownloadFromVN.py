@@ -325,9 +325,9 @@ def main(argv):
     # Observation data
     # ----------------
     # Get observations in json format
-    t21 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'observations', evn_file_store, \
-                        DownloadTable.SPECIES_LIST, max_requests = MAX_REQUESTS)
-    t21.get_table()
+    # t21 = DownloadTable(protected_url, evn_user_email, evn_user_pw, oauth, 'observations', evn_file_store, \
+    #                     DownloadTable.SPECIES_LIST, max_requests = MAX_REQUESTS)
+    # t21.get_table()
 
     # ------------------------
     # Geographical information
