@@ -158,17 +158,6 @@ case "$CMD" in
     INFO "Mail admin : ${config[evn_admin_mail]}"
     ;;
 
-    test)
-    # Testing configuration file
-    INFO "Test de la configuration"
-    DEBUG "Site : $SITE"
-    DEBUG "Logging : $VERBOSE"
-    DEBUG "Working directory $(pwd)"
-    DEBUG "Mail admin : ${config[evn_admin_mail]}"
-    DEBUG "URL site : ${config[evn_site]}"
-    DEBUG "Database name : ${config[evn_db_name]}"
-    ;;
-
     init)
     # Delete and create database
     INFO "Création de la base de données : début"
@@ -259,11 +248,17 @@ case "$CMD" in
     #rm -f "$HOME/tmp/mail_fin.txt"
     ;;
 
-    update)
-    # Update observations since previous download
-    INFO "Mise à jour des données JSON dans Postgresql ${config[evn_db_name]} : début"
-    Python/UpdateFromVN.py "$PYTHON_VERBOSE" --site="$SITE"
-    INFO "Mise à jour des données JSON dans Postgresql ${config[evn_db_name]} : fin"
+    test)
+    # Test mode, with limited volume of data managed
+    INFO "Test de la configuration"
+    DEBUG "Site : $SITE"
+    DEBUG "Logging : $VERBOSE"
+    DEBUG "Working directory $(pwd)"
+    DEBUG "Mail admin : ${config[evn_admin_mail]}"
+    DEBUG "URL site : ${config[evn_site]}"
+    INFO "Téléchargement et stockage en base - MODE TEST : début"
+    Python/export_vn.py "$PYTHON_VERBOSE" --site="$SITE" --test
+    INFO "Téléchargement et stockage en base - MODE TEST : fin"
     ;;
 
     *)
