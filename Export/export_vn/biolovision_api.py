@@ -25,7 +25,7 @@ import urllib
 from requests_oauthlib import OAuth1
 import json
 
-from evnconf import EvnConf
+from export_vn.evnconf import EvnConf
 
 # version of the program:
 __version__= "0.1.1" #VERSION#
@@ -66,6 +66,9 @@ class BiolovisionAPI:
             return resp.json()
 
     def observations_diff(self, taxo_group, delta_time):
+        """
+
+        """
         # Mandatory parameters.
         params = {'user_email': self._config.user_email, 'user_pw': self._config.user_pw}
         # Specific parameters.
