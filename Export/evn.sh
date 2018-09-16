@@ -41,7 +41,8 @@ if [ "$?" != 0 ] ; then echo "Option non reconnue" >&2 ; exit 1 ; fi
 eval set -- "$OPTS"
 VERBOSE=false
 CMD="help"
-SITE=
+SITE=""
+TEST=""
 while true; do
     case "$1" in
         --all ) CMD="all"; shift ;;
@@ -52,7 +53,7 @@ while true; do
         --logfile ) EVN_LOG="$2"; shift 2 ;;
         --site ) SITE="$2"; shift 2 ;;
         --store ) CMD="store"; shift ;;
-        --test ) CMD="test"; shift ;;
+        --test ) TEST="--test"; shift ;;
         --update ) CMD="update"; shift ;;
         -v | --verbose ) VERBOSE=true; shift ;;
         -- ) shift ; if [ -n "$1" ] ; then echo "Option inconnue $1 !" ; exit 1 ; fi ; break ;;
@@ -176,7 +177,7 @@ case "$CMD" in
     ;;
 
     download)
-    # Create directories as needed
+    # Download from VN site and store to JSON file
     INFO "Début téléchargement depuis le site ${config[evn_site]} : début"
     DEBUG "Vers le répertoire $HOME/${config[evn_file_store]}/$SITE/"
     ! rm -f "$HOME/${config[evn_file_store]}/$SVG/"*.json.gz
@@ -184,7 +185,7 @@ case "$CMD" in
     expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/CreateLog.sql > $HOME/tmp/CreateLog.sql
     env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
     psql "$SQL_QUIET" --dbname=postgres --file=$HOME/tmp/CreateLog.sql
-    python3 Python/DownloadFromVN.py $PYTHON_VERBOSE --site=$SITE
+    python3 Python/DownloadFromVN.py "$PYTHON_VERBOSE" "$TEST" --site="$SITE"
     INFO "Téléchargement depuis l'API du site ${config[evn_site]} : fin"
     ;;
 
@@ -225,11 +226,11 @@ case "$CMD" in
     # Download and then Store
     DEBUG "Début téléchargement depuis le site : ${config[evn_site]}" | tee "$HOME/tmp/mail_fin.txt"
     DEBUG "Début téléchargement depuis le site : ${config[evn_site]}" &> "$EVN_LOG"
-    $0 --download $PYTHON_VERBOSE --site="$SITE" --logfile="$EVN_LOG" &>> "$EVN_LOG"
+    $0 --download "$PYTHON_VERBOSE" "$TEST" --site="$SITE" --logfile="$EVN_LOG" &>> "$EVN_LOG"
 
     DEBUG "Chargement des fichiers json dans la base ${config[evn_db_name]}" | tee -a "$HOME/tmp/mail_fin.txt"
     DEBUG "Chargement des fichiers json dans la base ${config[evn_db_name]}" &>> "$EVN_LOG"
-    $0 --store $PYTHON_VERBOSE --site="$SITE" --logfile="$EVN_LOG" &>> "$EVN_LOG"
+    $0 --store "$PYTHON_VERBOSE" "$TEST" --site="$SITE" --logfile="$EVN_LOG" &>> "$EVN_LOG"
 
     DEBUG "Fin transfert depuis le site : ${config[evn_site]}" | tee -a "$HOME/tmp/mail_fin.txt"
     DEBUG "Fin transfert depuis le site : ${config[evn_site]}" &>> "$EVN_LOG"
@@ -256,8 +257,13 @@ case "$CMD" in
     DEBUG "Working directory $(pwd)"
     DEBUG "Mail admin : ${config[evn_admin_mail]}"
     DEBUG "URL site : ${config[evn_site]}"
+
+    # Download from VN site and store to JSON file
+    INFO "Début téléchargement depuis le site : ${config[evn_site]} - TEST"
+    $0 --download "$PYTHON_VERBOSE" --test --site="$SITE"
+
     INFO "Téléchargement et stockage en base - MODE TEST : début"
-    Python/export_vn.py "$PYTHON_VERBOSE" --site="$SITE" --test
+    Python/export_vn.py "$PYTHON_VERBOSE" --site="$SITE" "$PYTHON_VERBOSE"
     INFO "Téléchargement et stockage en base - MODE TEST : fin"
     ;;
 
