@@ -32,13 +32,12 @@
 \c $(evn_db_name)
 SET search_path TO public;
 
+-- Delete and create nature_isere role
+DROP OWNED BY $(evn_external1_name);
+DROP ROLE IF EXISTS $(evn_external1_name);
+CREATE ROLE $(evn_external1_name) LOGIN PASSWORD '$(evn_external1_pw)';
 
--- Delete and create nature_isere role 
-DROP OWNED BY nature_isere;
-DROP ROLE IF EXISTS nature_isere;
-CREATE ROLE nature_isere LOGIN PASSWORD 'o57TED5Ugqft';
-
--- View: public.espece_nature_isere 
+-- View: public.espece_nature_isere
 CREATE OR REPLACE VIEW public.espece_nature_isere AS
     SELECT species.id_specie AS id_species,
         species.french_name AS name,
@@ -53,7 +52,7 @@ CREATE OR REPLACE VIEW public.espece_nature_isere AS
 ALTER TABLE public.espece_nature_isere
     OWNER TO lpo_isere;
 
-GRANT SELECT ON TABLE public.espece_nature_isere TO nature_isere;
+GRANT SELECT ON TABLE public.espece_nature_isere TO $(evn_external1_name);
 GRANT ALL ON TABLE public.espece_nature_isere TO lpo_isere;
 
 -- View: public.espece_nature_isere
@@ -74,7 +73,7 @@ CREATE OR REPLACE VIEW public.lieu_nature_isere AS
 ALTER TABLE public.lieu_nature_isere
     OWNER TO lpo_isere;
 
-GRANT SELECT ON TABLE public.lieu_nature_isere TO nature_isere;
+GRANT SELECT ON TABLE public.lieu_nature_isere TO $(evn_external1_name);
 GRANT ALL ON TABLE public.lieu_nature_isere TO lpo_isere;
 
 -- View: public.espece_nature_isere
@@ -113,5 +112,5 @@ CREATE OR REPLACE VIEW public.obs_nature_isere AS
 ALTER TABLE public.obs_nature_isere
     OWNER TO lpo_isere;
 
-GRANT SELECT ON TABLE public.obs_nature_isere TO nature_isere;
+GRANT SELECT ON TABLE public.obs_nature_isere TO $(evn_external1_name);
 GRANT ALL ON TABLE public.obs_nature_isere TO lpo_isere;

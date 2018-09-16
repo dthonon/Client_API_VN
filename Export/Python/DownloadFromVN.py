@@ -18,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import sys
-# import getopt
 import logging
 from optparse import OptionParser
 import configparser
@@ -30,10 +29,7 @@ import json
 import gzip
 
 # version of the program:
-__version__= "0.1.1" #VERSION#
-
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    level = logging.INFO)
+__version__= "1.0" #VERSION#
 
 def getTaxoGroups(file_store):
     """
@@ -271,6 +267,11 @@ def main(argv):
                       dest='site',
                       help='Nom du site, utilisé pour sélectionner le fichier de paramétrage.',
                      )
+    parser.add_option('-t', '--test',
+                      action='store_true',
+                      dest='test',
+                      help='Force le mode test pour mise au point, qui limite le volume de données téléchargé au départ.'
+                     )
 
     (options, args) = parser.parse_args()
 
@@ -286,14 +287,24 @@ def main(argv):
     evn_base_url = config['site']['evn_site']
     evn_file_store = config['site']['evn_file_store'] + '/' + options.site + '/'
 
+    if (options.verbose) :
+        logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                            level = logging.DEBUG)
+    else :
+        logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                            level = logging.INFO)
+
     protected_url = evn_base_url + 'api/'  # URL to GET species
     logging.info('Getting data from {}'.format(protected_url))
 
     # Using OAuth1 auth helper
     oauth = OAuth1(evn_client_key, client_secret=evn_client_secret)
 
-    # MAX_REQUESTS = 10 # Limit nb of API requests for quicker test
-    MAX_REQUESTS = sys.maxsize # No limit, for production
+    if (options.test) :
+        MAX_REQUESTS = 10 # Limit nb of API requests for quick test
+        logging.warn('Test mode with limit at {} requests'.format(MAX_REQUESTS))
+    else:
+        MAX_REQUESTS = sys.maxsize # No limit, for production
 
     # -------------------
     # Organizational data
