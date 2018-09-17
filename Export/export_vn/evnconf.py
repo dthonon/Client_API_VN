@@ -2,28 +2,12 @@
 """
 evnconf: expose local configuration parameters as properties of class EvnConf
 
-Copyright (C) 2018, Daniel Thonon
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import sys
-from optparse import OptionParser
 import configparser
 from pathlib import Path
 
 # version of the program:
-__version__= "1.0.0" #VERSION#
+__version__ = "1.0.0" #VERSION#
 
 class EvnConf:
     """
@@ -56,68 +40,85 @@ class EvnConf:
 
     @property
     def site(self):
+        """Return site name, used to identify configuration file."""
         return self._site
 
     @property
     def client_key(self):
+        """Return oauth1 client_key, used to connect to VisioNature site."""
         return self._client_key
 
     @property
     def client_secret(self):
+        """Return oauth1 client_secret, used to connect to VisioNature site."""
         return self._client_secret
 
     @property
     def user_email(self):
+        """Return user email, used to connect to VisioNature site."""
         return self._user_email
 
     @property
     def user_pw(self):
+        """Return user password, used to connect to VisioNature site."""
         return self._user_pw
 
     @property
     def base_url(self):
+        """Return base URL of VisioNature site, used as prefix for API calls."""
         return self._base_url
 
     @property
     def file_store(self):
+        """Return directory, under $HOME, where downloaded files are stored."""
         return self._file_store
 
     @property
     def db_host(self):
+        """Return hostname of Postgresql server."""
         return self._db_host
 
     @property
     def db_port(self):
+        """Return IP port of Postgresql server."""
         return self._db_port
 
     @property
     def db_name(self):
+        """Return database name."""
         return self._db_name
 
     @property
     def db_schema(self):
+        """Return database schema where data is stored."""
         return self._db_schema
 
     @property
     def db_group(self):
+        """Return group ROLE that gets access to tables."""
         return self._db_group
 
     @property
     def db_user(self):
+        """Return user ROLE that owns the tables."""
         return self._db_user
 
     @property
     def db_pw(self):
+        """Return db_user PASSWORD."""
         return self._db_pw
 
     @property
     def sql_scripts(self):
+        """Return directory, under $HOME, where SQL scipts are stored."""
         return self._sql_scripts
 
     @property
     def external1_name(self):
+        """Return user 1 for external access to database. Site specific."""
         return self._external1_name
 
     @property
     def external1_pw(self):
+        """Return user 1 password."""
         return self._external1_pw

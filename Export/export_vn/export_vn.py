@@ -2,31 +2,18 @@
 """
 Program managing VisioNature export to Postgresql database
 
-Copyright (C) 2018, Daniel Thonon
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import sys
 import logging
-from optparse import OptionParser
+import argparse
 import json
 
 from evnconf import EvnConf
 from biolovision_api import BiolovisionAPI
 
 # version of the program:
-__version__= "0.1.1" #VERSION#
+__version__ = "0.1.1" #VERSION#
 
 class UpdateObs:
     """
@@ -40,11 +27,13 @@ class UpdateObs:
 
         # self.from_date = TODO
         # # Connect to evn database
-        # conn = psycopg2.connect('dbname={} user={} password={}'.format(evn_db_name, evn_db_user, evn_db_pw))
+        # conn = psycopg2.connect('dbname={} user={} ' +
+        # 'password={}'.format(evn_db_name, evn_db_user, evn_db_pw))
         # # Open a cursor to perform database operations
         # cur = conn.cursor()
         # # Fetch last modification date
-        # cur.execute('SELECT download_ts FROM {}.download_log ORDER BY download_ts DESC LIMIT 1;'.format(evn_db_schema))
+        # cur.execute('SELECT download_ts FROM {}.download_log ' + '
+        # ORDER BY download_ts DESC LIMIT 1;'.format(evn_db_schema))
         # # retrieve the records from the database
         # records = cur.fetchall()
         # last_update = records[0][0]
@@ -63,9 +52,9 @@ class UpdateObs:
         taxo_groups = api.taxo_groups_list()
         taxo_groups_list = list()
         for taxo in taxo_groups['data']:
-            if (taxo['access_mode'] != 'none'):
+            if taxo['access_mode'] != 'none':
                 taxo_groups_list.append(taxo)
-        logging.info('Found {} active taxo_groups'.format(len(taxo_groups_list)))
+        logging.info('Found %i active taxo_groups', len(taxo_groups_list))
         logging.debug(taxo_groups_list)
         return taxo_groups_list
 
@@ -76,57 +65,51 @@ class UpdateObs:
         Loop on taxo_groups
         """
 
-        logging.info('Getting increment data from {}'.format(self._config.site))
+        logging.info('Getting increment data from %s', self._config.site)
         evn_api = BiolovisionAPI(self._config, self._max_retry, self._max_requests)
 
         # Create range iterator based on taxo_groups
         taxo_groups = iter(self.get_taxo_groups(evn_api))
 
-        ii = 0
+        nb_requests = 0
         try:
-            while ii < self._max_requests:
-                if (evn_api.transfer_errors == 0):
+            while nb_requests < self._max_requests:
+                if evn_api.transfer_errors == 0:
                     # No errors, moving to next item
-                    ii += 1
+                    nb_requests += 1
                     taxon = next(taxo_groups)
-                elif (evn_api.transfer_errors < self._max_retry):
+                elif evn_api.transfer_errors < self._max_retry:
                     # Errors, retrying same item
-                    logging.info('Retrying transfer for {} time'.format(evn_api.transfer_errors))
+                    logging.info('Retrying transfer for %i time', evn_api.transfer_errors)
                 else:
                     logging.error('Too many retries, quitting')
                     raise ConnectionError('Too many retries, quitting')
 
                 # Get list of updates from API
-                logging.info('Getting incremental data for taxo_group {} : {}'.format(taxon['id'], taxon['name']))
-                resp_dict = evn_api.observations_diff(taxon['id'], '10:58:40 14.09.2018')
-                logging.debug(json.dumps(resp_dict, sort_keys=True, indent=4, separators=(',', ': ')))
+                logging.info('Getting incremental data for taxo_group %s : %s',
+                             taxon['id'], taxon['name'])
+                resp_dict = evn_api.observations_diff(taxon['id'],
+                                                      '10:58:40 14.09.2018')
+                logging.debug(json.dumps(resp_dict, sort_keys=True,
+                                         indent=4, separators=(',', ': ')))
 
-                logging.info('Number of increments : {}'.format(len(resp_dict)))
+                logging.info('Number of increments : %i', len(resp_dict))
 
                 # Loop on list of changes and either insert/update or delete row in database
                 for diff in resp_dict:
-                    if (diff['modification_type'] == 'updated'):
-                        logging.debug('Création ou mise à jour de {}'.format(diff['id_sighting']))
-                    elif (diff['modification_type'] == 'deleted'):
-                        logging.debug('Suppression de {}'.format(diff['id_sighting']))
+                    if diff['modification_type'] == 'updated':
+                        logging.debug('Création ou mise à jour de %s', diff['id_sighting'])
+                    elif diff['modification_type'] == 'deleted':
+                        logging.debug('Suppression de %s', diff['id_sighting'])
                     else:
-                        logging.error('Type de modification inconnu : {}'.format(diff))
+                        logging.error('Type de modification inconnu : %s', diff)
 
 
         except StopIteration:
-            logging.info('End of loop for {} API'.format(self.table))
+            logging.info('End of loop for observations/diff API')
 
         return
 
-
-def script_shortname():
-    """return the name of this script without a path component."""
-    return os.path.basename(sys.argv[0])
-
-def print_usage():
-    """print a short summary of the scripts function."""
-    print(('%-20s: Téléchargement incrémental des données Biolovision '+\
-           'Ecrit en python ...\n') % script_shortname())
 
 def main(argv):
     """
@@ -134,45 +117,34 @@ def main(argv):
     """
 
     # Get options
-    # command-line options and command-line help:
-    usage = 'usage: %prog [options] {files}'
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-v', '--verbose',
+                        help='increase output verbosity',
+                        action='store_true')
+    parser.add_argument('-t', '--test',
+                        help='test mode, with limited download volume',
+                        action='store_true')
+    parser.add_argument('-s', '--site',
+                        help='site name, used to select config file',
+                        action='store_true')
 
-    parser = OptionParser(usage=usage,
-                          version='%%prog %s' % __version__,
-                          description='Téléchargement des données Biolovision.')
-    parser.add_option('-v', '--verbose',
-                      action='store_true',
-                      dest='verbose',
-                      help='Traces de mise au point.'
-                     )
-    parser.add_option('-s', '--site',
-                      dest='site',
-                      help='Nom du site, utilisé pour sélectionner le fichier de paramétrage.'
-                     )
-    parser.add_option('-t', '--test',
-                      action='store_true',
-                      dest='test',
-                      help='Force le mode test pour mise au point, qui limite le volume de données téléchargé au départ.'
-                     )
+    args = parser.parse_args()
 
-    (options, args) = parser.parse_args()
-
-    if (options.verbose) :
+    if args.verbose:
         logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                            level = logging.DEBUG)
-    else :
+                            level=logging.DEBUG)
+    else:
         logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                            level = logging.INFO)
+                            level=logging.INFO)
 
-    if (options.test) :
-        MAX_REQUESTS = 2 # Limit nb of taxo_groups API requests for quicker test
-        # Get incremental observations in json format
-        config = EvnConf(options.site)
-        t21 = UpdateObs(config, max_retry = 1, max_requests = MAX_REQUESTS)
+    # Get incremental observations in json format
+    if args.test:
+        # Limit nb of taxo_groups API requests for quicker test
+        config = EvnConf(args.site)
+        t21 = UpdateObs(config, max_retry=1, max_requests=2)
         t21.get_changes()
     else:
-        MAX_REQUESTS = sys.maxsize # No limit, for production
-        logging.warn('Seul --test est implémenté')
+        logging.warning('Seul --test est implémenté')
 
 # Main wrapper
 if __name__ == "__main__":

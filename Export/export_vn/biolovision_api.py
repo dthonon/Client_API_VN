@@ -2,33 +2,17 @@
 """
 Provide python interface to Biolovision API
 
-Copyright (C) 2018, Daniel Thonon
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import sys
 import logging
 
-import requests
-import urllib
-from requests_oauthlib import OAuth1
 import json
-
-from export_vn.evnconf import EvnConf
+import urllib
+import requests
+from requests_oauthlib import OAuth1
 
 # version of the program:
-__version__= "0.1.1" #VERSION#
+__version__ = "0.1.1" #VERSION#
 
 class BiolovisionAPI:
     """
@@ -47,38 +31,85 @@ class BiolovisionAPI:
 
     @property
     def transfer_errors(self):
+        """Return the number of HTTP errors during this session."""
         return self._transfer_errors
 
     def _url_get(self, params, scope):
+        """Internal function used to GET from Biolovision API.
+
+        Prepare the URL header, perform HTTP GET and return json content.
+        Test HTTP status and returns None if error, else retrun decoded json content.
+        Increments _transfer_errors in case of error.
+
+        Parameters
+        ----------
+        params : dict of 'parameter name': 'parameter value'
+            params is used to build URL GET string.
+        scope : str
+            scope is the api to be queried, for example 'taxo_groups/'.
+
+        Returns
+        -------
+        json : dict or None
+            dict decoded from json if status OK, else None
+
+        """
         # GET from API
         payload = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
-        logging.debug('Params: {}'.format(payload))
+        logging.debug('Params: %s', payload)
         headers = {'Content-Type': 'application/json;charset=UTF-8'}
         protected_url = self._api_url + scope
         resp = requests.get(url=protected_url, auth=self._oauth, params=payload, headers=headers)
         logging.debug(resp.headers)
-        logging.debug('Status code from GET request: {}'.format(resp.status_code))
+        logging.debug('Status code from GET request: %s', resp.status_code)
         if resp.status_code != 200:
-            logging.error('GET status code = {}, for URL {}'.format(resp.status_code, protected_url))
+            logging.error('GET status code = %s, for URL %s', resp.status_code, protected_url)
             self._transfer_errors += 1
             return None
         else:
             return resp.json()
 
-    def observations_diff(self, taxo_group, delta_time):
-        """
+    def observations_diff(self, id_taxo_group, delta_time, modification_type='all'):
+        """Return list of updates or deletions since a given date
+
+        Calls /observations/diff to get list of created/updated or deleted observations
+        since a given date (max 10 weeks backward).
+
+        Parameters
+        ----------
+        id_taxo_group : str
+            taxo group from which to query diff.
+            If no id_taxo_group is given, default taxonomic groupe for the current user is used.
+        delta_time : str
+            Start of time interval to query.
+        modification_type : str
+            Type of diff queried : can be only_modified, only_deleted or all (default).
+
+        Returns
+        -------
+        json : dict or None
+            dict decoded from json if status OK, else None
 
         """
         # Mandatory parameters.
         params = {'user_email': self._config.user_email, 'user_pw': self._config.user_pw}
         # Specific parameters.
-        params['id_taxo_group'] = str(taxo_group)
-        params['modification_type'] = 'all'
+        params['id_taxo_group'] = str(id_taxo_group)
+        params['modification_type'] = modification_type
         params['date'] = delta_time
         # GET from API
         return self._url_get(params, 'observations/diff/')
 
     def taxo_groups_list(self):
+        """Return list of taxo groups.
+
+        Calls /taxo_groups API to get the list of all taxo groups.
+
+        Returns
+        -------
+        json : dict or None
+            dict decoded from json if status OK, else None
+        """
         # Mandatory parameters.
         params = {'user_email': self._config.user_email, 'user_pw': self._config.user_pw}
         # GET from API

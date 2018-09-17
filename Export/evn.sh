@@ -249,15 +249,9 @@ case "$CMD" in
     #rm -f "$HOME/tmp/mail_fin.txt"
     ;;
 
-    test)
+    update)
     # Test mode, with limited volume of data managed
-    INFO "Test de la configuration"
-    DEBUG "Site : $SITE"
-    DEBUG "Logging : $VERBOSE"
-    DEBUG "Working directory $(pwd)"
-    DEBUG "Mail admin : ${config[evn_admin_mail]}"
-    DEBUG "URL site : ${config[evn_site]}"
-
+    INFO "Mise à jour incrémentale des données"
     # Download from VN site and store to JSON file
     INFO "Début téléchargement depuis le site : ${config[evn_site]} - TEST"
     $0 --download "$PYTHON_VERBOSE" --test --site="$SITE"
