@@ -79,7 +79,6 @@ class BiolovisionAPI:
         ----------
         id_taxo_group : str
             taxo group from which to query diff.
-            If no id_taxo_group is given, default taxonomic groupe for the current user is used.
         delta_time : str
             Start of time interval to query.
         modification_type : str

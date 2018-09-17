@@ -252,12 +252,9 @@ case "$CMD" in
     update)
     # Test mode, with limited volume of data managed
     INFO "Mise à jour incrémentale des données"
-    # Download from VN site and store to JSON file
-    INFO "Début téléchargement depuis le site : ${config[evn_site]} - TEST"
-    $0 --download "$PYTHON_VERBOSE" --test --site="$SITE"
 
     INFO "Téléchargement et stockage en base - MODE TEST : début"
-    export_vn/export_vn.py "$PYTHON_VERBOSE" --site="$SITE" "$PYTHON_VERBOSE"
+    export_vn/export_vn.py "$PYTHON_VERBOSE" "$TEST" "$SITE"
     INFO "Téléchargement et stockage en base - MODE TEST : fin"
     ;;
 

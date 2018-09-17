@@ -121,15 +121,16 @@ def main(argv):
     parser.add_argument('-v', '--verbose',
                         help='increase output verbosity',
                         action='store_true')
+    parser.add_argument('-q', '--quiet',
+                        help='reduce output verbosity',
+                        action='store_true')
     parser.add_argument('-t', '--test',
                         help='test mode, with limited download volume',
                         action='store_true')
-    parser.add_argument('-s', '--site',
-                        help='site name, used to select config file',
-                        action='store_true')
+    parser.add_argument('site',
+                        help='site name, used to select config file')
 
     args = parser.parse_args()
-
     if args.verbose:
         logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                             level=logging.DEBUG)
@@ -137,6 +138,7 @@ def main(argv):
         logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                             level=logging.INFO)
 
+    logging.info('Getting incremental data from %s', args.site)
     # Get incremental observations in json format
     if args.test:
         # Limit nb of taxo_groups API requests for quicker test
