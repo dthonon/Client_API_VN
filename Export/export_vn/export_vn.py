@@ -44,8 +44,8 @@ class UpdateObs:
         # conn.close()
         # params['date'] = self.from_date.strftime('%H:%M:%S %d.%m.%Y')
 
-
-    def get_taxo_groups(self, api):
+    @staticmethod
+    def get_taxo_groups(api):
         """
         Get the taxo_groups from API and return the list of active taxo groups
         """
@@ -111,7 +111,7 @@ class UpdateObs:
         return
 
 
-def main(argv):
+def main():
     """
     Main.
     """
@@ -150,4 +150,4 @@ def main(argv):
 
 # Main wrapper
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main()

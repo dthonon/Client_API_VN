@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# pylint: disable=too-many-instance-attributes
 """
 evnconf: expose local configuration parameters as properties of class EvnConf
 

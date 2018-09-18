@@ -6,7 +6,6 @@ Provide python interface to Biolovision API
 import sys
 import logging
 
-import json
 import urllib
 import requests
 from requests_oauthlib import OAuth1
@@ -15,8 +14,7 @@ from requests_oauthlib import OAuth1
 __version__ = "0.1.1" #VERSION#
 
 class BiolovisionAPI:
-    """
-    Provide python iterators over Biolovision API functions.
+    """Provide python functions for Biolovision API functions.
     """
 
     def __init__(self, config, max_retry=5, max_requests=sys.maxsize):

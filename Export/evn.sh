@@ -254,7 +254,7 @@ case "$CMD" in
     INFO "Mise à jour incrémentale des données"
 
     INFO "Téléchargement et stockage en base - MODE TEST : début"
-    export_vn/export_vn.py "$PYTHON_VERBOSE" "$TEST" "$SITE"
+    export_vn/export_vn.py $PYTHON_VERBOSE $TEST $SITE
     INFO "Téléchargement et stockage en base - MODE TEST : fin"
     ;;
 

@@ -29,8 +29,8 @@ def test_taxo_groups_list():
 def test_observations_diff(capsys):
     """Get list of diffs from last day."""
     since = (datetime.now() - timedelta(days=1)).strftime('%H:%M:%S %d.%m.%Y')
-    # with capsys.disabled():
-    #     print('\nGetting updates since {}'.format(since))
+    with capsys.disabled():
+        print('\nGetting updates since {}'.format(since))
     diff = EVN_API.observations_diff('1', since)
     assert EVN_API.transfer_errors == 0
     assert len(diff) > 0
