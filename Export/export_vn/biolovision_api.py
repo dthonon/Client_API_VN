@@ -1,6 +1,13 @@
-#!/usr/bin/env python3
-"""
-Provide python interface to Biolovision API
+"""Provide python interface to Biolovision APIself.
+
+Methods
+
+-   observations_diff          - Return list of updates or deletions since a given date
+-   taxo_groups_list           - Return list of taxo groups
+
+Properties
+
+-   transfer_errors            - Return number of HTTP errors
 
 """
 import sys
@@ -68,7 +75,7 @@ class BiolovisionAPI:
             return resp.json()
 
     def observations_diff(self, id_taxo_group, delta_time, modification_type='all'):
-        """Return list of updates or deletions since a given date
+        """Return list of updates or deletions since a given date.
 
         Calls /observations/diff to get list of created/updated or deleted observations
         since a given date (max 10 weeks backward).
@@ -111,3 +118,23 @@ class BiolovisionAPI:
         params = {'user_email': self._config.user_email, 'user_pw': self._config.user_pw}
         # GET from API
         return self._url_get(params, 'taxo_groups/')
+
+    def taxo_groups_get(self, id_taxo_group):
+        """Return list of taxo groups.
+
+        Calls /taxo_groups/%id% API to get a taxo group.
+
+        Parameters
+        ----------
+        id_taxo_group : str
+            taxo group from which to query diff.
+
+        Returns
+        -------
+        json : dict or None
+            dict decoded from json if status OK, else None
+        """
+        # Mandatory parameters.
+        params = {'user_email': self._config.user_email, 'user_pw': self._config.user_pw}
+        # GET from API
+        return self._url_get(params, 'taxo_groups/' + str(id_taxo_group))

@@ -26,6 +26,12 @@ def test_taxo_groups_list():
     assert len(taxo_groups['data']) > 30
     assert taxo_groups['data'][0]['name'] == 'Oiseaux'
 
+def test_taxo_groups_get():
+    """Get a taxo_groups."""
+    taxo_groups = EVN_API.taxo_groups_get('2')
+    assert EVN_API.transfer_errors == 0
+    assert taxo_groups['data'][0]['name'] == 'Chauves-souris'
+
 def test_observations_diff(capsys):
     """Get list of diffs from last day."""
     since = (datetime.now() - timedelta(days=1)).strftime('%H:%M:%S %d.%m.%Y')
