@@ -2,12 +2,13 @@
 
 Methods
 
--   observations_diff          - Return list of updates or deletions since a given date
--   taxo_groups_list           - Return list of taxo groups
+- observations_diff          - Return list of updates or deletions since a given date
+- observations_get           - Get a single information
+- taxo_groups_list           - Return list of taxo groups
 
 Properties
 
--   transfer_errors            - Return number of HTTP errors
+- transfer_errors            - Return number of HTTP errors
 
 """
 import sys
@@ -39,6 +40,9 @@ class BiolovisionAPI:
         """Return the number of HTTP errors during this session."""
         return self._transfer_errors
 
+    # ----------------
+    # Internal methods
+    # ----------------
     def _url_get(self, params, scope):
         """Internal function used to GET from Biolovision API.
 
@@ -74,6 +78,9 @@ class BiolovisionAPI:
         else:
             return resp.json()
 
+    # ------------------------------
+    # Observations controler methods
+    # ------------------------------
     def observations_diff(self, id_taxo_group, delta_time, modification_type='all'):
         """Return list of updates or deletions since a given date.
 
@@ -104,6 +111,29 @@ class BiolovisionAPI:
         # GET from API
         return self._url_get(params, 'observations/diff/')
 
+    def observations_get(self, id_species):
+        """Return all sighting data for a single observation.
+
+        Calls /observations/%id% API to get a sighting.
+
+        Parameters
+        ----------
+        id_species : str
+            sighting to retrieve.
+
+        Returns
+        -------
+        json : dict or None
+            dict decoded from json if status OK, else None
+        """
+        # Mandatory parameters.
+        params = {'user_email': self._config.user_email, 'user_pw': self._config.user_pw}
+        # GET from API
+        return self._url_get(params, 'observations/' + str(id_species))
+
+    # ----------------------------
+    # Taxo_group controler methods
+    # ----------------------------
     def taxo_groups_list(self):
         """Return list of taxo groups.
 
@@ -120,14 +150,14 @@ class BiolovisionAPI:
         return self._url_get(params, 'taxo_groups/')
 
     def taxo_groups_get(self, id_taxo_group):
-        """Return list of taxo groups.
+        """Return a taxo group.
 
         Calls /taxo_groups/%id% API to get a taxo group.
 
         Parameters
         ----------
         id_taxo_group : str
-            taxo group from which to query diff.
+            taxo group to retrieve.
 
         Returns
         -------
