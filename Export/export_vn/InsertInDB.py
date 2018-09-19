@@ -1,21 +1,8 @@
 #!/usr/bin/env python3
+# pylint: skip-file
 """
 InsertInDB: stores json sightings in PG database.
 
-Copyright (C) 2018, Daniel Thonon
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import sys
 import logging
@@ -251,7 +238,7 @@ def main(argv):
             if ('update_date' in json_obs['observers'][0]):
                 update_date = json_obs['observers'][0]['update_date']['@timestamp']
             else:
-                update_date = json_obs['observers'][0]['insert_date']
+                update_date = json_obs['observers'][0]['insert_date']['@timestamp']
             # Keep track of insertions
             obs_id = json_obs['observers'][0]['id_sighting']
             if (inserted_obs.exists(obs_id)):
@@ -281,7 +268,7 @@ def main(argv):
                     if ('update_date' in json_obs['observers'][0]):
                         update_date = json_obs['observers'][0]['update_date']['@timestamp']
                     else:
-                        update_date = json_obs['observers'][0]['insert_date']
+                        update_date = json_obs['observers'][0]['insert_date']['@timestamp']
                     # Keep track of insertions
                     obs_id = json_obs['observers'][0]['id_sighting']
                     if (inserted_obs.exists(obs_id)):
