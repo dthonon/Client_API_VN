@@ -238,7 +238,7 @@ def main(argv):
             if ('update_date' in json_obs['observers'][0]):
                 update_date = json_obs['observers'][0]['update_date']['@timestamp']
             else:
-                update_date = json_obs['observers'][0]['insert_date']
+                update_date = json_obs['observers'][0]['insert_date']['@timestamp']
             # Keep track of insertions
             obs_id = json_obs['observers'][0]['id_sighting']
             if (inserted_obs.exists(obs_id)):
@@ -268,7 +268,7 @@ def main(argv):
                     if ('update_date' in json_obs['observers'][0]):
                         update_date = json_obs['observers'][0]['update_date']['@timestamp']
                     else:
-                        update_date = json_obs['observers'][0]['insert_date']
+                        update_date = json_obs['observers'][0]['insert_date']['@timestamp']
                     # Keep track of insertions
                     obs_id = json_obs['observers'][0]['id_sighting']
                     if (inserted_obs.exists(obs_id)):
