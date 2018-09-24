@@ -251,7 +251,7 @@ def main(argv):
             if ('update_date' in json_obs['observers'][0]):
                 update_date = json_obs['observers'][0]['update_date']['@timestamp']
             else:
-                update_date = json_obs['observers'][0]['insert_date']
+                update_date = json_obs['observers'][0]['insert_date']['@timestamp']
             # Keep track of insertions
             obs_id = json_obs['observers'][0]['id_sighting']
             if (inserted_obs.exists(obs_id)):
@@ -281,7 +281,7 @@ def main(argv):
                     if ('update_date' in json_obs['observers'][0]):
                         update_date = json_obs['observers'][0]['update_date']['@timestamp']
                     else:
-                        update_date = json_obs['observers'][0]['insert_date']
+                        update_date = json_obs['observers'][0]['insert_date']['@timestamp']
                     # Keep track of insertions
                     obs_id = json_obs['observers'][0]['id_sighting']
                     if (inserted_obs.exists(obs_id)):
@@ -378,6 +378,7 @@ def main(argv):
         for i in range(0, len(places_chunk['data'])):
             json_place = places_chunk['data'][i]
             # Insert row
+
             cur.execute('INSERT INTO {}.places_json (id_place, place, coord_lat, coord_lon) VALUES (%s, %s, %s, %s)'.format(evn_db_schema),
                         (json_place['id'],
                          json.dumps(json_place),
