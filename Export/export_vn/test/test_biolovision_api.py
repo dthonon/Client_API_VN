@@ -2,10 +2,18 @@
 """
 Test each API call of biolovision_api module.
 """
+import sys
 from datetime import datetime, timedelta
 from pathlib import Path
-from export_vn.biolovision_api import BiolovisionAPI
+import logging
+import requests
+import pytest
+
+from export_vn.biolovision_api import BiolovisionAPI, HTTPError, MaxChunksError
 from export_vn.evnconf import EvnConf
+
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level = logging.INFO)
 
 # Using t38 site, that needs to be created first
 SITE = 't38'
@@ -17,20 +25,14 @@ def test_site():
 
 # Get configuration for test site
 CFG = EvnConf(SITE)
-EVN_API = BiolovisionAPI(CFG, 2, 5)
+EVN_API = BiolovisionAPI(CFG, max_retry=5,
+                         max_requests=sys.maxsize, max_chunks = 10)
+EVN_API_ERR = BiolovisionAPI(CFG, max_retry=1,
+                             max_requests=1, max_chunks = 1)
 
-def test_taxo_groups_list():
-    """Get list of taxo_groups."""
-    taxo_groups = EVN_API.taxo_groups_list()
-    assert EVN_API.transfer_errors == 0
-    assert len(taxo_groups['data']) > 30
-    assert taxo_groups['data'][0]['name'] == 'Oiseaux'
-
-def test_taxo_groups_get():
-    """Get a taxo_groups."""
-    taxo_groups = EVN_API.taxo_groups_get('2')
-    assert EVN_API.transfer_errors == 0
-    assert taxo_groups['data'][0]['name'] == 'Chauves-souris'
+# ------------------------------
+# Observations controler methods
+# ------------------------------
 
 def test_observations_diff(capsys):
     """Get list of diffs from last day."""
@@ -48,14 +50,14 @@ def test_observations_diff(capsys):
 def test_observations_get(capsys):
     """Get a specific sighting."""
     sighting = EVN_API.observations_get('2246086')
-    with capsys.disabled():
-        timing = sighting['data']['sightings'][0]['observers'][0]['timing']['@timestamp']
-        timing_datetime = datetime.fromtimestamp(float(timing))
-        print('\ntiming_datetime datetime = {}'.format(
-            timing_datetime.strftime('%Y-%m-%d %H:%M:%S')))
-        insert_date = sighting['data']['sightings'][0]['observers'][0]['insert_date']['@timestamp']
-        insert_datetime = datetime.fromtimestamp(float(insert_date))
-        print('insert_date datetime = {}'.format(insert_datetime.strftime('%Y-%m-%d %H:%M:%S')))
+    # with capsys.disabled():
+    #     timing = sighting['data']['sightings'][0]['observers'][0]['timing']['@timestamp']
+    #     timing_datetime = datetime.fromtimestamp(float(timing))
+    #     print('\ntiming_datetime datetime = {}'.format(
+    #         timing_datetime.strftime('%Y-%m-%d %H:%M:%S')))
+    #     insert_date = sighting['data']['sightings'][0]['observers'][0]['insert_date']['@timestamp']
+    #     insert_datetime = datetime.fromtimestamp(float(insert_date))
+    #     print('insert_date datetime = {}'.format(insert_datetime.strftime('%Y-%m-%d %H:%M:%S')))
     assert sighting == {
         'data':{
             'sightings': [{
@@ -126,3 +128,69 @@ def test_observations_get(capsys):
                     'anonymous': '0',
                     'coord_lon': '5.735458',
                     '@id': '33'}]}]}}
+
+# -------------------------
+# Species controler methods
+# -------------------------
+def test_species_get(capsys):
+    """Get a single specie."""
+    logging.debug('Getting species from taxo_group #s', '2')
+    specie = EVN_API.species_get('2')
+    assert EVN_API.transfer_errors == 0
+    assert specie['data'][0]['french_name'] == 'Plongeon arctique'
+
+def test_species_list_all(capsys):
+    """Get list of all species."""
+    species_list = EVN_API.species_list()
+    logging.info('Received %d species', len(species_list['data']))
+    assert EVN_API.transfer_errors == 0
+    assert len(species_list['data']) >= 38820
+
+def test_species_list_1(capsys):
+    """Get a list of species from taxo_group 1."""
+    species_list = EVN_API.species_list('1')
+    with capsys.disabled():
+        print('Taxo_group 1 ==> {} species'.format(len(species_list['data'])))
+    assert EVN_API.transfer_errors == 0
+    assert len(species_list['data']) > 11150
+    assert species_list['data'][0]['french_name'] == 'Plongeon catmarin'
+
+def test_species_list_30(capsys):
+    """Get a list of species from taxo_group 30."""
+    species_list = EVN_API.species_list('30')
+    with capsys.disabled():
+        print('Taxo_group 30 ==> {} species'.format(len(species_list['data'])))
+    assert EVN_API.transfer_errors == 0
+    assert species_list['data'][0]['french_name'] == 'Aucune espèce'
+
+def test_species_list_error(capsys):
+    """Get a list of species from taxo_group 1."""
+    with pytest.raises(MaxChunksError) as excinfo:
+        species_list = EVN_API_ERR.species_list('1')
+
+
+# ----------------------------
+# Taxo_group controler methods
+# ----------------------------
+def test_taxo_groups_list():
+    """Get list of taxo_groups."""
+    taxo_groups = EVN_API.taxo_groups_list()
+    assert EVN_API.transfer_errors == 0
+    assert len(taxo_groups['data']) > 30
+    assert taxo_groups['data'][0]['name'] == 'Oiseaux'
+
+def test_taxo_groups_get():
+    """Get a taxo_groups."""
+    taxo_group = EVN_API.taxo_groups_get('2')
+    assert EVN_API.transfer_errors == 0
+    assert taxo_group['data'][0]['name'] == 'Chauves-souris'
+
+# # -------------
+# # Error testing
+# # -------------
+# def test_wrong_api():
+#     """Raise an exception."""
+#     with pytest.raises(requests.HTTPError) as excinfo:
+#         error = EVN_API.wrong_api()
+#     assert EVN_API.transfer_errors != 0
+#     logging.info('HTTPError code %s', excinfo)
