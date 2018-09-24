@@ -30,7 +30,6 @@ import logging
 import urllib
 import requests
 from requests_oauthlib import OAuth1
-import json
 
 # version of the program:
 __version__ = "0.1.1" #VERSION#
@@ -126,15 +125,16 @@ class BiolovisionAPI:
                 raise HTTPError(resp.status_code)
 
             # Is there more data to come?
-            if ('transfer-encoding' in resp.headers) and (resp.headers['transfer-encoding'] == 'chunked'):
+            if (('transfer-encoding' in resp.headers) and
+                    (resp.headers['transfer-encoding'] == 'chunked')):
                 logging.debug('Chunked transfer => requesting for more, with key: %s',
-                             resp.headers['pagination_key'])
+                              resp.headers['pagination_key'])
                 # Update request parameters to get next chunk
                 params['pagination_key'] = resp.headers['pagination_key']
                 nb_chunks += 1
             else:
                 logging.debug('Non-chunked transfer => finished requests')
-                if ('pagination_key' in params):
+                if 'pagination_key' in params:
                     del params['pagination_key']
                 break
 
@@ -148,11 +148,13 @@ class BiolovisionAPI:
         """Return list of taxo groups, from cache or site."""
         if len(self.__taxo_group_list) == 0:
             # No cache, get from site
-            taxo_groups = self.taxo_groups_list()
-            for taxo in taxo_groups['data']:
-                logging.debug('taxo_group %s, access %s', taxo['id'], taxo['access_mode'])
-                self.__taxo_group_list[taxo['id']] = taxo['access_mode']
-        return self.__taxo_group_list
+            logging.debug('First call to taxo_groups_list, getting from site to cache')
+            params = {'user_email': self._config.user_email, 'user_pw': self._config.user_pw}
+            taxo_groups = self._url_get(params, 'taxo_groups')
+            # for taxo in taxo_groups['data']:
+            #     logging.debug('taxo_group %s, access %s', taxo['id'], taxo['access_mode'])
+            #     self.__taxo_group_list[taxo['id']] = taxo['access_mode']
+        return taxo_groups
 
     # ------------------------------
     # Observations controler methods
@@ -235,12 +237,12 @@ class BiolovisionAPI:
             params['id_taxo_group'] = str(id_taxo_group)
             species = self._url_get(params, 'species/')['data']
         else:
-            l = self._taxo_group_list()
-            for (taxo, access_mode) in l.items():
-                params['id_taxo_group'] = str(taxo)
-                sp = self._url_get(params, 'species/')['data']
-                logging.debug('Number of species in taxo_group %s = %i', taxo, len(sp))
-                species += sp
+            for taxo in self._taxo_group_list()['data']:
+                params['id_taxo_group'] = str(taxo['id'])
+                specie = self._url_get(params, 'species/')['data']
+                logging.debug('Number of species in taxo_group %s = %i',
+                              taxo['id'], len(specie))
+                species += specie
         return {'data': species}
 
     def species_get(self, id_specie):
@@ -276,11 +278,8 @@ class BiolovisionAPI:
         json : dict or None
             dict decoded from json if status OK, else None
         """
-        # Mandatory parameters.
-        params = {'user_email': self._config.user_email, 'user_pw': self._config.user_pw}
-        # GET from API
-        self._taxo_group_list = self._url_get(params, 'taxo_groups/')
-        return self._taxo_group_list
+        # GET from API or cache!
+        return self._taxo_group_list()
 
     def taxo_groups_get(self, id_taxo_group):
         """Query for a taxo group.
