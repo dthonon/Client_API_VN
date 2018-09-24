@@ -185,7 +185,7 @@ case "$CMD" in
     expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/CreateLog.sql > $HOME/tmp/CreateLog.sql
     env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
     psql "$SQL_QUIET" --dbname=postgres --file=$HOME/tmp/CreateLog.sql
-    python3 Python/DownloadFromVN.py "$PYTHON_VERBOSE" "$TEST" --site="$SITE"
+    python3 export_vn/DownloadFromVN.py "$PYTHON_VERBOSE" "$TEST" --site="$SITE"
     INFO "Téléchargement depuis l'API du site ${config[evn_site]} : fin"
     ;;
 
@@ -198,7 +198,7 @@ case "$CMD" in
     psql "$SQL_QUIET" --dbname=postgres --file=$HOME/tmp/CreateTables.sql
 
     DEBUG "2. Insertion dans la base"
-    Python/InsertInDB.py "$PYTHON_VERBOSE" --site="$SITE"
+    export_vn/InsertInDB.py "$PYTHON_VERBOSE" --site="$SITE"
 
     DEBUG "3. Création des vues"
     expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/CreateViews.sql > $HOME/tmp/CreateViews.sql
@@ -249,21 +249,12 @@ case "$CMD" in
     #rm -f "$HOME/tmp/mail_fin.txt"
     ;;
 
-    test)
+    update)
     # Test mode, with limited volume of data managed
-    INFO "Test de la configuration"
-    DEBUG "Site : $SITE"
-    DEBUG "Logging : $VERBOSE"
-    DEBUG "Working directory $(pwd)"
-    DEBUG "Mail admin : ${config[evn_admin_mail]}"
-    DEBUG "URL site : ${config[evn_site]}"
-
-    # Download from VN site and store to JSON file
-    INFO "Début téléchargement depuis le site : ${config[evn_site]} - TEST"
-    $0 --download "$PYTHON_VERBOSE" --test --site="$SITE"
+    INFO "Mise à jour incrémentale des données"
 
     INFO "Téléchargement et stockage en base - MODE TEST : début"
-    Python/export_vn.py "$PYTHON_VERBOSE" --site="$SITE" "$PYTHON_VERBOSE"
+    export_vn/export_vn.py $PYTHON_VERBOSE $TEST $SITE
     INFO "Téléchargement et stockage en base - MODE TEST : fin"
     ;;
 
