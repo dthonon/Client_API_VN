@@ -12,12 +12,14 @@ the maximum number of chunks allowed and raises
 
 Methods
 
+- local_admin_units_get      - Return a single local admin units
+- local_admin_units_list     - Return list of local admin units
 - observations_diff          - Return list of updates or deletions since a given date
 - observations_get           - Get a single sighting
-- species_list               - Return list of species
 - species_get                - Return a single specie
-- taxo_groups_list           - Return list of taxo groups
+- species_list               - Return list of species
 - taxo_groups_get            - Get a single taxo group
+- taxo_groups_list           - Return list of taxo groups
 
 Properties
 
@@ -58,7 +60,8 @@ class BiolovisionAPI:
 
         # Using OAuth1 auth helper to get access
         self._api_url = config.base_url + 'api/'  # URL of API
-        self._oauth = OAuth1(config.client_key, client_secret=config.client_secret)
+        self._oauth = OAuth1(config.client_key,
+                             client_secret=config.client_secret)
 
         # Caches for typical query parameters
         self.__taxo_group_list = dict()
@@ -104,7 +107,8 @@ class BiolovisionAPI:
         data_rec = dict()
         while nb_chunks < self._max_chunks:
             # GET from API
-            payload = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
+            payload = urllib.parse.urlencode(params,
+                                             quote_via=urllib.parse.quote)
             logging.debug('Params: %s', payload)
             headers = {'Content-Type': 'application/json;charset=UTF-8'}
             protected_url = self._api_url + scope
@@ -120,7 +124,8 @@ class BiolovisionAPI:
             logging.debug(resp.headers)
             logging.debug('Status code from GET request: %s', resp.status_code)
             if resp.status_code != 200:
-                logging.error('GET status code = %s, for URL %s', resp.status_code, protected_url)
+                logging.error('GET status code = %s, for URL %s',
+                              resp.status_code, protected_url)
                 self._transfer_errors += 1
                 raise HTTPError(resp.status_code)
 
@@ -149,12 +154,70 @@ class BiolovisionAPI:
         if len(self.__taxo_group_list) == 0:
             # No cache, get from site
             logging.debug('First call to taxo_groups_list, getting from site to cache')
-            params = {'user_email': self._config.user_email, 'user_pw': self._config.user_pw}
+            params = {'user_email': self._config.user_email,
+                      'user_pw': self._config.user_pw}
             taxo_groups = self._url_get(params, 'taxo_groups')
-            # for taxo in taxo_groups['data']:
-            #     logging.debug('taxo_group %s, access %s', taxo['id'], taxo['access_mode'])
-            #     self.__taxo_group_list[taxo['id']] = taxo['access_mode']
         return taxo_groups
+
+    # ------------------------------------
+    #  Local admin units controler methods
+    # ------------------------------------
+    def local_admin_units_get(self, id_local_admin_unit):
+        """Query for a single local admin unit.
+
+        Calls  /local_admin_units/%id% API to get a local admin unit.
+
+        Parameters
+        ----------
+        id_local_admin_unit : str
+            local admin unit to retrieve.
+
+        Returns
+        -------
+        json : dict or None
+            dict decoded from json if status OK, else None
+        """
+        # Mandatory parameters.
+        params = {'user_email': self._config.user_email,
+                  'user_pw': self._config.user_pw}
+        # GET from API
+        return self._url_get(params,
+                             'local_admin_units/' + str(id_local_admin_unit))
+
+    def local_admin_units_list(self, id_territorial_unit=None):
+        """Query for a list of local admin units.
+
+        Calls /local_admin_units API to get the list of all local admin units.
+
+        Parameters
+        ----------
+        id_territorial_unit : None or str
+            If None, retrieve local admin units from all territorial units.
+            If str, retrieve local admin units for this territorial unit only.
+
+        Returns
+        -------
+        json : dict or None
+            dict decoded from json if status OK, else None
+        """
+        # Mandatory parameters.
+        params = {'user_email': self._config.user_email,
+                  'user_pw': self._config.user_pw}
+        local_admin_units = []
+        # GET from API
+        if id_territorial_unit != None:
+            logging.debug('Query local admin units from territorial unit %s',
+                          id_territorial_unit)
+            params['id_territorial_unit'] = str(id_territorial_unit)
+            local_admin_units = self._url_get(params, 'local_admin_units/')['data']
+        else:
+            logging.debug('Query all local admin units %s',
+                          id_territorial_unit)
+            local_admin_unit = self._url_get(params, 'local_admin_units/')['data']
+            local_admin_units += local_admin_unit
+            logging.debug('Number of local admin units = %i',
+                          len(local_admin_units))
+        return {'data': local_admin_units}
 
     # ------------------------------
     # Observations controler methods
@@ -181,7 +244,8 @@ class BiolovisionAPI:
 
         """
         # Mandatory parameters.
-        params = {'user_email': self._config.user_email, 'user_pw': self._config.user_pw}
+        params = {'user_email': self._config.user_email,
+                  'user_pw': self._config.user_pw}
         # Specific parameters.
         params['id_taxo_group'] = str(id_taxo_group)
         params['modification_type'] = modification_type
@@ -205,13 +269,35 @@ class BiolovisionAPI:
             dict decoded from json if status OK, else None
         """
         # Mandatory parameters.
-        params = {'user_email': self._config.user_email, 'user_pw': self._config.user_pw}
+        params = {'user_email': self._config.user_email,
+                  'user_pw': self._config.user_pw}
         # GET from API
         return self._url_get(params, 'observations/' + str(id_species))
 
     # -------------------------
     # Species controler methods
     # -------------------------
+    def species_get(self, id_specie):
+        """Query for a single specie.
+
+        Calls /species/%id% API to get a specie.
+
+        Parameters
+        ----------
+        id_specie : str
+            specie to retrieve.
+
+        Returns
+        -------
+        json : dict or None
+            dict decoded from json if status OK, else None
+        """
+        # Mandatory parameters.
+        params = {'user_email': self._config.user_email,
+                  'user_pw': self._config.user_pw}
+        # GET from API
+        return self._url_get(params, 'species/' + str(id_specie))
+
     def species_list(self, id_taxo_group=None):
         """Query for a list of species.
 
@@ -220,8 +306,8 @@ class BiolovisionAPI:
         Parameters
         ----------
         id_taxo_group : None or str
-            If None, retrieve species from all taxo_groups.
-            If str, retrieve species for this taxo_group only.
+            If None, retrieve species from all taxo groups.
+            If str, retrieve species for this taxo group only.
 
         Returns
         -------
@@ -229,7 +315,8 @@ class BiolovisionAPI:
             dict decoded from json if status OK, else None
         """
         # Mandatory parameters.
-        params = {'user_email': self._config.user_email, 'user_pw': self._config.user_pw}
+        params = {'user_email': self._config.user_email,
+                  'user_pw': self._config.user_pw}
         species = []
         # GET from API
         if id_taxo_group != None:
@@ -245,42 +332,9 @@ class BiolovisionAPI:
                 species += specie
         return {'data': species}
 
-    def species_get(self, id_specie):
-        """Query for a single specie.
-
-        Calls /taxo_groups/%id% API to get a taxo group.
-
-        Parameters
-        ----------
-        id_specie : str
-            specie to retrieve.
-
-        Returns
-        -------
-        json : dict or None
-            dict decoded from json if status OK, else None
-        """
-        # Mandatory parameters.
-        params = {'user_email': self._config.user_email, 'user_pw': self._config.user_pw}
-        # GET from API
-        return self._url_get(params, 'species/' + str(id_specie))
-
     # ----------------------------
     # Taxo_group controler methods
     # ----------------------------
-    def taxo_groups_list(self):
-        """Query for a list of taxo groups.
-
-        Calls /taxo_groups API to get the list of all taxo groups.
-
-        Returns
-        -------
-        json : dict or None
-            dict decoded from json if status OK, else None
-        """
-        # GET from API or cache!
-        return self._taxo_group_list()
-
     def taxo_groups_get(self, id_taxo_group):
         """Query for a taxo group.
 
@@ -297,9 +351,23 @@ class BiolovisionAPI:
             dict decoded from json if status OK, else None
         """
         # Mandatory parameters.
-        params = {'user_email': self._config.user_email, 'user_pw': self._config.user_pw}
+        params = {'user_email': self._config.user_email,
+                  'user_pw': self._config.user_pw}
         # GET from API
         return self._url_get(params, 'taxo_groups/' + str(id_taxo_group))
+
+    def taxo_groups_list(self):
+        """Query for a list of taxo groups.
+
+        Calls /taxo_groups API to get the list of all taxo groups.
+
+        Returns
+        -------
+        json : dict or None
+            dict decoded from json if status OK, else None
+        """
+        # GET from API or cache!
+        return self._taxo_group_list()
 
     # # ----------------------------
     # # Error processing methods

@@ -30,6 +30,40 @@ EVN_API = BiolovisionAPI(CFG, max_retry=5,
 EVN_API_ERR = BiolovisionAPI(CFG, max_retry=1,
                              max_requests=1, max_chunks = 1)
 
+# ------------------------------------
+#  Local admin units controler methods
+# ------------------------------------
+def test_local_admin_units_get(capsys):
+    """Get a single local admin unit."""
+    logging.debug('Getting local_admin_units #s', '14693')
+    local_admin_unit = EVN_API.local_admin_units_get('14693')
+    assert EVN_API.transfer_errors == 0
+    assert local_admin_unit == {
+        'data': [{
+            'name': 'Allevard',
+            'coord_lon': '6.11353081638029',
+            'id_canton': '39',
+            'coord_lat': '45.3801954314357',
+            'id': '14693',
+            'insee': '38006'}]}
+
+
+def test_local_admin_units_list_all(capsys):
+    """Get list of all local_admin_units."""
+    local_admin_units_list = EVN_API.local_admin_units_list()
+    logging.info('Received %d local_admin_units', len(local_admin_units_list['data']))
+    assert EVN_API.transfer_errors == 0
+    assert len(local_admin_units_list['data']) >= 534
+
+def test_local_admin_units_list_1(capsys):
+    """Get a list of local_admin_units from territorial_unit 39."""
+    local_admin_units_list = EVN_API.local_admin_units_list('39')
+    with capsys.disabled():
+        print('territorial_unit 39 ==> {} local_admin_units'.format(len(local_admin_units_list['data'])))
+    assert EVN_API.transfer_errors == 0
+    assert len(local_admin_units_list['data']) >= 534
+    assert local_admin_units_list['data'][0]['name'] == 'Abrets (Les)'
+
 # ------------------------------
 # Observations controler methods
 # ------------------------------
@@ -152,7 +186,7 @@ def test_species_list_1(capsys):
     with capsys.disabled():
         print('Taxo_group 1 ==> {} species'.format(len(species_list['data'])))
     assert EVN_API.transfer_errors == 0
-    assert len(species_list['data']) > 11150
+    assert len(species_list['data']) >= 11150
     assert species_list['data'][0]['french_name'] == 'Plongeon catmarin'
 
 def test_species_list_30(capsys):
@@ -176,7 +210,7 @@ def test_taxo_groups_list():
     """Get list of taxo_groups."""
     taxo_groups = EVN_API.taxo_groups_list()
     assert EVN_API.transfer_errors == 0
-    assert len(taxo_groups['data']) > 30
+    assert len(taxo_groups['data']) >= 30
     assert taxo_groups['data'][0]['name'] == 'Oiseaux'
 
 def test_taxo_groups_get():
