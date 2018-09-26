@@ -16,6 +16,8 @@ Methods
 - local_admin_units_list     - Return list of local admin units
 - observations_diff          - Return list of updates or deletions since a given date
 - observations_get           - Get a single sighting
+- places_get                 - Return a place
+- places_list                - Return list of places
 - species_get                - Return a single specie
 - species_list               - Return list of species
 - taxo_groups_get            - Get a single taxo group
@@ -203,20 +205,16 @@ class BiolovisionAPI:
         # Mandatory parameters.
         params = {'user_email': self._config.user_email,
                   'user_pw': self._config.user_pw}
-        local_admin_units = []
         # GET from API
         if id_territorial_unit != None:
             logging.debug('Query local admin units from territorial unit %s',
                           id_territorial_unit)
             params['id_territorial_unit'] = str(id_territorial_unit)
-            local_admin_units = self._url_get(params, 'local_admin_units/')['data']
         else:
-            logging.debug('Query all local admin units %s',
-                          id_territorial_unit)
-            local_admin_unit = self._url_get(params, 'local_admin_units/')['data']
-            local_admin_units += local_admin_unit
-            logging.debug('Number of local admin units = %i',
-                          len(local_admin_units))
+            logging.debug('Query all local admin units')
+        local_admin_units = self._url_get(params, 'local_admin_units/')['data']
+        logging.debug('Number of local admin units = %i',
+                      len(local_admin_units))
         return {'data': local_admin_units}
 
     # ------------------------------
@@ -273,6 +271,62 @@ class BiolovisionAPI:
                   'user_pw': self._config.user_pw}
         # GET from API
         return self._url_get(params, 'observations/' + str(id_species))
+
+    # -------------------------
+    #  Places controler methods
+    # -------------------------
+    def places_get(self, id_place):
+        """Query for a single place.
+
+        Calls  /places/%id% API to get a place.
+
+        Parameters
+        ----------
+        id_place : str
+            place to retrieve.
+
+        Returns
+        -------
+        json : dict or None
+            dict decoded from json if status OK, else None
+        """
+        # Mandatory parameters.
+        params = {'user_email': self._config.user_email,
+                  'user_pw': self._config.user_pw}
+        # GET from API
+        return self._url_get(params,
+                             'places/' + str(id_place))
+
+    def places_list(self, id_local_admin_unit=None):
+        """Query for a list of places.
+
+        Calls /places API to get the list of all places.
+
+        Parameters
+        ----------
+        id_local_admin_unit : None or str
+            If None, retrieve places units from all local admin unit.
+            If str, retrieve places for this local admin unit only.
+
+        Returns
+        -------
+        json : dict or None
+            dict decoded from json if status OK, else None
+        """
+        # Mandatory parameters.
+        params = {'user_email': self._config.user_email,
+                  'user_pw': self._config.user_pw}
+        # GET from API
+        if id_local_admin_unit != None:
+            logging.debug('Query places from local admin unit %s',
+                          id_local_admin_unit)
+            params['id_local_admin_unit'] = str(id_local_admin_unit)
+        else:
+            logging.debug('Query all places')
+        places = self._url_get(params, 'places/')['data']
+        logging.debug('Number of places = %i',
+                      len(places))
+        return {'data': places}
 
     # -------------------------
     # Species controler methods
