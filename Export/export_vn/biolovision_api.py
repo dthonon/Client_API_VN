@@ -22,6 +22,8 @@ Methods
 - species_list               - Return list of species
 - taxo_groups_get            - Get a single taxo group
 - taxo_groups_list           - Return list of taxo groups
+- territorial_units_get      - Get a single territorial unit
+- territorial_units_list     - Return list of territorial units
 
 Properties
 
@@ -66,7 +68,8 @@ class BiolovisionAPI:
                              client_secret=config.client_secret)
 
         # Caches for typical query parameters
-        self.__taxo_group_list = dict()
+        self.__taxo_groups_list = dict()
+        self.__territorial_units_list = dict()
 
     @property
     def transfer_errors(self):
@@ -151,15 +154,25 @@ class BiolovisionAPI:
         else:
             raise MaxChunksError
 
-    def _taxo_group_list(self):
+    def _taxo_groups_list(self):
         """Return list of taxo groups, from cache or site."""
-        if len(self.__taxo_group_list) == 0:
+        if len(self.__taxo_groups_list) == 0:
             # No cache, get from site
             logging.debug('First call to taxo_groups_list, getting from site to cache')
             params = {'user_email': self._config.user_email,
                       'user_pw': self._config.user_pw}
-            taxo_groups = self._url_get(params, 'taxo_groups')
-        return taxo_groups
+            self.__taxo_groups_list = self._url_get(params, 'taxo_groups')
+        return self.__taxo_groups_list
+
+    def _territorial_units_list(self):
+        """Return list of territorial units, from cache or site."""
+        if len(self.__territorial_units_list) == 0:
+            # No cache, get from site
+            logging.debug('First call to territorial_units_list, getting from site to cache')
+            params = {'user_email': self._config.user_email,
+                      'user_pw': self._config.user_pw}
+            self.__territorial_units_list = self._url_get(params, 'territorial_units')
+        return self.__territorial_units_list
 
     # ------------------------------------
     #  Local admin units controler methods
@@ -378,7 +391,7 @@ class BiolovisionAPI:
             params['id_taxo_group'] = str(id_taxo_group)
             species = self._url_get(params, 'species/')['data']
         else:
-            for taxo in self._taxo_group_list()['data']:
+            for taxo in self._taxo_groups_list()['data']:
                 params['id_taxo_group'] = str(taxo['id'])
                 specie = self._url_get(params, 'species/')['data']
                 logging.debug('Number of species in taxo_group %s = %i',
@@ -392,7 +405,7 @@ class BiolovisionAPI:
     def taxo_groups_get(self, id_taxo_group):
         """Query for a taxo group.
 
-        Calls /taxo_groups/%id% API to get a taxo group.
+        Calls /taxo_groups/id_taxo_group API to get a taxo group.
 
         Parameters
         ----------
@@ -421,18 +434,50 @@ class BiolovisionAPI:
             dict decoded from json if status OK, else None
         """
         # GET from API or cache!
-        return self._taxo_group_list()
+        return self._taxo_groups_list()
 
-    # # ----------------------------
-    # # Error processing methods
-    # # ----------------------------
-    # def wrong_api(self):
-    #     """Query for a wrong api.
-    #
-    #     Calls /error API to raise an exception.
-    #
-    #     """
-    #     # Mandatory parameters.
-    #     params = {'user_email': self._config.user_email, 'user_pw': self._config.user_pw}
-    #     # GET from API
-    #     return self._url_get(params, 'error/')
+    # -----------------------------------
+    # Territorial_units controler methods
+    # -----------------------------------
+    def territorial_units_get(self, id_territorial_unit):
+        """Query for a taxo group.
+
+        Calls /territorial_units/id_territorial_unit API to get a territorial unit.
+
+        Returns
+        -------
+        json : dict or None
+            dict decoded from json if status OK, else None
+        """
+        # Mandatory parameters.
+        params = {'user_email': self._config.user_email,
+                  'user_pw': self._config.user_pw}
+        # GET from API
+        return self._url_get(params, 'territorial_units/' + str(id_territorial_unit))
+
+    def territorial_units_list(self):
+        """Query for a list of territorial units.
+
+        Calls /territorial_units API to get the list of all territorial units.
+
+        Returns
+        -------
+        json : dict or None
+            dict decoded from json if status OK, else None
+        """
+        # GET from API or cache!
+        return self._territorial_units_list()
+
+    # ----------------------------
+    # Error processing methods
+    # ----------------------------
+    def wrong_api(self):
+        """Query for a wrong api.
+
+        Calls /error API to raise an exception.
+
+        """
+        # Mandatory parameters.
+        params = {'user_email': self._config.user_email, 'user_pw': self._config.user_pw}
+        # GET from API
+        return self._url_get(params, 'error/')

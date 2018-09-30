@@ -243,12 +243,17 @@ def test_species_list_error(capsys):
     with pytest.raises(MaxChunksError) as excinfo:
         species_list = EVN_API_ERR.species_list('1')
 
-
 # ----------------------------
 # Taxo_group controler methods
 # ----------------------------
 def test_taxo_groups_list():
     """Get list of taxo_groups."""
+    # First call, should return from API call if not called before
+    taxo_groups = EVN_API.taxo_groups_list()
+    assert EVN_API.transfer_errors == 0
+    assert len(taxo_groups['data']) >= 30
+    assert taxo_groups['data'][0]['name'] == 'Oiseaux'
+    # Second call, must return from cache
     taxo_groups = EVN_API.taxo_groups_list()
     assert EVN_API.transfer_errors == 0
     assert len(taxo_groups['data']) >= 30
@@ -259,6 +264,23 @@ def test_taxo_groups_get():
     taxo_group = EVN_API.taxo_groups_get('2')
     assert EVN_API.transfer_errors == 0
     assert taxo_group['data'][0]['name'] == 'Chauves-souris'
+
+# -----------------------------------
+# Territorial_units controler methods
+# -----------------------------------
+def test_territorial_units_list():
+    """Get list of territorial_units."""
+    # First call, should return from API call if not called before
+    territorial_units = EVN_API.territorial_units_list()
+    assert EVN_API.transfer_errors == 0
+    assert len(territorial_units['data']) == 1
+    assert territorial_units['data'][0]['name'] == 'Isère'
+
+def test_territorial_units_get():
+    """Get a territorial_units."""
+    territorial_unit = EVN_API.territorial_units_get('39')
+    assert EVN_API.transfer_errors == 0
+    assert territorial_unit['data'][0]['name'] == 'Isère'
 
 # -------------
 # Error testing
