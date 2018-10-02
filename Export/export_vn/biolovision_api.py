@@ -238,191 +238,8 @@ class BiolovisionAPI:
         return {'data': entities}
 
     # -------------------------
-    #  Places controler methods
+    # Exception testing methods
     # -------------------------
-    def places_get(self, id_place):
-        """Query for a single place.
-
-        Calls  /places/%id% API to get a place.
-
-        Parameters
-        ----------
-        id_place : str
-            place to retrieve.
-
-        Returns
-        -------
-        json : dict or None
-            dict decoded from json if status OK, else None
-        """
-        # Mandatory parameters.
-        params = {'user_email': self._config.user_email,
-                  'user_pw': self._config.user_pw}
-        # GET from API
-        return self._url_get(params,
-                             'places/' + str(id_place))
-
-    def places_list(self, id_local_admin_unit=None):
-        """Query for a list of places.
-
-        Calls /places API to get the list of all places.
-
-        Parameters
-        ----------
-        id_local_admin_unit : None or str
-            If None, retrieve places units from all local admin unit.
-            If str, retrieve places for this local admin unit only.
-
-        Returns
-        -------
-        json : dict or None
-            dict decoded from json if status OK, else None
-        """
-        # Mandatory parameters.
-        params = {'user_email': self._config.user_email,
-                  'user_pw': self._config.user_pw}
-        # GET from API
-        if id_local_admin_unit != None:
-            logging.debug('Query places from local admin unit %s',
-                          id_local_admin_unit)
-            params['id_local_admin_unit'] = str(id_local_admin_unit)
-        else:
-            logging.debug('Query all places')
-        places = self._url_get(params, 'places/')['data']
-        logging.debug('Number of places = %i',
-                      len(places))
-        return {'data': places}
-
-    # -------------------------
-    # Species controler methods
-    # -------------------------
-    def species_get(self, id_specie):
-        """Query for a single specie.
-
-        Calls /species/%id% API to get a specie.
-
-        Parameters
-        ----------
-        id_specie : str
-            specie to retrieve.
-
-        Returns
-        -------
-        json : dict or None
-            dict decoded from json if status OK, else None
-        """
-        # Mandatory parameters.
-        params = {'user_email': self._config.user_email,
-                  'user_pw': self._config.user_pw}
-        # GET from API
-        return self._url_get(params, 'species/' + str(id_specie))
-
-    def species_list(self, id_taxo_group=None):
-        """Query for a list of species.
-
-        Calls /species API to get the list of all species.
-
-        Parameters
-        ----------
-        id_taxo_group : None or str
-            If None, retrieve species from all taxo groups.
-            If str, retrieve species for this taxo group only.
-
-        Returns
-        -------
-        json : dict or None
-            dict decoded from json if status OK, else None
-        """
-        # Mandatory parameters.
-        params = {'user_email': self._config.user_email,
-                  'user_pw': self._config.user_pw}
-        species = []
-        # GET from API
-        if id_taxo_group != None:
-            logging.debug('Query species from taxo_group %s', id_taxo_group)
-            params['id_taxo_group'] = str(id_taxo_group)
-            species = self._url_get(params, 'species/')['data']
-        else:
-            for taxo in self._taxo_groups_list()['data']:
-                params['id_taxo_group'] = str(taxo['id'])
-                specie = self._url_get(params, 'species/')['data']
-                logging.debug('Number of species in taxo_group %s = %i',
-                              taxo['id'], len(specie))
-                species += specie
-        return {'data': species}
-
-    # ----------------------------
-    # Taxo_group controler methods
-    # ----------------------------
-    def taxo_groups_get(self, id_taxo_group):
-        """Query for a taxo group.
-
-        Calls /taxo_groups/id_taxo_group API to get a taxo group.
-
-        Parameters
-        ----------
-        id_taxo_group : str
-            taxo group to retrieve.
-
-        Returns
-        -------
-        json : dict or None
-            dict decoded from json if status OK, else None
-        """
-        # Mandatory parameters.
-        params = {'user_email': self._config.user_email,
-                  'user_pw': self._config.user_pw}
-        # GET from API
-        return self._url_get(params, 'taxo_groups/' + str(id_taxo_group))
-
-    def taxo_groups_list(self):
-        """Query for a list of taxo groups.
-
-        Calls /taxo_groups API to get the list of all taxo groups.
-
-        Returns
-        -------
-        json : dict or None
-            dict decoded from json if status OK, else None
-        """
-        # GET from API or cache!
-        return self._taxo_groups_list()
-
-    # -----------------------------------
-    # Territorial_units controler methods
-    # -----------------------------------
-    def territorial_units_get(self, id_territorial_unit):
-        """Query for a taxo group.
-
-        Calls /territorial_units/id_territorial_unit API to get a territorial unit.
-
-        Returns
-        -------
-        json : dict or None
-            dict decoded from json if status OK, else None
-        """
-        # Mandatory parameters.
-        params = {'user_email': self._config.user_email,
-                  'user_pw': self._config.user_pw}
-        # GET from API
-        return self._url_get(params, 'territorial_units/' + str(id_territorial_unit))
-
-    def territorial_units_list(self):
-        """Query for a list of territorial units.
-
-        Calls /territorial_units API to get the list of all territorial units.
-
-        Returns
-        -------
-        json : dict or None
-            dict decoded from json if status OK, else None
-        """
-        # GET from API or cache!
-        return self._territorial_units_list()
-
-    # ----------------------------
-    # Error processing methods
-    # ----------------------------
     def wrong_api(self):
         """Query for a wrong api.
 
@@ -486,9 +303,9 @@ class ObservationsAPI(BiolovisionAPI):
     """ Implement api calls to observations controler.
 
     Methods
-    - api_get                - Return a single entity from the controler
-    - api_list               - Return a single entity from the controler
-    - api_diff
+    - api_get                - Return a single observations from the controler
+    - api_list               - Return all observations from the controler
+    - api_diff               - Return all changes in observations since a given date
     """
 
 
@@ -498,9 +315,9 @@ class ObservationsAPI(BiolovisionAPI):
         self.__ctrl = 'observations'
 
     def api_get(self, id):
-        """Query for a single entity from observations controler.
+        """Query for a single observations from the controler.
 
-        Calls  /local_admin_units/id API.
+        Calls  /observations/id API.
 
         Parameters
         ----------
@@ -515,9 +332,9 @@ class ObservationsAPI(BiolovisionAPI):
         return super().api_get(self.__ctrl, id)
 
     def api_list(self, opt_params=dict()):
-        """Query for a list of entities from observations controler.
+        """Query for a list of observations from the controler.
 
-        Calls  /local_admin_units API.
+        Calls  /observations API.
 
         Parameters
         ----------
@@ -561,3 +378,195 @@ class ObservationsAPI(BiolovisionAPI):
         params['date'] = delta_time
         # GET from API
         return super()._url_get(params, 'observations/diff/')
+
+class PlacesAPI(BiolovisionAPI):
+    """ Implement api calls to places controler.
+
+    Methods
+    - api_get                - Return a single place from the controler
+    - api_list               - Return all places from the controler
+
+    """
+
+    def __init__(self, config,
+                 max_retry=5, max_requests=sys.maxsize, max_chunks=10):
+        super().__init__(config, max_retry, max_requests, max_chunks)
+        self.__ctrl = 'places'
+
+    def api_get(self, id):
+        """Query for a single place from the controler.
+
+        Calls  /places/id API.
+
+        Parameters
+        ----------
+        id : str
+            entity to retrieve.
+
+        Returns
+        -------
+        json : dict or None
+            dict decoded from json if status OK, else None
+        """
+        return super().api_get(self.__ctrl, id)
+
+    def api_list(self, opt_params=dict()):
+        """Query for a list of places from the controler.
+
+        Calls  /places API.
+
+        Parameters
+        ----------
+        opt_params : dict
+            optional URL parameters, empty by default. See Biolovision API documentation.
+
+        Returns
+        -------
+        json : dict or None
+            dict decoded from json if status OK, else None
+        """
+        return super().api_list(self.__ctrl, opt_params)
+
+class SpeciesAPI(BiolovisionAPI):
+    """ Implement api calls to species controler.
+
+    Methods
+    - api_get                - Return a single specie from the controler
+    - api_list               - Return all species from the controler
+
+    """
+
+    def __init__(self, config,
+                 max_retry=5, max_requests=sys.maxsize, max_chunks=10):
+        super().__init__(config, max_retry, max_requests, max_chunks)
+        self.__ctrl = 'species'
+
+    def api_get(self, id):
+        """Query for a single specie from the controler.
+
+        Calls  /species/id API.
+
+        Parameters
+        ----------
+        id : str
+            entity to retrieve.
+
+        Returns
+        -------
+        json : dict or None
+            dict decoded from json if status OK, else None
+        """
+        return super().api_get(self.__ctrl, id)
+
+    def api_list(self, opt_params=dict()):
+        """Query for a list of species from the controler.
+
+        Calls  /species API.
+
+        Parameters
+        ----------
+        opt_params : dict
+            optional URL parameters, empty by default. See Biolovision API documentation.
+
+        Returns
+        -------
+        json : dict or None
+            dict decoded from json if status OK, else None
+        """
+        return super().api_list(self.__ctrl, opt_params)
+
+class TaxoGroupsAPI(BiolovisionAPI):
+    """ Implement api calls to taxo_groups controler.
+
+    Methods
+    - api_get                - Return a single taxo group from the controler
+    - api_list               - Return all taxo groups from the controler
+
+    """
+
+    def __init__(self, config,
+                 max_retry=5, max_requests=sys.maxsize, max_chunks=10):
+        super().__init__(config, max_retry, max_requests, max_chunks)
+        self.__ctrl = 'taxo_groups'
+
+    def api_get(self, id):
+        """Query for a single taxo group from the controler.
+
+        Calls  /taxo_groups/id API.
+
+        Parameters
+        ----------
+        id : str
+            entity to retrieve.
+
+        Returns
+        -------
+        json : dict or None
+            dict decoded from json if status OK, else None
+        """
+        return super().api_get(self.__ctrl, id)
+
+    def api_list(self, opt_params=dict()):
+        """Query for a list of taxo groups from the controler.
+
+        Calls  /taxo_groups API.
+
+        Parameters
+        ----------
+        opt_params : dict
+            optional URL parameters, empty by default. See Biolovision API documentation.
+
+        Returns
+        -------
+        json : dict or None
+            dict decoded from json if status OK, else None
+        """
+        return super().api_list(self.__ctrl, opt_params)
+
+class TerritorialUnitsAPI(BiolovisionAPI):
+    """ Implement api calls to territorial_units controler.
+
+    Methods
+    - api_get                - Return a single territorial unit from the controler
+    - api_list               - Return all territorial units from the controler
+
+    """
+
+    def __init__(self, config,
+                 max_retry=5, max_requests=sys.maxsize, max_chunks=10):
+        super().__init__(config, max_retry, max_requests, max_chunks)
+        self.__ctrl = 'territorial_units'
+
+    def api_get(self, id):
+        """Query for a single territorial unit from the controler.
+
+        Calls  /territorial_units/id API.
+
+        Parameters
+        ----------
+        id : str
+            entity to retrieve.
+
+        Returns
+        -------
+        json : dict or None
+            dict decoded from json if status OK, else None
+        """
+        return super().api_get(self.__ctrl, id)
+
+    def api_list(self, opt_params=dict()):
+        """Query for a list of territorial units from the controler.
+
+        Calls  /territorial_units API.
+
+        Parameters
+        ----------
+        opt_params : dict
+            optional URL parameters, empty by default. See Biolovision API documentation.
+
+        Returns
+        -------
+        json : dict or None
+            dict decoded from json if status OK, else None
+        """
+        return super().api_list(self.__ctrl, opt_params)

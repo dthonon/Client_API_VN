@@ -9,16 +9,20 @@ import logging
 import requests
 import pytest
 
-from export_vn.biolovision_api import BiolovisionAPI, LocalAdminUnitsAPI, ObservationsAPI
+from export_vn.biolovision_api import BiolovisionAPI
+from export_vn.biolovision_api import LocalAdminUnitsAPI, ObservationsAPI, PlacesAPI
+from export_vn.biolovision_api import SpeciesAPI, TaxoGroupsAPI, TerritorialUnitsAPI
 from export_vn.biolovision_api import HTTPError, MaxChunksError
 from export_vn.evnconf import EvnConf
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level = logging.INFO)
-def test_logging(cmdopt):
-    if cmdopt == 'DEBUG':
-        logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                            level = logging.DEBUG)
+
+def test_logging(cmdopt, capsys):
+    with capsys.disabled():
+        if cmdopt == 'DEBUG':
+            logging.getLogger().setLevel(logging.DEBUG)
+        logging.debug('Running with debug logging level')
 
 # Using t38 site, that needs to be created first
 SITE = 't38'
@@ -30,14 +34,14 @@ def test_site():
 
 # Get configuration for test site
 CFG = EvnConf(SITE)
-EVN_API = BiolovisionAPI(CFG, max_retry=5,
-                         max_requests=sys.maxsize, max_chunks = 10)
-EVN_API_ERR = BiolovisionAPI(CFG, max_retry=1,
-                             max_requests=1, max_chunks = 1)
-LOCAL_ADMIN_UNITS_API = LocalAdminUnitsAPI(CFG, max_retry=5,
-                                           max_requests=sys.maxsize, max_chunks = 10)
-OBSERVATIONS_API = ObservationsAPI(CFG, max_retry=5,
-                                   max_requests=sys.maxsize, max_chunks = 10)
+EVN_API = BiolovisionAPI(CFG)
+LOCAL_ADMIN_UNITS_API = LocalAdminUnitsAPI(CFG)
+OBSERVATIONS_API = ObservationsAPI(CFG)
+PLACES_API = PlacesAPI(CFG)
+SPECIES_API = SpeciesAPI(CFG)
+SPECIES_API_ERR = SpeciesAPI(CFG, max_retry=1, max_requests=1, max_chunks = 1)
+TAXO_GROUPS_API = TaxoGroupsAPI(CFG)
+TERRITORIAL_UNITS_API = TerritorialUnitsAPI(CFG)
 
 # -----------------
 #  Template methods
@@ -220,8 +224,8 @@ def test_observations_get(capsys):
 def test_places_get(capsys):
     """Get a single place."""
     logging.debug('Getting place #s', '14693')
-    place = EVN_API.places_get('14693')
-    assert EVN_API.transfer_errors == 0
+    place = PLACES_API.api_get('14693')
+    assert PLACES_API.transfer_errors == 0
     assert place == {'data': [{'altitude': '1106',
                                'coord_lat': '44.805686318298',
                                'coord_lon': '5.8792190569144',
@@ -237,19 +241,21 @@ def test_places_get(capsys):
 
 def test_places_list_all(capsys):
     """Get list of all places."""
-    places_list = EVN_API.places_list()
-    logging.info('Received %d places', len(places_list['data']))
+    places_list = PLACES_API.api_list()
+    logging.debug('Received %d places', len(places_list['data']))
     assert EVN_API.transfer_errors == 0
     assert len(places_list['data']) >= 31930
+    assert places_list['data'][0]['name'] == 'ESRF-synchrotron'
 
 def test_places_list_1(capsys):
     """Get a list of places from local admin unit 14693 (Allevard)."""
-    places_list = EVN_API.places_list('14693')
     with capsys.disabled():
-        print('local admin unit 14693 ==> {} place '.format(len(places_list['data'])))
+        places_list = PLACES_API.api_list({'id_commune': '14693'})
+        logging.debug('local admin unit 14693 ==> {} place '.format(len(places_list['data'])))
     assert EVN_API.transfer_errors == 0
-    assert len(places_list['data']) >= 534
-    assert places_list['data'][0]['name'] == 'ESRF-synchrotron'
+    assert len(places_list['data']) >= 164
+    assert len(places_list['data']) <= 200
+    assert places_list['data'][0]['name'] == 'le Repos (S)'
 
 # -------------------------
 # Species controler methods
@@ -257,77 +263,77 @@ def test_places_list_1(capsys):
 def test_species_get(capsys):
     """Get a single specie."""
     logging.debug('Getting species from taxo_group #s', '2')
-    specie = EVN_API.species_get('2')
-    assert EVN_API.transfer_errors == 0
+    specie = SPECIES_API.api_get('2')
+    assert SPECIES_API.transfer_errors == 0
     assert specie['data'][0]['french_name'] == 'Plongeon arctique'
 
 def test_species_list_all(capsys):
     """Get list of all species."""
-    species_list = EVN_API.species_list()
+    species_list = SPECIES_API.api_list()
     logging.info('Received %d species', len(species_list['data']))
-    assert EVN_API.transfer_errors == 0
+    assert SPECIES_API.transfer_errors == 0
     assert len(species_list['data']) >= 38820
 
 def test_species_list_1(capsys):
     """Get a list of species from taxo_group 1."""
-    species_list = EVN_API.species_list('1')
+    species_list = SPECIES_API.api_list({'id_taxo_group': '1'})
     with capsys.disabled():
         print('Taxo_group 1 ==> {} species'.format(len(species_list['data'])))
-    assert EVN_API.transfer_errors == 0
+    assert SPECIES_API.transfer_errors == 0
     assert len(species_list['data']) >= 11150
     assert species_list['data'][0]['french_name'] == 'Plongeon catmarin'
 
 def test_species_list_30(capsys):
     """Get a list of species from taxo_group 30."""
-    species_list = EVN_API.species_list('30')
+    species_list = SPECIES_API.api_list({'id_taxo_group': '30'})
     with capsys.disabled():
         print('Taxo_group 30 ==> {} species'.format(len(species_list['data'])))
-    assert EVN_API.transfer_errors == 0
+    assert SPECIES_API.transfer_errors == 0
     assert species_list['data'][0]['french_name'] == 'Aucune espèce'
 
 def test_species_list_error(capsys):
-    """Get a list of species from taxo_group 1."""
+    """Get a list of species from taxo_group 1, limited to 1 chunk."""
     with pytest.raises(MaxChunksError) as excinfo:
-        species_list = EVN_API_ERR.species_list('1')
+        species_list = SPECIES_API_ERR.api_list({'id_taxo_group': '1'})
 
 # ----------------------------
 # Taxo_group controler methods
 # ----------------------------
+def test_taxo_groups_get():
+    """Get a taxo_groups."""
+    taxo_group = TAXO_GROUPS_API.api_get('2')
+    assert TAXO_GROUPS_API.transfer_errors == 0
+    assert taxo_group['data'][0]['name'] == 'Chauves-souris'
+
 def test_taxo_groups_list():
     """Get list of taxo_groups."""
     # First call, should return from API call if not called before
-    taxo_groups = EVN_API.taxo_groups_list()
-    assert EVN_API.transfer_errors == 0
+    taxo_groups = TAXO_GROUPS_API.api_list()
+    assert TAXO_GROUPS_API.transfer_errors == 0
     assert len(taxo_groups['data']) >= 30
     assert taxo_groups['data'][0]['name'] == 'Oiseaux'
     # Second call, must return from cache
-    taxo_groups = EVN_API.taxo_groups_list()
-    assert EVN_API.transfer_errors == 0
+    taxo_groups = TAXO_GROUPS_API.api_list()
+    assert TAXO_GROUPS_API.transfer_errors == 0
     assert len(taxo_groups['data']) >= 30
     assert taxo_groups['data'][0]['name'] == 'Oiseaux'
-
-def test_taxo_groups_get():
-    """Get a taxo_groups."""
-    taxo_group = EVN_API.taxo_groups_get('2')
-    assert EVN_API.transfer_errors == 0
-    assert taxo_group['data'][0]['name'] == 'Chauves-souris'
 
 # -----------------------------------
 # Territorial_units controler methods
 # -----------------------------------
+def test_territorial_units_get():
+    """Get a territorial_units."""
+    territorial_unit = TERRITORIAL_UNITS_API.api_get('39')
+    assert TERRITORIAL_UNITS_API.transfer_errors == 0
+    assert territorial_unit['data'][0]['name'] == 'Isère'
+
 def test_territorial_units_list():
     """Get list of territorial_units."""
     # First call, should return from API call if not called before
-    territorial_units = EVN_API.territorial_units_list()
-    assert EVN_API.transfer_errors == 0
+    territorial_units = TERRITORIAL_UNITS_API.api_list()
+    assert TERRITORIAL_UNITS_API.transfer_errors == 0
     assert len(territorial_units['data']) == 1
     assert territorial_units['data'][0]['name'] == 'Isère'
-
-def test_territorial_units_get():
-    """Get a territorial_units."""
-    territorial_unit = EVN_API.territorial_units_get('39')
-    assert EVN_API.transfer_errors == 0
-    assert territorial_unit['data'][0]['name'] == 'Isère'
 
 # -------------
 # Error testing
