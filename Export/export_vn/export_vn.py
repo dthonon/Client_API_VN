@@ -58,7 +58,6 @@ class UpdateObs:
         logging.debug(taxo_groups_list)
         return taxo_groups_list
 
-
     def get_changes(self):
         """
         Get incremental changes through observations/diff.

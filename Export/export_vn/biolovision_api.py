@@ -1,8 +1,13 @@
-"""Provide python interface to Biolovision APIself.
+"""Provide python interface to Biolovision API.
 
 Thin Python binding to Biolovision API, returning dict instead of JSON.
-Methods names are derived from API controler, followed by function name
-(i.e. observations_diff will call /observations/diff).
+Currently, only a subset of API controlers are implemented, and only a subset
+of functions and parameters for implemented controlers. See details in each class.
+
+Each API controler is mapped to a python class.
+Class name is derived from controler name by removing '_' and using CamelCase.
+Methods names are similar to the corresponding API call, prefixed by api_.
+For example, method api_list in class LocalAdminUnits will call local_admin_units.
 
 Most notable difference is that API chunks are grouped under 'data', i.e.
 calling species_list('1') will return all birds in one array under 'data' key.
@@ -10,25 +15,25 @@ This means that requests returning lots of chunks (all bird sightings !) must be
 avoided, as memory could be insufficient. max_chunks __init__ parameter controls
 the maximum number of chunks allowed and raises
 
-Methods
+Classes
+- BiolovisionAPI         - Top class, not for direct use
+- LocalAdminUnitsAPI     - Controls local_admin_units
+- ObservationsAPI        - Controls observations
+- PlacesAPI              - Controls places
+- SpeciesAPI             - Controls species
+- TaxoGroupsAPI          - Controls taxo_groups
+- TerritorialUnitsAPI    - Controls territorial_units
 
-- local_admin_units_get      - Return a single local admin units
-- local_admin_units_list     - Return list of local admin units
-- observations_diff          - Return list of updates or deletions since a given date
-- observations_get           - Get a single sighting
-- places_get                 - Return a place
-- places_list                - Return list of places
-- species_get                - Return a single specie
-- species_list               - Return list of species
-- taxo_groups_get            - Get a single taxo group
-- taxo_groups_list           - Return list of taxo groups
-- territorial_units_get      - Get a single territorial unit
-- territorial_units_list     - Return list of territorial units
+Methods, see each class
 
 Properties
-
 - transfer_errors            - Return number of HTTP errors
 
+Exceptions
+- BiolovisionApiException    - General exception
+- HTTPError                  - HTTP protocol error
+- MaxChunksError             - Too many chunks returned from API calls
+- IncorrectParameter         - Incorrect or missing parameter
 """
 import sys
 import logging
@@ -40,26 +45,29 @@ from requests_oauthlib import OAuth1
 # version of the program:
 __version__ = "0.1.1" #VERSION#
 
-class BiolovisionException(Exception):
-    """An exception occurred while handling your request.
-    """
+class BiolovisionApiException(Exception):
+    """An exception occurred while handling your request."""
 
-class HTTPError(BiolovisionException):
+class HTTPError(BiolovisionApiException):
     """An HTTP error occurred."""
 
-class MaxChunksError(BiolovisionException):
+class MaxChunksError(BiolovisionApiException):
     """Too many chunks returned from API calls."""
 
+class IncorrectParameter(BiolovisionApiException):
+    """Incorrect or missing parameter."""
+
 class BiolovisionAPI:
-    """Provide python functions for Biolovision API functions.
-    """
+    """Provide python functions for Biolovision API functions."""
 
     def __init__(self, config,
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
         self._config = config
-        self._max_retry = max_retry
-        self._max_requests = max_requests
-        self._max_chunks = max_chunks
+        self._limits = {
+            'max_retry': max_retry,
+            'max_requests': max_requests,
+            'max_chunks': max_chunks
+        }
         self._transfer_errors = 0
 
         # Using OAuth1 auth helper to get access
@@ -106,11 +114,10 @@ class BiolovisionAPI:
             Loop on chunks exceeded max_chunks limit.
 
         """
-
         # Loop on chunks
         nb_chunks = 0
         data_rec = dict()
-        while nb_chunks < self._max_chunks:
+        while nb_chunks < self._limits['max_chunks']:
             # GET from API
             payload = urllib.parse.urlencode(params,
                                              quote_via=urllib.parse.quote)
@@ -136,7 +143,8 @@ class BiolovisionAPI:
 
             # Is there more data to come?
             if (('transfer-encoding' in resp.headers) and
-                    (resp.headers['transfer-encoding'] == 'chunked')):
+                (resp.headers['transfer-encoding'] == 'chunked') and
+                ('pagination_key' in resp.headers)):
                 logging.debug('Chunked transfer => requesting for more, with key: %s',
                               resp.headers['pagination_key'])
                 # Update request parameters to get next chunk
@@ -149,7 +157,7 @@ class BiolovisionAPI:
                 break
 
         logging.debug('Received %d chunks', nb_chunks)
-        if nb_chunks < self._max_chunks:
+        if nb_chunks < self._limits['max_chunks']:
             return data_rec
         else:
             raise MaxChunksError
@@ -174,18 +182,20 @@ class BiolovisionAPI:
             self.__territorial_units_list = self._url_get(params, 'territorial_units')
         return self.__territorial_units_list
 
-    # ------------------------------------
-    #  Local admin units controler methods
-    # ------------------------------------
-    def local_admin_units_get(self, id_local_admin_unit):
-        """Query for a single local admin unit.
+    # ---------------------------------
+    #  Template methods for subclassing
+    # ---------------------------------
+    def api_get(self, ctrl, id):
+        """Query for a single entity of the given controler.
 
-        Calls  /local_admin_units/%id% API to get a local admin unit.
+        Calls  /ctrl/id API.
 
         Parameters
         ----------
-        id_local_admin_unit : str
-            local admin unit to retrieve.
+        ctrl : str
+            controler to query.
+        id : str
+            entity to retrieve.
 
         Returns
         -------
@@ -196,19 +206,19 @@ class BiolovisionAPI:
         params = {'user_email': self._config.user_email,
                   'user_pw': self._config.user_pw}
         # GET from API
-        return self._url_get(params,
-                             'local_admin_units/' + str(id_local_admin_unit))
+        return self._url_get(params, ctrl + '/' + str(id))
 
-    def local_admin_units_list(self, id_territorial_unit=None):
-        """Query for a list of local admin units.
+    def api_list(self, ctrl, opt_params=dict()):
+        """Query for a list of entities of the given controler.
 
-        Calls /local_admin_units API to get the list of all local admin units.
+        Calls /ctrl API.
 
         Parameters
         ----------
-        id_territorial_unit : None or str
-            If None, retrieve local admin units from all territorial units.
-            If str, retrieve local admin units for this territorial unit only.
+        ctrl : str
+            controler to query.
+        opt_params : dict
+            optional URL parameters, empty by default. See Biolovision API documentation.
 
         Returns
         -------
@@ -218,72 +228,14 @@ class BiolovisionAPI:
         # Mandatory parameters.
         params = {'user_email': self._config.user_email,
                   'user_pw': self._config.user_pw}
+        params.update(opt_params)
         # GET from API
-        if id_territorial_unit != None:
-            logging.debug('Query local admin units from territorial unit %s',
-                          id_territorial_unit)
-            params['id_territorial_unit'] = str(id_territorial_unit)
-        else:
-            logging.debug('Query all local admin units')
-        local_admin_units = self._url_get(params, 'local_admin_units/')['data']
-        logging.debug('Number of local admin units = %i',
-                      len(local_admin_units))
-        return {'data': local_admin_units}
-
-    # ------------------------------
-    # Observations controler methods
-    # ------------------------------
-    def observations_diff(self, id_taxo_group, delta_time, modification_type='all'):
-        """Query for a list of updates or deletions since a given date.
-
-        Calls /observations/diff to get list of created/updated or deleted observations
-        since a given date (max 10 weeks backward).
-
-        Parameters
-        ----------
-        id_taxo_group : str
-            taxo group from which to query diff.
-        delta_time : str
-            Start of time interval to query.
-        modification_type : str
-            Type of diff queried : can be only_modified, only_deleted or all (default).
-
-        Returns
-        -------
-        json : dict or None
-            dict decoded from json if status OK, else None
-
-        """
-        # Mandatory parameters.
-        params = {'user_email': self._config.user_email,
-                  'user_pw': self._config.user_pw}
-        # Specific parameters.
-        params['id_taxo_group'] = str(id_taxo_group)
-        params['modification_type'] = modification_type
-        params['date'] = delta_time
-        # GET from API
-        return self._url_get(params, 'observations/diff/')
-
-    def observations_get(self, id_species):
-        """Query for all sighting data for a single observation.
-
-        Calls /observations/%id% API to get a sighting.
-
-        Parameters
-        ----------
-        id_species : str
-            sighting to retrieve.
-
-        Returns
-        -------
-        json : dict or None
-            dict decoded from json if status OK, else None
-        """
-        # Mandatory parameters.
-        params = {'user_email': self._config.user_email,
-                  'user_pw': self._config.user_pw}
-        # GET from API
-        return self._url_get(params, 'observations/' + str(id_species))
+        logging.debug('List from %s, with option %s',
+                      ctrl, opt_params)
+        entities = self._url_get(params, ctrl)['data']
+        logging.debug('Number of entities = %i',
+                      len(entities))
+        return {'data': entities}
 
     # -------------------------
     #  Places controler methods
@@ -481,3 +433,131 @@ class BiolovisionAPI:
         params = {'user_email': self._config.user_email, 'user_pw': self._config.user_pw}
         # GET from API
         return self._url_get(params, 'error/')
+
+class LocalAdminUnitsAPI(BiolovisionAPI):
+    """ Implement api calls to local_admin_units controler.
+
+    Methods
+    - api_get                - Return a single entity from the controler
+    - api_list               - Return a single entity from the controler
+
+    """
+
+    def __init__(self, config,
+                 max_retry=5, max_requests=sys.maxsize, max_chunks=10):
+        super().__init__(config, max_retry, max_requests, max_chunks)
+        self.__ctrl = 'local_admin_units'
+
+    def api_get(self, id):
+        """Query for a single entity from local_admin_units controler.
+
+        Calls  /local_admin_units/id API.
+
+        Parameters
+        ----------
+        id : str
+            entity to retrieve.
+
+        Returns
+        -------
+        json : dict or None
+            dict decoded from json if status OK, else None
+        """
+        return super().api_get(self.__ctrl, id)
+
+    def api_list(self, opt_params=dict()):
+        """Query for a list of entities from local_admin_units controler.
+
+        Calls  /local_admin_units API.
+
+        Parameters
+        ----------
+        opt_params : dict
+            optional URL parameters, empty by default. See Biolovision API documentation.
+
+        Returns
+        -------
+        json : dict or None
+            dict decoded from json if status OK, else None
+        """
+        return super().api_list(self.__ctrl, opt_params)
+
+class ObservationsAPI(BiolovisionAPI):
+    """ Implement api calls to observations controler.
+
+    Methods
+    - api_get                - Return a single entity from the controler
+    - api_list               - Return a single entity from the controler
+    - api_diff
+    """
+
+
+    def __init__(self, config,
+                 max_retry=5, max_requests=sys.maxsize, max_chunks=10):
+        super().__init__(config, max_retry, max_requests, max_chunks)
+        self.__ctrl = 'observations'
+
+    def api_get(self, id):
+        """Query for a single entity from observations controler.
+
+        Calls  /local_admin_units/id API.
+
+        Parameters
+        ----------
+        id : str
+            entity to retrieve.
+
+        Returns
+        -------
+        json : dict or None
+            dict decoded from json if status OK, else None
+        """
+        return super().api_get(self.__ctrl, id)
+
+    def api_list(self, opt_params=dict()):
+        """Query for a list of entities from observations controler.
+
+        Calls  /local_admin_units API.
+
+        Parameters
+        ----------
+        opt_params : dict
+            optional URL parameters, empty by default. See Biolovision API documentation.
+
+        Returns
+        -------
+        json : dict or None
+            dict decoded from json if status OK, else None
+        """
+        return super().api_list(self.__ctrl, 'id_taxo_group', opt_params)
+
+    def api_diff(self, id_taxo_group, delta_time, modification_type='all'):
+        """Query for a list of updates or deletions since a given date.
+
+        Calls /observations/diff to get list of created/updated or deleted observations
+        since a given date (max 10 weeks backward).
+
+        Parameters
+        ----------
+        id_taxo_group : str
+            taxo group from which to query diff.
+        delta_time : str
+            Start of time interval to query.
+        modification_type : str
+            Type of diff queried : can be only_modified, only_deleted or all (default).
+
+        Returns
+        -------
+        json : dict or None
+            dict decoded from json if status OK, else None
+
+        """
+        # Mandatory parameters.
+        params = {'user_email': self._config.user_email,
+                  'user_pw': self._config.user_pw}
+        # Specific parameters.
+        params['id_taxo_group'] = str(id_taxo_group)
+        params['modification_type'] = modification_type
+        params['date'] = delta_time
+        # GET from API
+        return super()._url_get(params, 'observations/diff/')

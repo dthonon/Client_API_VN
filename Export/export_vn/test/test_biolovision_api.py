@@ -9,16 +9,16 @@ import logging
 import requests
 import pytest
 
-from export_vn.biolovision_api import BiolovisionAPI, HTTPError, MaxChunksError
+from export_vn.biolovision_api import BiolovisionAPI, LocalAdminUnitsAPI, ObservationsAPI
+from export_vn.biolovision_api import HTTPError, MaxChunksError
 from export_vn.evnconf import EvnConf
 
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level = logging.INFO)
 def test_logging(cmdopt):
     if cmdopt == 'DEBUG':
         logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                             level = logging.DEBUG)
-    else:
-        logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                            level = logging.INFO)
 
 # Using t38 site, that needs to be created first
 SITE = 't38'
@@ -34,6 +34,53 @@ EVN_API = BiolovisionAPI(CFG, max_retry=5,
                          max_requests=sys.maxsize, max_chunks = 10)
 EVN_API_ERR = BiolovisionAPI(CFG, max_retry=1,
                              max_requests=1, max_chunks = 1)
+LOCAL_ADMIN_UNITS_API = LocalAdminUnitsAPI(CFG, max_retry=5,
+                                           max_requests=sys.maxsize, max_chunks = 10)
+OBSERVATIONS_API = ObservationsAPI(CFG, max_retry=5,
+                                   max_requests=sys.maxsize, max_chunks = 10)
+
+# -----------------
+#  Template methods
+# -----------------
+def test_template_get(capsys):
+    """Get from template: a single local admin unit."""
+    with capsys.disabled():
+        logging.debug('Getting by template: local admin unit #s', '14693')
+        local_admin_unit = EVN_API.api_get('local_admin_units', '14693')
+    assert EVN_API.transfer_errors == 0
+    assert local_admin_unit == {
+        'data': [{
+            'name': 'Allevard',
+            'coord_lon': '6.11353081638029',
+            'id_canton': '39',
+            'coord_lat': '45.3801954314357',
+            'id': '14693',
+            'insee': '38006'}]}
+
+def test_template_list_all(capsys):
+    """Get from template: list of all local admin units."""
+    with capsys.disabled():
+        local_admin_units_list = EVN_API.api_list('local_admin_units')
+        logging.debug('Received %d local admin units', len(local_admin_units_list['data']))
+    assert EVN_API.transfer_errors == 0
+    assert len(local_admin_units_list['data']) >= 534
+
+def test_template_list_1(capsys):
+    """Get from template: a list of local_admin_units from territorial unit 39 (Isère)."""
+    with capsys.disabled():
+        local_admin_units_list = EVN_API.api_list('local_admin_units', {'id_canton': '39'})
+        logging.debug('territorial unit 39 ==> {} local admin unit '.format(len(local_admin_units_list['data'])))
+    assert EVN_API.transfer_errors == 0
+    assert len(local_admin_units_list['data']) >= 534
+    assert local_admin_units_list['data'][0]['name'] == 'Abrets (Les)'
+
+def test_template_list_2(capsys):
+    """Get from template: a list of local_admin_units from territorial unit 2 (unknown)."""
+    with capsys.disabled():
+        local_admin_units_list = EVN_API.api_list('local_admin_units', {'id_canton': '2'})
+        logging.debug('territorial unit 2 ==> {} local admin unit '.format(len(local_admin_units_list['data'])))
+    assert EVN_API.transfer_errors == 0
+    assert len(local_admin_units_list['data']) == 0
 
 # ------------------------------------
 #  Local admin units controler methods
@@ -41,8 +88,8 @@ EVN_API_ERR = BiolovisionAPI(CFG, max_retry=1,
 def test_local_admin_units_get(capsys):
     """Get a single local admin unit."""
     logging.debug('Getting local admin unit #s', '14693')
-    local_admin_unit = EVN_API.local_admin_units_get('14693')
-    assert EVN_API.transfer_errors == 0
+    local_admin_unit = LOCAL_ADMIN_UNITS_API.api_get('14693')
+    assert LOCAL_ADMIN_UNITS_API.transfer_errors == 0
     assert local_admin_unit == {
         'data': [{
             'name': 'Allevard',
@@ -54,17 +101,17 @@ def test_local_admin_units_get(capsys):
 
 def test_local_admin_units_list_all(capsys):
     """Get list of all local admin units."""
-    local_admin_units_list = EVN_API.local_admin_units_list()
+    local_admin_units_list = LOCAL_ADMIN_UNITS_API.api_list()
     logging.info('Received %d local admin units', len(local_admin_units_list['data']))
-    assert EVN_API.transfer_errors == 0
+    assert LOCAL_ADMIN_UNITS_API.transfer_errors == 0
     assert len(local_admin_units_list['data']) >= 534
 
 def test_local_admin_units_list_1(capsys):
     """Get a list of local_admin_units from territorial unit 39 (Isère)."""
-    local_admin_units_list = EVN_API.local_admin_units_list('39')
+    local_admin_units_list = LOCAL_ADMIN_UNITS_API.api_list({'id_canton': '39'})
     with capsys.disabled():
         print('territorial unit 39 ==> {} local admin unit '.format(len(local_admin_units_list['data'])))
-    assert EVN_API.transfer_errors == 0
+    assert LOCAL_ADMIN_UNITS_API.transfer_errors == 0
     assert len(local_admin_units_list['data']) >= 534
     assert local_admin_units_list['data'][0]['name'] == 'Abrets (Les)'
 
@@ -77,17 +124,17 @@ def test_observations_diff(capsys):
     since = (datetime.now() - timedelta(days=1)).strftime('%H:%M:%S %d.%m.%Y')
     with capsys.disabled():
         print('\nGetting updates since {}'.format(since))
-    diff = EVN_API.observations_diff('1', since)
-    assert EVN_API.transfer_errors == 0
+    diff = OBSERVATIONS_API.api_diff('1', since)
+    assert OBSERVATIONS_API.transfer_errors == 0
     assert len(diff) > 0
-    diff = EVN_API.observations_diff('1', since, 'only_modified')
-    assert EVN_API.transfer_errors == 0
-    diff = EVN_API.observations_diff('1', since, 'only_deleted')
-    assert EVN_API.transfer_errors == 0
+    diff = OBSERVATIONS_API.api_diff('1', since, 'only_modified')
+    assert OBSERVATIONS_API.transfer_errors == 0
+    diff = OBSERVATIONS_API.api_diff('1', since, 'only_deleted')
+    assert OBSERVATIONS_API.transfer_errors == 0
 
 def test_observations_get(capsys):
     """Get a specific sighting."""
-    sighting = EVN_API.observations_get('2246086')
+    sighting = OBSERVATIONS_API.api_get('2246086')
     # with capsys.disabled():
     #     timing = sighting['data']['sightings'][0]['observers'][0]['timing']['@timestamp']
     #     timing_datetime = datetime.fromtimestamp(float(timing))
