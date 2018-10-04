@@ -9,7 +9,7 @@ import logging
 import requests
 import pytest
 
-from export_vn.biolovision_api import BiolovisionAPI
+from export_vn.biolovision_api import BiolovisionAPI, BiolovisionApiException
 from export_vn.biolovision_api import LocalAdminUnitsAPI, ObservationsAPI, PlacesAPI
 from export_vn.biolovision_api import SpeciesAPI, TaxoGroupsAPI, TerritorialUnitsAPI
 from export_vn.biolovision_api import HTTPError, MaxChunksError

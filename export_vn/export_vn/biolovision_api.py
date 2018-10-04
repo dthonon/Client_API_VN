@@ -58,7 +58,7 @@ class IncorrectParameter(BiolovisionApiException):
     """Incorrect or missing parameter."""
 
 class BiolovisionAPI:
-    """Provide python functions for Biolovision API functions."""
+    """Top class, not for direct use. Provides internal and template methods."""
 
     def __init__(self, config,
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
@@ -83,6 +83,11 @@ class BiolovisionAPI:
     def transfer_errors(self):
         """Return the number of HTTP errors during this session."""
         return self._transfer_errors
+
+    @property
+    def controler(self):
+        """Return the number of HTTP errors during this session."""
+        return self._ctrl
 
     # ----------------
     # Internal methods
