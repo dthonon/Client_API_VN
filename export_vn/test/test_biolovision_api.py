@@ -34,7 +34,7 @@ def test_site():
 
 # Get configuration for test site
 CFG = EvnConf(SITE)
-EVN_API = BiolovisionAPI(CFG)
+EVN_API = BiolovisionAPI(CFG, 'test_biolovision_api')
 LOCAL_ADMIN_UNITS_API = LocalAdminUnitsAPI(CFG)
 OBSERVATIONS_API = ObservationsAPI(CFG)
 PLACES_API = PlacesAPI(CFG)
@@ -89,6 +89,11 @@ def test_template_list_2(capsys):
 # ------------------------------------
 #  Local admin units controler methods
 # ------------------------------------
+def test_controler(capsys):
+    """Check controler name."""
+    ctrl = LOCAL_ADMIN_UNITS_API.controler
+    assert ctrl == 'local_admin_units'
+
 def test_local_admin_units_get(capsys):
     """Get a single local admin unit."""
     logging.debug('Getting local admin unit #s', '14693')
@@ -106,7 +111,7 @@ def test_local_admin_units_get(capsys):
 def test_local_admin_units_list_all(capsys):
     """Get list of all local admin units."""
     local_admin_units_list = LOCAL_ADMIN_UNITS_API.api_list()
-    logging.info('Received %d local admin units', len(local_admin_units_list['data']))
+    logging.debug('Received %d local admin units', len(local_admin_units_list['data']))
     assert LOCAL_ADMIN_UNITS_API.transfer_errors == 0
     assert len(local_admin_units_list['data']) >= 534
 
@@ -270,7 +275,7 @@ def test_species_get(capsys):
 def test_species_list_all(capsys):
     """Get list of all species."""
     species_list = SPECIES_API.api_list()
-    logging.info('Received %d species', len(species_list['data']))
+    logging.debug('Received %d species', len(species_list['data']))
     assert SPECIES_API.transfer_errors == 0
     assert len(species_list['data']) >= 38820
 
@@ -344,4 +349,4 @@ def test_wrong_api():
     with pytest.raises(requests.HTTPError) as excinfo:
         error = EVN_API.wrong_api()
     assert EVN_API.transfer_errors != 0
-    logging.info('HTTPError code %s', excinfo)
+    logging.debug('HTTPError code %s', excinfo)

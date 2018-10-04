@@ -60,7 +60,7 @@ class IncorrectParameter(BiolovisionApiException):
 class BiolovisionAPI:
     """Top class, not for direct use. Provides internal and template methods."""
 
-    def __init__(self, config,
+    def __init__(self, config, controler,
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
         self._config = config
         self._limits = {
@@ -69,6 +69,7 @@ class BiolovisionAPI:
             'max_chunks': max_chunks
         }
         self._transfer_errors = 0
+        self._ctrl = controler
 
         # Using OAuth1 auth helper to get access
         self._api_url = config.base_url + 'api/'  # URL of API
@@ -267,8 +268,8 @@ class LocalAdminUnitsAPI(BiolovisionAPI):
 
     def __init__(self, config,
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
-        super().__init__(config, max_retry, max_requests, max_chunks)
-        self.__ctrl = 'local_admin_units'
+        super().__init__(config, 'local_admin_units',
+                         max_retry, max_requests, max_chunks)
 
     def api_get(self, id):
         """Query for a single entity from local_admin_units controler.
@@ -285,7 +286,7 @@ class LocalAdminUnitsAPI(BiolovisionAPI):
         json : dict or None
             dict decoded from json if status OK, else None
         """
-        return super().api_get(self.__ctrl, id)
+        return super().api_get(self._ctrl, id)
 
     def api_list(self, opt_params=dict()):
         """Query for a list of entities from local_admin_units controler.
@@ -302,7 +303,7 @@ class LocalAdminUnitsAPI(BiolovisionAPI):
         json : dict or None
             dict decoded from json if status OK, else None
         """
-        return super().api_list(self.__ctrl, opt_params)
+        return super().api_list(self._ctrl, opt_params)
 
 class ObservationsAPI(BiolovisionAPI):
     """ Implement api calls to observations controler.
@@ -316,8 +317,8 @@ class ObservationsAPI(BiolovisionAPI):
 
     def __init__(self, config,
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
-        super().__init__(config, max_retry, max_requests, max_chunks)
-        self.__ctrl = 'observations'
+        super().__init__(config, 'observations',
+                         max_retry, max_requests, max_chunks)
 
     def api_get(self, id):
         """Query for a single observations from the controler.
@@ -334,7 +335,7 @@ class ObservationsAPI(BiolovisionAPI):
         json : dict or None
             dict decoded from json if status OK, else None
         """
-        return super().api_get(self.__ctrl, id)
+        return super().api_get(self._ctrl, id)
 
     def api_list(self, opt_params=dict()):
         """Query for a list of observations from the controler.
@@ -351,7 +352,7 @@ class ObservationsAPI(BiolovisionAPI):
         json : dict or None
             dict decoded from json if status OK, else None
         """
-        return super().api_list(self.__ctrl, 'id_taxo_group', opt_params)
+        return super().api_list(self._ctrl, 'id_taxo_group', opt_params)
 
     def api_diff(self, id_taxo_group, delta_time, modification_type='all'):
         """Query for a list of updates or deletions since a given date.
@@ -395,8 +396,8 @@ class PlacesAPI(BiolovisionAPI):
 
     def __init__(self, config,
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
-        super().__init__(config, max_retry, max_requests, max_chunks)
-        self.__ctrl = 'places'
+        super().__init__(config, 'places',
+                         max_retry, max_requests, max_chunks)
 
     def api_get(self, id):
         """Query for a single place from the controler.
@@ -413,7 +414,7 @@ class PlacesAPI(BiolovisionAPI):
         json : dict or None
             dict decoded from json if status OK, else None
         """
-        return super().api_get(self.__ctrl, id)
+        return super().api_get(self._ctrl, id)
 
     def api_list(self, opt_params=dict()):
         """Query for a list of places from the controler.
@@ -430,7 +431,7 @@ class PlacesAPI(BiolovisionAPI):
         json : dict or None
             dict decoded from json if status OK, else None
         """
-        return super().api_list(self.__ctrl, opt_params)
+        return super().api_list(self._ctrl, opt_params)
 
 class SpeciesAPI(BiolovisionAPI):
     """ Implement api calls to species controler.
@@ -443,8 +444,8 @@ class SpeciesAPI(BiolovisionAPI):
 
     def __init__(self, config,
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
-        super().__init__(config, max_retry, max_requests, max_chunks)
-        self.__ctrl = 'species'
+        super().__init__(config, 'species',
+                         max_retry, max_requests, max_chunks)
 
     def api_get(self, id):
         """Query for a single specie from the controler.
@@ -461,7 +462,7 @@ class SpeciesAPI(BiolovisionAPI):
         json : dict or None
             dict decoded from json if status OK, else None
         """
-        return super().api_get(self.__ctrl, id)
+        return super().api_get(self._ctrl, id)
 
     def api_list(self, opt_params=dict()):
         """Query for a list of species from the controler.
@@ -478,7 +479,7 @@ class SpeciesAPI(BiolovisionAPI):
         json : dict or None
             dict decoded from json if status OK, else None
         """
-        return super().api_list(self.__ctrl, opt_params)
+        return super().api_list(self._ctrl, opt_params)
 
 class TaxoGroupsAPI(BiolovisionAPI):
     """ Implement api calls to taxo_groups controler.
@@ -491,8 +492,8 @@ class TaxoGroupsAPI(BiolovisionAPI):
 
     def __init__(self, config,
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
-        super().__init__(config, max_retry, max_requests, max_chunks)
-        self.__ctrl = 'taxo_groups'
+        super().__init__(config, 'taxo_groups',
+                         max_retry, max_requests, max_chunks)
 
     def api_get(self, id):
         """Query for a single taxo group from the controler.
@@ -509,7 +510,7 @@ class TaxoGroupsAPI(BiolovisionAPI):
         json : dict or None
             dict decoded from json if status OK, else None
         """
-        return super().api_get(self.__ctrl, id)
+        return super().api_get(self._ctrl, id)
 
     def api_list(self, opt_params=dict()):
         """Query for a list of taxo groups from the controler.
@@ -526,7 +527,7 @@ class TaxoGroupsAPI(BiolovisionAPI):
         json : dict or None
             dict decoded from json if status OK, else None
         """
-        return super().api_list(self.__ctrl, opt_params)
+        return super().api_list(self._ctrl, opt_params)
 
 class TerritorialUnitsAPI(BiolovisionAPI):
     """ Implement api calls to territorial_units controler.
@@ -539,8 +540,8 @@ class TerritorialUnitsAPI(BiolovisionAPI):
 
     def __init__(self, config,
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
-        super().__init__(config, max_retry, max_requests, max_chunks)
-        self.__ctrl = 'territorial_units'
+        super().__init__(config, 'territorial_units',
+                         max_retry, max_requests, max_chunks)
 
     def api_get(self, id):
         """Query for a single territorial unit from the controler.
@@ -557,7 +558,7 @@ class TerritorialUnitsAPI(BiolovisionAPI):
         json : dict or None
             dict decoded from json if status OK, else None
         """
-        return super().api_get(self.__ctrl, id)
+        return super().api_get(self._ctrl, id)
 
     def api_list(self, opt_params=dict()):
         """Query for a list of territorial units from the controler.
@@ -574,4 +575,4 @@ class TerritorialUnitsAPI(BiolovisionAPI):
         json : dict or None
             dict decoded from json if status OK, else None
         """
-        return super().api_list(self.__ctrl, opt_params)
+        return super().api_list(self._ctrl, opt_params)
