@@ -59,7 +59,7 @@ class DownloadVn:
         return
 
 
-class LocalAdminUnits(BiolovisionAPI):
+class LocalAdminUnits(DownloadVn):
     """ Implement store from local_admin_units controler.
 
     Methods
