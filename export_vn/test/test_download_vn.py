@@ -6,8 +6,11 @@ import sys
 from pathlib import Path
 import logging
 import pytest
+import json
+import gzip
 
 from export_vn.download_vn import DownloadVn, DownloadVnException
+from export_vn.download_vn import LocalAdminUnits
 from export_vn.evnconf import EvnConf
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -29,11 +32,20 @@ def test_site():
 
 # Get configuration for test site
 CFG = EvnConf(SITE)
-DOWNLOAD_VN = DownloadVn(CFG, max_requests=1)
+LOCAL_ADMIN_UNITS = LocalAdminUnits(CFG, max_requests=1)
 
 # -----------------
-#  Template methods
+#  LocalAdminUnits
 # -----------------
-def test_transfer_error(capsys):
+def test_local_admin_units_init(capsys):
     """Get from template: a single local admin unit."""
-    assert DOWNLOAD_VN.transfer_errors == 0
+    assert LOCAL_ADMIN_UNITS.transfer_errors == 0
+
+def test_local_admin_units_store(capsys):
+    """Store local_admin_units to file."""
+    LOCAL_ADMIN_UNITS.store()
+    file_json = str(Path.home()) + '/' + CFG.file_store + 'local_admin_units_1.json.gz'
+    assert Path(file_json).is_file()
+    with gzip.open(file_json, 'rb') as g:
+        items_dict = json.loads(g.read().decode('utf-8'))
+    assert len(items_dict['data']) > 530
