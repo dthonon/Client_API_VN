@@ -122,7 +122,6 @@ class BiolovisionAPI:
         """
         # Loop on chunks
         nb_chunks = 0
-        data_rec = dict()
         while nb_chunks < self._limits['max_chunks']:
             # GET from API
             payload = urllib.parse.urlencode(params,
@@ -132,12 +131,6 @@ class BiolovisionAPI:
             protected_url = self._api_url + scope
             resp = requests.get(url=protected_url, auth=self._oauth,
                                 params=payload, headers=headers)
-            if nb_chunks == 0:
-                # First chunk
-                data_rec = resp.json()
-            else:
-                # Next chunks, appending
-                data_rec['data'] += resp.json()['data']
 
             logging.debug(resp.headers)
             logging.debug('Status code from GET request: %s', resp.status_code)
@@ -146,6 +139,38 @@ class BiolovisionAPI:
                               resp.status_code, protected_url)
                 self._transfer_errors += 1
                 raise HTTPError(resp.status_code)
+
+            resp_chunk = resp.json()
+            # Initialize or append to response dict, depending on content
+            if 'data' in resp_chunk:
+                if 'sightings' in resp_chunk['data']:
+                    logging.debug('Received %d sightings in chunk %d',
+                                 len(resp_chunk['data']['sightings']), nb_chunks)
+                    if nb_chunks == 0:
+                        data_rec = resp_chunk
+                    else:
+                        data_rec['data']['sightings'] += resp_chunk['data']['sightings']
+                elif 'forms'  in resp_chunk['data']:
+                    logging.debug('Received %d forms in chunk %d',
+                                 len(resp_chunk['data']['forms']), nb_chunks)
+                    if nb_chunks == 0:
+                        data_rec = resp_chunk
+                    else:
+                        data_rec['data']['forms'] += resp_chunk['data']['forms']
+                else:
+                    logging.debug('Received %d data items in chunk %d',
+                                 len(resp_chunk), nb_chunks)
+                    if nb_chunks == 0:
+                        data_rec = resp_chunk
+                    else:
+                        data_rec['data'] += resp_chunk['data']
+            else:
+                logging.debug('Received %d items without data %d',
+                             len(resp_chunk), nb_chunks)
+                if nb_chunks == 0:
+                    data_rec = resp_chunk
+                else:
+                    data_rec += resp_chunk
 
             # Is there more data to come?
             if (('transfer-encoding' in resp.headers) and
@@ -188,10 +213,10 @@ class BiolovisionAPI:
             self.__territorial_units_list = self._url_get(params, 'territorial_units')
         return self.__territorial_units_list
 
-    # ---------------------------------
-    #  Template methods for subclassing
-    # ---------------------------------
-    def api_get(self, ctrl, id):
+    # -----------------------------------------
+    #  Generic methods, used by most subclasses
+    # -----------------------------------------
+    def api_get(self, id):
         """Query for a single entity of the given controler.
 
         Calls  /ctrl/id API.
@@ -212,9 +237,9 @@ class BiolovisionAPI:
         params = {'user_email': self._config.user_email,
                   'user_pw': self._config.user_pw}
         # GET from API
-        return self._url_get(params, ctrl + '/' + str(id))
+        return self._url_get(params, self._ctrl + '/' + str(id))
 
-    def api_list(self, ctrl, opt_params=dict()):
+    def api_list(self, opt_params=dict()):
         """Query for a list of entities of the given controler.
 
         Calls /ctrl API.
@@ -237,8 +262,8 @@ class BiolovisionAPI:
         params.update(opt_params)
         # GET from API
         logging.debug('List from %s, with option %s',
-                      ctrl, opt_params)
-        entities = self._url_get(params, ctrl)['data']
+                      self._ctrl, opt_params)
+        entities = self._url_get(params, self._ctrl)['data']
         logging.debug('Number of entities = %i',
                       len(entities))
         return {'data': entities}
@@ -271,40 +296,6 @@ class LocalAdminUnitsAPI(BiolovisionAPI):
         super().__init__(config, 'local_admin_units',
                          max_retry, max_requests, max_chunks)
 
-    def api_get(self, id):
-        """Query for a single entity from local_admin_units controler.
-
-        Calls  /local_admin_units/id API.
-
-        Parameters
-        ----------
-        id : str
-            entity to retrieve.
-
-        Returns
-        -------
-        json : dict or None
-            dict decoded from json if status OK, else None
-        """
-        return super().api_get(self._ctrl, id)
-
-    def api_list(self, opt_params=dict()):
-        """Query for a list of entities from local_admin_units controler.
-
-        Calls  /local_admin_units API.
-
-        Parameters
-        ----------
-        opt_params : dict
-            optional URL parameters, empty by default. See Biolovision API documentation.
-
-        Returns
-        -------
-        json : dict or None
-            dict decoded from json if status OK, else None
-        """
-        return super().api_list(self._ctrl, opt_params)
-
 class ObservationsAPI(BiolovisionAPI):
     """ Implement api calls to observations controler.
 
@@ -320,24 +311,7 @@ class ObservationsAPI(BiolovisionAPI):
         super().__init__(config, 'observations',
                          max_retry, max_requests, max_chunks)
 
-    def api_get(self, id):
-        """Query for a single observations from the controler.
-
-        Calls  /observations/id API.
-
-        Parameters
-        ----------
-        id : str
-            entity to retrieve.
-
-        Returns
-        -------
-        json : dict or None
-            dict decoded from json if status OK, else None
-        """
-        return super().api_get(self._ctrl, id)
-
-    def api_list(self, opt_params=dict()):
+    def api_list(self, id_taxo_group, opt_params=dict()):
         """Query for a list of observations from the controler.
 
         Calls  /observations API.
@@ -352,7 +326,8 @@ class ObservationsAPI(BiolovisionAPI):
         json : dict or None
             dict decoded from json if status OK, else None
         """
-        return super().api_list(self._ctrl, 'id_taxo_group', opt_params)
+        opt_params['id_taxo_group'] = str(id_taxo_group)
+        return super().api_list(opt_params)
 
     def api_diff(self, id_taxo_group, delta_time, modification_type='all'):
         """Query for a list of updates or deletions since a given date.
@@ -399,40 +374,6 @@ class PlacesAPI(BiolovisionAPI):
         super().__init__(config, 'places',
                          max_retry, max_requests, max_chunks)
 
-    def api_get(self, id):
-        """Query for a single place from the controler.
-
-        Calls  /places/id API.
-
-        Parameters
-        ----------
-        id : str
-            entity to retrieve.
-
-        Returns
-        -------
-        json : dict or None
-            dict decoded from json if status OK, else None
-        """
-        return super().api_get(self._ctrl, id)
-
-    def api_list(self, opt_params=dict()):
-        """Query for a list of places from the controler.
-
-        Calls  /places API.
-
-        Parameters
-        ----------
-        opt_params : dict
-            optional URL parameters, empty by default. See Biolovision API documentation.
-
-        Returns
-        -------
-        json : dict or None
-            dict decoded from json if status OK, else None
-        """
-        return super().api_list(self._ctrl, opt_params)
-
 class SpeciesAPI(BiolovisionAPI):
     """ Implement api calls to species controler.
 
@@ -446,40 +387,6 @@ class SpeciesAPI(BiolovisionAPI):
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
         super().__init__(config, 'species',
                          max_retry, max_requests, max_chunks)
-
-    def api_get(self, id):
-        """Query for a single specie from the controler.
-
-        Calls  /species/id API.
-
-        Parameters
-        ----------
-        id : str
-            entity to retrieve.
-
-        Returns
-        -------
-        json : dict or None
-            dict decoded from json if status OK, else None
-        """
-        return super().api_get(self._ctrl, id)
-
-    def api_list(self, opt_params=dict()):
-        """Query for a list of species from the controler.
-
-        Calls  /species API.
-
-        Parameters
-        ----------
-        opt_params : dict
-            optional URL parameters, empty by default. See Biolovision API documentation.
-
-        Returns
-        -------
-        json : dict or None
-            dict decoded from json if status OK, else None
-        """
-        return super().api_list(self._ctrl, opt_params)
 
 class TaxoGroupsAPI(BiolovisionAPI):
     """ Implement api calls to taxo_groups controler.
@@ -495,40 +402,6 @@ class TaxoGroupsAPI(BiolovisionAPI):
         super().__init__(config, 'taxo_groups',
                          max_retry, max_requests, max_chunks)
 
-    def api_get(self, id):
-        """Query for a single taxo group from the controler.
-
-        Calls  /taxo_groups/id API.
-
-        Parameters
-        ----------
-        id : str
-            entity to retrieve.
-
-        Returns
-        -------
-        json : dict or None
-            dict decoded from json if status OK, else None
-        """
-        return super().api_get(self._ctrl, id)
-
-    def api_list(self, opt_params=dict()):
-        """Query for a list of taxo groups from the controler.
-
-        Calls  /taxo_groups API.
-
-        Parameters
-        ----------
-        opt_params : dict
-            optional URL parameters, empty by default. See Biolovision API documentation.
-
-        Returns
-        -------
-        json : dict or None
-            dict decoded from json if status OK, else None
-        """
-        return super().api_list(self._ctrl, opt_params)
-
 class TerritorialUnitsAPI(BiolovisionAPI):
     """ Implement api calls to territorial_units controler.
 
@@ -542,37 +415,3 @@ class TerritorialUnitsAPI(BiolovisionAPI):
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
         super().__init__(config, 'territorial_units',
                          max_retry, max_requests, max_chunks)
-
-    def api_get(self, id):
-        """Query for a single territorial unit from the controler.
-
-        Calls  /territorial_units/id API.
-
-        Parameters
-        ----------
-        id : str
-            entity to retrieve.
-
-        Returns
-        -------
-        json : dict or None
-            dict decoded from json if status OK, else None
-        """
-        return super().api_get(self._ctrl, id)
-
-    def api_list(self, opt_params=dict()):
-        """Query for a list of territorial units from the controler.
-
-        Calls  /territorial_units API.
-
-        Parameters
-        ----------
-        opt_params : dict
-            optional URL parameters, empty by default. See Biolovision API documentation.
-
-        Returns
-        -------
-        json : dict or None
-            dict decoded from json if status OK, else None
-        """
-        return super().api_list(self._ctrl, opt_params)

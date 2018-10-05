@@ -34,7 +34,6 @@ def test_site():
 
 # Get configuration for test site
 CFG = EvnConf(SITE)
-EVN_API = BiolovisionAPI(CFG, 'test_biolovision_api')
 LOCAL_ADMIN_UNITS_API = LocalAdminUnitsAPI(CFG)
 OBSERVATIONS_API = ObservationsAPI(CFG)
 PLACES_API = PlacesAPI(CFG)
@@ -42,49 +41,6 @@ SPECIES_API = SpeciesAPI(CFG)
 SPECIES_API_ERR = SpeciesAPI(CFG, max_retry=1, max_requests=1, max_chunks = 1)
 TAXO_GROUPS_API = TaxoGroupsAPI(CFG)
 TERRITORIAL_UNITS_API = TerritorialUnitsAPI(CFG)
-
-# -----------------
-#  Template methods
-# -----------------
-def test_template_get(capsys):
-    """Get from template: a single local admin unit."""
-    with capsys.disabled():
-        logging.debug('Getting by template: local admin unit #s', '14693')
-        local_admin_unit = EVN_API.api_get('local_admin_units', '14693')
-    assert EVN_API.transfer_errors == 0
-    assert local_admin_unit == {
-        'data': [{
-            'name': 'Allevard',
-            'coord_lon': '6.11353081638029',
-            'id_canton': '39',
-            'coord_lat': '45.3801954314357',
-            'id': '14693',
-            'insee': '38006'}]}
-
-def test_template_list_all(capsys):
-    """Get from template: list of all local admin units."""
-    with capsys.disabled():
-        local_admin_units_list = EVN_API.api_list('local_admin_units')
-        logging.debug('Received %d local admin units', len(local_admin_units_list['data']))
-    assert EVN_API.transfer_errors == 0
-    assert len(local_admin_units_list['data']) >= 534
-
-def test_template_list_1(capsys):
-    """Get from template: a list of local_admin_units from territorial unit 39 (Isère)."""
-    with capsys.disabled():
-        local_admin_units_list = EVN_API.api_list('local_admin_units', {'id_canton': '39'})
-        logging.debug('territorial unit 39 ==> {} local admin unit '.format(len(local_admin_units_list['data'])))
-    assert EVN_API.transfer_errors == 0
-    assert len(local_admin_units_list['data']) >= 534
-    assert local_admin_units_list['data'][0]['name'] == 'Abrets (Les)'
-
-def test_template_list_2(capsys):
-    """Get from template: a list of local_admin_units from territorial unit 2 (unknown)."""
-    with capsys.disabled():
-        local_admin_units_list = EVN_API.api_list('local_admin_units', {'id_canton': '2'})
-        logging.debug('territorial unit 2 ==> {} local admin unit '.format(len(local_admin_units_list['data'])))
-    assert EVN_API.transfer_errors == 0
-    assert len(local_admin_units_list['data']) == 0
 
 # ------------------------------------
 #  Local admin units controler methods
@@ -119,7 +75,7 @@ def test_local_admin_units_list_1(capsys):
     """Get a list of local_admin_units from territorial unit 39 (Isère)."""
     local_admin_units_list = LOCAL_ADMIN_UNITS_API.api_list({'id_canton': '39'})
     with capsys.disabled():
-        print('territorial unit 39 ==> {} local admin unit '.format(len(local_admin_units_list['data'])))
+        logging.debug('territorial unit 39 ==> {} local admin unit '.format(len(local_admin_units_list['data'])))
     assert LOCAL_ADMIN_UNITS_API.transfer_errors == 0
     assert len(local_admin_units_list['data']) >= 534
     assert local_admin_units_list['data'][0]['name'] == 'Abrets (Les)'
@@ -132,7 +88,7 @@ def test_observations_diff(capsys):
     """Get list of diffs from last day."""
     since = (datetime.now() - timedelta(days=1)).strftime('%H:%M:%S %d.%m.%Y')
     with capsys.disabled():
-        print('\nGetting updates since {}'.format(since))
+        logging.debug('Getting updates since {}'.format(since))
     diff = OBSERVATIONS_API.api_diff('1', since)
     assert OBSERVATIONS_API.transfer_errors == 0
     assert len(diff) > 0
@@ -140,6 +96,13 @@ def test_observations_diff(capsys):
     assert OBSERVATIONS_API.transfer_errors == 0
     diff = OBSERVATIONS_API.api_diff('1', since, 'only_deleted')
     assert OBSERVATIONS_API.transfer_errors == 0
+
+def test_observations_list_1(capsys):
+    """Get the list of sightings, from taxo_group 18: Mantodea."""
+    list = OBSERVATIONS_API.api_list('18')
+    assert OBSERVATIONS_API.transfer_errors == 0
+    assert len(list) > 0
+
 
 def test_observations_get(capsys):
     """Get a specific sighting."""
@@ -248,7 +211,7 @@ def test_places_list_all(capsys):
     """Get list of all places."""
     places_list = PLACES_API.api_list()
     logging.debug('Received %d places', len(places_list['data']))
-    assert EVN_API.transfer_errors == 0
+    assert PLACES_API.transfer_errors == 0
     assert len(places_list['data']) >= 31930
     assert places_list['data'][0]['name'] == 'ESRF-synchrotron'
 
@@ -257,7 +220,7 @@ def test_places_list_1(capsys):
     with capsys.disabled():
         places_list = PLACES_API.api_list({'id_commune': '14693'})
         logging.debug('local admin unit 14693 ==> {} place '.format(len(places_list['data'])))
-    assert EVN_API.transfer_errors == 0
+    assert PLACES_API.transfer_errors == 0
     assert len(places_list['data']) >= 164
     assert len(places_list['data']) <= 200
     assert places_list['data'][0]['name'] == 'le Repos (S)'
@@ -283,7 +246,7 @@ def test_species_list_1(capsys):
     """Get a list of species from taxo_group 1."""
     species_list = SPECIES_API.api_list({'id_taxo_group': '1'})
     with capsys.disabled():
-        print('Taxo_group 1 ==> {} species'.format(len(species_list['data'])))
+        logging.debug('Taxo_group 1 ==> {} species'.format(len(species_list['data'])))
     assert SPECIES_API.transfer_errors == 0
     assert len(species_list['data']) >= 11150
     assert species_list['data'][0]['french_name'] == 'Plongeon catmarin'
@@ -292,7 +255,7 @@ def test_species_list_30(capsys):
     """Get a list of species from taxo_group 30."""
     species_list = SPECIES_API.api_list({'id_taxo_group': '30'})
     with capsys.disabled():
-        print('Taxo_group 30 ==> {} species'.format(len(species_list['data'])))
+        logging.debug('Taxo_group 30 ==> {} species'.format(len(species_list['data'])))
     assert SPECIES_API.transfer_errors == 0
     assert species_list['data'][0]['french_name'] == 'Aucune espèce'
 
@@ -347,6 +310,6 @@ def test_territorial_units_list():
 def test_wrong_api():
     """Raise an exception."""
     with pytest.raises(requests.HTTPError) as excinfo:
-        error = EVN_API.wrong_api()
-    assert EVN_API.transfer_errors != 0
+        error = PLACES_API.wrong_api()
+    assert PLACES_API.transfer_errors != 0
     logging.debug('HTTPError code %s', excinfo)
