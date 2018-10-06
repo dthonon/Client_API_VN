@@ -79,11 +79,63 @@ class LocalAdminUnits(DownloadVn):
     """ Implement store from local_admin_units controler.
 
     Methods
-    - api_list               - Download and store to json
+    - store               - Download and store to json
 
     """
 
     def __init__(self, config,
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
         super().__init__(config, LocalAdminUnitsAPI(config),
+                         max_retry, max_requests, max_chunks)
+
+class Places(DownloadVn):
+    """ Implement store from places controler.
+
+    Methods
+    - store               - Download and store to json
+
+    """
+
+    def __init__(self, config,
+                 max_retry=5, max_requests=sys.maxsize, max_chunks=10):
+        super().__init__(config, PlacesAPI(config),
+                         max_retry, max_requests, max_chunks)
+
+class Species(DownloadVn):
+    """ Implement store from species controler.
+
+    Methods
+    - store               - Download and store to json
+
+    """
+
+    def __init__(self, config,
+                 max_retry=5, max_requests=sys.maxsize, max_chunks=10):
+        super().__init__(config, SpeciesAPI(config),
+                         max_retry, max_requests, max_chunks)
+
+class TaxoGroup(DownloadVn):
+    """ Implement store from taxo_groups controler.
+
+    Methods
+    - store               - Download and store to json
+
+    """
+
+    def __init__(self, config,
+                 max_retry=5, max_requests=sys.maxsize, max_chunks=10):
+        super().__init__(config, TaxoGroupsAPI(config),
+                         max_retry, max_requests, max_chunks)
+
+class TerritorialUnits(DownloadVn):
+    """ Implement store from territorial_units controler.
+
+    Methods
+    - store               - Download and store to json
+
+    """
+
+    def __init__(self, config,
+                 max_retry=5, max_requests=sys.maxsize, max_chunks=10):
+        super().__init__(config, TerritorialUnitsAPI(config),
                          max_retry, max_requests, max_chunks)

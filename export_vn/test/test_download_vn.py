@@ -10,7 +10,7 @@ import json
 import gzip
 
 from export_vn.download_vn import DownloadVn, DownloadVnException
-from export_vn.download_vn import LocalAdminUnits
+from export_vn.download_vn import LocalAdminUnits, Places, Species, TaxoGroup, TerritorialUnits
 from export_vn.evnconf import EvnConf
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -32,7 +32,11 @@ def test_site():
 
 # Get configuration for test site
 CFG = EvnConf(SITE)
-LOCAL_ADMIN_UNITS = LocalAdminUnits(CFG, max_requests=1)
+LOCAL_ADMIN_UNITS = LocalAdminUnits(CFG)
+PLACES = Places(CFG)
+SPECIES = Species(CFG)
+TAXO_GROUP = TaxoGroup(CFG)
+TERRITORIAL_UNIT = TerritorialUnits(CFG)
 
 # -----------------
 #  LocalAdminUnits
@@ -49,3 +53,64 @@ def test_local_admin_units_store(capsys):
     with gzip.open(file_json, 'rb') as g:
         items_dict = json.loads(g.read().decode('utf-8'))
     assert len(items_dict['data']) > 530
+
+# -------
+#  Places
+# -------
+def test_places_store(capsys):
+    """Store places to file."""
+    PLACES.store()
+    file_json = str(Path.home()) + '/' + CFG.file_store + 'places_1.json.gz'
+    assert Path(file_json).is_file()
+    with gzip.open(file_json, 'rb') as g:
+        items_dict = json.loads(g.read().decode('utf-8'))
+    assert len(items_dict['data']) > 31930
+
+# --------
+#  Species
+# --------
+def test_species_store(capsys):
+    """Store species to file."""
+    SPECIES.store()
+    file_json = str(Path.home()) + '/' + CFG.file_store + 'species_1.json.gz'
+    assert Path(file_json).is_file()
+    with gzip.open(file_json, 'rb') as g:
+        items_dict = json.loads(g.read().decode('utf-8'))
+    assert len(items_dict['data']) > 39175
+
+# ------------
+#  Taxo groups
+# ------------
+def test_taxo_groups_store(capsys):
+    """Store taxo groups to file."""
+    TAXO_GROUP.store()
+    file_json = str(Path.home()) + '/' + CFG.file_store + 'taxo_groups_1.json.gz'
+    assert Path(file_json).is_file()
+    with gzip.open(file_json, 'rb') as g:
+        items_dict = json.loads(g.read().decode('utf-8'))
+    assert len(items_dict['data']) > 30
+
+# ------------
+#  Taxo groups
+# ------------
+def test_taxo_groups_store(capsys):
+    """Store taxo groups to file."""
+    TAXO_GROUP.store()
+    file_json = str(Path.home()) + '/' + CFG.file_store + 'taxo_groups_1.json.gz'
+    assert Path(file_json).is_file()
+    with gzip.open(file_json, 'rb') as g:
+        items_dict = json.loads(g.read().decode('utf-8'))
+    assert len(items_dict['data']) > 30
+
+TERRITORIAL_UNIT
+# ------------------
+#  Territorial units
+# ------------------
+def test_territorial_units_store(capsys):
+    """Store territorial units to file."""
+    TERRITORIAL_UNIT.store()
+    file_json = str(Path.home()) + '/' + CFG.file_store + 'territorial_units_1.json.gz'
+    assert Path(file_json).is_file()
+    with gzip.open(file_json, 'rb') as g:
+        items_dict = json.loads(g.read().decode('utf-8'))
+    assert len(items_dict['data']) == 1
