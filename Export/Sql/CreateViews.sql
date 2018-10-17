@@ -40,6 +40,7 @@ TABLESPACE pg_default
 AS
  SELECT
     id_sighting AS id_sighting,
+    ((sightings -> 'observers') -> 0) ->> 'id_universal' AS id_universal,
     cast(sightings #>> '{species,@id}' AS INTEGER) AS id_species,
     sightings #>> '{species,name}' AS french_name,
     sightings #>> '{species,latin_name}' AS latin_name,
@@ -69,8 +70,12 @@ AS
     cast(((sightings -> 'observers') -> 0) ->> 'altitude' AS INTEGER) AS altitude,
     ((sightings -> 'observers') -> 0) ->> 'hidden' AS hidden,
     ((sightings -> 'observers') -> 0) ->> 'admin_hidden' AS admin_hidden,
+    ((sightings -> 'observers') -> 0) ->> 'name' AS name,
+    ((sightings -> 'observers') -> 0) ->> 'anonymous' AS anonymous,
     ((sightings -> 'observers') -> 0) ->> 'entity' AS entity,
     ((sightings -> 'observers') -> 0) ->> 'details' AS details,
+    ((sightings -> 'observers') -> 0) ->> 'comment' AS comment,
+    ((sightings -> 'observers') -> 0) ->> 'hidden_comment' AS hidden_comment,
     (((sightings -> 'observers'::text) -> 0) #>> '{extended_info,mortality}'::text[]) IS NOT NULL AS mortality,
     ((sightings -> 'observers') -> 0) #>> '{extended_info, mortality, death_cause2}' AS death_cause2,
     to_timestamp(((sightings -> 'observers') -> 0) #>> '{insert_date,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS')
