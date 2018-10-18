@@ -365,6 +365,7 @@ def main(argv):
         for i in range(0, len(places_chunk['data'])):
             json_place = places_chunk['data'][i]
             # Insert row
+
             cur.execute('INSERT INTO {}.places_json (id_place, place, coord_lat, coord_lon) VALUES (%s, %s, %s, %s)'.format(evn_db_schema),
                         (json_place['id'],
                          json.dumps(json_place),
