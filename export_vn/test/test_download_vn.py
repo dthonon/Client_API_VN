@@ -10,7 +10,8 @@ import json
 import gzip
 
 from export_vn.download_vn import DownloadVn, DownloadVnException
-from export_vn.download_vn import LocalAdminUnits, Places, Species, TaxoGroup, TerritorialUnits
+from export_vn.download_vn import LocalAdminUnits, Observations, Places
+from export_vn.download_vn import Species, TaxoGroup, TerritorialUnits
 from export_vn.evnconf import EvnConf
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -33,10 +34,12 @@ def test_site():
 # Get configuration for test site
 CFG = EvnConf(SITE)
 LOCAL_ADMIN_UNITS = LocalAdminUnits(CFG)
+OBSERVATIONS = Observations(CFG)
 PLACES = Places(CFG)
 SPECIES = Species(CFG)
 TAXO_GROUP = TaxoGroup(CFG)
 TERRITORIAL_UNIT = TerritorialUnits(CFG)
+
 
 # -----------------
 #  LocalAdminUnits
@@ -53,6 +56,20 @@ def test_local_admin_units_store(capsys):
     with gzip.open(file_json, 'rb') as g:
         items_dict = json.loads(g.read().decode('utf-8'))
     assert len(items_dict['data']) > 530
+
+
+# -------------
+#  Observations
+# -------------
+def test_observations_store(capsys):
+    """Store observations to file."""
+    OBSERVATIONS.store()
+    # file_json = str(Path.home()) + '/' + CFG.file_store + 'observations_1.json.gz'
+    # assert Path(file_json).is_file()
+    # with gzip.open(file_json, 'rb') as g:
+    #     items_dict = json.loads(g.read().decode('utf-8'))
+    # assert len(items_dict['data']) > 31930
+
 
 # -------
 #  Places

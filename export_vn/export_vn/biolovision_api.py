@@ -166,7 +166,7 @@ class BiolovisionAPI:
                     else:
                         data_rec['data'] += resp_chunk['data']
             else:
-                logging.debug('Received %d items without data %d',
+                logging.debug('Received %d items without data in chunk %d',
                              len(resp_chunk), nb_chunks)
                 if nb_chunks == 0:
                     data_rec = resp_chunk

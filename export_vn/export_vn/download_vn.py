@@ -13,6 +13,7 @@ Properties
 """
 import sys
 from pathlib import Path
+from datetime import datetime, timedelta
 import logging
 import json
 import gzip
@@ -87,6 +88,46 @@ class LocalAdminUnits(DownloadVn):
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
         super().__init__(config, LocalAdminUnitsAPI(config),
                          max_retry, max_requests, max_chunks)
+
+class Observations(DownloadVn):
+    """ Implement store from observations controler.
+
+    Methods
+    - store               - Download (by date interval) and store to json
+
+    """
+
+    def __init__(self, config,
+                 max_retry=5, max_requests=sys.maxsize, max_chunks=10):
+        super().__init__(config, ObservationsAPI(config),
+                         max_retry, max_requests, max_chunks)
+
+    def update(self):
+        """Download increment from VN by API and store json to file.
+        WIP WIP WIP
+        Calls  biolovision_api, convert to json and store to file.
+
+        """
+        # GET from API
+        logging.debug('Getting items from controler %s',
+                      self._api_instance.controler)
+        since = (datetime.now() - timedelta(days=1)).strftime('%H:%M:%S %d.%m.%Y')
+        logging.debug('Getting updates since {}'.format(since))
+        items_dict = self._api_instance.api_diff('2', since)
+
+        # Convert to json
+        logging.debug('Received %d modified or updated items',
+                      len(items_dict))
+        # items_json = json.dumps(items_dict, sort_keys=True, indent=4, separators=(',', ': '))
+        # # Store to file
+        # if (len(items_dict['data']) > 0):
+        #     file_json_gz = str(Path.home()) + '/' + self._config.file_store + \
+        #         self._api_instance.controler + '_1.json.gz'
+        #     logging.debug('Received data, storing json to {}'.format(file_json_gz))
+        #     with gzip.open(file_json_gz, 'wb', 9) as g:
+        #         g.write(items_json.encode())
+
+        return
 
 class Places(DownloadVn):
     """ Implement store from places controler.
