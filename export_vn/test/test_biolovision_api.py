@@ -4,10 +4,12 @@ Test each API call of biolovision_api module.
 """
 import sys
 from datetime import datetime, timedelta
+import time
 from pathlib import Path
 import logging
 import requests
 import pytest
+import timeit
 
 from export_vn.biolovision_api import BiolovisionAPI, BiolovisionApiException
 from export_vn.biolovision_api import LocalAdminUnitsAPI, ObservationsAPI, PlacesAPI
@@ -17,6 +19,7 @@ from export_vn.evnconf import EvnConf
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level = logging.INFO)
+
 
 def test_logging(cmdopt, capsys):
     with capsys.disabled():
@@ -276,12 +279,22 @@ def test_taxo_groups_get():
 def test_taxo_groups_list():
     """Get list of taxo_groups."""
     # First call, should return from API call if not called before
+    start = time.clock()
     taxo_groups = TAXO_GROUPS_API.api_list()
+    took = (time.clock() - start) * 1000.0
+    logging.info('taxo_groups_list, call 1 took: ' + str(took) + ' ms')
     assert TAXO_GROUPS_API.transfer_errors == 0
     assert len(taxo_groups['data']) >= 30
     assert taxo_groups['data'][0]['name'] == 'Oiseaux'
     # Second call, must return from cache
+    start = time.clock()
     taxo_groups = TAXO_GROUPS_API.api_list()
+    took = (time.clock() - start) * 1000.0
+    logging.info('taxo_groups_list, call 2 took: ' + str(took) + ' ms')
+    start = time.clock()
+    taxo_groups = TAXO_GROUPS_API.api_list()
+    took = (time.clock() - start) * 1000.0
+    logging.info('taxo_groups_list, call 3 took: ' + str(took) + ' ms')
     assert TAXO_GROUPS_API.transfer_errors == 0
     assert len(taxo_groups['data']) >= 30
     assert taxo_groups['data'][0]['name'] == 'Oiseaux'
@@ -298,10 +311,18 @@ def test_territorial_units_get():
 def test_territorial_units_list():
     """Get list of territorial_units."""
     # First call, should return from API call if not called before
+    start = time.clock()
     territorial_units = TERRITORIAL_UNITS_API.api_list()
+    took = (time.clock() - start) * 1000.0
+    logging.info('territorial_units_list, call 1 took: ' + str(took) + ' ms')
     assert TERRITORIAL_UNITS_API.transfer_errors == 0
     assert len(territorial_units['data']) == 1
     assert territorial_units['data'][0]['name'] == 'Isère'
+    start = time.clock()
+    territorial_units = TERRITORIAL_UNITS_API.api_list()
+    took = (time.clock() - start) * 1000.0
+    logging.info('territorial_units_list, call 2 took: ' + str(took) + ' ms')
+    assert TERRITORIAL_UNITS_API.transfer_errors == 0
 
 # -------------
 # Error testing

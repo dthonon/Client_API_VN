@@ -41,6 +41,7 @@ import logging
 import urllib
 import requests
 from requests_oauthlib import OAuth1
+from functools import lru_cache
 
 # version of the program:
 __version__ = "0.1.1" #VERSION#
@@ -77,7 +78,7 @@ class BiolovisionAPI:
                              client_secret=config.client_secret)
 
         # Caches for typical query parameters
-        self.__taxo_groups_list = dict()
+        self._taxo_groups_list = dict()
         self.__territorial_units_list = dict()
 
     @property
@@ -193,25 +194,6 @@ class BiolovisionAPI:
         else:
             raise MaxChunksError
 
-    def _taxo_groups_list(self):
-        """Return list of taxo groups, from cache or site."""
-        if len(self.__taxo_groups_list) == 0:
-            # No cache, get from site
-            logging.debug('First call to taxo_groups_list, getting from site to cache')
-            params = {'user_email': self._config.user_email,
-                      'user_pw': self._config.user_pw}
-            self.__taxo_groups_list = self._url_get(params, 'taxo_groups')
-        return self.__taxo_groups_list
-
-    def _territorial_units_list(self):
-        """Return list of territorial units, from cache or site."""
-        if len(self.__territorial_units_list) == 0:
-            # No cache, get from site
-            logging.debug('First call to territorial_units_list, getting from site to cache')
-            params = {'user_email': self._config.user_email,
-                      'user_pw': self._config.user_pw}
-            self.__territorial_units_list = self._url_get(params, 'territorial_units')
-        return self.__territorial_units_list
 
     # -----------------------------------------
     #  Generic methods, used by most subclasses
@@ -282,6 +264,7 @@ class BiolovisionAPI:
         # GET from API
         return self._url_get(params, 'error/')
 
+
 class LocalAdminUnitsAPI(BiolovisionAPI):
     """ Implement api calls to local_admin_units controler.
 
@@ -295,6 +278,11 @@ class LocalAdminUnitsAPI(BiolovisionAPI):
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
         super().__init__(config, 'local_admin_units',
                          max_retry, max_requests, max_chunks)
+
+    @lru_cache(maxsize=32)
+    def api_list(self):
+        """Return list of taxo groups, from cache or site."""
+        return super().api_list()
 
 class ObservationsAPI(BiolovisionAPI):
     """ Implement api calls to observations controler.
@@ -374,6 +362,7 @@ class PlacesAPI(BiolovisionAPI):
         super().__init__(config, 'places',
                          max_retry, max_requests, max_chunks)
 
+
 class SpeciesAPI(BiolovisionAPI):
     """ Implement api calls to species controler.
 
@@ -387,6 +376,7 @@ class SpeciesAPI(BiolovisionAPI):
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
         super().__init__(config, 'species',
                          max_retry, max_requests, max_chunks)
+
 
 class TaxoGroupsAPI(BiolovisionAPI):
     """ Implement api calls to taxo_groups controler.
@@ -402,6 +392,12 @@ class TaxoGroupsAPI(BiolovisionAPI):
         super().__init__(config, 'taxo_groups',
                          max_retry, max_requests, max_chunks)
 
+    @lru_cache(maxsize=32)
+    def api_list(self):
+        """Return list of taxo groups, from cache or site."""
+        return super().api_list()
+
+
 class TerritorialUnitsAPI(BiolovisionAPI):
     """ Implement api calls to territorial_units controler.
 
@@ -415,3 +411,8 @@ class TerritorialUnitsAPI(BiolovisionAPI):
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
         super().__init__(config, 'territorial_units',
                          max_retry, max_requests, max_chunks)
+
+    @lru_cache(maxsize=32)
+    def api_list(self):
+        """Return list of taxo groups, from cache or site."""
+        return super().api_list()
