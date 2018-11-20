@@ -86,6 +86,22 @@ AS
    FROM $(evn_db_schema).observations_json
 WITH DATA;
 
+-- Taxo_groups table
+-- Delete existing table
+DROP MATERIALIZED VIEW IF EXISTS $(evn_db_schema).taxo_groups CASCADE;
+
+CREATE MATERIALIZED VIEW $(evn_db_schema).taxo_groups
+TABLESPACE pg_default
+AS
+ SELECT
+    id_specie AS id_taxo_group,
+    specie #>> '{name}' AS name,
+    specie #>> '{name_constant}' AS name_constant,
+    specie #>> '{latin_name}' AS latin_name,
+    specie #>> '{access_mode}' AS access_mode
+   FROM $(evn_db_schema).taxo_groups_json
+WITH DATA;
+
 
 -- Species table
 -- Delete existing table
