@@ -49,8 +49,8 @@ DROP TABLE IF EXISTS observations_json CASCADE;
 
 -- Create observations table and access rights
 CREATE TABLE observations_json (
-    id_sighting integer PRIMARY KEY,
-    sightings jsonb,   -- Complete json sighting as downloaded
+    id_sighting integer,
+    sightings jsonb,   -- Complete json as downloaded
     update_ts integer,  -- Last update of json data timestamp
     coord_lat double precision, -- WGS84 coordinates
     coord_lon double precision
@@ -73,7 +73,17 @@ DROP TABLE IF EXISTS species_json CASCADE;
 -- Create observations table and access rights
 CREATE TABLE species_json (
     id_specie integer PRIMARY KEY,
-    specie jsonb   -- Complete json sighting as downloaded
+    specie jsonb   -- Complete json as downloaded
+);
+
+-- Taxo_groups table in json format
+-- Delete existing table
+DROP TABLE IF EXISTS taxo_groups_json CASCADE;
+
+-- Create observations table and access rights
+CREATE TABLE taxo_groups_json (
+    id_taxo_group integer PRIMARY KEY,
+    taxo_group jsonb   -- Complete json as downloaded
 );
 
 -- local_admin_units table in json format
@@ -83,7 +93,7 @@ DROP TABLE IF EXISTS local_admin_units_json CASCADE;
 -- Create local_admin_units table and access rights
 CREATE TABLE local_admin_units_json (
     id_local_admin_unit integer PRIMARY KEY,
-    local_admin_unit jsonb,   -- Complete json sighting as downloaded
+    local_admin_unit jsonb,   -- Complete json as downloaded
     coord_lat double precision, -- WGS84 coordinates
     coord_lon double precision
 );
@@ -105,7 +115,7 @@ DROP TABLE IF EXISTS places_json CASCADE;
 -- Create places table and access rights
 CREATE TABLE places_json (
     id_place integer PRIMARY KEY,
-    place jsonb,   -- Complete json sighting as downloaded
+    place jsonb,   -- Complete json as downloaded
     coord_lat double precision, -- WGS84 coordinates
     coord_lon double precision
 );

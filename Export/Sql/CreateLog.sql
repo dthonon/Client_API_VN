@@ -26,52 +26,24 @@
 
 -- @license http://www.opensource.org/licenses/mit-license.html MIT License
 
--- Initialize Postgresql database, template for pyexpander3
-
--- Delete existing DB and roles
-DROP DATABASE IF EXISTS $(evn_db_name);
-DROP ROLE IF EXISTS $(evn_db_group);
-
--- Group role: $(evn_db_group)
-CREATE ROLE $(evn_db_group)
-  NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION;
-
--- Import role: $(evn_db_user)
-GRANT $(evn_db_group) TO $(evn_db_user);
-
--- Database: $(evn_db_name)
-CREATE DATABASE $(evn_db_name)
-  WITH OWNER = $(evn_db_group)
-       -- ENCODING = 'UTF8'
-       -- TABLESPACE = pg_default
-       -- LC_COLLATE = 'fr_FR.UTF-8'
-       -- LC_CTYPE = 'fr_FR.UTF-8'
-       -- CONNECTION LIMIT = -1
-       -- TEMPLATE template0
-       ;
-GRANT ALL ON DATABASE $(evn_db_name) TO $(evn_db_group);
+-- Create tables, template for pyexpander3
+--  - observations_json is loaded with id, json, coordinates and then other columns are created by json queries
+--  - species_json is loaded with id, json and then other columns are created by json queries
+--  - places_json is loaded with id, json, coordinates and then other columns are created by json queries
 
 \c $(evn_db_name)
+SET search_path TO $(evn_db_schema),public,topology;
 
--- Schema : $(evn_db_schema)
-CREATE SCHEMA $(evn_db_schema)
-  AUTHORIZATION $(evn_db_group);
+-- Download_log table, updated at each download or update from site
+-- Delete existing table
+DROP TABLE IF EXISTS download_log CASCADE;
 
--- Schema : reference, for external reference sources
-CREATE SCHEMA reference
-  AUTHORIZATION $(evn_db_group);
+-- Create places table and access rights
+CREATE TABLE download_log (
+    id_log SERIAL PRIMARY KEY,
+    download_ts TIMESTAMP,
+    error_count INTEGER,
+    warning_count INTEGER
+);
 
--- Extension d'administration pgAdmin
-CREATE EXTENSION adminpack;
-
--- Extensions postgis
-CREATE EXTENSION postgis;
-CREATE EXTENSION postgis_topology;
-
-ALTER DEFAULT PRIVILEGES
-    GRANT INSERT, SELECT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON TABLES
-    TO postgres;
-
-ALTER DEFAULT PRIVILEGES
-    GRANT INSERT, SELECT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON TABLES
-    TO $(evn_db_group);
+INSERT INTO download_log (download_ts) VALUES (current_timestamp);

@@ -3,29 +3,8 @@
 # Installation de l'outil d'export sur un serveur
 
 ## Installation de l'environnement
-Sur un serveur Debian Stretch (9)
-``` sh
-# Ajout du dépot PostgreSQL et de la clé 
-sudo echo "deb http://apt.postgresql.org/pub/repos/apt stretch-pgdg main" >> /etc/apt/sources.list.d/postgresql.list
-wget --quiet -O - http://apt.postgresql.org/pub/repos/apt/ACCC4CF8.asc | sudo apt-key add -
 
-# Mise à jour des dépots
-sudo apt update
-
-# Installation de Postgresql / PostGIS
-sudo apt install postgresql-10 postgresql-10-postgis-2.4 postgresql-10-postgis-scripts postgis
-
-# Installation de Python3 et des modules requis
-sudo apt install  python3.5 python3-requests python3-requests-oauthlib python3-pip
-sudo pip3 install pyexpander
-```
-
-## Clonage du dépot d'origine
-
-``` sh
-cd ~/
-git clone https://framagit.org/lpo/Client_API_VN.git
-```
+Voir https://framagit.org/lpo/Client_API_VN/wikis/Installation%20guide%20debian%209
 
 ## Configuration de l'application
 L'initialisation de l'application nécessite a minima un argument qui est un identifiant de votre site visionature (ex fauneardeche ou vn07 pour faune-ardeche.org).
@@ -49,5 +28,3 @@ create role dbuser login superuser encrypted password 'dbpwd';
 cd Client_API_VN/Export
 ./evn.sh --site=vn07 --init
 ```
-
-

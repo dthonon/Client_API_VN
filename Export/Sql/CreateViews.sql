@@ -40,6 +40,7 @@ TABLESPACE pg_default
 AS
  SELECT
     id_sighting AS id_sighting,
+    ((sightings -> 'observers') -> 0) ->> 'id_universal' AS id_universal,
     cast(sightings #>> '{species,@id}' AS INTEGER) AS id_species,
     sightings #>> '{species,name}' AS french_name,
     sightings #>> '{species,latin_name}' AS latin_name,
@@ -50,8 +51,7 @@ AS
     -- Missing time_start & time_stop
     to_timestamp(((sightings -> 'observers') -> 0) #>> '{timing,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS')
       AS timing,
-    cast(sightings #>> '{place,@id}'
-      AS INTEGER) AS id_place,
+    cast(sightings #>> '{place,@id}' AS INTEGER) AS id_place,
     sightings #>> '{place,name}' AS place,
     sightings #>> '{place,municipality}' AS municipality,
     sightings #>> '{place,county}' AS county,
@@ -65,11 +65,17 @@ AS
     ((sightings -> 'observers') -> 0) ->> 'precision' AS precision,
     ((sightings -> 'observers') -> 0) ->> 'atlas_grid_name' AS atlas_grid_name,
     ((sightings -> 'observers') -> 0) ->> 'estimation_code' AS estimation_code,
-    ((sightings -> 'observers') -> 0) ->> 'count' AS count,
-    ((sightings -> 'observers') -> 0) #>> '{atlas_code,#text}' AS atlas_code,
-    ((sightings -> 'observers') -> 0) ->> 'altitude' AS altitude,
+    cast(((sightings -> 'observers') -> 0) ->> 'count' AS INTEGER) AS count,
+    cast(((sightings -> 'observers') -> 0) #>> '{atlas_code,#text}' AS INTEGER) AS atlas_code,
+    cast(((sightings -> 'observers') -> 0) ->> 'altitude' AS INTEGER) AS altitude,
     ((sightings -> 'observers') -> 0) ->> 'hidden' AS hidden,
+    ((sightings -> 'observers') -> 0) ->> 'admin_hidden' AS admin_hidden,
+    ((sightings -> 'observers') -> 0) ->> 'name' AS name,
+    ((sightings -> 'observers') -> 0) ->> 'anonymous' AS anonymous,
+    ((sightings -> 'observers') -> 0) ->> 'entity' AS entity,
     ((sightings -> 'observers') -> 0) ->> 'details' AS details,
+    ((sightings -> 'observers') -> 0) ->> 'comment' AS comment,
+    ((sightings -> 'observers') -> 0) ->> 'hidden_comment' AS hidden_comment,
     (((sightings -> 'observers'::text) -> 0) #>> '{extended_info,mortality}'::text[]) IS NOT NULL AS mortality,
     ((sightings -> 'observers') -> 0) #>> '{extended_info, mortality, death_cause2}' AS death_cause2,
     to_timestamp(((sightings -> 'observers') -> 0) #>> '{insert_date,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS')
@@ -78,6 +84,22 @@ AS
       AS update_date,
     the_geom AS the_geom
    FROM $(evn_db_schema).observations_json
+WITH DATA;
+
+-- Taxo_groups table
+-- Delete existing table
+DROP MATERIALIZED VIEW IF EXISTS $(evn_db_schema).taxo_groups CASCADE;
+
+CREATE MATERIALIZED VIEW $(evn_db_schema).taxo_groups
+TABLESPACE pg_default
+AS
+ SELECT
+    id_specie AS id_taxo_group,
+    specie #>> '{name}' AS name,
+    specie #>> '{name_constant}' AS name_constant,
+    specie #>> '{latin_name}' AS latin_name,
+    specie #>> '{access_mode}' AS access_mode
+   FROM $(evn_db_schema).taxo_groups_json
 WITH DATA;
 
 
@@ -141,8 +163,8 @@ AS
     place #>> '{visible}' AS visible,
     place #>> '{is_private}' AS is_private,
     place #>> '{place_type}' AS place_type,
-    place #>> '{id_commune}' AS id_commune,
-    place #>> '{id_region}' AS id_region,
+    (place #>> '{id_commune}')::INTEGER AS id_commune,
+    (place #>> '{id_region}')::INTEGER AS id_region,
     the_geom AS the_geom
   FROM $(evn_db_schema).places_json
 WITH DATA;

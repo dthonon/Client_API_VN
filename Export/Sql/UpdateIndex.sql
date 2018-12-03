@@ -35,8 +35,12 @@ SET search_path TO $(evn_db_schema),public,topology;
 -- Indexes on $(evn_db_schema).observations;
 REFRESH MATERIALIZED VIEW $(evn_db_schema).observations WITH DATA;
 
+ALTER TABLE $(evn_db_schema).observations_json DROP CONSTRAINT IF EXISTS observations_pkey;
+ALTER TABLE $(evn_db_schema).observations_json ADD PRIMARY KEY (id_sighting);
+
+-- Indexes on $(evn_db_schema).observations;
 DROP INDEX IF EXISTS $(evn_db_schema).observations_idx_id_sighting;
-CREATE UNIQUE INDEX observations_idx_id_sighting
+CREATE INDEX observations_idx_id_sighting
     ON $(evn_db_schema).observations USING btree
     (id_sighting)
     TABLESPACE pg_default;
@@ -45,6 +49,12 @@ DROP INDEX IF EXISTS $(evn_db_schema).observations_idx_date_year;
 CREATE INDEX observations_idx_date_year
     ON $(evn_db_schema).observations USING btree
     (date_year)
+    TABLESPACE pg_default;
+
+DROP INDEX IF EXISTS $(evn_db_schema).observations_idx_id_species;
+CREATE INDEX observations_idx_id_species
+    ON $(evn_db_schema).observations USING btree
+    (id_species)
     TABLESPACE pg_default;
 
 DROP INDEX IF EXISTS $(evn_db_schema).observations_idx_french_name;
@@ -63,6 +73,12 @@ DROP INDEX IF EXISTS $(evn_db_schema).observations_idx_place;
 CREATE INDEX observations_idx_place
     ON $(evn_db_schema).observations USING btree
     (place COLLATE pg_catalog."default" varchar_pattern_ops)
+    TABLESPACE pg_default;
+
+DROP INDEX IF EXISTS $(evn_db_schema).observations_idx_the_geom;
+CREATE INDEX observations_idx_the_geom
+    ON $(evn_db_schema).observations USING spgist
+    (the_geom)
     TABLESPACE pg_default;
 
 -- Indexes on $(evn_db_schema).species;
@@ -90,4 +106,10 @@ DROP INDEX IF EXISTS $(evn_db_schema).places_idx_id_place;
 CREATE UNIQUE INDEX places_idx_id_place
     ON $(evn_db_schema).places USING btree
     (id_place)
+    TABLESPACE pg_default;
+
+DROP INDEX IF EXISTS $(evn_db_schema).places_idx_the_geom;
+CREATE INDEX observations_idx_the_geom
+    ON $(evn_db_schema).places USING spgist
+    (the_geom)
     TABLESPACE pg_default;
