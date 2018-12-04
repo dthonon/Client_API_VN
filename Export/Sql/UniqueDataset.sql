@@ -1,5 +1,4 @@
-create extension if not exists "uuid-ossp"
-;
+
 
 create schema if not exists src_vn
 ;
@@ -19,11 +18,9 @@ create table src_vn.observations (
   ,
   id_species      integer
   ,
-  french_name     varchar(150
-                  )
+  french_name     varchar(150)
   ,
-  latin_name      varchar(150
-                  )
+  latin_name      varchar(150)
   ,
   tdate           date
   ,
@@ -33,20 +30,15 @@ create table src_vn.observations (
   ,
   id_place        integer
   ,
-  place           varchar(150
-                  )
+  place           varchar(150)
   ,
-  municipality    varchar(150
-                  )
+  municipality    varchar(150)
   ,
-  county          varchar(150
-                  )
+  county          varchar(150)
   ,
-  country         varchar(100
-                  )
+  country         varchar(100)
   ,
-  insee           char(5
-                  )
+  insee           char(5)
   , -- cast(((observations_json.sightings -> 'observers') -> 0) ->> 'coord_lat' AS double precision) AS coord_lat,
   coord_lat       float
   ,
@@ -56,14 +48,11 @@ create table src_vn.observations (
   ,
   coord_y_l93     integer
   ,
-  precision       varchar(100
-                  )
+  precision       varchar(100)
   ,
-  atlas_grid_name varchar(50
-                  )
+  atlas_grid_name varchar(50)
   ,
-  estimation_code varchar(100
-                  )
+  estimation_code varchar(100)
   ,
   count           integer
   ,
@@ -71,20 +60,15 @@ create table src_vn.observations (
   ,
   altitude        integer
   ,
-  hidden          varchar(50
-                  )
+  hidden          varchar(50)
   ,
-  admin_hidden    varchar(50
-                  )
+  admin_hidden    varchar(50)
   ,
-  name            varchar(100
-                  )
+  name            varchar(100)
   ,
-  anonymous       varchar(50
-                  )
+  anonymous       varchar(50)
   ,
-  entity          varchar(50
-                  )
+  entity          varchar(50)
   ,
   details         text
   ,
@@ -106,68 +90,25 @@ create table src_vn.observations (
 )
 ;
 
-insert into src_vn.observations (id_sighting, id_universal, id_species, french_name, latin_name, tdate, date_year, timing, id_place, place, municipality, county, country, insee, coord_lat, coord_lon, coord_x_l93, coord_y_l93, precision, atlas_grid_name, estimation_code, count, atlas_code, altitude, hidden, admin_hidden, name, anonymous, entity, details, comment, hidden_comment, mortality, death_cause2, insert_date, update_date, geom, src)
-  select
-      id_sighting                                                                                        as id_sighting
-    , ((sightings -> 'observers') -> 0) ->> 'id_universal'                                               as id_universal
-    , cast(sightings #>> '{species,@id}' as integer)                                                     as id_species
-    , sightings #>> '{species,name}'                                                                     as french_name
-    , sightings #>> '{species,latin_name}'                                                               as latin_name
-    , to_date(sightings #>> '{date,@ISO8601}', 'YYYY-MM-DD')                                             as date
-    , cast(extract(year from
-                   to_date(sightings #>> '{date,@ISO8601}', 'YYYY-MM-DD'))
-           as integer)                                                                                   as date_year
-    , -- Missing time_start & time_stop
-      to_timestamp(((sightings -> 'observers') -> 0) #>> '{timing,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS')
-                                                                                                         as timing
-    , cast(sightings #>> '{place,@id}' as integer)                                                       as id_place
-    , sightings #>> '{place,name}'                                                                       as place
-    , sightings #>> '{place,municipality}'                                                               as municipality
-    , sightings #>> '{place,county}'                                                                     as county
-    , sightings #>> '{place,country}'                                                                    as country
-    , sightings #>> '{place,insee}'                                                                      as insee
-    , -- cast(((observations_json.sightings -> 'observers') -> 0) ->> 'coord_lat' AS double precision) AS coord_lat,
-      coord_lat                                                                                          as coord_lat
-    , coord_lon                                                                                          as coord_lon
-    , ST_X(the_geom)                                                                                     as coord_x_l93
-    , ST_Y(the_geom)                                                                                     as coord_y_l93
-    , ((sightings -> 'observers') -> 0) ->> 'precision'                                                  as precision
-    , ((sightings -> 'observers') -> 0) ->>
-      'atlas_grid_name'                                                                                  as atlas_grid_name
-    , ((sightings -> 'observers') -> 0) ->>
-      'estimation_code'                                                                                  as estimation_code
-    , cast(((sightings -> 'observers') -> 0) ->> 'count' as integer)                                     as count
-    , cast(((sightings -> 'observers') -> 0) #>> '{atlas_code,#text}' as integer)                        as atlas_code
-    , cast(((sightings -> 'observers') -> 0) ->> 'altitude' as integer)                                  as altitude
-    , ((sightings -> 'observers') -> 0) ->> 'hidden'                                                     as hidden
-    , ((sightings -> 'observers') -> 0) ->> 'admin_hidden'                                               as admin_hidden
-    , ((sightings -> 'observers') -> 0) ->> 'name'                                                       as name
-    , ((sightings -> 'observers') -> 0) ->> 'anonymous'                                                  as anonymous
-    , ((sightings -> 'observers') -> 0) ->> 'entity'                                                     as entity
-    , ((sightings -> 'observers') -> 0) ->> 'details'                                                    as details
-    , ((sightings -> 'observers') -> 0) ->> 'comment'                                                    as comment
-    , ((sightings -> 'observers') -> 0) ->>
-      'hidden_comment'                                                                                   as hidden_comment
-    , (((sightings -> 'observers' :: text) -> 0) #>> '{extended_info,mortality}' :: text []) is not null as mortality
-    , ((sightings -> 'observers') -> 0) #>> '{extended_info, mortality, death_cause2}'                   as death_cause2
-    , to_timestamp(((sightings -> 'observers') -> 0) #>> '{insert_date,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS')
-                                                                                                         as insert_date
-    , to_timestamp(((sightings -> 'observers') -> 0) #>> '{update_date,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS')
-                                                                                                         as update_date
-    , the_geom                                                                                           as the_geom
-    , 'lpoauv'                                                                                           as src
-
-  from vn_auv.observations_json
-;
-
 create or replace function update_vn_sights()
   returns trigger as $$
 begin
-  --
-  -- Perform the required operation on emp, and create a row in emp_audit
-  -- to reflect the change made to emp.
-  --
+/* 
+update continously src_vn.observations table from raw json data tables after insert/update/delete events.
+You just need to add this trigger to source table
+ ___________________________________________________________
+|--EXAMPLE--------------------------------------------------|
+|                                                           |
+|   create trigger my_trigger_name                          |
+|     After insert or update or delete                      |
+|     on my_observations_json_table                         | 
+|     for each row execute procedure update_vn_sights()     |
+|   ;                                                       |
+|___________________________________________________________|
+    
+*/
   if (TG_OP = 'DELETE')
+  /* Deleting data on src_vn.observations when raw data is deleted */
   then
     delete from src_vn.observations
     where id_universal = ((OLD.sightings -> 'observers') -> 0) ->> 'id_universal'
@@ -181,6 +122,7 @@ begin
     return OLD
     ;
   elsif (TG_OP = 'UPDATE')
+  /* Updating data on src_vn.observations when raw data is updated */
     then
       update src_vn.observations
       set
@@ -199,7 +141,6 @@ begin
         , county          = NEW.sightings #>> '{place,county}'
         , country         = NEW.sightings #>> '{place,country}'
         , insee           = NEW.sightings #>> '{place,insee}'
-        -- cast(((observations_json.sightings -> 'observers') -> 0) ->> 'coord_lat' AS double precision) AS coord_lat,
         , coord_lat       = NEW.coord_lat
         , coord_lon       = NEW.coord_lon
         , coord_x_l93     = ST_X(NEW.the_geom)
@@ -238,6 +179,7 @@ begin
       return NEW
       ;
   elsif (TG_OP = 'INSERT')
+  /* Inserting data on src_vn.observations when raw data is inserted */
     then
       insert into src_vn.observations (id_sighting, id_universal, id_species, french_name, latin_name, tdate, date_year, timing, id_place, place, municipality, county, country, insee, coord_lat, coord_lon, coord_x_l93, coord_y_l93, precision, atlas_grid_name, estimation_code, count, atlas_code, altitude, hidden, admin_hidden, name, anonymous, entity, details, comment, hidden_comment, mortality, death_cause2, insert_date, update_date, geom)
       values (
@@ -268,7 +210,6 @@ begin
           '{place,country}'
         , NEW.sightings #>> '{place,insee}'
         ,
-          -- cast(((observations_json.NEW.sightings -> 'observers') -> 0) ->> 'coord_lat' AS double precision) AS coord_lat,
           NEW.coord_lat
         ,
           NEW.coord_lon
@@ -320,9 +261,3 @@ end
 $$
 language plpgsql
 ;
---
--- create trigger auv_obs
---   After insert or update or delete
---   on observations_json
---   for each row execute procedure update_vn_sights()
--- ;
