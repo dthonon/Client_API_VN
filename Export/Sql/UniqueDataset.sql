@@ -22,7 +22,7 @@ create table src_vn.observations (
   ,
   latin_name      varchar(150)
   ,
-  tdate           date
+  date           date
   ,
   date_year       integer
   , -- Missing time_start & time_stop
@@ -181,7 +181,7 @@ You just need to add this trigger to source table
   elsif (TG_OP = 'INSERT')
   /* Inserting data on src_vn.observations when raw data is inserted */
     then
-      insert into src_vn.observations (id_sighting, id_universal, id_species, french_name, latin_name, tdate, date_year, timing, id_place, place, municipality, county, country, insee, coord_lat, coord_lon, coord_x_l93, coord_y_l93, precision, atlas_grid_name, estimation_code, count, atlas_code, altitude, hidden, admin_hidden, name, anonymous, entity, details, comment, hidden_comment, mortality, death_cause2, insert_date, update_date, geom)
+      insert into src_vn.observations (id_sighting, id_universal, id_species, french_name, latin_name, date, date_year, timing, id_place, place, municipality, county, country, insee, coord_lat, coord_lon, coord_x_l93, coord_y_l93, precision, atlas_grid_name, estimation_code, count, atlas_code, altitude, hidden, admin_hidden, name, anonymous, entity, details, comment, hidden_comment, mortality, death_cause2, insert_date, update_date, geom)
       values (
         NEW.id_sighting
         , ((NEW.sightings -> 'observers') -> 0) ->>
