@@ -243,16 +243,18 @@ def main(argv):
             obs_id = json_obs['observers'][0]['id_sighting']
             if (inserted_obs.exists(obs_id)):
                 logging.warning('Observation {} was already downloaded, updating it'.format(obs_id))
-                cur.execute('UPDATE {}.observations_json SET sightings=(%s), update_ts=(%s), coord_lat=(%s), coord_lon=(%s) WHERE id_sighting = (%s)'.format(evn_db_schema),
-                            (json.dumps(json_obs),
+                cur.execute('UPDATE {}.observations_json SET site=(%s), sightings=(%s), update_ts=(%s), coord_lat=(%s), coord_lon=(%s) WHERE id_sighting = (%s)'.format(evn_db_schema),
+                            (options.site,
+                             json.dumps(json_obs),
                              update_date,
                              json_obs['observers'][0]['coord_lat'],
                              json_obs['observers'][0]['coord_lon'],
                              obs_id))
             else :
                 inserted_obs.insert((obs_id, update_date))
-                cur.execute('INSERT INTO {}.observations_json (id_sighting, sightings, update_ts, coord_lat, coord_lon) VALUES (%s, %s, %s, %s, %s)'.format(evn_db_schema),
+                cur.execute('INSERT INTO {}.observations_json (id_sighting, site, sightings, update_ts, coord_lat, coord_lon) VALUES (%s, %s, %s, %s, %s, %s)'.format(evn_db_schema),
                             (obs_id,
+                             options.site,
                              json.dumps(json_obs),
                              update_date,
                              json_obs['observers'][0]['coord_lat'],
@@ -273,16 +275,18 @@ def main(argv):
                     obs_id = json_obs['observers'][0]['id_sighting']
                     if (inserted_obs.exists(obs_id)):
                         logging.warning('Observation {} was already downloaded, updating it'.format(obs_id))
-                        cur.execute('UPDATE {}.observations_json SET sightings=(%s), update_ts=(%s), coord_lat=(%s), coord_lon=(%s) WHERE id_sighting = (%s)'.format(evn_db_schema),
-                                    (json.dumps(json_obs),
+                        cur.execute('UPDATE {}.observations_json SET site=(%s), sightings=(%s), update_ts=(%s), coord_lat=(%s), coord_lon=(%s) WHERE id_sighting = (%s)'.format(evn_db_schema),
+                                    (options.site,
+                                     json.dumps(json_obs),
                                      update_date,
                                      json_obs['observers'][0]['coord_lat'],
                                      json_obs['observers'][0]['coord_lon'],
                                      obs_id))
                     else :
                         inserted_obs.insert((obs_id, update_date))
-                        cur.execute('INSERT INTO {}.observations_json (id_sighting, sightings, update_ts, coord_lat, coord_lon) VALUES (%s, %s, %s, %s, %s)'.format(evn_db_schema),
+                        cur.execute('INSERT INTO {}.observations_json (id_sighting, site, sightings, update_ts, coord_lat, coord_lon) VALUES (%s, %s, %s, %s, %s, %s)'.format(evn_db_schema),
                                     (obs_id,
+                                     options.site,
                                      json.dumps(json_obs),
                                      update_date,
                                      json_obs['observers'][0]['coord_lat'],
@@ -303,8 +307,9 @@ def main(argv):
         for i in range(0, len(species_chunk['data'])):
             json_specie = species_chunk['data'][i]
             # Insert row
-            cur.execute('INSERT INTO {}.species_json (id_specie, specie) VALUES (%s, %s)'.format(evn_db_schema),
+            cur.execute('INSERT INTO {}.species_json (id_specie, site, specie) VALUES (%s, %s, %s)'.format(evn_db_schema),
                         (json_specie['id'],
+                         options.site,
                          json.dumps(json_specie)
                          ))
 
@@ -323,8 +328,9 @@ def main(argv):
         for i in range(0, len(taxo_groups_chunk['data'])):
             json_taxo_group = taxo_groups_chunk['data'][i]
             # Insert row
-            cur.execute('INSERT INTO {}.taxo_groups_json (id_taxo_group, taxo_group) VALUES (%s, %s)'.format(evn_db_schema),
+            cur.execute('INSERT INTO {}.taxo_groups_json (id_taxo_group, site, taxo_group) VALUES (%s, %s, %s)'.format(evn_db_schema),
                         (json_taxo_group['id'],
+                         options.site,
                          json.dumps(json_taxo_group)
                          ))
 
@@ -343,8 +349,9 @@ def main(argv):
         for i in range(0, len(local_admin_units_chunk['data'])):
             json_local_admin_unit = local_admin_units_chunk['data'][i]
             # Insert row
-            cur.execute('INSERT INTO {}.local_admin_units_json (id_local_admin_unit, local_admin_unit, coord_lat, coord_lon) VALUES (%s, %s, %s, %s)'.format(evn_db_schema),
+            cur.execute('INSERT INTO {}.local_admin_units_json (id_local_admin_unit, site, local_admin_unit, coord_lat, coord_lon) VALUES (%s, %s, %s, %s, %s)'.format(evn_db_schema),
                         (json_local_admin_unit['id'],
+                         options.site,
                          json.dumps(json_local_admin_unit),
                          json_local_admin_unit['coord_lat'],
                          json_local_admin_unit['coord_lon']
@@ -366,8 +373,9 @@ def main(argv):
             json_place = places_chunk['data'][i]
             # Insert row
 
-            cur.execute('INSERT INTO {}.places_json (id_place, place, coord_lat, coord_lon) VALUES (%s, %s, %s, %s)'.format(evn_db_schema),
+            cur.execute('INSERT INTO {}.places_json (id_place, site, place, coord_lat, coord_lon) VALUES (%s, %s, %s, %s, %s)'.format(evn_db_schema),
                         (json_place['id'],
+                         options.site,
                          json.dumps(json_place),
                          json_place['coord_lat'],
                          json_place['coord_lon']

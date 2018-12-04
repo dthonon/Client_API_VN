@@ -109,7 +109,7 @@ CREATE UNIQUE INDEX places_idx_id_place
     TABLESPACE pg_default;
 
 DROP INDEX IF EXISTS $(evn_db_schema).places_idx_the_geom;
-CREATE INDEX observations_idx_the_geom
+CREATE INDEX places_idx_the_geom
     ON $(evn_db_schema).places USING spgist
     (the_geom)
     TABLESPACE pg_default;
