@@ -46,6 +46,11 @@ from functools import lru_cache
 # version of the program:
 __version__ = "0.1.1" #VERSION#
 
+class HashableDict(dict):
+    """Provide hashable dict type, to enable @lru_cache."""
+    def __hash__(self):
+        return hash(frozenset(self))
+
 class BiolovisionApiException(Exception):
     """An exception occurred while handling your request."""
 
@@ -221,7 +226,8 @@ class BiolovisionAPI:
         # GET from API
         return self._url_get(params, self._ctrl + '/' + str(id))
 
-    def api_list(self, opt_params=dict()):
+    @lru_cache(maxsize=32)
+    def api_list(self, opt_params=None):
         """Query for a list of entities of the given controler.
 
         Calls /ctrl API.
@@ -241,10 +247,11 @@ class BiolovisionAPI:
         # Mandatory parameters.
         params = {'user_email': self._config.user_email,
                   'user_pw': self._config.user_pw}
-        params.update(opt_params)
+        if opt_params is not None:
+            params.update(opt_params)
+        logging.info('List from %s, with option %s',
+                      self._ctrl, params)
         # GET from API
-        logging.debug('List from %s, with option %s',
-                      self._ctrl, opt_params)
         entities = self._url_get(params, self._ctrl)['data']
         logging.debug('Number of entities = %i',
                       len(entities))
@@ -279,10 +286,6 @@ class LocalAdminUnitsAPI(BiolovisionAPI):
         super().__init__(config, 'local_admin_units',
                          max_retry, max_requests, max_chunks)
 
-    @lru_cache(maxsize=32)
-    def api_list(self):
-        """Return list of taxo groups, from cache or site."""
-        return super().api_list()
 
 class ObservationsAPI(BiolovisionAPI):
     """ Implement api calls to observations controler.
@@ -315,7 +318,7 @@ class ObservationsAPI(BiolovisionAPI):
             dict decoded from json if status OK, else None
         """
         opt_params['id_taxo_group'] = str(id_taxo_group)
-        return super().api_list(opt_params)
+        return super().api_list(HashableDict(opt_params))
 
     def api_diff(self, id_taxo_group, delta_time, modification_type='all'):
         """Query for a list of updates or deletions since a given date.
@@ -392,7 +395,6 @@ class TaxoGroupsAPI(BiolovisionAPI):
         super().__init__(config, 'taxo_groups',
                          max_retry, max_requests, max_chunks)
 
-    @lru_cache(maxsize=32)
     def api_list(self):
         """Return list of taxo groups, from cache or site."""
         return super().api_list()
@@ -412,7 +414,6 @@ class TerritorialUnitsAPI(BiolovisionAPI):
         super().__init__(config, 'territorial_units',
                          max_retry, max_requests, max_chunks)
 
-    @lru_cache(maxsize=32)
     def api_list(self):
         """Return list of taxo groups, from cache or site."""
         return super().api_list()

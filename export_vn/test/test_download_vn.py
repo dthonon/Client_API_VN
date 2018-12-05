@@ -93,7 +93,7 @@ def test_species_store(capsys):
     assert Path(file_json).is_file()
     with gzip.open(file_json, 'rb') as g:
         items_dict = json.loads(g.read().decode('utf-8'))
-    assert len(items_dict['data']) > 39175
+    assert len(items_dict['data']) > 39000
 
 # ------------
 #  Taxo groups
