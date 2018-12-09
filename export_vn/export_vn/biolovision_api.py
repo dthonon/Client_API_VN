@@ -200,43 +200,14 @@ class BiolovisionAPI:
             raise MaxChunksError
 
 
-    # -----------------------------------------
-    #  Generic methods, used by most subclasses
-    # -----------------------------------------
-    def api_get(self, id):
-        """Query for a single entity of the given controler.
-
-        Calls  /ctrl/id API.
-
-        Parameters
-        ----------
-        ctrl : str
-            controler to query.
-        id : str
-            entity to retrieve.
-
-        Returns
-        -------
-        json : dict or None
-            dict decoded from json if status OK, else None
-        """
-        # Mandatory parameters.
-        params = {'user_email': self._config.user_email,
-                  'user_pw': self._config.user_pw}
-        # GET from API
-        return self._url_get(params, self._ctrl + '/' + str(id))
-
-    @lru_cache(maxsize=32)
-    def api_list(self, opt_params=None):
+    def _api_list(self, opt_params=None):
         """Query for a list of entities of the given controler.
 
         Calls /ctrl API.
 
         Parameters
         ----------
-        ctrl : str
-            controler to query.
-        opt_params : dict
+        opt_params : HashableDict (to enable lru_cache)
             optional URL parameters, empty by default. See Biolovision API documentation.
 
         Returns
@@ -256,6 +227,51 @@ class BiolovisionAPI:
         logging.debug('Number of entities = %i',
                       len(entities))
         return {'data': entities}
+
+
+    # -----------------------------------------
+    #  Generic methods, used by most subclasses
+    # -----------------------------------------
+    def api_get(self, id):
+        """Query for a single entity of the given controler.
+
+        Calls  /ctrl/id API.
+
+        Parameters
+        ----------
+        id : str
+            entity to retrieve.
+
+        Returns
+        -------
+        json : dict or None
+            dict decoded from json if status OK, else None
+        """
+        # Mandatory parameters.
+        params = {'user_email': self._config.user_email,
+                  'user_pw': self._config.user_pw}
+        # GET from API
+        return self._url_get(params, self._ctrl + '/' + str(id))
+
+    def api_list(self, opt_params=None):
+        """Query for a list of entities of the given controler.
+
+        Calls /ctrl API.
+
+        Parameters
+        ----------
+        opt_params : dict
+            optional URL parameters, empty by default. See Biolovision API documentation.
+
+        Returns
+        -------
+        json : dict or None
+            dict decoded from json if status OK, else None
+        """
+        if opt_params == None:
+            return self._api_list()
+        else:
+            return self._api_list(HashableDict(opt_params))
 
     # -------------------------
     # Exception testing methods
@@ -303,12 +319,14 @@ class ObservationsAPI(BiolovisionAPI):
                          max_retry, max_requests, max_chunks)
 
     def api_list(self, id_taxo_group, opt_params=dict()):
-        """Query for a list of observations from the controler.
+        """Query for list of observations by taxo_group from the controler.
 
         Calls  /observations API.
 
         Parameters
         ----------
+        id_taxo_group : integer
+            taxo_group to query for observations
         opt_params : dict
             optional URL parameters, empty by default. See Biolovision API documentation.
 
@@ -395,6 +413,7 @@ class TaxoGroupsAPI(BiolovisionAPI):
         super().__init__(config, 'taxo_groups',
                          max_retry, max_requests, max_chunks)
 
+    @lru_cache(maxsize=32)
     def api_list(self):
         """Return list of taxo groups, from cache or site."""
         return super().api_list()
@@ -414,6 +433,7 @@ class TerritorialUnitsAPI(BiolovisionAPI):
         super().__init__(config, 'territorial_units',
                          max_retry, max_requests, max_chunks)
 
+    @lru_cache(maxsize=32)
     def api_list(self):
         """Return list of taxo groups, from cache or site."""
         return super().api_list()

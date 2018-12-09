@@ -11,7 +11,7 @@ import requests
 import pytest
 import timeit
 
-from export_vn.biolovision_api import HashableDict, BiolovisionAPI, BiolovisionApiException
+from export_vn.biolovision_api import BiolovisionAPI, BiolovisionApiException
 from export_vn.biolovision_api import LocalAdminUnitsAPI, ObservationsAPI, PlacesAPI
 from export_vn.biolovision_api import SpeciesAPI, TaxoGroupsAPI, TerritorialUnitsAPI
 from export_vn.biolovision_api import HTTPError, MaxChunksError
@@ -79,7 +79,7 @@ def test_local_admin_units_list_all(capsys):
 def test_local_admin_units_list_1(capsys):
     """Get a list of local_admin_units from territorial unit 39 (Isère)."""
     logging.info('Getting local admin unit from {id_canton: 39}')
-    local_admin_units_list = LOCAL_ADMIN_UNITS_API.api_list(HashableDict(opt_params={'id_canton': '39'}))
+    local_admin_units_list = LOCAL_ADMIN_UNITS_API.api_list(opt_params={'id_canton': '39'})
     with capsys.disabled():
         logging.debug('territorial unit 39 ==> {} local admin unit '.format(len(local_admin_units_list['data'])))
     assert LOCAL_ADMIN_UNITS_API.transfer_errors == 0
@@ -224,7 +224,7 @@ def test_places_list_all(capsys):
 def test_places_list_1(capsys):
     """Get a list of places from local admin unit 14693 (Allevard)."""
     with capsys.disabled():
-        places_list = PLACES_API.api_list(HashableDict({'id_commune': '14693'}))
+        places_list = PLACES_API.api_list({'id_commune': '14693'})
         logging.debug('local admin unit 14693 ==> {} place '.format(len(places_list['data'])))
     assert PLACES_API.transfer_errors == 0
     assert len(places_list['data']) >= 164
@@ -250,7 +250,7 @@ def test_species_list_all(capsys):
 
 def test_species_list_1(capsys):
     """Get a list of species from taxo_group 1."""
-    species_list = SPECIES_API.api_list(HashableDict({'id_taxo_group': '1'}))
+    species_list = SPECIES_API.api_list({'id_taxo_group': '1'})
     with capsys.disabled():
         logging.debug('Taxo_group 1 ==> {} species'.format(len(species_list['data'])))
     assert SPECIES_API.transfer_errors == 0
@@ -259,7 +259,7 @@ def test_species_list_1(capsys):
 
 def test_species_list_30(capsys):
     """Get a list of species from taxo_group 30."""
-    species_list = SPECIES_API.api_list(HashableDict({'id_taxo_group': '30'}))
+    species_list = SPECIES_API.api_list({'id_taxo_group': '30'})
     with capsys.disabled():
         logging.debug('Taxo_group 30 ==> {} species'.format(len(species_list['data'])))
     assert SPECIES_API.transfer_errors == 0
@@ -268,7 +268,7 @@ def test_species_list_30(capsys):
 def test_species_list_error(capsys):
     """Get a list of species from taxo_group 1, limited to 1 chunk."""
     with pytest.raises(MaxChunksError) as excinfo:
-        species_list = SPECIES_API_ERR.api_list(HashableDict({'id_taxo_group': '1'}))
+        species_list = SPECIES_API_ERR.api_list({'id_taxo_group': '1'})
 
 # ----------------------------
 # Taxo_group controler methods
