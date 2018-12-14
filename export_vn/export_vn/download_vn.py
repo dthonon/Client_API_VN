@@ -29,6 +29,7 @@ __version__ = "0.1.1" #VERSION#
 class DownloadVnException(Exception):
     """An exception occurred while handling download or store. """
 
+
 class DownloadVn:
     """Top class, not for direct use. Provides internal and template methods."""
 
@@ -89,11 +90,13 @@ class LocalAdminUnits(DownloadVn):
         super().__init__(config, LocalAdminUnitsAPI(config),
                          max_retry, max_requests, max_chunks)
 
+
 class Observations(DownloadVn):
     """ Implement store from observations controler.
 
     Methods
     - store               - Download (by date interval) and store to json
+    - update              - Download (by date interval) and store to json
 
     """
 
@@ -101,6 +104,32 @@ class Observations(DownloadVn):
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
         super().__init__(config, ObservationsAPI(config),
                          max_retry, max_requests, max_chunks)
+
+
+    def store(self, id_taxo_group):
+        """Download from VN by API and store json to file.
+
+        Calls  biolovision_api, convert to json and store to file.
+
+        """
+        # GET from API
+        logging.debug('Getting items from controler %s',
+                      self._api_instance.controler)
+        items_dict = self._api_instance.api_list(id_taxo_group)
+        # Convert to json
+        logging.debug('Converting to json %d items',
+                      len(items_dict['data']))
+        items_json = json.dumps(items_dict, sort_keys=True, indent=4, separators=(',', ': '))
+        # Store to file
+        if (len(items_dict['data']) > 0):
+            file_json_gz = str(Path.home()) + '/' + self._config.file_store + \
+                self._api_instance.controler + '_' + str(id_taxo_group) + '_1.json.gz'
+            logging.debug('Received data, storing json to {}'.format(file_json_gz))
+            with gzip.open(file_json_gz, 'wb', 9) as g:
+                g.write(items_json.encode())
+
+        return
+
 
     def update(self):
         """Download increment from VN by API and store json to file.
@@ -129,6 +158,7 @@ class Observations(DownloadVn):
 
         return
 
+
 class Places(DownloadVn):
     """ Implement store from places controler.
 
@@ -141,6 +171,7 @@ class Places(DownloadVn):
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
         super().__init__(config, PlacesAPI(config),
                          max_retry, max_requests, max_chunks)
+
 
 class Species(DownloadVn):
     """ Implement store from species controler.
@@ -155,6 +186,7 @@ class Species(DownloadVn):
         super().__init__(config, SpeciesAPI(config),
                          max_retry, max_requests, max_chunks)
 
+
 class TaxoGroup(DownloadVn):
     """ Implement store from taxo_groups controler.
 
@@ -167,6 +199,7 @@ class TaxoGroup(DownloadVn):
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
         super().__init__(config, TaxoGroupsAPI(config),
                          max_retry, max_requests, max_chunks)
+
 
 class TerritorialUnits(DownloadVn):
     """ Implement store from territorial_units controler.

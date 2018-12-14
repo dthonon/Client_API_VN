@@ -82,10 +82,6 @@ class BiolovisionAPI:
         self._oauth = OAuth1(config.client_key,
                              client_secret=config.client_secret)
 
-        # Caches for typical query parameters
-        self._taxo_groups_list = dict()
-        self.__territorial_units_list = dict()
-
     @property
     def transfer_errors(self):
         """Return the number of HTTP errors during this session."""
@@ -220,7 +216,7 @@ class BiolovisionAPI:
                   'user_pw': self._config.user_pw}
         if opt_params is not None:
             params.update(opt_params)
-        logging.info('List from %s, with option %s',
+        logging.debug('List from %s, with option %s',
                       self._ctrl, params)
         # GET from API
         entities = self._url_get(params, self._ctrl)['data']

@@ -63,12 +63,12 @@ def test_local_admin_units_store(capsys):
 # -------------
 def test_observations_store(capsys):
     """Store observations to file."""
-    OBSERVATIONS.store()
-    # file_json = str(Path.home()) + '/' + CFG.file_store + 'observations_1.json.gz'
-    # assert Path(file_json).is_file()
-    # with gzip.open(file_json, 'rb') as g:
-    #     items_dict = json.loads(g.read().decode('utf-8'))
-    # assert len(items_dict['data']) > 31930
+    OBSERVATIONS.store(18)
+    file_json = str(Path.home()) + '/' + CFG.file_store + 'observations_18_1.json.gz'
+    assert Path(file_json).is_file()
+    with gzip.open(file_json, 'rb') as g:
+     items_dict = json.loads(g.read().decode('utf-8'))
+    assert len(items_dict['data']['sightings']) > 440
 
 
 # -------
