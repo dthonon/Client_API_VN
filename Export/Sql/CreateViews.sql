@@ -94,11 +94,11 @@ CREATE MATERIALIZED VIEW $(evn_db_schema).taxo_groups
 TABLESPACE pg_default
 AS
  SELECT
-    id_specie AS id_taxo_group,
-    specie #>> '{name}' AS name,
-    specie #>> '{name_constant}' AS name_constant,
-    specie #>> '{latin_name}' AS latin_name,
-    specie #>> '{access_mode}' AS access_mode
+    id_taxo_group AS id_taxo_group,
+    taxo_group #>> '{name}' AS name,
+    taxo_group #>> '{name_constant}' AS name_constant,
+    taxo_group #>> '{latin_name}' AS latin_name,
+    taxo_group #>> '{access_mode}' AS access_mode
    FROM $(evn_db_schema).taxo_groups_json
 WITH DATA;
 
