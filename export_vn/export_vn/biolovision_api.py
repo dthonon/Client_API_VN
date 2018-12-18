@@ -40,6 +40,7 @@ import logging
 
 import urllib
 import requests
+import json
 from requests_oauthlib import OAuth1
 from functools import lru_cache
 
@@ -59,6 +60,9 @@ class HTTPError(BiolovisionApiException):
 
 class MaxChunksError(BiolovisionApiException):
     """Too many chunks returned from API calls."""
+
+class NotImplemented(BiolovisionApiException):
+    """Feature not implemented."""
 
 class IncorrectParameter(BiolovisionApiException):
     """Incorrect or missing parameter."""
@@ -95,11 +99,11 @@ class BiolovisionAPI:
     # ----------------
     # Internal methods
     # ----------------
-    def _url_get(self, params, scope):
-        """Internal function used to GET from Biolovision API.
+    def _url_get(self, params, scope, method='GET', body=None):
+        """Internal function used to request from Biolovision API.
 
-        Prepare the URL header, perform HTTP GET and return json content.
-        Test HTTP status and returns None if error, else retrun decoded json content.
+        Prepare the URL header, perform HTTP request and get json content.
+        Test HTTP status and returns None if error, else return decoded json content.
         Increments _transfer_errors in case of error.
 
         Parameters
@@ -108,6 +112,10 @@ class BiolovisionAPI:
             params is used to build URL GET string.
         scope : str
             scope is the api to be queried, for example 'taxo_groups/'.
+        method : str
+            HTTP method to use: GET/POST/DELETE/PUT. Default to GET
+        body : str
+            Optional body for POST or PUT
 
         Returns
         -------
@@ -131,14 +139,20 @@ class BiolovisionAPI:
             logging.debug('Params: %s', payload)
             headers = {'Content-Type': 'application/json;charset=UTF-8'}
             protected_url = self._api_url + scope
-            resp = requests.get(url=protected_url, auth=self._oauth,
-                                params=payload, headers=headers)
+            if method == 'GET':
+                resp = requests.get(url=protected_url, auth=self._oauth,
+                                    params=payload, headers=headers)
+            elif method == 'POST':
+                resp = requests.post(url=protected_url, auth=self._oauth,
+                                    params=payload, headers=headers, data=body)
+            else:
+                raise NotImplemented
 
             logging.debug(resp.headers)
-            logging.debug('Status code from GET request: %s', resp.status_code)
+            logging.debug('Status code from %s request: %s', method, resp.status_code)
             if resp.status_code != 200:
-                logging.error('GET status code = %s, for URL %s',
-                              resp.status_code, protected_url)
+                logging.error('%s status code = %s, for URL %s',
+                              method, resp.status_code, protected_url)
                 self._transfer_errors += 1
                 raise HTTPError(resp.status_code)
 
@@ -306,6 +320,7 @@ class ObservationsAPI(BiolovisionAPI):
     - api_get                - Return a single observations from the controler
     - api_list               - Return all observations from the controler
     - api_diff               - Return all changes in observations since a given date
+    - api_search             - Search for observations based on parameter value
     """
 
 
@@ -364,6 +379,36 @@ class ObservationsAPI(BiolovisionAPI):
         params['date'] = delta_time
         # GET from API
         return super()._url_get(params, 'observations/diff/')
+
+    def api_search(self, q_params):
+        """Search for observations, based on parameter conditions.
+
+        Calls /observations/search to get observations
+        same parameters than in online version can be used
+
+        Parameters
+        ----------
+        q_params : dict
+            Query parameters,same than in online version.
+
+        Returns
+        -------
+        json : dict or None
+            dict decoded from json if status OK, else None
+
+        """
+        # Mandatory parameters.
+        params = {'user_email': self._config.user_email,
+                  'user_pw': self._config.user_pw}
+        # Specific parameters.
+        if q_params is not None:
+            body = json.dumps(q_params)
+        else:
+            raise IncorrectParameter
+        logging.debug('Search from %s, with option %s and body %s',
+                      self._ctrl, params, body)
+        # GET from API
+        return super()._url_get(params, 'observations/search/', 'POST', body)
 
 class PlacesAPI(BiolovisionAPI):
     """ Implement api calls to places controler.

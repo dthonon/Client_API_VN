@@ -109,7 +109,6 @@ def test_observations_list_1(capsys):
     assert OBSERVATIONS_API.transfer_errors == 0
     assert len(list) > 0
 
-
 def test_observations_get(capsys):
     """Get a specific sighting."""
     sighting = OBSERVATIONS_API.api_get('2246086')
@@ -191,6 +190,17 @@ def test_observations_get(capsys):
                     'anonymous': '0',
                     'coord_lon': '5.735458',
                     '@id': '33'}]}]}}
+
+def test_observations_search_1(capsys):
+    """Query sightings, from taxo_group 18: Mantodea and date range."""
+    q_param = {'period_choice': 'range',
+               'date_from': '01.07.2017',
+               'date_to': '31.07.2017',
+               'species_choice':'all',
+               'taxonomic_group': '18'}
+    list = OBSERVATIONS_API.api_search(q_param)
+    assert OBSERVATIONS_API.transfer_errors == 0
+    assert len(list['data']['sightings']) == 17
 
 # -------------------------
 #  Places controler methods
