@@ -7,11 +7,11 @@ drop table if exists src_vn.observations
 ;
 
 
-
 create table src_vn.observations (
   id              serial primary key,
   uuid            uuid default uuid_generate_v4(
   ),
+  site varchar(50),
   id_sighting     integer
   ,
   id_universal    varchar(200)
@@ -111,7 +111,7 @@ You just need to add this trigger to source table
   /* Deleting data on src_vn.observations when raw data is deleted */
   then
     delete from src_vn.observations
-    where id_universal = ((OLD.sightings -> 'observers') -> 0) ->> 'id_universal'
+    where id_sighting = OLD.id_sighting and site=OLD.site 
     ;
 
     if not FOUND
@@ -168,7 +168,7 @@ You just need to add this trigger to source table
         , update_date     = to_timestamp(((NEW.sightings -> 'observers') -> 0) #>> '{update_date,@ISO8601}',
                                          'YYYY-MM-DD"T"HH24:MI:SS')
         , geom            = NEW.the_geom
-      where id_universal = ((OLD.sightings -> 'observers') -> 0) ->> 'id_universal'
+      where id_sighting = OLD.id_sighting and site=OLD.site 
       ;
 
       if not FOUND
@@ -181,8 +181,9 @@ You just need to add this trigger to source table
   elsif (TG_OP = 'INSERT')
   /* Inserting data on src_vn.observations when raw data is inserted */
     then
-      insert into src_vn.observations (id_sighting, id_universal, id_species, french_name, latin_name, date, date_year, timing, id_place, place, municipality, county, country, insee, coord_lat, coord_lon, coord_x_l93, coord_y_l93, precision, atlas_grid_name, estimation_code, count, atlas_code, altitude, hidden, admin_hidden, name, anonymous, entity, details, comment, hidden_comment, mortality, death_cause2, insert_date, update_date, geom)
+      insert into src_vn.observations (site, id_sighting, id_universal, id_species, french_name, latin_name, date, date_year, timing, id_place, place, municipality, county, country, insee, coord_lat, coord_lon, coord_x_l93, coord_y_l93, precision, atlas_grid_name, estimation_code, count, atlas_code, altitude, hidden, admin_hidden, name, anonymous, entity, details, comment, hidden_comment, mortality, death_cause2, insert_date, update_date, geom)
       values (
+        NEW.site, 
         NEW.id_sighting
         , ((NEW.sightings -> 'observers') -> 0) ->>
           'id_universal'
