@@ -3,8 +3,7 @@
 create schema if not exists src_vn
 ;
 
-drop table if exists src_vn.observations
-;
+drop table if exists src_vn.observations cascade;
 
 
 create table src_vn.observations (
