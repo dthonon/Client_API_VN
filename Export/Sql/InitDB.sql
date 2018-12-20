@@ -62,11 +62,12 @@ CREATE SCHEMA reference
   AUTHORIZATION $(evn_db_group);
 
 -- Extension d'administration pgAdmin
-CREATE EXTENSION adminpack;
+CREATE EXTENSION if not exists adminpack;
 
 -- Extensions postgis
-CREATE EXTENSION postgis;
-CREATE EXTENSION postgis_topology;
+CREATE EXTENSION if not exists postgis;
+CREATE EXTENSION if not exists postgis_topology;
+CREATE EXTENSION if not exists "uuid-ossp";
 
 ALTER DEFAULT PRIVILEGES
     GRANT INSERT, SELECT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON TABLES
