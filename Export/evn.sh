@@ -165,7 +165,7 @@ case "$CMD" in
     DEBUG "1. Base de données"
     expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/InitDB.sql > $HOME/tmp/InitDB.sql
     env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
-    psql "$SQL_QUIET" --dbname=postgres --file=$HOME/tmp/InitDB.sql
+    psql "$SQL_QUIET" --dbname="${config[evn_db_name]}" --file=$HOME/tmp/InitDB.sql
     INFO "Création de la base de données : fin"
     ;;
 
@@ -184,7 +184,7 @@ case "$CMD" in
     ! mv -f "$HOME/${config[evn_file_store]}/$SITE/"*.json.gz "$HOME/${config[evn_file_store]}/$SVG/"
     expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/CreateLog.sql > $HOME/tmp/CreateLog.sql
     env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
-    psql "$SQL_QUIET" --dbname=postgres --file=$HOME/tmp/CreateLog.sql
+    psql "$SQL_QUIET" --dbname="${config[evn_db_name]}" --file=$HOME/tmp/CreateLog.sql
     python3 export_vn/DownloadFromVN.py "$PYTHON_VERBOSE" "$TEST" --site="$SITE"
     INFO "Téléchargement depuis l'API du site ${config[evn_site]} : fin"
     ;;
@@ -195,7 +195,7 @@ case "$CMD" in
     DEBUG "1. Création des tables"
     expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/CreateTables.sql > $HOME/tmp/CreateTables.sql
     env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
-    psql "$SQL_QUIET" --dbname=postgres --file=$HOME/tmp/CreateTables.sql
+    psql "$SQL_QUIET" --dbname="${config[evn_db_name]}" --file=$HOME/tmp/CreateTables.sql
 
     DEBUG "2. Insertion dans la base"
     export_vn/InsertInDB.py "$PYTHON_VERBOSE" --site="$SITE"
@@ -203,13 +203,13 @@ case "$CMD" in
     DEBUG "3. Création des vues"
     expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/CreateViews.sql > $HOME/tmp/CreateViews.sql
     env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
-    psql "$SQL_QUIET" --dbname=postgres --file=$HOME/tmp/CreateViews.sql
+    psql "$SQL_QUIET" --dbname="${config[evn_db_name]}" --file=$HOME/tmp/CreateViews.sql
 
     DEBUG "4. Mise à jour des vues et indexation des tables et vues"
     expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" \
       --file Sql/UpdateIndex.sql > "$HOME/tmp/UpdateIndex.sql"
     env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
-      psql "$SQL_QUIET" --dbname=postgres --file="$HOME/tmp/UpdateIndex.sql"
+      psql "$SQL_QUIET" --dbname="${config[evn_db_name]}" --file="$HOME/tmp/UpdateIndex.sql"
 
     if [ -f "$HOME/${config[evn_sql_scripts]}/$SITE.sql" ]
     then
@@ -217,7 +217,7 @@ case "$CMD" in
       expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\";evn_external1_name=\"${config[evn_external1_name]}\";evn_external1_pw=\"${config[evn_external1_pw]}\"" \
         --file "$HOME/${config[evn_sql_scripts]}/$SITE.sql" > "$HOME/tmp/$SITE.sql"
       env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
-        psql "$SQL_QUIET" --dbname=postgres --file="$HOME/tmp/$SITE.sql"
+        psql "$SQL_QUIET" --dbname="${config[evn_db_name]}" --file="$HOME/tmp/$SITE.sql"
     fi
     INFO "Chargement des données JSON dans Postgresql ${config[evn_db_name]} : fin"
     ;;
@@ -237,7 +237,7 @@ case "$CMD" in
     links -dump "${config[evn_site]}index.php?m_id=23" | fgrep "Les part" | sed 's/   Les partenaires/Total des observations du site :/' >> $HOME/tmp/mail_fin.txt
     expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/CountRows.sql > $HOME/tmp/CountRows.sql
     env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
-    psql "$SQL_QUIET" --dbname=postgres --file="$HOME/tmp/CountRows.sql" > "$HOME/tmp/counted_rows.log"
+    psql "$SQL_QUIET" --dbname="${config[evn_db_name]}" --file="$HOME/tmp/CountRows.sql" > "$HOME/tmp/counted_rows.log"
     fgrep "nb_" "$HOME/tmp/counted_rows.log" >> "$HOME/tmp/mail_fin.txt"
     echo "Bilan du script : ERROR / WARN :" >> "$HOME/tmp/mail_fin.txt"
     ! fgrep -c "ERROR" "$EVN_LOG" >> "$HOME/tmp/mail_fin.txt"
