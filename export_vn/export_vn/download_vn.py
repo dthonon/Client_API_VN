@@ -70,14 +70,14 @@ class DownloadVn:
 
         """
         # GET from API
-        logging.info('Getting items from controler %s',
+        logging.debug('Getting items from controler %s',
                       self._api_instance.controler)
         i = 0
         if opt_params_iter == None:
             opt_params_iter = iter([None])
         for opt_params in opt_params_iter:
             i += 1
-            logging.info('Iteration %s, opt_params = %s',
+            logging.debug('Iteration %s, opt_params = %s',
                           i, opt_params)
             items_dict = self._api_instance.api_list(opt_params=opt_params)
             # Convert to json
@@ -239,7 +239,13 @@ class Species(DownloadVn):
     def store(self):
         """Store species, iterating over taxo_groups
         """
-        super().store(iter([{'id_taxo_group': '18'}, {'id_taxo_group': '19'}]))
+        taxo_groups = TaxoGroupsAPI(self._config).api_list()
+        taxo_list = []
+        for taxo in taxo_groups['data']:
+            if taxo['access_mode'] != 'none':
+                logging.debug('Storing species from taxo_group %s', taxo['id'])
+                taxo_list.append({'id_taxo_group': taxo['id']})
+        super().store(iter(taxo_list))
 
 class TaxoGroup(DownloadVn):
     """ Implement store from taxo_groups controler.
