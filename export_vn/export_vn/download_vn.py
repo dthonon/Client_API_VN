@@ -1,7 +1,6 @@
 """Methods to download from VisioNature and store to file.
 
 
-
 Methods
 
 - download_taxo_groups      - Download and store taxo groups
@@ -29,6 +28,9 @@ __version__ = "0.1.1" #VERSION#
 class DownloadVnException(Exception):
     """An exception occurred while handling download or store. """
 
+class NotImplemented(DownloadVnException):
+    """Feature not implemented."""
+
 
 class DownloadVn:
     """Top class, not for direct use. Provides internal and template methods."""
@@ -52,27 +54,43 @@ class DownloadVn:
     # ----------------
     # Internal methods
     # ----------------
-    def store(self):
+
+    # ---------------
+    # Generic methods
+    # ---------------
+    def store(self, opt_params_iter=None):
         """Download from VN by API and store json to file.
 
         Calls  biolovision_api, convert to json and store to file.
 
+        Parameters
+        ----------
+        opt_params_iter : iterable or None
+            Provides opt_params values.
+
         """
         # GET from API
-        logging.debug('Getting items from controler %s',
+        logging.info('Getting items from controler %s',
                       self._api_instance.controler)
-        items_dict = self._api_instance.api_list()
-        # Convert to json
-        logging.debug('Converting to json %d items',
-                      len(items_dict['data']))
-        items_json = json.dumps(items_dict, sort_keys=True, indent=4, separators=(',', ': '))
-        # Store to file
-        if (len(items_dict['data']) > 0):
-            file_json_gz = str(Path.home()) + '/' + self._config.file_store + \
-                self._api_instance.controler + '_1.json.gz'
-            logging.debug('Received data, storing json to {}'.format(file_json_gz))
-            with gzip.open(file_json_gz, 'wb', 9) as g:
-                g.write(items_json.encode())
+        i = 0
+        if opt_params_iter == None:
+            opt_params_iter = iter([None])
+        for opt_params in opt_params_iter:
+            i += 1
+            logging.info('Iteration %s, opt_params = %s',
+                          i, opt_params)
+            items_dict = self._api_instance.api_list(opt_params=opt_params)
+            # Convert to json
+            logging.debug('Converting to json %d items',
+                          len(items_dict['data']))
+            items_json = json.dumps(items_dict, sort_keys=True, indent=4, separators=(',', ': '))
+            # Store to file
+            if (len(items_dict['data']) > 0):
+                file_json_gz = str(Path.home()) + '/' + self._config.file_store + \
+                    self._api_instance.controler + '_' + str(i) + '.json.gz'
+                logging.debug('Received data, storing json to {}'.format(file_json_gz))
+                with gzip.open(file_json_gz, 'wb', 9) as g:
+                    g.write(items_json.encode())
 
         return
 
@@ -105,15 +123,21 @@ class Observations(DownloadVn):
         super().__init__(config, ObservationsAPI(config),
                          max_retry, max_requests, max_chunks)
 
+    def _store_list(self, id_taxo_group=None):
+        """Download from VN by API list and store json to file.
 
-    def store(self, id_taxo_group):
-        """Download from VN by API and store json to file.
+        Calls biolovision_api, iterating on species, convert to json and store to file.
+        Downloads all database is id_taxo_group is None.
+        If id_taxo_group is defined, downloads only this taxo_group
 
-        Calls  biolovision_api, convert to json and store to file.
+        Parameters
+        ----------
+        id_taxo_group : str or None
+            If not None, taxo_group to be downloaded.
 
         """
         # GET from API
-        logging.debug('Getting items from controler %s',
+        logging.debug('Getting items from controler %s, using API list',
                       self._api_instance.controler)
         items_dict = self._api_instance.api_list(id_taxo_group)
         # Convert to json
@@ -130,6 +154,32 @@ class Observations(DownloadVn):
 
         return
 
+    def store(self, id_taxo_group=None, method='search'):
+        """Download from VN by API and store json to file.
+
+        Calls  biolovision_api, convert to json and store to file.
+        Downloads all database is id_taxo_group is None.
+        If id_taxo_group is defined, downloads only this taxo_group
+
+        Parameters
+        ----------
+        id_taxo_group : str or None
+            If not None, taxo_group to be downloaded.
+        method : str
+            API used to download, either 'search' or 'list'.
+
+        """
+        # GET from API
+        logging.debug('Getting items from controler %s, using API %s',
+                      self._api_instance.controler, method)
+        if method == 'search':
+            self._store_search(id_taxo_group)
+        elif method == 'list':
+            self._store_list(id_taxo_group)
+        else:
+            raise NotImplemented
+
+        return
 
     def update(self):
         """Download increment from VN by API and store json to file.
@@ -186,6 +236,10 @@ class Species(DownloadVn):
         super().__init__(config, SpeciesAPI(config),
                          max_retry, max_requests, max_chunks)
 
+    def store(self):
+        """Store species, iterating over taxo_groups
+        """
+        super().store(iter([{'id_taxo_group': '18'}, {'id_taxo_group': '19'}]))
 
 class TaxoGroup(DownloadVn):
     """ Implement store from taxo_groups controler.

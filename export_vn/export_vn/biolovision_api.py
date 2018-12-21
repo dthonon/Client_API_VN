@@ -455,7 +455,7 @@ class TaxoGroupsAPI(BiolovisionAPI):
                          max_retry, max_requests, max_chunks)
 
     @lru_cache(maxsize=32)
-    def api_list(self):
+    def api_list(self, opt_params=None):
         """Return list of taxo groups, from cache or site."""
         return super().api_list()
 
@@ -475,6 +475,6 @@ class TerritorialUnitsAPI(BiolovisionAPI):
                          max_retry, max_requests, max_chunks)
 
     @lru_cache(maxsize=32)
-    def api_list(self):
+    def api_list(self, opt_params=None):
         """Return list of taxo groups, from cache or site."""
         return super().api_list()

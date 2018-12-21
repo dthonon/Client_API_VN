@@ -61,9 +61,9 @@ def test_local_admin_units_store(capsys):
 # -------------
 #  Observations
 # -------------
-def test_observations_store(capsys):
-    """Store observations to file."""
-    OBSERVATIONS.store(18)
+def test_observations_store_l_18(capsys):
+    """Store observations to file, using list."""
+    OBSERVATIONS.store(18, method='list')
     file_json = str(Path.home()) + '/' + CFG.file_store + 'observations_18_1.json.gz'
     assert Path(file_json).is_file()
     with gzip.open(file_json, 'rb') as g:
