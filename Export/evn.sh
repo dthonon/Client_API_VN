@@ -192,13 +192,13 @@ case "$CMD" in
     store)
     # Store json files to Postgresql database
     INFO "Chargement des données JSON dans Postgresql ${config[evn_db_name]} : début"
-    DEBUG "1. Création des tables"
-    expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/CreateTables.sql > $HOME/tmp/CreateTables.sql
-    env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
-    psql "$SQL_QUIET" --dbname=postgres --file=$HOME/tmp/CreateTables.sql
-
-    DEBUG "2. Insertion dans la base"
-    export_vn/InsertInDB.py "$PYTHON_VERBOSE" --site="$SITE"
+    # DEBUG "1. Création des tables"
+    # expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/CreateTables.sql > $HOME/tmp/CreateTables.sql
+    # env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
+    # psql "$SQL_QUIET" --dbname=postgres --file=$HOME/tmp/CreateTables.sql
+    #
+    # DEBUG "2. Insertion dans la base"
+    # export_vn/InsertInDB.py "$PYTHON_VERBOSE" --site="$SITE"
 
     DEBUG "3. Création des vues"
     expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/CreateViews.sql > $HOME/tmp/CreateViews.sql

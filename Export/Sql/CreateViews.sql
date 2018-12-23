@@ -40,6 +40,7 @@ TABLESPACE pg_default
 AS
  SELECT
     id_sighting AS id_sighting,
+    encode(hmac(id_sighting::text, '8Zz9C*%I*gY&eM*Ei', 'sha1'), 'hex') AS pseudo_id_sighting,
     ((sightings -> 'observers') -> 0) ->> 'id_universal' AS id_universal,
     cast(sightings #>> '{species,@id}' AS INTEGER) AS id_species,
     sightings #>> '{species,name}' AS french_name,
@@ -69,8 +70,11 @@ AS
     cast(((sightings -> 'observers') -> 0) #>> '{atlas_code,#text}' AS INTEGER) AS atlas_code,
     cast(((sightings -> 'observers') -> 0) ->> 'altitude' AS INTEGER) AS altitude,
     ((sightings -> 'observers') -> 0) ->> 'hidden' AS hidden,
+    ((sightings -> 'observers') -> 0) ->> 'project_code' AS project_code,
     ((sightings -> 'observers') -> 0) ->> 'admin_hidden' AS admin_hidden,
     ((sightings -> 'observers') -> 0) ->> 'name' AS name,
+    ((sightings -> 'observers') -> 0) ->> '@id' AS observers_id,
+    ((sightings -> 'observers') -> 0) ->> '@uid' AS observers_uid,
     ((sightings -> 'observers') -> 0) ->> 'anonymous' AS anonymous,
     ((sightings -> 'observers') -> 0) ->> 'entity' AS entity,
     ((sightings -> 'observers') -> 0) ->> 'details' AS details,

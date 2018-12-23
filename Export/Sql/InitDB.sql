@@ -64,6 +64,9 @@ CREATE SCHEMA reference
 -- Extension d'administration pgAdmin
 CREATE EXTENSION adminpack;
 
+-- Extension: pgcrypto
+CREATE EXTENSION pgcrypto;
+
 -- Extensions postgis
 CREATE EXTENSION postgis;
 CREATE EXTENSION postgis_topology;
