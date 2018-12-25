@@ -27,8 +27,8 @@ def test_logging(cmdopt, capsys):
             logging.getLogger().setLevel(logging.DEBUG)
         logging.debug('Running with debug logging level')
 
-# Using t38 site, that needs to be created first
-SITE = 't38'
+# Using t07 site, that needs to be created first
+SITE = 't07'
 
 def test_site():
     """Check if configuration file exists."""
@@ -55,17 +55,33 @@ def test_controler(capsys):
 
 def test_local_admin_units_get(capsys):
     """Get a single local admin unit."""
-    logging.debug('Getting local admin unit #s', '14693')
-    local_admin_unit = LOCAL_ADMIN_UNITS_API.api_get('14693')
+    if SITE == 't38':
+        a = '14693'
+    elif SITE == 't07':
+        a = '2096'
+    else:
+        fail
+    logging.debug('Getting local admin unit #s', a)
+    local_admin_unit = LOCAL_ADMIN_UNITS_API.api_get(a)
     assert LOCAL_ADMIN_UNITS_API.transfer_errors == 0
-    assert local_admin_unit == {
-        'data': [{
-            'name': 'Allevard',
-            'coord_lon': '6.11353081638029',
-            'id_canton': '39',
-            'coord_lat': '45.3801954314357',
-            'id': '14693',
-            'insee': '38006'}]}
+    if SITE == 't38':
+        assert local_admin_unit == {
+            'data': [{
+                'name': 'Allevard',
+                'coord_lon': '6.11353081638029',
+                'id_canton': '39',
+                'coord_lat': '45.3801954314357',
+                'id': '14693',
+                'insee': '38006'}]}
+    elif SITE == 't07':
+        assert local_admin_unit == {
+            'data': [{
+                'coord_lat': '44.888464632099',
+                'coord_lon': '4.39188200157809',
+                'id': '2096',
+                'id_canton': '7',
+                'insee': '07001',
+                'name': 'Accons'}]}
 
 def test_local_admin_units_list_all(capsys):
     """Get list of all local admin units."""
@@ -74,17 +90,28 @@ def test_local_admin_units_list_all(capsys):
     with capsys.disabled():
         logging.debug('Received %d local admin units', len(local_admin_units_list['data']))
     assert LOCAL_ADMIN_UNITS_API.transfer_errors == 0
-    assert len(local_admin_units_list['data']) >= 534
+    if SITE == 't38':
+        assert len(local_admin_units_list['data']) >= 534
+    elif SITE == 't07':
+        assert len(local_admin_units_list['data']) >= 340
 
 def test_local_admin_units_list_1(capsys):
     """Get a list of local_admin_units from territorial unit 39 (Isère)."""
-    logging.info('Getting local admin unit from {id_canton: 39}')
-    local_admin_units_list = LOCAL_ADMIN_UNITS_API.api_list(opt_params={'id_canton': '39'})
+    if SITE == 't38':
+        logging.info('Getting local admin unit from {id_canton: 39}')
+        local_admin_units_list = LOCAL_ADMIN_UNITS_API.api_list(opt_params={'id_canton': '39'})
+    elif SITE == 't07':
+        logging.info('Getting local admin unit from {id_canton: 07}')
+        local_admin_units_list = LOCAL_ADMIN_UNITS_API.api_list(opt_params={'id_canton': '07'})
     with capsys.disabled():
-        logging.debug('territorial unit 39 ==> {} local admin unit '.format(len(local_admin_units_list['data'])))
+        logging.debug('territorial unit ==> {} local admin unit '.format(len(local_admin_units_list['data'])))
     assert LOCAL_ADMIN_UNITS_API.transfer_errors == 0
-    assert len(local_admin_units_list['data']) >= 534
-    assert local_admin_units_list['data'][0]['name'] == 'Abrets (Les)'
+    if SITE == 't38':
+        assert len(local_admin_units_list['data']) >= 534
+        assert local_admin_units_list['data'][0]['name'] == 'Abrets (Les)'
+    elif SITE == 't07':
+        assert len(local_admin_units_list['data']) >= 340
+        assert local_admin_units_list['data'][0]['name'] == 'Accons'
 
 # ------------------------------
 # Observations controler methods
@@ -111,85 +138,78 @@ def test_observations_list_1(capsys):
 
 def test_observations_get(capsys):
     """Get a specific sighting."""
-    sighting = OBSERVATIONS_API.api_get('2246086')
-    # with capsys.disabled():
-    #     timing = sighting['data']['sightings'][0]['observers'][0]['timing']['@timestamp']
-    #     timing_datetime = datetime.fromtimestamp(float(timing))
-    #     print('\ntiming_datetime datetime = {}'.format(
-    #         timing_datetime.strftime('%Y-%m-%d %H:%M:%S')))
-    #     insert_date = sighting['data']['sightings'][0]['observers'][0]['insert_date']['@timestamp']
-    #     insert_datetime = datetime.fromtimestamp(float(insert_date))
-    #     print('insert_date datetime = {}'.format(insert_datetime.strftime('%Y-%m-%d %H:%M:%S')))
-    assert sighting == {
-        'data':{
-            'sightings': [{
-                'place': {
-                    'county': '38',
-                    'insee': '38185',
-                    'municipality': 'Grenoble',
-                    'country': '',
-                    'altitude': '215',
-                    'coord_lat': '45.187677239404',
-                    'name': 'Museum (Parc du Museum)',
-                    'coord_lon': '5.735372035327',
-                    '@id': '100197',
-                    'loc_precision': '0',
-                    'place_type': 'precise'},
-                'date': {
-                    '@notime': '1',
-                    '@offset': '7200',
-                    '@ISO8601': '2018-09-15T00:00:00+02:00',
-                    '@timestamp': '1536962400',
-                    '#text': 'samedi 15 septembre 2018'},
-                'species': {
-                    'latin_name': 'Anas platyrhynchos',
-                    'rarity': 'verycommon',
-                    'sys_order': '262',
-                    'name': 'Canard colvert',
-                    '@id': '86',
-                    'taxonomy': '1'},
-                'observers':[{
-                    'estimation_code': 'MINIMUM',
-                    'count': '15',
-                    'id_sighting': '2246086',
-                    'insert_date':  {
-                        '#text': 'samedi 15 septembre 2018, 19:45:01',
-                        '@ISO8601': '2018-09-15T19:45:01+02:00',
-                        '@notime': '0',
+    if SITE == 't38':
+        sighting = OBSERVATIONS_API.api_get('2246086')
+        assert sighting == {
+            'data':{
+                'sightings': [{
+                    'place': {
+                        'county': '38',
+                        'insee': '38185',
+                        'municipality': 'Grenoble',
+                        'country': '',
+                        'altitude': '215',
+                        'coord_lat': '45.187677239404',
+                        'name': 'Museum (Parc du Museum)',
+                        'coord_lon': '5.735372035327',
+                        '@id': '100197',
+                        'loc_precision': '0',
+                        'place_type': 'precise'},
+                    'date': {
+                        '@notime': '1',
                         '@offset': '7200',
-                        '@timestamp': '1537033501'},
-                    'atlas_grid_name': 'E091N645',
-                    'name': 'Daniel Thonon',
-                    'medias':[{
-                        'media_is_hidden': '0',
-                        'filename': '3_1537024802877-15194452-5272.jpg',
-                        'path': 'http://media.biolovision.net/data.biolovision.net/2018-09',
-                        'insert_date': {
+                        '@ISO8601': '2018-09-15T00:00:00+02:00',
+                        '@timestamp': '1536962400',
+                        '#text': 'samedi 15 septembre 2018'},
+                    'species': {
+                        'latin_name': 'Anas platyrhynchos',
+                        'rarity': 'verycommon',
+                        'sys_order': '262',
+                        'name': 'Canard colvert',
+                        '@id': '86',
+                        'taxonomy': '1'},
+                    'observers':[{
+                        'estimation_code': 'MINIMUM',
+                        'count': '15',
+                        'id_sighting': '2246086',
+                        'insert_date':  {
+                            '#text': 'samedi 15 septembre 2018, 19:45:01',
+                            '@ISO8601': '2018-09-15T19:45:01+02:00',
                             '@notime': '0',
-                            '@offset': '3600',
-                            '@ISO8601': '1970-01-01T01:33:38+01:00',
-                            '@timestamp': '2018',
-                            '#text': 'jeudi 1 janvier 1970, 01:33:38'},
-                        'metadata': '',
-                        'type': 'PHOTO',
-                        '@id': '49174'}],
-                    '@uid': '11675',
-                    'precision': 'precise',
-                    'id_universal': '65_71846872',
-                    'traid': '33',
-                    'timing': {
-                        '@notime': '0',
-                        '@offset': '7200',
-                        '@ISO8601': '2018-09-15T17:19:16+02:00',
-                        '@timestamp': '1537024756',
-                        '#text': 'samedi 15 septembre 2018, 17:19:16'},
-                    'altitude': '215',
-                    'source': 'WEB',
-                    'coord_lat': '45.18724',
-                    'flight_number': '1',
-                    'anonymous': '0',
-                    'coord_lon': '5.735458',
-                    '@id': '33'}]}]}}
+                            '@offset': '7200',
+                            '@timestamp': '1537033501'},
+                        'atlas_grid_name': 'E091N645',
+                        'name': 'Daniel Thonon',
+                        'medias':[{
+                            'media_is_hidden': '0',
+                            'filename': '3_1537024802877-15194452-5272.jpg',
+                            'path': 'http://media.biolovision.net/data.biolovision.net/2018-09',
+                            'insert_date': {
+                                '@notime': '0',
+                                '@offset': '3600',
+                                '@ISO8601': '1970-01-01T01:33:38+01:00',
+                                '@timestamp': '2018',
+                                '#text': 'jeudi 1 janvier 1970, 01:33:38'},
+                            'metadata': '',
+                            'type': 'PHOTO',
+                            '@id': '49174'}],
+                        '@uid': '11675',
+                        'precision': 'precise',
+                        'id_universal': '65_71846872',
+                        'traid': '33',
+                        'timing': {
+                            '@notime': '0',
+                            '@offset': '7200',
+                            '@ISO8601': '2018-09-15T17:19:16+02:00',
+                            '@timestamp': '1537024756',
+                            '#text': 'samedi 15 septembre 2018, 17:19:16'},
+                        'altitude': '215',
+                        'source': 'WEB',
+                        'coord_lat': '45.18724',
+                        'flight_number': '1',
+                        'anonymous': '0',
+                        'coord_lon': '5.735458',
+                        '@id': '33'}]}]}}
 
 def test_observations_search_1(capsys):
     """Query sightings, from taxo_group 18: Mantodea and date range."""
@@ -207,20 +227,39 @@ def test_observations_search_1(capsys):
 # -------------------------
 def test_places_get(capsys):
     """Get a single place."""
-    logging.debug('Getting place #s', '14693')
-    place = PLACES_API.api_get('14693')
+    if SITE == 't38':
+        p = '14693'
+    elif SITE == 't07':
+        p = '100694'
+    else:
+        fail
+    logging.debug('Getting place #s', p)
+    place = PLACES_API.api_get(p)
     assert PLACES_API.transfer_errors == 0
-    assert place == {'data': [{'altitude': '1106',
-                               'coord_lat': '44.805686318298',
-                               'coord_lon': '5.8792190569144',
-                               'id': '14693',
-                               'id_commune': '14966',
-                               'id_region': '63',
-                               'is_private': '0',
-                               'loc_precision': '750',
-                               'name': 'Rochachon',
-                               'place_type': 'place',
-                               'visible': '1'}]}
+    if SITE == 't38':
+        assert place == {'data': [{'altitude': '1106',
+                                   'coord_lat': '44.805686318298',
+                                   'coord_lon': '5.8792190569144',
+                                   'id': '14693',
+                                   'id_commune': '14966',
+                                   'id_region': '63',
+                                   'is_private': '0',
+                                   'loc_precision': '750',
+                                   'name': 'Rochachon',
+                                   'place_type': 'place',
+                                   'visible': '1'}]}
+    elif SITE == 't07':
+        assert place == {'data': [{'altitude': '285',
+                                    'coord_lat': '45.2594824523633',
+                                    'coord_lon': '4.7766923904419',
+                                    'id': '100694',
+                                    'id_commune': '2316',
+                                    'id_region': '16',
+                                    'is_private': '0',
+                                    'loc_precision': '750',
+                                    'name': 'Ruisseau de Lantizon (ravin)',
+                                    'place_type': 'place',
+                                    'visible': '1'}]}
 
 
 def test_places_list_all(capsys):
@@ -228,18 +267,33 @@ def test_places_list_all(capsys):
     places_list = PLACES_API.api_list()
     logging.debug('Received %d places', len(places_list['data']))
     assert PLACES_API.transfer_errors == 0
-    assert len(places_list['data']) >= 31930
-    assert places_list['data'][0]['name'] == 'ESRF-synchrotron'
+    if SITE == 't38':
+        assert len(places_list['data']) >= 31930
+        assert places_list['data'][0]['name'] == 'ESRF-synchrotron'
+    elif SITE == 't07':
+        assert len(places_list['data']) >= 23566
+        assert places_list['data'][0]['name'] == 'Accons - sans lieu-dit défini'
 
 def test_places_list_1(capsys):
-    """Get a list of places from local admin unit 14693 (Allevard)."""
+    """Get a list of places from a single local admin unit."""
+    if SITE == 't38':
+        l = '14693'
+    elif SITE == 't07':
+        l = '2096'
+    else:
+        fail
     with capsys.disabled():
-        places_list = PLACES_API.api_list({'id_commune': '14693'})
-        logging.debug('local admin unit 14693 ==> {} place '.format(len(places_list['data'])))
+        places_list = PLACES_API.api_list({'id_commune': l})
+        logging.info('local admin unit {} ==> {} place '.format(l, len(places_list['data'])))
     assert PLACES_API.transfer_errors == 0
-    assert len(places_list['data']) >= 164
-    assert len(places_list['data']) <= 200
-    assert places_list['data'][0]['name'] == 'le Repos (S)'
+    if SITE == 't38':
+        assert len(places_list['data']) >= 164
+        assert len(places_list['data']) <= 200
+        assert places_list['data'][0]['name'] == 'le Repos (S)'
+    elif SITE == 't07':
+        assert len(places_list['data']) >= 38
+        assert len(places_list['data']) <= 50
+        assert places_list['data'][0]['name'] == 'Accons - sans lieu-dit défini'
 
 # -------------------------
 # Species controler methods
@@ -317,9 +371,15 @@ def test_taxo_groups_list():
 # -----------------------------------
 def test_territorial_units_get():
     """Get a territorial_units."""
-    territorial_unit = TERRITORIAL_UNITS_API.api_get('39')
+    if SITE == 't38':
+        territorial_unit = TERRITORIAL_UNITS_API.api_get('39')
+    elif SITE == 't07':
+        territorial_unit = TERRITORIAL_UNITS_API.api_get('07')
     assert TERRITORIAL_UNITS_API.transfer_errors == 0
-    assert territorial_unit['data'][0]['name'] == 'Isère'
+    if SITE == 't38':
+        assert territorial_unit['data'][0]['name'] == 'Isère'
+    elif SITE == 't07':
+        assert territorial_unit['data'][0]['name'] == 'Ardèche'
 
 def test_territorial_units_list():
     """Get list of territorial_units."""
@@ -330,7 +390,11 @@ def test_territorial_units_list():
     logging.debug('territorial_units_list, call 1 took: ' + str(took) + ' ms')
     assert TERRITORIAL_UNITS_API.transfer_errors == 0
     assert len(territorial_units['data']) == 1
-    assert territorial_units['data'][0]['name'] == 'Isère'
+    logging.debug(territorial_units['data'])
+    if SITE == 't38':
+        assert territorial_units['data'][0]['name'] == 'Isère'
+    elif SITE == 't07':
+        assert territorial_units['data'][0]['name'] == 'Ardèche'
     start = time.clock()
     territorial_units = TERRITORIAL_UNITS_API.api_list()
     took = (time.clock() - start) * 1000.0

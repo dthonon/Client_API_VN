@@ -7,7 +7,7 @@ Methods
 
 Properties
 
-- transfer_errors            - Return number of errors
+-
 
 """
 import sys
@@ -43,17 +43,13 @@ class DownloadVn:
             'max_requests': max_requests,
             'max_chunks': max_chunks
         }
-        self._transfer_errors = 0
         self._api_instance = api_instance
 
-    @property
-    def transfer_errors(self):
-        """Return the number of API errors during this session."""
-        return self._transfer_errors
 
     # ----------------
     # Internal methods
     # ----------------
+
 
     # ---------------
     # Generic methods
@@ -155,10 +151,10 @@ class Observations(DownloadVn):
         return
 
     def store(self, id_taxo_group=None, method='search'):
-        """Download from VN by API and store json to file.
+        """Download from VN by API, looping on taxo_group if None and store json to file.
 
         Calls  biolovision_api, convert to json and store to file.
-        Downloads all database is id_taxo_group is None.
+        Downloads all database if id_taxo_group is None.
         If id_taxo_group is defined, downloads only this taxo_group
 
         Parameters
@@ -172,10 +168,25 @@ class Observations(DownloadVn):
         # GET from API
         logging.debug('Getting items from controler %s, using API %s',
                       self._api_instance.controler, method)
+
+        if id_taxo_group == None:
+            # Get all active taxo_groups
+            taxo_groups = TaxoGroupsAPI(self._config).api_list()
+            taxo_list = []
+            for taxo in taxo_groups['data']:
+                if taxo['access_mode'] != 'none':
+                    logging.debug('Storing species from taxo_group %s', taxo['id'])
+                    taxo_list.append({'id_taxo_group': taxo['id']})
+        else:
+            # Only 1 taxo_group given as parameter
+            taxo_list = [id_taxo_group]
+
         if method == 'search':
-            self._store_search(id_taxo_group)
+            for taxo in taxo_list:
+                self._store_search(taxo)
         elif method == 'list':
-            self._store_list(id_taxo_group)
+            for taxo in taxo_list:
+                self._store_list(id_taxo_group)
         else:
             raise NotImplemented
 
