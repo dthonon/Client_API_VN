@@ -27,8 +27,9 @@ def test_logging(cmdopt, capsys):
             logging.getLogger().setLevel(logging.DEBUG)
         logging.debug('Running with debug logging level')
 
-# Using t07 site, that needs to be created first
+# Using faune-ardeche or faune-isere site, that needs to be created first
 SITE = 't07'
+#SITE = 't38'
 
 def test_site():
     """Check if configuration file exists."""

@@ -35,15 +35,16 @@ class NotImplemented(DownloadVnException):
 class DownloadVn:
     """Top class, not for direct use. Provides internal and template methods."""
 
-    def __init__(self, config, api_instance,
+    def __init__(self, config, api_instance, backend,
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
         self._config = config
+        self._api_instance = api_instance
+        self._backend = backend
         self._limits = {
             'max_retry': max_retry,
             'max_requests': max_requests,
             'max_chunks': max_chunks
         }
-        self._api_instance = api_instance
 
 
     # ----------------
@@ -76,17 +77,8 @@ class DownloadVn:
             logging.debug('Iteration %s, opt_params = %s',
                           i, opt_params)
             items_dict = self._api_instance.api_list(opt_params=opt_params)
-            # Convert to json
-            logging.debug('Converting to json %d items',
-                          len(items_dict['data']))
-            items_json = json.dumps(items_dict, sort_keys=True, indent=4, separators=(',', ': '))
-            # Store to file
-            if (len(items_dict['data']) > 0):
-                file_json_gz = str(Path.home()) + '/' + self._config.file_store + \
-                    self._api_instance.controler + '_' + str(i) + '.json.gz'
-                logging.debug('Received data, storing json to {}'.format(file_json_gz))
-                with gzip.open(file_json_gz, 'wb', 9) as g:
-                    g.write(items_json.encode())
+            # Call backend to store results
+            self._backend(self._api_instance.controler, str(i), items_dict)
 
         return
 
@@ -99,9 +91,9 @@ class LocalAdminUnits(DownloadVn):
 
     """
 
-    def __init__(self, config,
+    def __init__(self, config, backend,
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
-        super().__init__(config, LocalAdminUnitsAPI(config),
+        super().__init__(config, LocalAdminUnitsAPI(config), backend,
                          max_retry, max_requests, max_chunks)
 
 
@@ -114,9 +106,9 @@ class Observations(DownloadVn):
 
     """
 
-    def __init__(self, config,
+    def __init__(self, config, backend,
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
-        super().__init__(config, ObservationsAPI(config),
+        super().__init__(config, ObservationsAPI(config), backend,
                          max_retry, max_requests, max_chunks)
 
     def _store_list(self, id_taxo_group=None):
@@ -136,17 +128,8 @@ class Observations(DownloadVn):
         logging.debug('Getting items from controler %s, using API list',
                       self._api_instance.controler)
         items_dict = self._api_instance.api_list(id_taxo_group)
-        # Convert to json
-        logging.debug('Converting to json %d items',
-                      len(items_dict['data']))
-        items_json = json.dumps(items_dict, sort_keys=True, indent=4, separators=(',', ': '))
-        # Store to file
-        if (len(items_dict['data']) > 0):
-            file_json_gz = str(Path.home()) + '/' + self._config.file_store + \
-                self._api_instance.controler + '_' + str(id_taxo_group) + '_1.json.gz'
-            logging.debug('Received data, storing json to {}'.format(file_json_gz))
-            with gzip.open(file_json_gz, 'wb', 9) as g:
-                g.write(items_json.encode())
+        # Call backend to store results
+        self._backend(self._api_instance.controler, str(id_taxo_group) + '_' + str(1), items_dict)
 
         return
 
@@ -228,9 +211,9 @@ class Places(DownloadVn):
 
     """
 
-    def __init__(self, config,
+    def __init__(self, config, backend,
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
-        super().__init__(config, PlacesAPI(config),
+        super().__init__(config, PlacesAPI(config), backend,
                          max_retry, max_requests, max_chunks)
 
 
@@ -242,9 +225,9 @@ class Species(DownloadVn):
 
     """
 
-    def __init__(self, config,
+    def __init__(self, config, backend,
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
-        super().__init__(config, SpeciesAPI(config),
+        super().__init__(config, SpeciesAPI(config), backend,
                          max_retry, max_requests, max_chunks)
 
     def store(self):
@@ -266,9 +249,9 @@ class TaxoGroup(DownloadVn):
 
     """
 
-    def __init__(self, config,
+    def __init__(self, config, backend,
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
-        super().__init__(config, TaxoGroupsAPI(config),
+        super().__init__(config, TaxoGroupsAPI(config), backend,
                          max_retry, max_requests, max_chunks)
 
 
@@ -280,7 +263,7 @@ class TerritorialUnits(DownloadVn):
 
     """
 
-    def __init__(self, config,
+    def __init__(self, config, backend,
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
-        super().__init__(config, TerritorialUnitsAPI(config),
+        super().__init__(config, TerritorialUnitsAPI(config), backend,
                          max_retry, max_requests, max_chunks)

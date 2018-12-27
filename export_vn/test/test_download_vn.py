@@ -12,6 +12,7 @@ import gzip
 from export_vn.download_vn import DownloadVn, DownloadVnException
 from export_vn.download_vn import LocalAdminUnits, Observations, Places
 from export_vn.download_vn import Species, TaxoGroup, TerritorialUnits
+from export_vn.store_file import StoreFile
 from export_vn.evnconf import EvnConf
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -24,8 +25,8 @@ def test_logging(cmdopt, capsys):
         logging.debug('Running with debug logging level')
 
 # Using faune-ardeche or faune-isere site, that needs to be created first
-#SITE = 't07'
-SITE = 't38'
+SITE = 't07'
+#SITE = 't38'
 
 def test_site():
     """Check if configuration file exists."""
@@ -34,12 +35,13 @@ def test_site():
 
 # Get configuration for test site
 CFG = EvnConf(SITE)
-LOCAL_ADMIN_UNITS = LocalAdminUnits(CFG)
-OBSERVATIONS = Observations(CFG)
-PLACES = Places(CFG)
-SPECIES = Species(CFG)
-TAXO_GROUP = TaxoGroup(CFG)
-TERRITORIAL_UNIT = TerritorialUnits(CFG)
+STORE_FILE = StoreFile(CFG).store
+LOCAL_ADMIN_UNITS = LocalAdminUnits(CFG, STORE_FILE)
+OBSERVATIONS = Observations(CFG, STORE_FILE)
+PLACES = Places(CFG, STORE_FILE)
+SPECIES = Species(CFG, STORE_FILE)
+TAXO_GROUP = TaxoGroup(CFG, STORE_FILE)
+TERRITORIAL_UNIT = TerritorialUnits(CFG, STORE_FILE)
 
 
 # -----------------
