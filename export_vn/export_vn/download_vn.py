@@ -19,6 +19,7 @@ from export_vn.biolovision_api import LocalAdminUnitsAPI, ObservationsAPI, Place
 from export_vn.biolovision_api import SpeciesAPI, TaxoGroupsAPI, TerritorialUnitsAPI
 from export_vn.biolovision_api import BiolovisionApiException, HTTPError, MaxChunksError
 from export_vn.evnconf import EvnConf
+from export_vn.regulator import PID
 
 # version of the program:
 __version__ = "0.1.1" #VERSION#
@@ -151,10 +152,61 @@ class Observations(DownloadVn):
                 else:
                     items_dict = self._api_instance.api_list(id_taxo_group)
                     # Call backend to store results
-                    self._backend(self._api_instance.controler, str(id_taxo_group) + '_1', 
+                    self._backend(self._api_instance.controler, str(id_taxo_group) + '_1',
                                   items_dict)
 
 
+        return
+
+    def _store_search(self, id_taxo_group):
+        """Download from VN by API search and store json to file.
+
+        Calls biolovision_api to get observation, convert to json and store.
+        If id_taxo_group is defined, downloads only this taxo_group
+        Else if id_taxo_group is None, downloads all database
+        Moves back in date range, starting from now
+        Date range is adapted to regulate flow
+
+        Parameters
+        ----------
+        id_taxo_group : str or None
+            If not None, taxo_group to be downloaded.
+
+        """
+        # GET from API
+        logging.debug('Getting items from controler %s, using API list',
+                      self._api_instance.controler)
+        if id_taxo_group == None:
+            taxo_groups = TaxoGroupsAPI(self._config).api_list()['data']
+        else:
+            taxo_groups = [{'id': id_taxo_group, 'access_mode': 'full'}]
+        for taxo in taxo_groups:
+            if taxo['access_mode'] != 'none':
+                id_taxo_group = taxo['id']
+                end_date = datetime.now()
+                start_date = end_date
+                min_date = datetime(1901, 1, 1)
+                seq = 1
+                pid = PID(kp=0.01, ki=0.025, kd=0.0,
+                          setpoint=10000, output_limits = (5, 10000))
+                delta_days = 15
+                while start_date > min_date:
+                    start_date = end_date - timedelta(days=delta_days)
+                    q_param = {'period_choice': 'range',
+                               'date_from': start_date.strftime('%d.%m.%Y'),
+                               'date_to': end_date.strftime('%d.%m.%Y'),
+                               'species_choice':'all',
+                               'taxonomic_group': taxo['id']}
+                    items_dict = self._api_instance.api_search(q_param)
+                    # Call backend to store results
+                    self._backend(self._api_instance.controler, str(id_taxo_group) + '_' + str(seq),
+                                  items_dict)
+                    nb_obs = len(items_dict['data']['sightings'])
+                    logging.info('Iter: %s, %s observations, taxo_group: %s, date: %s, interval: %s',
+                                 seq, nb_obs, id_taxo_group, start_date.strftime('%d/%m/%Y'), str(delta_days))
+                    seq += 1
+                    end_date = start_date
+                    delta_days = int(pid(nb_obs))
         return
 
     def store(self, id_taxo_group=None, by_specie=False, method='search'):

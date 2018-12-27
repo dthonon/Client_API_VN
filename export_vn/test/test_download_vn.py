@@ -64,8 +64,8 @@ def test_local_admin_units_store(capsys):
 # -------------
 #  Observations
 # -------------
-def test_observations_store_l_18(capsys):
-    """Store observations from 1 taxo_group in 1 call to file, using list."""
+def test_observations_store_list_l_18(capsys):
+    """Store observations from taxo_group 18 in 1 call to file, using list."""
     file_json = str(Path.home()) + '/' + CFG.file_store + 'observations_18_1.json.gz'
     if Path(file_json).is_file():
         Path(file_json).unlink()
@@ -78,8 +78,8 @@ def test_observations_store_l_18(capsys):
     elif SITE == 't07':
         assert len(items_dict['data']['sightings']) >= 82
 
-def test_observations_store_2_18(capsys):
-    """Store observations from 1 taxo_group by specie to file, using list."""
+def test_observations_store_list_2_18(capsys):
+    """Store observations from taxo_group 18 by specie to file, using list."""
     file_json = str(Path.home()) + '/' + CFG.file_store + 'observations_18_19703.json.gz'
     if Path(file_json).is_file():
         Path(file_json).unlink()
@@ -91,6 +91,14 @@ def test_observations_store_2_18(capsys):
         assert len(items_dict['data']['sightings']) >= 440
     elif SITE == 't07':
         assert len(items_dict['data']['sightings']) >= 18
+
+def test_observations_store_search_1_2(capsys):
+    """Store observations from taxo_group 3 by specie to file, using list."""
+    file_json = str(Path.home()) + '/' + CFG.file_store + 'observations_3_1.json.gz'
+    if Path(file_json).is_file():
+        Path(file_json).unlink()
+    OBSERVATIONS.store(3, method='search')
+    assert Path(file_json).is_file()
 
 
 # -------
