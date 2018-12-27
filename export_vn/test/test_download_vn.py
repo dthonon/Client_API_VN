@@ -65,7 +65,7 @@ def test_local_admin_units_store(capsys):
 #  Observations
 # -------------
 def test_observations_store_l_18(capsys):
-    """Store observations to file, using list."""
+    """Store observations from 1 taxo_group in 1 call to file, using list."""
     file_json = str(Path.home()) + '/' + CFG.file_store + 'observations_18_1.json.gz'
     if Path(file_json).is_file():
         Path(file_json).unlink()
@@ -77,6 +77,20 @@ def test_observations_store_l_18(capsys):
         assert len(items_dict['data']['sightings']) >= 440
     elif SITE == 't07':
         assert len(items_dict['data']['sightings']) >= 82
+
+def test_observations_store_2_18(capsys):
+    """Store observations from 1 taxo_group by specie to file, using list."""
+    file_json = str(Path.home()) + '/' + CFG.file_store + 'observations_18_19703.json.gz'
+    if Path(file_json).is_file():
+        Path(file_json).unlink()
+    OBSERVATIONS.store(18, method='list', by_specie=True)
+    assert Path(file_json).is_file()
+    with gzip.open(file_json, 'rb') as g:
+        items_dict = json.loads(g.read().decode('utf-8'))
+    if SITE == 't38':
+        assert len(items_dict['data']['sightings']) >= 440
+    elif SITE == 't07':
+        assert len(items_dict['data']['sightings']) >= 18
 
 
 # -------

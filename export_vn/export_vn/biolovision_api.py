@@ -329,7 +329,7 @@ class ObservationsAPI(BiolovisionAPI):
         super().__init__(config, 'observations',
                          max_retry, max_requests, max_chunks)
 
-    def api_list(self, id_taxo_group, opt_params=dict()):
+    def api_list(self, id_taxo_group, id_species=None, opt_params=dict()):
         """Query for list of observations by taxo_group from the controler.
 
         Calls  /observations API.
@@ -338,6 +338,8 @@ class ObservationsAPI(BiolovisionAPI):
         ----------
         id_taxo_group : integer
             taxo_group to query for observations
+        id_species : integer
+            optional specie to query for observations
         opt_params : dict
             optional URL parameters, empty by default. See Biolovision API documentation.
 
@@ -347,6 +349,8 @@ class ObservationsAPI(BiolovisionAPI):
             dict decoded from json if status OK, else None
         """
         opt_params['id_taxo_group'] = str(id_taxo_group)
+        if id_species != None:
+            opt_params['id_species'] = str(id_species)
         return super().api_list(HashableDict(opt_params))
 
     def api_diff(self, id_taxo_group, delta_time, modification_type='all'):

@@ -11,11 +11,9 @@ Properties
 
 """
 import sys
-from pathlib import Path
 from datetime import datetime, timedelta
 import logging
 import json
-import gzip
 
 from export_vn.biolovision_api import LocalAdminUnitsAPI, ObservationsAPI, PlacesAPI
 from export_vn.biolovision_api import SpeciesAPI, TaxoGroupsAPI, TerritorialUnitsAPI
@@ -111,29 +109,55 @@ class Observations(DownloadVn):
         super().__init__(config, ObservationsAPI(config), backend,
                          max_retry, max_requests, max_chunks)
 
-    def _store_list(self, id_taxo_group=None):
+    def _store_list(self, id_taxo_group, by_specie):
         """Download from VN by API list and store json to file.
 
-        Calls biolovision_api, iterating on species, convert to json and store to file.
-        Downloads all database is id_taxo_group is None.
+        Calls biolovision_api to get observation, convert to json and store.
         If id_taxo_group is defined, downloads only this taxo_group
+        Else if id_taxo_group is None, downloads all database
+        If by_specie, iterate on species
+        Else download all taxo_group in 1 call
 
         Parameters
         ----------
         id_taxo_group : str or None
             If not None, taxo_group to be downloaded.
+        by_specie : bool
+            If True, downloading by specie.
 
         """
         # GET from API
         logging.debug('Getting items from controler %s, using API list',
                       self._api_instance.controler)
-        items_dict = self._api_instance.api_list(id_taxo_group)
-        # Call backend to store results
-        self._backend(self._api_instance.controler, str(id_taxo_group) + '_' + str(1), items_dict)
+        if id_taxo_group == None:
+            taxo_groups = TaxoGroupsAPI(self._config).api_list()['data']
+        else:
+            taxo_groups = [{'id': id_taxo_group, 'access_mode': 'full'}]
+        for taxo in taxo_groups:
+            if taxo['access_mode'] != 'none':
+                id_taxo_group = taxo['id']
+                logging.info('Getting observations from taxo_group %s',
+                             id_taxo_group)
+                if by_specie:
+                    species = SpeciesAPI(self._config).api_list({'id_taxo_group': str(id_taxo_group)})['data']
+                    for specie in species:
+                        if specie['is_used'] == '1':
+                            logging.info('Getting observations from taxo_group %s, species %s',
+                                         id_taxo_group, specie['id'])
+                            items_dict = self._api_instance.api_list(id_taxo_group, specie['id'])
+                            # Call backend to store results
+                            self._backend(self._api_instance.controler, str(id_taxo_group) + '_' + specie['id'],
+                                          items_dict)
+                else:
+                    items_dict = self._api_instance.api_list(id_taxo_group)
+                    # Call backend to store results
+                    self._backend(self._api_instance.controler, str(id_taxo_group) + '_1', 
+                                  items_dict)
+
 
         return
 
-    def store(self, id_taxo_group=None, method='search'):
+    def store(self, id_taxo_group=None, by_specie=False, method='search'):
         """Download from VN by API, looping on taxo_group if None and store json to file.
 
         Calls  biolovision_api, convert to json and store to file.
@@ -144,6 +168,8 @@ class Observations(DownloadVn):
         ----------
         id_taxo_group : str or None
             If not None, taxo_group to be downloaded.
+        by_specie : bool
+            If True, downloading by specie.
         method : str
             API used to download, either 'search' or 'list'.
 
@@ -169,7 +195,7 @@ class Observations(DownloadVn):
                 self._store_search(taxo)
         elif method == 'list':
             for taxo in taxo_list:
-                self._store_list(id_taxo_group)
+                self._store_list(id_taxo_group, by_specie=by_specie)
         else:
             raise NotImplemented
 
@@ -191,15 +217,7 @@ class Observations(DownloadVn):
         # Convert to json
         logging.debug('Received %d modified or updated items',
                       len(items_dict))
-        # items_json = json.dumps(items_dict, sort_keys=True, indent=4, separators=(',', ': '))
-        # # Store to file
-        # if (len(items_dict['data']) > 0):
-        #     file_json_gz = str(Path.home()) + '/' + self._config.file_store + \
-        #         self._api_instance.controler + '_1.json.gz'
-        #     logging.debug('Received data, storing json to {}'.format(file_json_gz))
-        #     with gzip.open(file_json_gz, 'wb', 9) as g:
-        #         g.write(items_json.encode())
-
+        # TODO: process changes
         return
 
 
