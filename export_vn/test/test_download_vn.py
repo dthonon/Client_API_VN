@@ -23,8 +23,9 @@ def test_logging(cmdopt, capsys):
             logging.getLogger().setLevel(logging.DEBUG)
         logging.debug('Running with debug logging level')
 
-# Using t07 site, that needs to be created first
-SITE = 't07'
+# Using faune-ardeche or faune-isere site, that needs to be created first
+#SITE = 't07'
+SITE = 't38'
 
 def test_site():
     """Check if configuration file exists."""
@@ -69,8 +70,11 @@ def test_observations_store_l_18(capsys):
     OBSERVATIONS.store(18, method='list')
     assert Path(file_json).is_file()
     with gzip.open(file_json, 'rb') as g:
-     items_dict = json.loads(g.read().decode('utf-8'))
-    assert len(items_dict['data']['sightings']) > 440
+        items_dict = json.loads(g.read().decode('utf-8'))
+    if SITE == 't38':
+        assert len(items_dict['data']['sightings']) >= 440
+    elif SITE == 't07':
+        assert len(items_dict['data']['sightings']) >= 82
 
 
 # -------

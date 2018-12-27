@@ -85,7 +85,7 @@ def test_local_admin_units_get(capsys):
 
 def test_local_admin_units_list_all(capsys):
     """Get list of all local admin units."""
-    logging.info('Getting all local admin unit')
+    logging.debug('Getting all local admin unit')
     local_admin_units_list = LOCAL_ADMIN_UNITS_API.api_list()
     with capsys.disabled():
         logging.debug('Received %d local admin units', len(local_admin_units_list['data']))
@@ -98,10 +98,10 @@ def test_local_admin_units_list_all(capsys):
 def test_local_admin_units_list_1(capsys):
     """Get a list of local_admin_units from territorial unit 39 (Isère)."""
     if SITE == 't38':
-        logging.info('Getting local admin unit from {id_canton: 39}')
+        logging.debug('Getting local admin unit from {id_canton: 39}')
         local_admin_units_list = LOCAL_ADMIN_UNITS_API.api_list(opt_params={'id_canton': '39'})
     elif SITE == 't07':
-        logging.info('Getting local admin unit from {id_canton: 07}')
+        logging.debug('Getting local admin unit from {id_canton: 07}')
         local_admin_units_list = LOCAL_ADMIN_UNITS_API.api_list(opt_params={'id_canton': '07'})
     with capsys.disabled():
         logging.debug('territorial unit ==> {} local admin unit '.format(len(local_admin_units_list['data'])))
@@ -210,17 +210,99 @@ def test_observations_get(capsys):
                         'anonymous': '0',
                         'coord_lon': '5.735458',
                         '@id': '33'}]}]}}
+    if SITE == 't07':
+        sighting = OBSERVATIONS_API.api_get('274830')
+        assert sighting == {
+            'data': {
+                'sightings': [
+                    {
+                        'date': {
+                            '#text': 'mercredi 29 avril 2015',
+                            '@ISO8601': '2015-04-29T00:00:00+02:00',
+                            '@notime': '1',
+                            '@offset': '7200',
+                            '@timestamp': '1430258400'
+                        },
+                        'observers': [
+                            {
+                                '@id': '104',
+                                '@uid': '4040',
+                                'altitude': '99',
+                                'anonymous': '0',
+                                'atlas_grid_name': 'E081N636',
+                                'comment': 'juv',
+                                'coord_lat': '44.373198',
+                                'coord_lon': '4.428607',
+                                'count': '1',
+                                'estimation_code': 'MINIMUM',
+                                'flight_number': '1',
+                                'hidden_comment': 'RNNGA',
+                                'id_sighting': '274830',
+                                'id_universal': '30_274830',
+                                'insert_date': {
+                                    '#text': 'dimanche 1 novembre 2015, 22:30:37',
+                                    '@ISO8601': '2015-11-01T22:30:37+01:00',
+                                    '@notime': '0',
+                                    '@offset': '3600',
+                                    '@timestamp': '1446413437'
+                                },
+                                'name': 'Nicolas Bazin',
+                                'precision': 'place',
+                                'source': 'WEB',
+                                'timing': {
+                                    '#text': 'mercredi 29 avril 2015',
+                                    '@ISO8601': '2015-04-29T00:00:00+02:00',
+                                    '@notime': '1',
+                                    '@offset': '7200',
+                                    '@timestamp': '1430258400'
+                                },
+                                'traid': '104',
+                                'update_date': {
+                                    '#text': 'lundi 26 mars 2018, 18:01:23',
+                                    '@ISO8601': '2018-03-26T18:01:23+02:00',
+                                    '@notime': '0',
+                                    '@offset': '7200',
+                                    '@timestamp': '1522080083'
+                                }
+                            }
+                        ],
+                        'place': {
+                            '@id': '122870',
+                            'altitude': '99',
+                            'coord_lat': '44.371928319497',
+                            'coord_lon': '4.4273367833997',
+                            'country': '',
+                            'county': '07',
+                            'insee': '07330',
+                            'loc_precision': '0',
+                            'municipality': 'Vallon-Pont-d\'Arc',
+                            'name': 'Rapide des Trois Eaux',
+                            'place_type': 'precise'
+                        },
+                        'species': {
+                            '@id': '19703',
+                            'latin_name': 'Empusa pennata',
+                            'name': 'Empuse penn\u00e9e',
+                            'rarity': 'unusual',
+                            'sys_order': '80',
+                            'taxonomy': '18'
+                        }}]}}
 
 def test_observations_search_1(capsys):
     """Query sightings, from taxo_group 18: Mantodea and date range."""
     q_param = {'period_choice': 'range',
-               'date_from': '01.07.2017',
-               'date_to': '31.07.2017',
+               'date_from': '01.09.2017',
+               'date_to': '30.09.2017',
                'species_choice':'all',
                'taxonomic_group': '18'}
     list = OBSERVATIONS_API.api_search(q_param)
     assert OBSERVATIONS_API.transfer_errors == 0
-    assert len(list['data']['sightings']) == 17
+    if SITE == 't38':
+        assert len(list['data']['sightings']) == 17
+    elif SITE == 't07':
+        assert len(list['data']['sightings']) == 3
+    else:
+        fail
 
 # -------------------------
 #  Places controler methods
@@ -284,7 +366,7 @@ def test_places_list_1(capsys):
         fail
     with capsys.disabled():
         places_list = PLACES_API.api_list({'id_commune': l})
-        logging.info('local admin unit {} ==> {} place '.format(l, len(places_list['data'])))
+        logging.debug('local admin unit {} ==> {} place '.format(l, len(places_list['data'])))
     assert PLACES_API.transfer_errors == 0
     if SITE == 't38':
         assert len(places_list['data']) >= 164
