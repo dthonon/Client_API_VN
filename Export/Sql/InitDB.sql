@@ -27,7 +27,7 @@
 -- @license http://www.opensource.org/licenses/mit-license.html MIT License
 
 -- Initialize Postgresql database, template for pyexpander3
-
+/*
 -- Delete existing DB and roles
 DROP DATABASE IF EXISTS $(evn_db_name);
 DROP ROLE IF EXISTS $(evn_db_group);
@@ -49,7 +49,7 @@ CREATE DATABASE $(evn_db_name)
        -- CONNECTION LIMIT = -1
        -- TEMPLATE template0
        ;
-GRANT ALL ON DATABASE $(evn_db_name) TO $(evn_db_group);
+GRANT ALL ON DATABASE $(evn_db_name) TO $(evn_db_group); */
 
 \c $(evn_db_name)
 
