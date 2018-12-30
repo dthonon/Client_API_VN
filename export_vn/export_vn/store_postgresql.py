@@ -29,6 +29,39 @@ class StorePostgresql:
 
     def __init__(self, config):
         self._config = config
+        # Get tables definition from Postgresql DB
+        db_string = 'postgres+psycopg2://' + \
+                    self._config.db_user + \
+                    ':' +\
+                    self._config.db_pw + \
+                    '@' + \
+                    self._config.db_host + \
+                    ':' + \
+                    self._config.db_port + \
+                    '/' + \
+                    self._config.db_name
+        dbschema = self._config.db_schema
+        self._metadata = MetaData(schema=dbschema)
+        logging.info('Connecting to database %s', self._config.db_name)
+
+        # Connect
+        self._db = create_engine(db_string, echo=False)
+        conn = self._db.connect()
+        conn.execute('SET search_path TO {},public'.format(dbschema))
+
+        # Get dbtable definition
+        self._metadata.reflect(bind=self._db)
+        # dbtable_def = Table(dbtable, metadata, autoload=True, autoload_with=self._db)
+        for t in self._metadata.tables:
+            logging.debug('Found table: %s', t)
+        self._taxo_groups_json_def = self._metadata.tables[dbschema + '.taxo_groups_json']
+        self._local_admin_units_json_def = self._metadata.tables[dbschema + '.local_admin_units_json']
+        self._observations_json_def = self._metadata.tables[dbschema + '.observations_json']
+        self._species_json_def = self._metadata.tables[dbschema + '.species_json']
+        self._places_json_def = self._metadata.tables[dbschema + '.places_json']
+
+        # Finished with DB
+        conn.close()
 
     # ---------------
     # Generic methods
@@ -50,35 +83,6 @@ class StorePostgresql:
             Data returned from API call.
 
         """
-
-        # Get data from Postgresql DB
-        db_string = 'postgres+psycopg2://' + \
-                    self._config.db_user + \
-                    ':' +\
-                    self._config.db_pw + \
-                    '@' + \
-                    self._config.db_host + \
-                    ':' + \
-                    self._config.db_port + \
-                    '/' + \
-                    self._config.db_name
-        dbschema = self._config.db_schema
-        dbtable = 'taxo_groups_json'
-        metadata = MetaData(schema=dbschema)
-        logging.info('Connecting to db %s', db_string)
-
-        # Connect
-        db = create_engine(db_string, echo=False)
-        conn = db.connect()
-        conn.execute('SET search_path TO {},public'.format(dbschema))
-
-        # Get dbtable definition
-        dbtable_def = Table(dbtable, metadata, autoload=True, autoload_with=db)
-        for c in dbtable_def.columns:
-            logging.info('Column: %s', c.name)
-
-        # Finished with DB
-        conn.close()
 
         # # Store to file
         # if (len(items_dict['data']) > 0):

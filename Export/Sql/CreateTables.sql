@@ -32,16 +32,7 @@
 --  - places_json is loaded with id, json, coordinates and then other columns are created by json queries
 
 \c $(evn_db_name)
-SET search_path TO $(evn_db_schema),public,topology;
-
--- Trigger function to add or update geometry
-CREATE OR REPLACE FUNCTION update_geom_triggerfn()
-RETURNS trigger AS \$body\$
-    BEGIN
-    NEW.the_geom := ST_Transform(ST_SetSRID(ST_MakePoint(NEW.coord_lon, NEW.coord_lat), 4326), 2154);
-    RETURN NEW;
-    END;
-\$body\$ LANGUAGE plpgsql;
+SET search_path TO $(evn_db_schema),public;
 
 -- Observations table in json format
 -- Delete existing table
@@ -52,20 +43,8 @@ CREATE TABLE observations_json (
     id_sighting integer,
     site character varying(100),
     sightings jsonb,   -- Complete json as downloaded
-    update_ts integer,  -- Last update of json data timestamp
-    coord_lat double precision, -- WGS84 coordinates
-    coord_lon double precision
+    update_ts integer
 );
--- Add geometry column
-\o /dev/null
-SELECT AddGeometryColumn('observations_json', 'the_geom', 2154, 'POINT', 2);
-\o
-
--- Add trigger
-DROP TRIGGER IF EXISTS trg_geom ON observations_json ;
-CREATE TRIGGER trg_geom BEFORE INSERT or UPDATE
-    ON observations_json FOR EACH ROW
-    EXECUTE PROCEDURE update_geom_triggerfn();
 
 DROP TRIGGER IF EXISTS sights_to_dataset ON observations_json ;
 create trigger sights_to_dataset
@@ -104,20 +83,8 @@ DROP TABLE IF EXISTS local_admin_units_json CASCADE;
 CREATE TABLE local_admin_units_json (
     id_local_admin_unit integer PRIMARY KEY,
     site character varying(100),
-    local_admin_unit jsonb,   -- Complete json as downloaded
-    coord_lat double precision, -- WGS84 coordinates
-    coord_lon double precision
+    local_admin_unit jsonb   -- Complete json as downloaded
 );
--- Add geometry column
-\o /dev/null
-SELECT AddGeometryColumn('local_admin_units_json', 'the_geom', 2154, 'POINT', 2);
-\o
-
--- Add trigger
-DROP TRIGGER IF EXISTS trg_geom ON local_admin_units_json ;
-CREATE TRIGGER trg_geom BEFORE INSERT or UPDATE
-    ON local_admin_units_json FOR EACH ROW
-    EXECUTE PROCEDURE update_geom_triggerfn();
 
 -- Places table in json format
 -- Delete existing table
@@ -127,17 +94,5 @@ DROP TABLE IF EXISTS places_json CASCADE;
 CREATE TABLE places_json (
     id_place integer PRIMARY KEY,
     site character varying(100),
-    place jsonb,   -- Complete json as downloaded
-    coord_lat double precision, -- WGS84 coordinates
-    coord_lon double precision
+    place jsonb   -- Complete json as downloaded
 );
--- Add geometry column
-\o /dev/null
-SELECT AddGeometryColumn('places_json', 'the_geom', 2154, 'POINT', 2);
-\o
-
--- Add trigger
-DROP TRIGGER IF EXISTS trg_geom ON places_json ;
-CREATE TRIGGER trg_geom BEFORE INSERT or UPDATE
-    ON places_json FOR EACH ROW
-    EXECUTE PROCEDURE update_geom_triggerfn();
