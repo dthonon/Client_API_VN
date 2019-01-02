@@ -34,11 +34,11 @@ def test_site():
 CFG = EvnConf(SITE)
 STORE_PG = StorePostgresql(CFG)
 
-# ------------
-# General data
-# ------------
-def test_general_data_pg_store(capsys):
-    """Store general items_dict to file."""
+# -----------------
+# Local_admin_units
+# -----------------
+def test_local_admin_units_pg_store(capsys):
+    """Store local_admin_units items_dict to database."""
     items_dict = {'data': [
         {
             'coord_lat': '44.888464632099',
@@ -56,7 +56,7 @@ def test_general_data_pg_store(capsys):
             'insee': '07002',
             'name': 'Ailhon'
         }]}
-    STORE_PG.store('general_data', str(1), items_dict)
+    STORE_PG.store('local_admin_units', str(1), items_dict)
 
 
 

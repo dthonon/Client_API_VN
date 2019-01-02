@@ -13,7 +13,7 @@ Properties
 import sys
 import logging
 import json
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine, update, select
 from sqlalchemy import Table, Column, Integer, String, Float, DateTime
 from sqlalchemy import MetaData, ForeignKey
 
@@ -22,7 +22,6 @@ __version__ = "0.1.1" #VERSION#
 
 class StorePostgresqlException(Exception):
     """An exception occurred while handling download or store. """
-
 
 class StorePostgresql:
     """Provides store to Postgresql database method."""
@@ -63,45 +62,74 @@ class StorePostgresql:
         # Finished with DB
         conn.close()
 
+    # ----------------
+    # Internal methods
+    # ----------------
+    def _store_simple(self, controler, items_dict):
+        """Write items_dict to database.
+
+        Converts each element to JSON and store to database in a tables
+        named from controler.
+
+        Parameters
+        ----------
+        controler : str
+            Name of API controler.
+        items_dict : dict
+            Data returned from API call.
+
+        """
+
+        # Loop on data array to store each element to database
+        conn = self._db.connect()
+        for elem in items_dict['data']:
+            # Convert to json
+            items_json = json.dumps(elem, sort_keys=True, indent=4, separators=(',', ': '))
+            logging.debug('Storing element %s',
+                          items_json)
+            stmt = select([self._local_admin_units_json_def.c.id_local_admin_unit]).\
+                    where(self._local_admin_units_json_def.c.id_local_admin_unit==elem['id'])
+            result = conn.execute(stmt)
+            row = result.fetchone()
+            if row == None:
+                logging.debug('Element not found in database, inserting new row')
+                stmt = self._local_admin_units_json_def.insert().\
+                        values(id_local_admin_unit=elem['id'],
+                               site=self._config.site,
+                               local_admin_unit=items_json)
+            else:
+                logging.info('Element %s found in database, updating row', row[0])
+                stmt = self._local_admin_units_json_def.update().\
+                        where(self._local_admin_units_json_def.c.id_local_admin_unit==elem['id']).\
+                        values(id_local_admin_unit=elem['id'],
+                               site=self._config.site,
+                               local_admin_unit=items_json)
+            result = conn.execute(stmt)
+
+        # Finished with DB
+        conn.close()
+
     # ---------------
-    # Generic methods
+    # External methods
     # ---------------
     def store(self, controler, seq, items_dict):
-        """Write data to file.
+        """Write items_dict to database.
 
         Processing depends on controler, as items_dict structure varies.
-        Converts to JSON and store to file, named from
-        controler and seq.
+        Converts each element to JSON and store to database in a tables
+        named from controler.
 
         Parameters
         ----------
         controler : str
             Name of API controler.
         seq : str
-            (Composed) sequence of data stream.
-        controler : dict
+            (Composed) sequence of data stream => Unused for db
+        items_dict : dict
             Data returned from API call.
 
         """
+        if controler == 'local_admin_units':
+            self._store_simple(controler, items_dict)
 
-        # # Store to file
-        # if (len(items_dict['data']) > 0):
-        #     # Convert to json
-        #     logging.debug('Converting to json %d items',
-        #                   len(items_dict['data']))
-        #     items_json = json.dumps(items_dict, sort_keys=True, indent=4, separators=(',', ': '))
-
-
-            # log = Table(dbtable, metadata,
-            #               Column('log_date', DateTime),
-            #               Column('name', String),
-            #               Column('credit', Float),
-            #               Column('workunits', Integer),
-            #               Column('primes', Integer)
-            #               )
-            #
-            # # Select\n",
-            # s = select([log])\n",
-            # result = conn.execute(s)
-            # rows = result.fetchall()
         return
