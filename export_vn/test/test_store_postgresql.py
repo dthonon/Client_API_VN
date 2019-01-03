@@ -63,7 +63,17 @@ def test_local_admin_units_pg_store(capsys):
         }]}
     STORE_PG.store('local_admin_units', str(1), items_dict)
 
+def test_local_admin_units_api_pg_store(capsys):
+    """Store local_admin_units to file."""
+    LOCAL_ADMIN_UNITS.store()
 
 # -------------
 #  Observations
 # -------------
+
+# ------------------
+#  Territorial units
+# ------------------
+def test_territorial_units_api_pg_store(capsys):
+    """Store territorial units to file."""
+    TERRITORIAL_UNIT.store()

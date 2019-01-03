@@ -40,10 +40,11 @@ DROP TABLE IF EXISTS observations_json CASCADE;
 
 -- Create observations table and access rights
 CREATE TABLE observations_json (
-    id_sighting integer,
+    id integer,
     site character varying(100),
-    sightings jsonb,   -- Complete json as downloaded
-    update_ts integer
+    item jsonb,   -- Complete json as downloaded
+    update_ts integer,
+    PRIMARY KEY (id, site)
 );
 
 DROP TRIGGER IF EXISTS sights_to_dataset ON observations_json ;
@@ -59,9 +60,10 @@ DROP TABLE IF EXISTS species_json CASCADE;
 
 -- Create observations table and access rights
 CREATE TABLE species_json (
-    id_specie integer PRIMARY KEY,
+    id integer,
     site character varying(100),
-    specie jsonb   -- Complete json as downloaded
+    item jsonb,   -- Complete json as downloaded
+    PRIMARY KEY (id, site)
 );
 
 -- Taxo_groups table in json format
@@ -70,9 +72,10 @@ DROP TABLE IF EXISTS taxo_groups_json CASCADE;
 
 -- Create observations table and access rights
 CREATE TABLE taxo_groups_json (
-    id_taxo_group integer PRIMARY KEY,
+    id integer,
     site character varying(100),
-    taxo_group jsonb   -- Complete json as downloaded
+    item jsonb,   -- Complete json as downloaded
+    PRIMARY KEY (id, site)
 );
 
 -- local_admin_units table in json format
@@ -81,9 +84,10 @@ DROP TABLE IF EXISTS local_admin_units_json CASCADE;
 
 -- Create local_admin_units table and access rights
 CREATE TABLE local_admin_units_json (
-    id_local_admin_unit integer PRIMARY KEY,
+    id integer,
     site character varying(100),
-    local_admin_unit jsonb   -- Complete json as downloaded
+    item jsonb,   -- Complete json as downloaded
+    PRIMARY KEY (id, site)
 );
 
 -- Places table in json format
@@ -92,7 +96,20 @@ DROP TABLE IF EXISTS places_json CASCADE;
 
 -- Create places table and access rights
 CREATE TABLE places_json (
-    id_place integer PRIMARY KEY,
+    id integer,
     site character varying(100),
-    place jsonb   -- Complete json as downloaded
+    item jsonb,   -- Complete json as downloaded
+    PRIMARY KEY (id, site)
+);
+
+-- Territorial_units table in json format
+-- Delete existing table
+DROP TABLE IF EXISTS territorial_units_json CASCADE;
+
+-- Create territorial_units_json table and access rights
+CREATE TABLE territorial_units_json (
+    id integer,
+    site character varying(100),
+    item jsonb,   -- Complete json as downloaded
+    PRIMARY KEY (id, site)
 );

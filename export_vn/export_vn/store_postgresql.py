@@ -50,13 +50,12 @@ class StorePostgresql:
 
         # Get dbtable definition
         self._metadata.reflect(bind=self._db)
-        for t in self._metadata.tables:
-            logging.debug('Found table: %s', t)
         self._taxo_groups_json_def = self._metadata.tables[dbschema + '.taxo_groups_json']
         self._local_admin_units_json_def = self._metadata.tables[dbschema + '.local_admin_units_json']
         self._observations_json_def = self._metadata.tables[dbschema + '.observations_json']
         self._species_json_def = self._metadata.tables[dbschema + '.species_json']
         self._places_json_def = self._metadata.tables[dbschema + '.places_json']
+        self._territorial_units_json_def = self._metadata.tables[dbschema + '.territorial_units_json']
 
         # Finished with DB
         conn.close()
@@ -64,7 +63,7 @@ class StorePostgresql:
     # ----------------
     # Internal methods
     # ----------------
-    def _store_simple(self, controler, items_dict):
+    def _store_local_admin_units(self, controler, items_dict):
         """Write items_dict to database.
 
         Converts each element to JSON and store to database in a tables
@@ -83,26 +82,70 @@ class StorePostgresql:
         conn = self._db.connect()
         for elem in items_dict['data']:
             # Convert to json
-            items_json = json.dumps(elem, sort_keys=True, indent=4, separators=(',', ': '))
+            items_json = json.dumps(elem)
             logging.debug('Storing element %s',
                           items_json)
-            stmt = select([self._local_admin_units_json_def.c.id_local_admin_unit]).\
-                    where(self._local_admin_units_json_def.c.id_local_admin_unit==elem['id'])
+            stmt = select([self._local_admin_units_json_def.c.id]).\
+                    where(self._local_admin_units_json_def.c.id==elem['id'])
             result = conn.execute(stmt)
             row = result.fetchone()
             if row == None:
                 logging.debug('Element not found in database, inserting new row')
                 stmt = self._local_admin_units_json_def.insert().\
-                        values(id_local_admin_unit=elem['id'],
+                        values(id=elem['id'],
                                site=self._config.site,
-                               local_admin_unit=items_json)
+                               item=items_json)
             else:
                 logging.info('Element %s found in database, updating row', row[0])
                 stmt = self._local_admin_units_json_def.update().\
                         where(self._local_admin_units_json_def.c.id_local_admin_unit==elem['id']).\
-                        values(id_local_admin_unit=elem['id'],
+                        values(id=elem['id'],
                                site=self._config.site,
-                               local_admin_unit=items_json)
+                               item=items_json)
+            result = conn.execute(stmt)
+
+        # Finished with DB
+        conn.close()
+
+    def _store_territorial_units(self, controler, items_dict):
+        """Write items_dict to database.
+
+        Converts each element to JSON and store to database in a tables
+        named from controler.
+
+        Parameters
+        ----------
+        controler : str
+            Name of API controler.
+        items_dict : dict
+            Data returned from API call.
+
+        """
+
+        # Loop on data array to store each element to database
+        conn = self._db.connect()
+        for elem in items_dict['data']:
+            # Convert to json
+            items_json = json.dumps(elem)
+            logging.debug('Storing element %s',
+                          items_json)
+            stmt = select([self._territorial_units_json_def.c.id]).\
+                    where(self._territorial_units_json_def.c.id==elem['id'])
+            result = conn.execute(stmt)
+            row = result.fetchone()
+            if row == None:
+                logging.debug('Element not found in database, inserting new row')
+                stmt = self._territorial_units_json_def.insert().\
+                        values(id=elem['id'],
+                               site=self._config.site,
+                               item=items_json)
+            else:
+                logging.info('Element %s found in database, updating row', row[0])
+                stmt = self._territorial_units_json_def.update().\
+                        where(self._territorial_units_json_def.c.id==elem['id']).\
+                        values(id=elem['id'],
+                               site=self._config.site,
+                               item=items_json)
             result = conn.execute(stmt)
 
         # Finished with DB
@@ -129,6 +172,8 @@ class StorePostgresql:
 
         """
         if controler == 'local_admin_units':
-            self._store_simple(controler, items_dict)
+            self._store_local_admin_units(controler, items_dict)
+        elif controler == 'territorial_units':
+            self._store_territorial_units(controler, items_dict)
 
         return
