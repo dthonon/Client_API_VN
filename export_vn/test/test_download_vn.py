@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test each method of download_vn module.
+Test each method of download_vn module, using file store.
 """
 import sys
 from pathlib import Path
@@ -27,11 +27,6 @@ def test_logging(cmdopt, capsys):
 # Using faune-ardeche or faune-isere site, that needs to be created first
 SITE = 't07'
 #SITE = 't38'
-
-def test_site():
-    """Check if configuration file exists."""
-    cfg_file = Path(str(Path.home()) + '/.evn_' + SITE + '.ini')
-    assert cfg_file.is_file()
 
 # Get configuration for test site
 CFG = EvnConf(SITE)

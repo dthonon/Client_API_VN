@@ -31,11 +31,6 @@ def test_logging(cmdopt, capsys):
 SITE = 't07'
 #SITE = 't38'
 
-def test_site():
-    """Check if configuration file exists."""
-    cfg_file = Path(str(Path.home()) + '/.evn_' + SITE + '.ini')
-    assert cfg_file.is_file()
-
 # Get configuration for test site
 CFG = EvnConf(SITE)
 LOCAL_ADMIN_UNITS_API = LocalAdminUnitsAPI(CFG)

@@ -50,7 +50,6 @@ class StorePostgresql:
 
         # Get dbtable definition
         self._metadata.reflect(bind=self._db)
-        # dbtable_def = Table(dbtable, metadata, autoload=True, autoload_with=self._db)
         for t in self._metadata.tables:
             logging.debug('Found table: %s', t)
         self._taxo_groups_json_def = self._metadata.tables[dbschema + '.taxo_groups_json']

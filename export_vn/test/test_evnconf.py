@@ -14,6 +14,11 @@ shutil.copy(str(Path.home()) + '/Client_API_VN/Export/evn_template.ini',
 CFG = EvnConf(SITE)
 
 def test_site():
+    """Check if configuration file exists."""
+    cfg_file = Path(str(Path.home()) + '/.evn_' + SITE + '.ini')
+    assert cfg_file.is_file()
+
+def test_site_name():
     """ Test property. """
     assert CFG.site == SITE
 

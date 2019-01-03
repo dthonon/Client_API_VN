@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 Test each method of store_postgresql module.
+Also test them as backend to download_vn.
 """
 import sys
 from pathlib import Path
@@ -9,6 +10,9 @@ import pytest
 import json
 import gzip
 
+from export_vn.download_vn import DownloadVn, DownloadVnException
+from export_vn.download_vn import LocalAdminUnits, Observations, Places
+from export_vn.download_vn import Species, TaxoGroup, TerritorialUnits
 from export_vn.store_postgresql import StorePostgresql
 from export_vn.evnconf import EvnConf
 
@@ -25,14 +29,15 @@ def test_logging(cmdopt, capsys):
 SITE = 't07'
 #SITE = 't38'
 
-def test_site():
-    """Check if configuration file exists."""
-    cfg_file = Path(str(Path.home()) + '/.evn_' + SITE + '.ini')
-    assert cfg_file.is_file()
-
 # Get configuration for test site
 CFG = EvnConf(SITE)
 STORE_PG = StorePostgresql(CFG)
+LOCAL_ADMIN_UNITS = LocalAdminUnits(CFG, STORE_PG.store)
+OBSERVATIONS = Observations(CFG, STORE_PG.store)
+PLACES = Places(CFG, STORE_PG.store)
+SPECIES = Species(CFG, STORE_PG.store)
+TAXO_GROUP = TaxoGroup(CFG, STORE_PG.store)
+TERRITORIAL_UNIT = TerritorialUnits(CFG, STORE_PG.store)
 
 # -----------------
 # Local_admin_units
@@ -57,7 +62,6 @@ def test_local_admin_units_pg_store(capsys):
             'name': 'Ailhon'
         }]}
     STORE_PG.store('local_admin_units', str(1), items_dict)
-
 
 
 # -------------
