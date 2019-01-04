@@ -16,6 +16,8 @@ import json
 from sqlalchemy import create_engine, update, select
 from sqlalchemy import Table, Column, Integer, String, Float, DateTime
 from sqlalchemy import MetaData, ForeignKey
+from pyproj import Proj, transform
+
 
 # version of the program:
 __version__ = "0.1.1" #VERSION#
@@ -52,16 +54,16 @@ class StorePostgresql:
         self._metadata.reflect(bind=self._db)
         self._table_defs = {'taxo_groups': {'type': 'simple',
                                             'metadata': None},
-                            'local_admin_units': {'type': 'simple',
-                                                                'metadata': None},
-                            'observations': {'type': 'simple',
-                                                                'metadata': None},
+                            'local_admin_units': {'type': 'geometry',
+                                                   'metadata': None},
+                            'observations': {'type': 'observation',
+                                             'metadata': None},
                             'species': {'type': 'simple',
-                                                                'metadata': None},
-                            'places': {'type': 'simple',
-                                                                'metadata': None},
+                                        'metadata': None},
+                            'places': {'type': 'geometry',
+                                       'metadata': None},
                             'territorial_units': {'type': 'simple',
-                                                                'metadata': None}}
+                                                  'metadata': None}}
         self._table_defs['taxo_groups']['metadata'] = self._metadata.tables[dbschema + '.taxo_groups_json']
         self._table_defs['local_admin_units']['metadata'] = self._metadata.tables[dbschema + '.local_admin_units_json']
         self._table_defs['observations']['metadata'] = self._metadata.tables[dbschema + '.observations_json']
@@ -120,6 +122,30 @@ class StorePostgresql:
         # Finished with DB
         conn.close()
 
+    def _store_geometry(self, controler, items_dict):
+        """Add Lambert 93 coordinates and pass to _store_simple.
+
+        Add X, Y Lambert coordinates to each item and then
+        send to _store_simple for database storage
+
+        Parameters
+        ----------
+        controler : str
+            Name of API controler.
+        items_dict : dict
+            Data returned from API call.
+
+        """
+
+        in_proj = Proj(init='epsg:4326')
+        out_proj = Proj(init='epsg:2154')
+        # Loop on data array to reproject
+        for elem in items_dict['data']:
+            elem['coord_X_L93'], elem['coord_Y_L93'] = transform(in_proj, out_proj,
+                                                                 elem['coord_lon'],
+                                                                 elem['coord_lat'])
+        self._store_simple(controler, items_dict)
+
     # ---------------
     # External methods
     # ---------------
@@ -142,6 +168,8 @@ class StorePostgresql:
         """
         if self._table_defs[controler]['type'] == 'simple':
             self._store_simple(controler, items_dict)
+        elif self._table_defs[controler]['type'] == 'geometry':
+            self._store_geometry(controler, items_dict)
         else:
             raise StorePostgresqlException('Not implemented')
 
