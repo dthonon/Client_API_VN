@@ -55,6 +55,8 @@ class StorePostgresql:
         self._metadata.reflect(bind=self._db)
         self._table_defs = {'entities': {'type': 'simple',
                                             'metadata': None},
+                            'forms': {'type': 'simple',
+                                              'metadata': None},
                             'local_admin_units': {'type': 'geometry',
                                                    'metadata': None},
                             'observations': {'type': 'observation',
@@ -68,6 +70,7 @@ class StorePostgresql:
                             'territorial_units': {'type': 'simple',
                                                   'metadata': None}}
         self._table_defs['entities']['metadata'] = self._metadata.tables[dbschema + '.entities_json']
+        self._table_defs['forms']['metadata'] = self._metadata.tables[dbschema + '.forms_json']
         self._table_defs['local_admin_units']['metadata'] = self._metadata.tables[dbschema + '.local_admin_units_json']
         self._table_defs['observations']['metadata'] = self._metadata.tables[dbschema + '.observations_json']
         self._table_defs['places']['metadata'] = self._metadata.tables[dbschema + '.places_json']
@@ -110,7 +113,6 @@ class StorePostgresql:
                                self._table_defs[controler]['metadata'].c.site==self._config.site))
             result = conn.execute(stmt)
             row = result.fetchone()
-            logging.debug('%s, %s', row, self._config.site)
             if row == None:
                 logging.debug('Element not found in database, inserting new row')
                 stmt = self._table_defs[controler]['metadata'].insert().\
@@ -154,6 +156,77 @@ class StorePostgresql:
                                                                  elem['coord_lat'])
         self._store_simple(controler, items_dict)
 
+    def _store_observation(self, controler, items_dict):
+        """Iterate through observations or forms and store.
+
+        Checks if sightings or forms and iterate on each sighting
+        - find insert or update date
+        - simplity data to remove redundant items: dates... (TBD)
+        - add Lambert 93 coordinates
+        - store json in Postgresql
+
+        Parameters
+        ----------
+        controler : str
+            Name of API controler.
+        items_dict : dict
+            Data returned from API call.
+
+        """
+        # Insert simple sightings, each row contains id, update timestamp and full json body
+        logging.info('Storing %d observations or forms to database', len(items_dict['data']['sightings']))
+        in_proj = Proj(init='epsg:4326')
+        out_proj = Proj(init='epsg:2154')
+        conn = self._db.connect()
+        for i in range(0, len(items_dict['data']['sightings'])):
+            elem = items_dict['data']['sightings'][i]
+            # Find last update timestamp
+            if ('update_date' in elem['observers'][0]):
+                update_date = elem['observers'][0]['update_date']['@timestamp']
+            else:
+                update_date = elem['observers'][0]['insert_date']['@timestamp']
+
+            # Add Lambert 93 coordinates
+            elem['observers'][0]['coord_X_L93'], elem['observers'][0]['coord_Y_L93'] = \
+                transform(in_proj, out_proj,
+                          elem['observers'][0]['coord_lon'],
+                          elem['observers'][0]['coord_lat'])
+            elem['place']['coord_X_L93'], elem['place']['coord_Y_L93'] = \
+                transform(in_proj, out_proj,
+                          elem['place']['coord_lon'],
+                          elem['place']['coord_lat'])
+
+            # Store in Postgresql
+            items_json = json.dumps(elem)
+            logging.debug('Storing element %s',
+                          items_json)
+            stmt = select([self._table_defs[controler]['metadata'].c.id,
+                           self._table_defs[controler]['metadata'].c.site]).\
+                    where(and_(self._table_defs[controler]['metadata'].c.id==elem['observers'][0]['id_sighting'], \
+                               self._table_defs[controler]['metadata'].c.site==self._config.site))
+            result = conn.execute(stmt)
+            row = result.fetchone()
+            if row == None:
+                logging.debug('Element not found in database, inserting new row')
+                stmt = self._table_defs[controler]['metadata'].insert().\
+                        values(id=elem['observers'][0]['id_sighting'],
+                               site=self._config.site,
+                               update_ts=update_date,
+                               item=items_json)
+            else:
+                logging.debug('Element %s found in database, updating row', row[0])
+                stmt = self._table_defs[controler]['metadata'].update().\
+                        where(and_(self._table_defs[controler]['metadata'].c.id==elem['observers'][0]['id_sighting'], \
+                                   self._table_defs[controler]['metadata'].c.site==self._config.site)).\
+                        values(id=elem['observers'][0]['id_sighting'],
+                               site=self._config.site,
+                               update_ts=update_date,
+                               item=items_json)
+            result = conn.execute(stmt)
+
+        # Finished with DB
+        conn.close()
+
     # ---------------
     # External methods
     # ---------------
@@ -178,6 +251,8 @@ class StorePostgresql:
             self._store_simple(controler, items_dict)
         elif self._table_defs[controler]['type'] == 'geometry':
             self._store_geometry(controler, items_dict)
+        elif self._table_defs[controler]['type'] == 'observation':
+            self._store_observation(controler, items_dict)
         else:
             raise StorePostgresqlException('Not implemented')
 

@@ -26,8 +26,8 @@ def test_logging(cmdopt, capsys):
         logging.debug('Running with debug logging level')
 
 # Using faune-ardeche or faune-isere site, that needs to be created first
-#SITE = 't07'
-SITE = 't38'
+SITE = 't07'
+#SITE = 't38'
 
 # Get configuration for test site
 CFG = EvnConf(SITE)
@@ -44,30 +44,33 @@ TERRITORIAL_UNIT = TerritorialUnits(CFG, STORE_PG.store)
 # Entities
 # --------
 def test_entities_api_pg_store(capsys):
-    """Store entities to file."""
+    """Store entities to database."""
     ENTITIES.store()
 
 # -----------------
 # Local_admin_units
 # -----------------
 def test_local_admin_units_api_pg_store(capsys):
-    """Store local_admin_units to file."""
+    """Store local_admin_units to database."""
     LOCAL_ADMIN_UNITS.store()
 
 # -------------
 #  Observations
 # -------------
+def test_observations_api_pg_store(capsys):
+    """Store observations of taxo_group 18 to database."""
+    OBSERVATIONS.store(18)
 
 # --------
 #  Species
 # --------
 def test_species_api_pg_store(capsys):
-    """Store species to file."""
+    """Store species to database."""
     SPECIES.store()
 
 # ------------------
 #  Territorial units
 # ------------------
 def test_territorial_units_api_pg_store(capsys):
-    """Store territorial units to file."""
+    """Store territorial units to database."""
     TERRITORIAL_UNIT.store()
