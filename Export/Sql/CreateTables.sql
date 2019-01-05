@@ -34,11 +34,29 @@
 \c $(evn_db_name)
 SET search_path TO $(evn_db_schema),public;
 
+-- Entities table in json format
+-- Delete existing table
+DROP TABLE IF EXISTS entities_json CASCADE;
+CREATE TABLE entities_json (
+    id integer,
+    site character varying(100),
+    item jsonb,   -- Complete json as downloaded
+    PRIMARY KEY (id, site)
+);
+
+-- Forms table in json format
+-- Delete existing table
+DROP TABLE IF EXISTS forms_json CASCADE;
+CREATE TABLE forms_json (
+    id integer,
+    site character varying(100),
+    item jsonb,   -- Complete json as extracted from observations
+    PRIMARY KEY (id, site)
+);
+
 -- Observations table in json format
 -- Delete existing table
 DROP TABLE IF EXISTS observations_json CASCADE;
-
--- Create observations table and access rights
 CREATE TABLE observations_json (
     id integer,
     site character varying(100),
@@ -57,8 +75,6 @@ create trigger sights_to_dataset
 -- Species table in json format
 -- Delete existing table
 DROP TABLE IF EXISTS species_json CASCADE;
-
--- Create observations table and access rights
 CREATE TABLE species_json (
     id integer,
     site character varying(100),
@@ -69,8 +85,6 @@ CREATE TABLE species_json (
 -- Taxo_groups table in json format
 -- Delete existing table
 DROP TABLE IF EXISTS taxo_groups_json CASCADE;
-
--- Create observations table and access rights
 CREATE TABLE taxo_groups_json (
     id integer,
     site character varying(100),
@@ -81,8 +95,6 @@ CREATE TABLE taxo_groups_json (
 -- local_admin_units table in json format
 -- Delete existing table
 DROP TABLE IF EXISTS local_admin_units_json CASCADE;
-
--- Create local_admin_units table and access rights
 CREATE TABLE local_admin_units_json (
     id integer,
     site character varying(100),
@@ -93,8 +105,6 @@ CREATE TABLE local_admin_units_json (
 -- Places table in json format
 -- Delete existing table
 DROP TABLE IF EXISTS places_json CASCADE;
-
--- Create places table and access rights
 CREATE TABLE places_json (
     id integer,
     site character varying(100),
@@ -105,8 +115,6 @@ CREATE TABLE places_json (
 -- Territorial_units table in json format
 -- Delete existing table
 DROP TABLE IF EXISTS territorial_units_json CASCADE;
-
--- Create territorial_units_json table and access rights
 CREATE TABLE territorial_units_json (
     id integer,
     site character varying(100),

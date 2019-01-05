@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 import logging
 import json
 
-from export_vn.biolovision_api import LocalAdminUnitsAPI, ObservationsAPI, PlacesAPI
+from export_vn.biolovision_api import EntitiesAPI, LocalAdminUnitsAPI, ObservationsAPI, PlacesAPI
 from export_vn.biolovision_api import SpeciesAPI, TaxoGroupsAPI, TerritorialUnitsAPI
 from export_vn.biolovision_api import BiolovisionApiException, HTTPError, MaxChunksError
 from export_vn.evnconf import EvnConf
@@ -80,6 +80,20 @@ class DownloadVn:
             self._backend(self._api_instance.controler, str(i), items_dict)
 
         return
+
+class Entities(DownloadVn):
+    """ Implement store from entities controler.
+
+    Methods
+    - store               - Download and store to json
+
+    """
+
+    def __init__(self, config, backend,
+                 max_retry=5, max_requests=sys.maxsize, max_chunks=10):
+        super().__init__(config, EntitiesAPI(config), backend,
+                         max_retry, max_requests, max_chunks)
+
 
 
 class LocalAdminUnits(DownloadVn):

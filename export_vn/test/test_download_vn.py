@@ -10,7 +10,7 @@ import json
 import gzip
 
 from export_vn.download_vn import DownloadVn, DownloadVnException
-from export_vn.download_vn import LocalAdminUnits, Observations, Places
+from export_vn.download_vn import Entities, LocalAdminUnits, Observations, Places
 from export_vn.download_vn import Species, TaxoGroup, TerritorialUnits
 from export_vn.store_file import StoreFile
 from export_vn.evnconf import EvnConf
@@ -31,12 +31,31 @@ SITE = 't07'
 # Get configuration for test site
 CFG = EvnConf(SITE)
 STORE_FILE = StoreFile(CFG).store
+ENTITIES = Entities(CFG, STORE_FILE)
 LOCAL_ADMIN_UNITS = LocalAdminUnits(CFG, STORE_FILE)
 OBSERVATIONS = Observations(CFG, STORE_FILE)
 PLACES = Places(CFG, STORE_FILE)
 SPECIES = Species(CFG, STORE_FILE)
 TAXO_GROUP = TaxoGroup(CFG, STORE_FILE)
 TERRITORIAL_UNIT = TerritorialUnits(CFG, STORE_FILE)
+
+# ---------
+#  Entities
+# ---------
+def test_entities_store(capsys):
+    """Store entities to file."""
+    file_json = str(Path.home()) + '/' + CFG.file_store + 'entities_1.json.gz'
+    if Path(file_json).is_file():
+        Path(file_json).unlink()
+    ENTITIES.store()
+    assert Path(file_json).is_file()
+    with gzip.open(file_json, 'rb') as g:
+        items_dict = json.loads(g.read().decode('utf-8'))
+    if SITE == 't38':
+        assert len(items_dict['data']) >= 20
+    elif SITE == 't07':
+        assert len(items_dict['data']) >= 8
+
 
 
 # -----------------

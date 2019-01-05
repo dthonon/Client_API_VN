@@ -12,7 +12,7 @@ import pytest
 import timeit
 
 from export_vn.biolovision_api import BiolovisionAPI, BiolovisionApiException
-from export_vn.biolovision_api import LocalAdminUnitsAPI, ObservationsAPI, PlacesAPI
+from export_vn.biolovision_api import EntitiesAPI, LocalAdminUnitsAPI, ObservationsAPI, PlacesAPI
 from export_vn.biolovision_api import SpeciesAPI, TaxoGroupsAPI, TerritorialUnitsAPI
 from export_vn.biolovision_api import HTTPError, MaxChunksError
 from export_vn.evnconf import EvnConf
@@ -33,6 +33,7 @@ SITE = 't07'
 
 # Get configuration for test site
 CFG = EvnConf(SITE)
+ENTITIES_API = EntitiesAPI(CFG)
 LOCAL_ADMIN_UNITS_API = LocalAdminUnitsAPI(CFG)
 OBSERVATIONS_API = ObservationsAPI(CFG)
 PLACES_API = PlacesAPI(CFG)
@@ -40,6 +41,22 @@ SPECIES_API = SpeciesAPI(CFG)
 SPECIES_API_ERR = SpeciesAPI(CFG, max_retry=1, max_requests=1, max_chunks = 1)
 TAXO_GROUPS_API = TaxoGroupsAPI(CFG)
 TERRITORIAL_UNITS_API = TerritorialUnitsAPI(CFG)
+
+# --------------------------
+# Entities controler methods
+# --------------------------
+def test_entities_get():
+    """Get an entity."""
+    entity = ENTITIES_API.api_get('2')
+    assert ENTITIES_API.transfer_errors == 0
+    assert entity['data'][0]['short_name'] == 'LPO 07'
+
+def test_entities_list():
+    """Get list of entities."""
+    entities = ENTITIES_API.api_list()
+    assert ENTITIES_API.transfer_errors == 0
+    assert len(entities['data']) >= 8
+    assert entities['data'][0]['short_name'] == '-'
 
 # ------------------------------------
 #  Local admin units controler methods

@@ -52,23 +52,26 @@ class StorePostgresql:
 
         # Get dbtable definition
         self._metadata.reflect(bind=self._db)
-        self._table_defs = {'taxo_groups': {'type': 'simple',
+        self._table_defs = {'entities': {'type': 'simple',
                                             'metadata': None},
                             'local_admin_units': {'type': 'geometry',
                                                    'metadata': None},
                             'observations': {'type': 'observation',
                                              'metadata': None},
-                            'species': {'type': 'simple',
-                                        'metadata': None},
                             'places': {'type': 'geometry',
                                        'metadata': None},
+                            'species': {'type': 'simple',
+                                        'metadata': None},
+                            'taxo_groups': {'type': 'simple',
+                                            'metadata': None},
                             'territorial_units': {'type': 'simple',
                                                   'metadata': None}}
-        self._table_defs['taxo_groups']['metadata'] = self._metadata.tables[dbschema + '.taxo_groups_json']
+        self._table_defs['entities']['metadata'] = self._metadata.tables[dbschema + '.entities_json']
         self._table_defs['local_admin_units']['metadata'] = self._metadata.tables[dbschema + '.local_admin_units_json']
         self._table_defs['observations']['metadata'] = self._metadata.tables[dbschema + '.observations_json']
-        self._table_defs['species']['metadata'] = self._metadata.tables[dbschema + '.species_json']
         self._table_defs['places']['metadata'] = self._metadata.tables[dbschema + '.places_json']
+        self._table_defs['species']['metadata'] = self._metadata.tables[dbschema + '.species_json']
+        self._table_defs['taxo_groups']['metadata'] = self._metadata.tables[dbschema + '.taxo_groups_json']
         self._table_defs['territorial_units']['metadata'] = self._metadata.tables[dbschema + '.territorial_units_json']
 
         # Finished with DB

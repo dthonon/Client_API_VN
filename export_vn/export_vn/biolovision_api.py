@@ -298,12 +298,27 @@ class BiolovisionAPI:
         return self._url_get(params, 'error/')
 
 
+class EntitiesAPI(BiolovisionAPI):
+    """ Implement api calls to entities controler.
+
+    Methods
+    - api_get                - Return a single entity from the controler
+    - api_list               - Return a list of entity from the controler
+
+    """
+
+    def __init__(self, config,
+                 max_retry=5, max_requests=sys.maxsize, max_chunks=10):
+        super().__init__(config, 'entities',
+                         max_retry, max_requests, max_chunks)
+
+
 class LocalAdminUnitsAPI(BiolovisionAPI):
     """ Implement api calls to local_admin_units controler.
 
     Methods
     - api_get                - Return a single entity from the controler
-    - api_list               - Return a single entity from the controler
+    - api_list               - Return a list of entity from the controler
 
     """
 
@@ -318,7 +333,7 @@ class ObservationsAPI(BiolovisionAPI):
 
     Methods
     - api_get                - Return a single observations from the controler
-    - api_list               - Return all observations from the controler
+    - api_list               - Return a list of observations from the controler
     - api_diff               - Return all changes in observations since a given date
     - api_search             - Search for observations based on parameter value
     """
@@ -419,7 +434,7 @@ class PlacesAPI(BiolovisionAPI):
 
     Methods
     - api_get                - Return a single place from the controler
-    - api_list               - Return all places from the controler
+    - api_list               - Return a list of places from the controler
 
     """
 
@@ -434,7 +449,7 @@ class SpeciesAPI(BiolovisionAPI):
 
     Methods
     - api_get                - Return a single specie from the controler
-    - api_list               - Return all species from the controler
+    - api_list               - Return a list of species from the controler
 
     """
 
@@ -449,7 +464,7 @@ class TaxoGroupsAPI(BiolovisionAPI):
 
     Methods
     - api_get                - Return a single taxo group from the controler
-    - api_list               - Return all taxo groups from the controler
+    - api_list               - Return a list of taxo groups from the controler
 
     """
 
@@ -469,7 +484,7 @@ class TerritorialUnitsAPI(BiolovisionAPI):
 
     Methods
     - api_get                - Return a single territorial unit from the controler
-    - api_list               - Return all territorial units from the controler
+    - api_list               - Return a list of territorial units from the controler
 
     """
 
