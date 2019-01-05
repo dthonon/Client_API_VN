@@ -66,11 +66,11 @@ CREATE TABLE observations_json (
 );
 
 DROP TRIGGER IF EXISTS sights_to_dataset ON observations_json ;
-create trigger sights_to_dataset
+/* create trigger sights_to_dataset
   After insert or update or delete
   on observations_json
   for each row execute procedure update_vn_sights()
-;
+; */
 
 -- Species table in json format
 -- Delete existing table

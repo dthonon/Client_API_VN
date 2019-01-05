@@ -16,6 +16,7 @@ import json
 from sqlalchemy import create_engine, update, select
 from sqlalchemy import Table, Column, Integer, String, Float, DateTime
 from sqlalchemy import MetaData, ForeignKey
+from sqlalchemy.sql import and_, or_, not_
 from pyproj import Proj, transform
 
 
@@ -103,10 +104,13 @@ class StorePostgresql:
             items_json = json.dumps(elem)
             logging.debug('Storing element %s',
                           items_json)
-            stmt = select([self._table_defs[controler]['metadata'].c.id]).\
-                    where(self._table_defs[controler]['metadata'].c.id==elem['id'])
+            stmt = select([self._table_defs[controler]['metadata'].c.id,
+                           self._table_defs[controler]['metadata'].c.site]).\
+                    where(and_(self._table_defs[controler]['metadata'].c.id==elem['id'], \
+                               self._table_defs[controler]['metadata'].c.site==self._config.site))
             result = conn.execute(stmt)
             row = result.fetchone()
+            logging.debug('%s, %s', row, self._config.site)
             if row == None:
                 logging.debug('Element not found in database, inserting new row')
                 stmt = self._table_defs[controler]['metadata'].insert().\
@@ -116,7 +120,8 @@ class StorePostgresql:
             else:
                 logging.debug('Element %s found in database, updating row', row[0])
                 stmt = self._table_defs[controler]['metadata'].update().\
-                        where(self._table_defs[controler]['metadata'].c.id==elem['id']).\
+                        where(and_(self._table_defs[controler]['metadata'].c.id==elem['id'], \
+                                   self._table_defs[controler]['metadata'].c.site==self._config.site)).\
                         values(id=elem['id'],
                                site=self._config.site,
                                item=items_json)
