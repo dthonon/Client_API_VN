@@ -156,6 +156,75 @@ class StorePostgresql:
                                                                  elem['coord_lat'])
         self._store_simple(controler, items_dict)
 
+    def _store_1_observation(self, controler, conn, elem, in_proj, out_proj):
+        """Process and store a single observation.
+
+        - find insert or update date
+        - simplity data to remove redundant items: dates... (TBD)
+        - add Lambert 93 coordinates
+        - store json in Postgresql
+
+        Parameters
+        ----------
+        controler : str
+            Name of API controler.
+        conn :
+            sqlalchemy connection to database
+        elem : dict
+            Single observation to process and store.
+        in_proj :
+            Projection used in input item.
+        out_proj :
+            Projection added to item.
+
+
+        """
+        # Insert simple sightings, each row contains id, update timestamp and full json body
+        logging.debug('Storing observation %s to database', elem)
+        # Find last update timestamp
+        if ('update_date' in elem['observers'][0]):
+            update_date = elem['observers'][0]['update_date']['@timestamp']
+        else:
+            update_date = elem['observers'][0]['insert_date']['@timestamp']
+
+        # Add Lambert 93 coordinates
+        elem['observers'][0]['coord_X_L93'], elem['observers'][0]['coord_Y_L93'] = \
+            transform(in_proj, out_proj,
+                      elem['observers'][0]['coord_lon'],
+                      elem['observers'][0]['coord_lat'])
+        elem['place']['coord_X_L93'], elem['place']['coord_Y_L93'] = \
+            transform(in_proj, out_proj,
+                      elem['place']['coord_lon'],
+                      elem['place']['coord_lat'])
+
+        # Store in Postgresql
+        items_json = json.dumps(elem)
+        logging.debug('Storing element %s',
+                      items_json)
+        stmt = select([self._table_defs[controler]['metadata'].c.id,
+                       self._table_defs[controler]['metadata'].c.site]).\
+                where(and_(self._table_defs[controler]['metadata'].c.id==elem['observers'][0]['id_sighting'], \
+                           self._table_defs[controler]['metadata'].c.site==self._config.site))
+        result = conn.execute(stmt)
+        row = result.fetchone()
+        if row == None:
+            logging.debug('Element not found in database, inserting new row')
+            stmt = self._table_defs[controler]['metadata'].insert().\
+                    values(id=elem['observers'][0]['id_sighting'],
+                           site=self._config.site,
+                           update_ts=update_date,
+                           item=items_json)
+        else:
+            logging.debug('Element %s found in database, updating row', row[0])
+            stmt = self._table_defs[controler]['metadata'].update().\
+                    where(and_(self._table_defs[controler]['metadata'].c.id==elem['observers'][0]['id_sighting'], \
+                               self._table_defs[controler]['metadata'].c.site==self._config.site)).\
+                    values(id=elem['observers'][0]['id_sighting'],
+                           site=self._config.site,
+                           update_ts=update_date,
+                           item=items_json)
+        result = conn.execute(stmt)
+
     def _store_observation(self, controler, items_dict):
         """Iterate through observations or forms and store.
 
@@ -180,49 +249,13 @@ class StorePostgresql:
         conn = self._db.connect()
         for i in range(0, len(items_dict['data']['sightings'])):
             elem = items_dict['data']['sightings'][i]
-            # Find last update timestamp
-            if ('update_date' in elem['observers'][0]):
-                update_date = elem['observers'][0]['update_date']['@timestamp']
-            else:
-                update_date = elem['observers'][0]['insert_date']['@timestamp']
+            self._store_1_observation(controler, conn, elem, in_proj, out_proj)
 
-            # Add Lambert 93 coordinates
-            elem['observers'][0]['coord_X_L93'], elem['observers'][0]['coord_Y_L93'] = \
-                transform(in_proj, out_proj,
-                          elem['observers'][0]['coord_lon'],
-                          elem['observers'][0]['coord_lat'])
-            elem['place']['coord_X_L93'], elem['place']['coord_Y_L93'] = \
-                transform(in_proj, out_proj,
-                          elem['place']['coord_lon'],
-                          elem['place']['coord_lat'])
-
-            # Store in Postgresql
-            items_json = json.dumps(elem)
-            logging.debug('Storing element %s',
-                          items_json)
-            stmt = select([self._table_defs[controler]['metadata'].c.id,
-                           self._table_defs[controler]['metadata'].c.site]).\
-                    where(and_(self._table_defs[controler]['metadata'].c.id==elem['observers'][0]['id_sighting'], \
-                               self._table_defs[controler]['metadata'].c.site==self._config.site))
-            result = conn.execute(stmt)
-            row = result.fetchone()
-            if row == None:
-                logging.debug('Element not found in database, inserting new row')
-                stmt = self._table_defs[controler]['metadata'].insert().\
-                        values(id=elem['observers'][0]['id_sighting'],
-                               site=self._config.site,
-                               update_ts=update_date,
-                               item=items_json)
-            else:
-                logging.debug('Element %s found in database, updating row', row[0])
-                stmt = self._table_defs[controler]['metadata'].update().\
-                        where(and_(self._table_defs[controler]['metadata'].c.id==elem['observers'][0]['id_sighting'], \
-                                   self._table_defs[controler]['metadata'].c.site==self._config.site)).\
-                        values(id=elem['observers'][0]['id_sighting'],
-                               site=self._config.site,
-                               update_ts=update_date,
-                               item=items_json)
-            result = conn.execute(stmt)
+        if ('forms' in items_dict['data']):
+            for f in range(0, len(items_dict['data']['forms'])):
+                for i in range(0, len(items_dict['data']['forms'][f]['sightings'])):
+                    elem = items_dict['data']['forms'][f]['sightings'][i]
+                    self._store_1_observation(controler, conn, elem, in_proj, out_proj)
 
         # Finished with DB
         conn.close()
