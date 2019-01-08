@@ -42,6 +42,10 @@ SPECIES_API_ERR = SpeciesAPI(CFG, max_retry=1, max_requests=1, max_chunks = 1)
 TAXO_GROUPS_API = TaxoGroupsAPI(CFG)
 TERRITORIAL_UNITS_API = TerritorialUnitsAPI(CFG)
 
+def test_version():
+    """Check if version is defined."""
+    logging.info('package version: %s', ENTITIES_API.version)
+
 # --------------------------
 # Entities controler methods
 # --------------------------

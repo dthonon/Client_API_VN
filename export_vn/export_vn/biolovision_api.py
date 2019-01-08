@@ -45,7 +45,8 @@ from requests_oauthlib import OAuth1
 from functools import lru_cache
 
 # version of the program:
-__version__ = "0.1.1" #VERSION#
+from setuptools_scm import get_version
+__version__ = get_version(root='../..', relative_to=__file__)
 
 class HashableDict(dict):
     """Provide hashable dict type, to enable @lru_cache."""
@@ -85,6 +86,11 @@ class BiolovisionAPI:
         self._api_url = config.base_url + 'api/'  # URL of API
         self._oauth = OAuth1(config.client_key,
                              client_secret=config.client_secret)
+
+    @property
+    def version(self):
+        """Return version."""
+        return __version__
 
     @property
     def transfer_errors(self):

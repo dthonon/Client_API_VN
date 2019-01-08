@@ -12,8 +12,8 @@ import logging
 
 
 # version of the program:
-__version__ = "0.1.1" #VERSION#
-
+from setuptools_scm import get_version
+__version__ = get_version(root='../..', relative_to=__file__)
 
 class PID(object):
     """
@@ -37,6 +37,11 @@ class PID(object):
         self._last_output = None
         self._proportional = 0
         self._last_input = None
+
+    @property
+    def version(self):
+        """Return version."""
+        return __version__
 
     def _clamp(self, value, limits):
         lower, upper = limits

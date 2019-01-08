@@ -40,6 +40,10 @@ SPECIES = Species(CFG, STORE_PG.store)
 TAXO_GROUP = TaxoGroup(CFG, STORE_PG.store)
 TERRITORIAL_UNIT = TerritorialUnits(CFG, STORE_PG.store)
 
+def test_version():
+    """Check if version is defined."""
+    logging.info('package version: %s', STORE_PG.version)
+
 # --------
 # Entities
 # --------

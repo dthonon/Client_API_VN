@@ -17,6 +17,9 @@ def test_logging(cmdopt, capsys):
             logging.getLogger().setLevel(logging.DEBUG)
         logging.debug('Running with debug logging level')
 
+def test_version():
+    """Check if version is defined."""
+    logging.info('package version: %s', PID().version)
 
 def test_zero():
     pid = PID(1, 1, 1, setpoint=0)

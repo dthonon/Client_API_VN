@@ -17,7 +17,8 @@ import json
 import gzip
 
 # version of the program:
-__version__ = "0.1.1" #VERSION#
+from setuptools_scm import get_version
+__version__ = get_version(root='../..', relative_to=__file__)
 
 class StoreFileException(Exception):
     """An exception occurred while handling download or store. """
@@ -28,6 +29,11 @@ class StoreFile:
 
     def __init__(self, config):
         self._config = config
+
+    @property
+    def version(self):
+        """Return version."""
+        return __version__
 
     # ---------------
     # Generic methods

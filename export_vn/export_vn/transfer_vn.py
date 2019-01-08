@@ -16,7 +16,8 @@ from export_vn.store_postgresql import StorePostgresql
 from export_vn.evnconf import EvnConf
 
 # version of the program:
-__version__ = "0.1.1" #VERSION#
+from setuptools_scm import get_version
+version = get_version(root='../..', relative_to=__file__)
 
 def main():
     """
@@ -25,6 +26,9 @@ def main():
 
     # Get options
     parser = argparse.ArgumentParser()
+    parser.add_argument('--version',
+                        help='print version number',
+                        action='store_true')
     parser.add_argument('-v', '--verbose',
                         help='increase output verbosity',
                         action='store_true')
@@ -58,7 +62,7 @@ def main():
     taxo_group = TaxoGroup(cfg, store_pg.store)
     territorial_unit = TerritorialUnits(cfg, store_pg.store)
 
-    species.store()
+    #species.store()
 
 # Main wrapper
 if __name__ == "__main__":

@@ -8,7 +8,8 @@ import configparser
 from pathlib import Path
 
 # version of the program:
-__version__ = "1.0.0" #VERSION#
+from setuptools_scm import get_version
+__version__ = get_version(root='../..', relative_to=__file__)
 
 class EvnConf:
     """
@@ -39,6 +40,11 @@ class EvnConf:
         if site in self._config:
             self._external1_name = self._config[site]['evn_external1_name']
             self._external1_pw = self._config[site]['evn_external1_pw']
+
+    @property
+    def version(self):
+        """Return version."""
+        return __version__
 
     @property
     def site(self):

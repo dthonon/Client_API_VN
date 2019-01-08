@@ -29,6 +29,10 @@ SITE = 't07'
 CFG = EvnConf(SITE)
 STORE_FILE = StoreFile(CFG)
 
+def test_version():
+    """Check if version is defined."""
+    logging.info('package version: %s', STORE_FILE.version)
+
 # ------------
 # General data
 # ------------
