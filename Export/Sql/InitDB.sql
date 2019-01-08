@@ -65,9 +65,9 @@ CREATE SCHEMA reference
 CREATE EXTENSION if not exists adminpack;
 
 -- Extensions postgis
-CREATE EXTENSION if not exists postgis;
-CREATE EXTENSION if not exists postgis_topology;
-CREATE EXTENSION if not exists "uuid-ossp";
+--CREATE EXTENSION if not exists postgis;
+--CREATE EXTENSION if not exists postgis_topology;
+--CREATE EXTENSION if not exists "uuid-ossp";
 
 ALTER DEFAULT PRIVILEGES
     GRANT INSERT, SELECT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON TABLES

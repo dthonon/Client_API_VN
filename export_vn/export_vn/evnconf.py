@@ -36,8 +36,9 @@ class EvnConf:
         self._db_user = self._config['database']['evn_db_user']
         self._db_pw = self._config['database']['evn_db_pw']
         self._sql_scripts = self._config['database']['evn_sql_scripts']
-        self._external1_name = self._config[site]['evn_external1_name']
-        self._external1_pw = self._config[site]['evn_external1_pw']
+        if site in self._config:
+            self._external1_name = self._config[site]['evn_external1_name']
+            self._external1_pw = self._config[site]['evn_external1_pw']
 
     @property
     def site(self):

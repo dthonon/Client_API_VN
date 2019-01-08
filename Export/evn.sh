@@ -197,20 +197,6 @@ case "$CMD" in
     env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
     psql "$SQL_QUIET" --dbname="${config[evn_db_name]}" --file=$HOME/tmp/CreateTables.sql
 
-    # DEBUG "2. Insertion dans la base"
-    # export_vn/InsertInDB.py "$PYTHON_VERBOSE" --site="$SITE"
-    #
-    # DEBUG "3. Création des vues"
-    # expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/CreateViews.sql > $HOME/tmp/CreateViews.sql
-    # env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
-    # psql "$SQL_QUIET" --dbname="${config[evn_db_name]}" --file=$HOME/tmp/CreateViews.sql
-    #
-    # DEBUG "4. Mise à jour des vues et indexation des tables et vues"
-    # expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" \
-    #   --file Sql/UpdateIndex.sql > "$HOME/tmp/UpdateIndex.sql"
-    # env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
-    #   psql "$SQL_QUIET" --dbname="${config[evn_db_name]}" --file="$HOME/tmp/UpdateIndex.sql"
-    #
     # if [ -f "$HOME/${config[evn_sql_scripts]}/$SITE.sql" ]
     # then
     #   DEBUG "5. Execution du script local : $HOME/${config[evn_sql_scripts]}/$SITE.sql"

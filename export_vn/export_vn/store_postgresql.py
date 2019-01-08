@@ -243,22 +243,25 @@ class StorePostgresql:
 
         """
         # Insert simple sightings, each row contains id, update timestamp and full json body
-        logging.info('Storing %d observations or forms to database', len(items_dict['data']['sightings']))
         in_proj = Proj(init='epsg:4326')
         out_proj = Proj(init='epsg:2154')
         conn = self._db.connect()
+        nb_obs = 0
         for i in range(0, len(items_dict['data']['sightings'])):
             elem = items_dict['data']['sightings'][i]
             self._store_1_observation(controler, conn, elem, in_proj, out_proj)
+            nb_obs += 1
 
         if ('forms' in items_dict['data']):
             for f in range(0, len(items_dict['data']['forms'])):
                 for i in range(0, len(items_dict['data']['forms'][f]['sightings'])):
                     elem = items_dict['data']['forms'][f]['sightings'][i]
                     self._store_1_observation(controler, conn, elem, in_proj, out_proj)
+                    nb_obs += 1
 
         # Finished with DB
         conn.close()
+        logging.info('Stored %d observations or forms to database', nb_obs)
 
     # ---------------
     # External methods

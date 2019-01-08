@@ -58,8 +58,8 @@ def test_local_admin_units_api_pg_store(capsys):
 #  Observations
 # -------------
 def test_observations_api_pg_store(capsys):
-    """Store observations of taxo_group 18 to database."""
-    OBSERVATIONS.store(11)
+    """Store observations of a taxo_group to database."""
+    OBSERVATIONS.store(10, method='search')
 
 # --------
 #  Species
