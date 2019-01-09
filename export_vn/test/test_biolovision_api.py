@@ -17,16 +17,6 @@ from export_vn.biolovision_api import SpeciesAPI, TaxoGroupsAPI, TerritorialUnit
 from export_vn.biolovision_api import HTTPError, MaxChunksError
 from export_vn.evnconf import EvnConf
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    level = logging.INFO)
-
-
-def test_logging(cmdopt, capsys):
-    with capsys.disabled():
-        if cmdopt == 'DEBUG':
-            logging.getLogger().setLevel(logging.DEBUG)
-        logging.debug('Running with debug logging level')
-
 # Using faune-ardeche or faune-isere site, that needs to be created first
 SITE = 't07'
 #SITE = 't38'
@@ -44,7 +34,7 @@ TERRITORIAL_UNITS_API = TerritorialUnitsAPI(CFG)
 
 def test_version():
     """Check if version is defined."""
-    logging.info('package version: %s', ENTITIES_API.version)
+    logging.debug('package version: %s', ENTITIES_API.version)
 
 # --------------------------
 # Entities controler methods

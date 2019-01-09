@@ -8,18 +8,9 @@ import pytest
 
 from export_vn.regulator import PID
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    level = logging.INFO)
-
-def test_logging(cmdopt, capsys):
-    with capsys.disabled():
-        if cmdopt == 'DEBUG':
-            logging.getLogger().setLevel(logging.DEBUG)
-        logging.debug('Running with debug logging level')
-
 def test_version():
     """Check if version is defined."""
-    logging.info('package version: %s', PID().version)
+    logging.debug('package version: %s', PID().version)
 
 def test_zero():
     pid = PID(1, 1, 1, setpoint=0)

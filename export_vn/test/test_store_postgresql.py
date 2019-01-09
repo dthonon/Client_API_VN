@@ -16,15 +16,6 @@ from export_vn.download_vn import Species, TaxoGroup, TerritorialUnits
 from export_vn.store_postgresql import StorePostgresql
 from export_vn.evnconf import EvnConf
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    level = logging.INFO)
-
-def test_logging(cmdopt, capsys):
-    with capsys.disabled():
-        if cmdopt == 'DEBUG':
-            logging.getLogger().setLevel(logging.DEBUG)
-        logging.debug('Running with debug logging level')
-
 # Using faune-ardeche or faune-isere site, that needs to be created first
 SITE = 't07'
 #SITE = 't38'
@@ -42,7 +33,7 @@ TERRITORIAL_UNIT = TerritorialUnits(CFG, STORE_PG.store)
 
 def test_version():
     """Check if version is defined."""
-    logging.info('package version: %s', STORE_PG.version)
+    logging.debug('package version: %s', STORE_PG.version)
 
 # --------
 # Entities

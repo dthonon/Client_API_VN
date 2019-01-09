@@ -7,16 +7,6 @@ from pathlib import Path
 import logging
 from export_vn.evnconf import EvnConf
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    level = logging.INFO)
-
-
-def test_logging(cmdopt, capsys):
-    with capsys.disabled():
-        if cmdopt == 'DEBUG':
-            logging.getLogger().setLevel(logging.DEBUG)
-        logging.debug('Running with debug logging level')
-
 # Create test site configuration file
 SITE = 'tst'
 shutil.copy(str(Path.home()) + '/Client_API_VN/Export/evn_template.ini',
@@ -26,7 +16,7 @@ CFG = EvnConf(SITE)
 
 def test_version():
     """Check if version is defined."""
-    logging.info('package version: %s', CFG.version)
+    logging.debug('package version: %s', CFG.version)
 
 def test_site():
     """Check if configuration file exists."""
