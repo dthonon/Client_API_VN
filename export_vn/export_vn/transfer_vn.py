@@ -63,6 +63,7 @@ def main():
     territorial_unit = TerritorialUnits(cfg, store_pg.store)
 
     #species.store()
+    taxo_group.store()
 
 # Main wrapper
 if __name__ == "__main__":
