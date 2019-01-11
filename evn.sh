@@ -165,7 +165,7 @@ case "$CMD" in
     DEBUG "1. Base de données"
     expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file sql/init-db.sql > $HOME/tmp/init-db.sql
     env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
-    psql "$SQL_QUIET" --dbname="${config[evn_db_name]}" --file=$HOME/tmp/init-db.sql
+    psql "$SQL_QUIET" --dbname=postgres --file=$HOME/tmp/init-db.sql
     INFO "Création de la base de données : fin"
     ;;
 
