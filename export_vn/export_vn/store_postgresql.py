@@ -43,7 +43,7 @@ class StorePostgresql:
                     self._config.db_port + \
                     '/' + \
                     self._config.db_name
-        dbschema = self._config.db_schema
+        dbschema = self._config.db_schema_import
         self._metadata = MetaData(schema=dbschema)
         logging.info('Connecting to database %s', self._config.db_name)
 
@@ -157,7 +157,7 @@ class StorePostgresql:
         out_proj = Proj(init='epsg:2154')
         # Loop on data array to reproject
         for elem in items_dict['data']:
-            elem['coord_X_L93'], elem['coord_Y_L93'] = transform(in_proj, out_proj,
+            elem['coord_x_l93'], elem['coord_y_l93'] = transform(in_proj, out_proj,
                                                                  elem['coord_lon'],
                                                                  elem['coord_lat'])
         self._store_simple(controler, items_dict)
@@ -194,11 +194,11 @@ class StorePostgresql:
             update_date = elem['observers'][0]['insert_date']['@timestamp']
 
         # Add Lambert 93 coordinates
-        elem['observers'][0]['coord_X_L93'], elem['observers'][0]['coord_Y_L93'] = \
+        elem['observers'][0]['coord_x_l93'], elem['observers'][0]['coord_y_l93'] = \
             transform(in_proj, out_proj,
                       elem['observers'][0]['coord_lon'],
                       elem['observers'][0]['coord_lat'])
-        elem['place']['coord_X_L93'], elem['place']['coord_Y_L93'] = \
+        elem['place']['coord_x_l93'], elem['place']['coord_y_l93'] = \
             transform(in_proj, out_proj,
                       elem['place']['coord_lon'],
                       elem['place']['coord_lat'])

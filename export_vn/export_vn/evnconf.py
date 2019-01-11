@@ -32,7 +32,8 @@ class EvnConf:
         self._db_host = self._config['database']['evn_db_host']
         self._db_port = self._config['database']['evn_db_port']
         self._db_name = self._config['database']['evn_db_name']
-        self._db_schema = self._config['database']['evn_db_schema']
+        self._db_schema_import = self._config['database']['evn_db_schema_import']
+        self._db_schema_vn = self._config['database']['evn_db_schema_vn']
         self._db_group = self._config['database']['evn_db_group']
         self._db_user = self._config['database']['evn_db_user']
         self._db_pw = self._config['database']['evn_db_pw']
@@ -97,9 +98,14 @@ class EvnConf:
         return self._db_name
 
     @property
-    def db_schema(self):
-        """Return database schema where data is stored."""
-        return self._db_schema
+    def db_schema_import(self):
+        """Return database schema where imported JSON data is stored."""
+        return self._db_schema_import
+
+    @property
+    def db_schema_vn(self):
+        """Return database schema where column data is stored."""
+        return self._db_schema_vn
 
     @property
     def db_group(self):

@@ -1,6 +1,6 @@
 -- Initialize Postgresql database, template for pyexpander3
 -- - Delete and create database and roles
--- - Create tables
+-- - Create JSON tables
 
 -- Delete existing DB and roles
 DROP DATABASE IF EXISTS $(evn_db_name);
@@ -20,12 +20,15 @@ GRANT ALL ON DATABASE $(evn_db_name) TO $(evn_db_group);
 
 \c $(evn_db_name)
 
--- Schema : $(evn_db_schema)
-CREATE SCHEMA $(evn_db_schema)
+-- Schema : $(evn_db_schema_import)
+CREATE SCHEMA $(evn_db_schema_import)
   AUTHORIZATION $(evn_db_group);
 
 -- Add extensions
 CREATE EXTENSION if not exists adminpack; -- For PgAdmin
+CREATE EXTENSION if not exists "uuid-ossp"; -- For uuid_generate_v4
+CREATE EXTENSION if not exists postgis;
+CREATE EXTENSION if not exists postgis_topology;
 
 -- Enable privileges
 ALTER DEFAULT PRIVILEGES
@@ -35,12 +38,12 @@ ALTER DEFAULT PRIVILEGES
     GRANT INSERT, SELECT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON TABLES
     TO $(evn_db_group);
 
-SET search_path TO $(evn_db_schema),public;
+SET search_path TO $(evn_db_schema_import),public;
 
 -- Table download_log, updated at each download or update from site
 DROP TABLE IF EXISTS download_log CASCADE;
 -- Create table, indexes and access rights
-CREATE TABLE $(evn_db_schema).download_log (
+CREATE TABLE download_log (
     id SERIAL PRIMARY KEY,
     site character varying(100),
     controler character varying(100),
@@ -50,11 +53,11 @@ CREATE TABLE $(evn_db_schema).download_log (
     comment character varying(1000)
 );
 CREATE INDEX download_log_idx_site
-    ON $(evn_db_schema).download_log (site);
+    ON download_log (site);
 CREATE INDEX download_log_idx_controler
-    ON $(evn_db_schema).download_log (controler);
+    ON download_log (controler);
 CREATE INDEX download_log_idx_download_ts
-    ON $(evn_db_schema).download_log (download_ts);
+    ON download_log (download_ts);
 
 INSERT INTO download_log (download_ts) VALUES (current_timestamp);
 

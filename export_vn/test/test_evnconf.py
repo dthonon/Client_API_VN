@@ -63,9 +63,13 @@ def test_db_name():
     """ Test property. """
     assert CFG.db_name == '*faune_xxx*'
 
-def test_db_schema():
+def test_db_schema_import():
     """ Test property. """
-    assert CFG.db_schema == 'import'
+    assert CFG.db_schema_import == 'import'
+
+def test_db_schema_vn():
+    """ Test property. """
+    assert CFG.db_schema_vn == 'src_vn'
 
 def test_db_group():
     """ Test property. """

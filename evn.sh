@@ -35,7 +35,7 @@ cd "$(dirname "$0")";
 PATH="/usr/local/bin:/usr/bin:/bin"
 
 # Analyze script options
-OPTS=`getopt -o v --long all,download,edit,help,init,logfile:,site:,store,test,update,verbose -- "$@"`
+OPTS=`getopt -o v --long all,download,edit,help,init,logfile:,site:,create,test,update,verbose -- "$@"`
 if [ "$?" != 0 ] ; then echo "Option non reconnue" >&2 ; exit 1 ; fi
 # echo "$OPTS"
 eval set -- "$OPTS"
@@ -52,7 +52,7 @@ while true; do
         --init ) CMD="init"; shift ;;
         --logfile ) EVN_LOG="$2"; shift 2 ;;
         --site ) SITE="$2"; shift 2 ;;
-        --store ) CMD="store"; shift ;;
+        --create ) CMD="create"; shift ;;
         --test ) TEST="--test"; shift ;;
         --update ) CMD="update"; shift ;;
         -v | --verbose ) VERBOSE=true; shift ;;
@@ -159,21 +159,40 @@ case "$CMD" in
     INFO "Mail admin : ${config[evn_admin_mail]}"
     ;;
 
-    init)
-    # Delete and create database
-    INFO "Création de la base de données : début"
-    DEBUG "1. Base de données"
-    expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file sql/init-db.sql > $HOME/tmp/init-db.sql
-    env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
-    psql "$SQL_QUIET" --dbname=postgres --file=$HOME/tmp/init-db.sql
-    INFO "Création de la base de données : fin"
-    ;;
-
     edit)
     # Edit configuration file
     INFO "Edition du fichier de configuration"
     editor "$evn_conf"
     INFO "Il faut aussi créer le compte $(whoami) dans postres, avec les droits SUPERUSER, "
+    ;;
+
+    init)
+    # Delete and create database
+    INFO "Création de la base de données : début"
+    DEBUG "1. Base de données"
+    expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema_import=\"${config[evn_db_schema_import]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file sql/init-db.sql > $HOME/tmp/init-db.sql
+    env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
+    psql "$SQL_QUIET" --dbname=postgres --file=$HOME/tmp/init-db.sql
+    INFO "Création de la base de données : fin"
+    ;;
+
+    create)
+    # Create vn schema, tables using columns populated from JSON, via trigger
+    INFO "Création du schéma ${config[evn_db_schema_vn]} et des tables avec colonnes : début"
+    DEBUG "1. Création des tables"
+    expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema_import=\"${config[evn_db_schema_import]}\";evn_db_schema_vn=\"${config[evn_db_schema_vn]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file sql/create-vn-tables.sql > $HOME/tmp/create-vn-tables.sql
+    env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
+    psql "$SQL_QUIET" --dbname="${config[evn_db_name]}" --file=$HOME/tmp/create-vn-tables.sql
+
+    # if [ -f "$HOME/${config[evn_sql_scripts]}/$SITE.sql" ]
+    # then
+    #   DEBUG "5. Execution du script local : $HOME/${config[evn_sql_scripts]}/$SITE.sql"
+    #   expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema_import=\"${config[evn_db_schema_import]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\";evn_external1_name=\"${config[evn_external1_name]}\";evn_external1_pw=\"${config[evn_external1_pw]}\"" \
+    #     --file "$HOME/${config[evn_sql_scripts]}/$SITE.sql" > "$HOME/tmp/$SITE.sql"
+    #   env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
+    #     psql "$SQL_QUIET" --dbname="${config[evn_db_name]}" --file="$HOME/tmp/$SITE.sql"
+    # fi
+    INFO "Création du schéma : fin"
     ;;
 
     download)
@@ -182,30 +201,11 @@ case "$CMD" in
     DEBUG "Vers le répertoire $HOME/${config[evn_file_store]}/$SITE/"
     ! rm -f "$HOME/${config[evn_file_store]}/$SVG/"*.json.gz
     ! mv -f "$HOME/${config[evn_file_store]}/$SITE/"*.json.gz "$HOME/${config[evn_file_store]}/$SVG/"
-    expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/CreateLog.sql > $HOME/tmp/CreateLog.sql
+    expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema_import=\"${config[evn_db_schema_import]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/CreateLog.sql > $HOME/tmp/CreateLog.sql
     env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
     psql "$SQL_QUIET" --dbname="${config[evn_db_name]}" --file=$HOME/tmp/CreateLog.sql
     python3 export_vn/DownloadFromVN.py "$PYTHON_VERBOSE" "$TEST" --site="$SITE"
     INFO "Téléchargement depuis l'API du site ${config[evn_site]} : fin"
-    ;;
-
-    store)
-    # Store json files to Postgresql database
-    INFO "Chargement des données JSON dans Postgresql ${config[evn_db_name]} : début"
-    DEBUG "1. Création des tables"
-    expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/CreateTables.sql > $HOME/tmp/CreateTables.sql
-    env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
-    psql "$SQL_QUIET" --dbname="${config[evn_db_name]}" --file=$HOME/tmp/CreateTables.sql
-
-    # if [ -f "$HOME/${config[evn_sql_scripts]}/$SITE.sql" ]
-    # then
-    #   DEBUG "5. Execution du script local : $HOME/${config[evn_sql_scripts]}/$SITE.sql"
-    #   expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\";evn_external1_name=\"${config[evn_external1_name]}\";evn_external1_pw=\"${config[evn_external1_pw]}\"" \
-    #     --file "$HOME/${config[evn_sql_scripts]}/$SITE.sql" > "$HOME/tmp/$SITE.sql"
-    #   env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
-    #     psql "$SQL_QUIET" --dbname="${config[evn_db_name]}" --file="$HOME/tmp/$SITE.sql"
-    # fi
-    INFO "Chargement des données JSON dans Postgresql ${config[evn_db_name]} : fin"
     ;;
 
     all)
@@ -221,7 +221,7 @@ case "$CMD" in
     DEBUG "Fin transfert depuis le site : ${config[evn_site]}" | tee -a "$HOME/tmp/mail_fin.txt"
     DEBUG "Fin transfert depuis le site : ${config[evn_site]}" &>> "$EVN_LOG"
     links -dump "${config[evn_site]}index.php?m_id=23" | fgrep "Les part" | sed 's/   Les partenaires/Total des observations du site :/' >> $HOME/tmp/mail_fin.txt
-    expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema=\"${config[evn_db_schema]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/CountRows.sql > $HOME/tmp/CountRows.sql
+    expander3.py --eval "evn_db_name=\"${config[evn_db_name]}\";evn_db_schema_import=\"${config[evn_db_schema_import]}\";evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\"" --file Sql/CountRows.sql > $HOME/tmp/CountRows.sql
     env PGOPTIONS="-c client-min-messages=$CLIENT_MIN_MESSAGE" \
     psql "$SQL_QUIET" --dbname="${config[evn_db_name]}" --file="$HOME/tmp/CountRows.sql" > "$HOME/tmp/counted_rows.log"
     fgrep "nb_" "$HOME/tmp/counted_rows.log" >> "$HOME/tmp/mail_fin.txt"
