@@ -25,10 +25,11 @@ CREATE SCHEMA $(evn_db_schema_import)
   AUTHORIZATION $(evn_db_group);
 
 -- Add extensions
-CREATE EXTENSION if not exists adminpack; -- For PgAdmin
-CREATE EXTENSION if not exists "uuid-ossp"; -- For uuid_generate_v4
-CREATE EXTENSION if not exists postgis;
-CREATE EXTENSION if not exists postgis_topology;
+CREATE EXTENSION IF NOT EXISTS pgcrypto; -- To generate pseudo ids
+CREATE EXTENSION IF NOT EXISTS adminpack; -- For PgAdmin
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp"; -- For uuid_generate_v4
+CREATE EXTENSION IF NOT EXISTS postgis;
+CREATE EXTENSION IF NOT EXISTS postgis_topology;
 
 -- Enable privileges
 ALTER DEFAULT PRIVILEGES
