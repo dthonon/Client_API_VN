@@ -134,7 +134,53 @@ CREATE OR REPLACE FUNCTION update_vn_sights() RETURNS TRIGGER AS \$\$
             update_date     = to_timestamp((((NEW.item->>0)::json -> 'observers') -> 0) #>> '{update_date,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS')
         WHERE id_sighting = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
-            RETURN NULL;
+        /* Inserting data on src_vn.observations when raw data is inserted */
+        INSERT INTO src_vn.observations (site, id_sighting, pseudo_id_sighting, id_universal, id_species, french_name, latin_name,
+                                         date, date_year, timing, id_place, place, municipality, county, country, insee,
+                                         coord_lat, coord_lon, coord_x_l93, coord_y_l93, precision, atlas_grid_name, estimation_code,
+                                         count, atlas_code, altitude, project_code, hidden, admin_hidden, name, anonymous, entity, details,
+                                         comment, hidden_comment, mortality, death_cause2, insert_date, update_date)
+        VALUES (
+            NEW.site,
+            NEW.id,
+            encode(hmac(NEW.id::text, '8Zz9C*%I*gY&eM*Ei', 'sha1'), 'hex'),
+            (((NEW.item->>0)::json -> 'observers') -> 0) ->> 'id_universal',
+            CAST((NEW.item->>0)::json #>> '{species,@id}' AS INTEGER),
+            (NEW.item->>0)::json #>> '{species,name}',
+            (NEW.item->>0)::json #>> '{species,latin_name}',
+            to_date((NEW.item->>0)::json #>> '{date,@ISO8601}', 'YYYY-MM-DD'),
+            CAST(extract(year from to_date((NEW.item->>0)::json #>> '{date,@ISO8601}', 'YYYY-MM-DD')) AS INTEGER),
+            -- Missing time_start & time_stop
+            to_timestamp((((NEW.item->>0)::json -> 'observers') -> 0) #>> '{timing,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS'),
+            CAST((NEW.item->>0)::json #>> '{place,@id}' AS INTEGER),
+            (NEW.item->>0)::json #>> '{place,name}',
+            (NEW.item->>0)::json #>> '{place,municipality}',
+            (NEW.item->>0)::json #>> '{place,county}',
+            (NEW.item->>0)::json #>> '{place,country}',
+            (NEW.item->>0)::json #>> '{place,insee}',
+            CAST((((NEW.item->>0)::json -> 'observers') -> 0) ->> 'coord_lat' AS FLOAT),
+            CAST((((NEW.item->>0)::json -> 'observers') -> 0) ->> 'coord_lon' AS FLOAT),
+            CAST((((NEW.item->>0)::json -> 'observers') -> 0) ->> 'coord_x_l93' AS FLOAT),
+            CAST((((NEW.item->>0)::json -> 'observers') -> 0) ->> 'coord_y_l93' AS FLOAT),
+            (((NEW.item->>0)::json -> 'observers') -> 0) ->> 'precision',
+            (((NEW.item->>0)::json -> 'observers') -> 0) ->> 'atlas_grid_name',
+            (((NEW.item->>0)::json -> 'observers') -> 0) ->> 'estimation_code',
+            CAST((((NEW.item->>0)::json -> 'observers') -> 0) ->> 'count' AS INTEGER),
+            CAST((((NEW.item->>0)::json -> 'observers') -> 0) #>> '{atlas_code,#text}' AS INTEGER),
+            CAST((((NEW.item->>0)::json -> 'observers') -> 0) ->> 'altitude' AS INTEGER),
+            (((NEW.item->>0)::json -> 'observers') -> 0) ->> 'project_code',
+            (((NEW.item->>0)::json -> 'observers') -> 0) ->> 'hidden',
+            (((NEW.item->>0)::json -> 'observers') -> 0) ->> 'admin_hidden',
+            (((NEW.item->>0)::json -> 'observers') -> 0) ->> 'name',
+            (((NEW.item->>0)::json -> 'observers') -> 0) ->> 'anonymous',
+            (((NEW.item->>0)::json -> 'observers') -> 0) ->> 'entity',
+            (((NEW.item->>0)::json -> 'observers') -> 0) ->> 'details',
+            (((NEW.item->>0)::json -> 'observers') -> 0) ->> 'comment',
+            (((NEW.item->>0)::json -> 'observers') -> 0) ->> 'hidden_comment',
+            ((((NEW.item->>0)::json -> 'observers' :: text) -> 0) #>> '{extended_info,mortality}' :: text []) is not null,
+            (((NEW.item->>0)::json -> 'observers') -> 0) #>> '{extended_info, mortality, death_cause2}',
+            to_timestamp((((NEW.item->>0)::json -> 'observers') -> 0) #>> '{insert_date,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS'),
+            to_timestamp((((NEW.item->>0)::json -> 'observers') -> 0) #>> '{update_date,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS'));
         END IF;
         RETURN NEW;
 
@@ -143,7 +189,7 @@ CREATE OR REPLACE FUNCTION update_vn_sights() RETURNS TRIGGER AS \$\$
         INSERT INTO src_vn.observations (site, id_sighting, pseudo_id_sighting, id_universal, id_species, french_name, latin_name,
                                          date, date_year, timing, id_place, place, municipality, county, country, insee,
                                          coord_lat, coord_lon, coord_x_l93, coord_y_l93, precision, atlas_grid_name, estimation_code,
-                                         count, atlas_code, altitude, project_code, hidden, admin_hidden, name, anonymous, entity, details, 
+                                         count, atlas_code, altitude, project_code, hidden, admin_hidden, name, anonymous, entity, details,
                                          comment, hidden_comment, mortality, death_cause2, insert_date, update_date)
         VALUES (
             NEW.site,
@@ -197,3 +243,6 @@ DROP TRIGGER IF EXISTS observation_trigger ON $(evn_db_schema_import).observatio
 CREATE TRIGGER observation_trigger
 AFTER INSERT OR UPDATE OR DELETE ON $(evn_db_schema_import).observations_json
     FOR EACH ROW EXECUTE FUNCTION update_vn_sights();
+
+-- Dummy update of all rows to trigger new FUNCTION
+UPDATE $(evn_db_schema_import).observations_json SET site=site;
