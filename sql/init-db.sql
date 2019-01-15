@@ -41,6 +41,9 @@ ALTER DEFAULT PRIVILEGES
 
 SET search_path TO $(evn_db_schema_import),public;
 
+------------------
+-- Internal tables
+------------------
 -- Table download_log, updated at each download or update from site
 DROP TABLE IF EXISTS download_log CASCADE;
 -- Create table, indexes and access rights
@@ -62,7 +65,9 @@ CREATE INDEX download_log_idx_download_ts
 
 INSERT INTO download_log (download_ts) VALUES (current_timestamp);
 
--- Entities table in json format
+-----------
+-- Entities
+-----------
 DROP TABLE IF EXISTS entities_json CASCADE;
 CREATE TABLE entities_json (
     id integer,
@@ -71,7 +76,9 @@ CREATE TABLE entities_json (
     PRIMARY KEY (id, site)
 );
 
--- Forms table in json format
+--------
+-- Forms
+--------
 DROP TABLE IF EXISTS forms_json CASCADE;
 CREATE TABLE forms_json (
     id integer,
@@ -80,7 +87,20 @@ CREATE TABLE forms_json (
     PRIMARY KEY (id, site)
 );
 
--- Observations table in json format
+--------------------
+-- local_admin_units
+--------------------
+DROP TABLE IF EXISTS local_admin_units_json CASCADE;
+CREATE TABLE local_admin_units_json (
+    id integer,
+    site character varying(100),
+    item jsonb,   -- Complete json as downloaded
+    PRIMARY KEY (id, site)
+);
+
+---------------
+-- Observations
+---------------
 DROP TABLE IF EXISTS observations_json CASCADE;
 CREATE TABLE observations_json (
     id integer,
@@ -90,34 +110,9 @@ CREATE TABLE observations_json (
     PRIMARY KEY (id, site)
 );
 
--- Species table in json format
-DROP TABLE IF EXISTS species_json CASCADE;
-CREATE TABLE species_json (
-    id integer,
-    site character varying(100),
-    item jsonb,   -- Complete json as downloaded
-    PRIMARY KEY (id, site)
-);
-
--- Taxo_groups table in json format
-DROP TABLE IF EXISTS taxo_groups_json CASCADE;
-CREATE TABLE taxo_groups_json (
-    id integer,
-    site character varying(100),
-    item jsonb,   -- Complete json as downloaded
-    PRIMARY KEY (id, site)
-);
-
--- local_admin_units table in json format
-DROP TABLE IF EXISTS local_admin_units_json CASCADE;
-CREATE TABLE local_admin_units_json (
-    id integer,
-    site character varying(100),
-    item jsonb,   -- Complete json as downloaded
-    PRIMARY KEY (id, site)
-);
-
--- Places table in json format
+---------
+-- Places
+---------
 DROP TABLE IF EXISTS places_json CASCADE;
 CREATE TABLE places_json (
     id integer,
@@ -126,7 +121,31 @@ CREATE TABLE places_json (
     PRIMARY KEY (id, site)
 );
 
--- Territorial_units table in json format
+----------
+-- Species
+----------
+DROP TABLE IF EXISTS species_json CASCADE;
+CREATE TABLE species_json (
+    id integer,
+    site character varying(100),
+    item jsonb,   -- Complete json as downloaded
+    PRIMARY KEY (id, site)
+);
+
+--------------
+-- Taxo_groups
+--------------
+DROP TABLE IF EXISTS taxo_groups_json CASCADE;
+CREATE TABLE taxo_groups_json (
+    id integer,
+    site character varying(100),
+    item jsonb,   -- Complete json as downloaded
+    PRIMARY KEY (id, site)
+);
+
+--------------------
+-- Territorial_units
+--------------------
 DROP TABLE IF EXISTS territorial_units_json CASCADE;
 CREATE TABLE territorial_units_json (
     id integer,
