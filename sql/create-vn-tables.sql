@@ -152,7 +152,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             details         = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'details',
             comment         = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'comment',
             hidden_comment  = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'hidden_comment',
-            mortality       = (((CAST(NEW.item->>0 AS JSON) -> 'observers'::text) -> 0) #>> '{extended_info,mortality}'::text []) is not null,
+            mortality       = (((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info,mortality}'::text []) is not null,
             death_cause2    = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info, mortality, death_cause2}',
             insert_date     = to_timestamp(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{insert_date,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS'),
             update_date     = to_timestamp(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{update_date,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS')
@@ -202,7 +202,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'details',
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'comment',
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'hidden_comment',
-                (((CAST(NEW.item->>0 AS JSON) -> 'observers' :: text) -> 0) #>> '{extended_info,mortality}' :: text []) is not null,
+                (((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info,mortality}' :: text []) is not null,
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info, mortality, death_cause2}',
                 to_timestamp(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{insert_date,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS'),
                 to_timestamp(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{update_date,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS'));
@@ -253,7 +253,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'details',
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'comment',
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'hidden_comment',
-            (((CAST(NEW.item->>0 AS JSON) -> 'observers' :: text) -> 0) #>> '{extended_info,mortality}' :: text []) is not null,
+            (((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info,mortality}' :: text []) is not null,
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info, mortality, death_cause2}',
             to_timestamp(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{insert_date,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS'),
             to_timestamp(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{update_date,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS'));
@@ -278,7 +278,7 @@ UPDATE $(evn_db_schema_import).observations_json SET site=site;
 ----------
 -- Species
 ----------
-CREATE TABLE $(evn_db_schema_vn).species (
+CREATE TABLE $(evn_db_schema_vn).species(
     uuid                UUID DEFAULT uuid_generate_v4(),
     site                VARCHAR(50),
     id                  INTEGER,
@@ -372,6 +372,77 @@ UPDATE $(evn_db_schema_import).species_json SET site=site;
 --------------
 -- Taxo_groups
 --------------
+CREATE TABLE $(evn_db_schema_vn).taxo_groups(
+    uuid                UUID DEFAULT uuid_generate_v4(),
+    site                VARCHAR(50),
+    id                  INTEGER,
+    french_name         VARCHAR(150),
+    latin_name          VARCHAR(150),
+    name_constant       VARCHAR(150),
+    access_mode         VARCHAR(50),
+    PRIMARY KEY (id, site)
+);
+
+CREATE OR REPLACE FUNCTION update_taxo_groups()) RETURNS TRIGGER AS \$\$
+    BEGIN
+    IF (TG_OP = 'DELETE') THEN
+        /* Deleting data when JSON data is deleted */
+        DELETE FROM $(evn_db_schema_vn).taxo_groups
+            WHERE id = OLD.id AND site = OLD.site;
+        IF NOT FOUND THEN
+            RETURN NULL;
+        END IF;
+        RETURN OLD;
+
+    ELSIF (TG_OP = 'UPDATE') THEN
+        /* Updating or inserting data when JSON data is updated */
+        UPDATE $(evn_db_schema_vn).taxo_groups SET
+            french_name   = CAST(NEW.item->>0 AS JSON)->>'name',
+            latin_name    = CAST(NEW.item->>0 AS JSON)->>'latin_name',
+            latin_name    = CAST(NEW.item->>0 AS JSON)->>'latin_name',
+            name_constant = CAST(NEW.item->>0 AS JSON)->>'name_constant',
+            access_mode   = CAST(NEW.item->>0 AS JSON)->>'access_mode'
+        WHERE id = OLD.id AND site = OLD.site ;
+        IF NOT FOUND THEN
+            /* Inserting data in new row, usually after table re-creation */
+            INSERT INTO $(evn_db_schema_vn).taxo_groups(site, id, french_name, latin_name, name_constant,
+                                                        access_mode)
+            VALUES (
+                NEW.site,
+                NEW.id,
+                CAST(NEW.item->>0 AS JSON)->>'french_name',
+                CAST(NEW.item->>0 AS JSON)->>'latin_name',
+                CAST(NEW.item->>0 AS JSON)->>'name_constant',
+                CAST(NEW.item->>0 AS JSON)->>'access_mode'
+            );
+            END IF;
+        RETURN NEW;
+
+    ELSIF (TG_OP = 'INSERT') THEN
+        /* Inserting data on src_vn.observations when raw data is inserted */
+        INSERT INTO $(evn_db_schema_vn).taxo_groups(site, id, french_name, latin_name, name_constant,
+                                                    access_mode)
+        VALUES (
+            NEW.site,
+            NEW.id,
+            CAST(NEW.item->>0 AS JSON)->>'french_name',
+            CAST(NEW.item->>0 AS JSON)->>'latin_name',
+            CAST(NEW.item->>0 AS JSON)->>'name_constant',
+            CAST(NEW.item->>0 AS JSON)->>'access_mode'
+        );
+        RETURN NEW;
+    END IF;
+END;
+\$\$
+LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS taxo_groups_trigger ON $(evn_db_schema_import).taxo_groups_json;
+CREATE TRIGGER taxo_groups_trigger
+AFTER INSERT OR UPDATE OR DELETE ON $(evn_db_schema_import).taxo_groups_json
+    FOR EACH ROW EXECUTE FUNCTION $(evn_db_schema_vn).update_taxo_groups();
+
+-- Dummy update of all rows to trigger new FUNCTION
+UPDATE $(evn_db_schema_import).taxo_groups_json SET site=site;
 
 --------------------
 -- Territorial_units
