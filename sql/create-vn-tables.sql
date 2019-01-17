@@ -33,6 +33,81 @@ LANGUAGE plpgsql;
 -----------
 -- Entities
 -----------
+CREATE TABLE $(evn_db_schema_vn).entities(
+    uuid                UUID DEFAULT uuid_generate_v4(),
+    site                VARCHAR(50),
+    id                  INTEGER,
+    short_name          VARCHAR(500),
+    full_name_french    VARCHAR(500),
+    description_french  VARCHAR(100000),
+    url                 VARCHAR(1000),
+    address             VARCHAR(1000),
+    PRIMARY KEY (id, site)
+);
+
+CREATE OR REPLACE FUNCTION update_entities() RETURNS TRIGGER AS \$\$
+    BEGIN
+    IF (TG_OP = 'DELETE') THEN
+        -- Deleting data when JSON data is deleted
+        DELETE FROM $(evn_db_schema_vn).entities
+            WHERE id = OLD.id AND site = OLD.site;
+        IF NOT FOUND THEN
+            RETURN NULL;
+        END IF;
+        RETURN OLD;
+
+    ELSIF (TG_OP = 'UPDATE') THEN
+        -- Updating or inserting data when JSON data is updated
+        UPDATE $(evn_db_schema_vn).entities SET
+            short_name         = CAST(NEW.item->>0 AS JSON)->>'short_name',
+            full_name_french   = CAST(NEW.item->>0 AS JSON)->>'full_name_french',
+            description_french = CAST(NEW.item->>0 AS JSON)->>'description_french',
+            url                = CAST(NEW.item->>0 AS JSON)->>'url',
+            address            = CAST(NEW.item->>0 AS JSON)->>'address'
+        WHERE id = OLD.id AND site = OLD.site ;
+        IF NOT FOUND THEN
+            -- Inserting data in new row, usually after table re-creation
+            INSERT INTO $(evn_db_schema_vn).entities(site, id, short_name, full_name_french, description_french,
+                                                     url, address)
+            VALUES (
+                NEW.site,
+                NEW.id,
+                CAST(NEW.item->>0 AS JSON)->>'short_name',
+                CAST(NEW.item->>0 AS JSON)->>'full_name_french',
+                CAST(NEW.item->>0 AS JSON)->>'description_french',
+                CAST(NEW.item->>0 AS JSON)->>'url',
+                CAST(NEW.item->>0 AS JSON)->>'address'
+            );
+            END IF;
+        RETURN NEW;
+
+    ELSIF (TG_OP = 'INSERT') THEN
+        -- Inserting data on src_vn.observations when raw data is inserted
+        INSERT INTO $(evn_db_schema_vn).entities(site, id, short_name, full_name_french, description_french,
+                                                 url, address)
+        VALUES (
+            NEW.site,
+            NEW.id,
+            CAST(NEW.item->>0 AS JSON)->>'short_name',
+            CAST(NEW.item->>0 AS JSON)->>'full_name_french',
+            CAST(NEW.item->>0 AS JSON)->>'description_french',
+            CAST(NEW.item->>0 AS JSON)->>'url',
+            CAST(NEW.item->>0 AS JSON)->>'address'
+        );
+        RETURN NEW;
+    END IF;
+END;
+\$\$
+LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS entities_trigger ON $(evn_db_schema_import).entities_json;
+CREATE TRIGGER entities_trigger
+AFTER INSERT OR UPDATE OR DELETE ON $(evn_db_schema_import).entities_json
+    FOR EACH ROW EXECUTE FUNCTION $(evn_db_schema_vn).update_entities();
+
+-- Dummy update of all rows to trigger new FUNCTION
+UPDATE $(evn_db_schema_import).entities_json SET site=site;
+
 
 --------
 -- Forms
