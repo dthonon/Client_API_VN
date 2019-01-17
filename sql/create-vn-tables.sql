@@ -41,6 +41,97 @@ LANGUAGE plpgsql;
 --------------------
 -- local_admin_units
 --------------------
+CREATE TABLE $(evn_db_schema_vn).local_admin_units(
+    uuid                UUID DEFAULT uuid_generate_v4(),
+    site                VARCHAR(50),
+    id                  INTEGER,
+    id_canton           INTEGER,
+    name                VARCHAR(150),
+    insee               VARCHAR(50),
+    coord_lat           FLOAT,
+    coord_lon           FLOAT,
+    coord_x_l93         FLOAT,
+    coord_y_l93         FLOAT,
+    PRIMARY KEY (id, site)
+);
+-- Add geometry column
+\o /dev/null
+SELECT AddGeometryColumn('local_admin_units', 'geom', 2154, 'POINT', 2);
+\o
+
+-- Add trigger for postgis geometry update
+DROP TRIGGER IF EXISTS trg_geom ON $(evn_db_schema_vn).local_admin_units;
+CREATE TRIGGER trg_geom BEFORE INSERT or UPDATE
+    ON $(evn_db_schema_vn).local_admin_units FOR EACH ROW
+    EXECUTE PROCEDURE update_geom_triggerfn();
+
+CREATE OR REPLACE FUNCTION update_local_admin_units() RETURNS TRIGGER AS \$\$
+    BEGIN
+    IF (TG_OP = 'DELETE') THEN
+        -- Deleting data when JSON data is deleted
+        DELETE FROM $(evn_db_schema_vn).local_admin_units
+            WHERE id = OLD.id AND site = OLD.site;
+        IF NOT FOUND THEN
+            RETURN NULL;
+        END IF;
+        RETURN OLD;
+
+    ELSIF (TG_OP = 'UPDATE') THEN
+        -- Updating or inserting data when JSON data is updated
+        UPDATE $(evn_db_schema_vn).local_admin_units SET
+            id_canton    = CAST(CAST(NEW.item->>0 AS JSON)->>'id_canton' AS INTEGER),
+            name         = CAST(NEW.item->>0 AS JSON)->>'name',
+            insee        = CAST(NEW.item->>0 AS JSON)->>'insee',
+            coord_lat    = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lat' AS FLOAT),
+            coord_lon    = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lon' AS FLOAT),
+            coord_x_l93  = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_l93' AS FLOAT),
+            coord_y_l93  = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_l93' AS FLOAT)
+        WHERE id = OLD.id AND site = OLD.site ;
+        IF NOT FOUND THEN
+            -- Inserting data in new row, usually after table re-creation
+            INSERT INTO $(evn_db_schema_vn).local_admin_units(site, id, id_canton, name, insee,
+                                                              coord_lat, coord_lon, coord_x_l93, coord_y_l93)
+            VALUES (
+                NEW.site,
+                NEW.id,
+                CAST(CAST(NEW.item->>0 AS JSON)->>'id_canton' AS INTEGER),
+                CAST(NEW.item->>0 AS JSON)->>'name',
+                CAST(NEW.item->>0 AS JSON)->>'insee',
+                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lat' AS FLOAT),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lon' AS FLOAT),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_l93' AS FLOAT),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_l93' AS FLOAT)
+            );
+            END IF;
+        RETURN NEW;
+
+    ELSIF (TG_OP = 'INSERT') THEN
+        -- Inserting data on src_vn.observations when raw data is inserted
+        INSERT INTO $(evn_db_schema_vn).local_admin_units(site, id, id_country, name, short_name)
+        VALUES (
+            NEW.site,
+            NEW.id,
+            CAST(CAST(NEW.item->>0 AS JSON)->>'id_canton' AS INTEGER),
+            CAST(NEW.item->>0 AS JSON)->>'name',
+            CAST(NEW.item->>0 AS JSON)->>'insee',
+            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lat' AS FLOAT),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lon' AS FLOAT),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_l93' AS FLOAT),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_l93' AS FLOAT)
+        );
+        RETURN NEW;
+    END IF;
+END;
+\$\$
+LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS local_admin_units_trigger ON $(evn_db_schema_import).local_admin_units_json;
+CREATE TRIGGER local_admin_units_trigger
+AFTER INSERT OR UPDATE OR DELETE ON $(evn_db_schema_import).local_admin_units_json
+    FOR EACH ROW EXECUTE FUNCTION $(evn_db_schema_vn).update_local_admin_units();
+
+-- Dummy update of all rows to trigger new FUNCTION
+UPDATE $(evn_db_schema_import).local_admin_units_json SET site=site;
 
 ---------------
 -- Observations
@@ -65,8 +156,8 @@ CREATE TABLE $(evn_db_schema_vn).observations (
     insee               CHAR(5),
     coord_lat           FLOAT,
     coord_lon           FLOAT,
-    coord_x_l93         INTEGER,
-    coord_y_l93         INTEGER,
+    coord_x_l93         FLOAT,
+    coord_y_l93         FLOAT,
     precision           VARCHAR(100),
     atlas_grid_name     VARCHAR(50),
     estimation_code     VARCHAR(100),
@@ -109,7 +200,7 @@ CREATE TRIGGER trg_geom BEFORE INSERT or UPDATE
 CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
     BEGIN
     IF (TG_OP = 'DELETE') THEN
-        /* Deleting data on src_vn.observations when raw data is deleted */
+        -- Deleting data on src_vn.observations when raw data is deleted
         DELETE FROM $(evn_db_schema_vn).observations
             WHERE id_sighting = OLD.id_sighting AND site=OLD.site;
         IF NOT FOUND THEN
@@ -118,7 +209,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
         RETURN OLD;
 
     ELSIF (TG_OP = 'UPDATE') THEN
-        /* Updating data on src_vn.observations when raw data is updated */
+        -- Updating data on src_vn.observations when raw data is updated
         UPDATE $(evn_db_schema_vn).observations SET
             id_universal    = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'id_universal',
             id_species      = CAST(CAST(NEW.item->>0 AS JSON) #>> '{species,@id}' AS INTEGER),
@@ -159,7 +250,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
         WHERE id_sighting = OLD.id AND site = OLD.site ;
 
         IF NOT FOUND THEN
-            /* Inserting data on src_vn.observations when raw data is inserted */
+            -- Inserting data on src_vn.observations when raw data is inserted
             INSERT INTO $(evn_db_schema_vn).observations (site, id_sighting, pseudo_id_sighting, id_universal, id_species, french_name, latin_name,
                                              date, date_year, timing, id_place, place, municipality, county, country, insee,
                                              coord_lat, coord_lon, coord_x_l93, coord_y_l93, precision, atlas_grid_name, estimation_code,
@@ -210,7 +301,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
         RETURN NEW;
 
     ELSIF (TG_OP = 'INSERT') THEN
-        /* Inserting data on src_vn.observations when raw data is inserted */
+        -- Inserting data on src_vn.observations when raw data is inserted
         INSERT INTO $(evn_db_schema_vn).observations (site, id_sighting, pseudo_id_sighting, id_universal, id_species, french_name, latin_name,
                                          date, date_year, timing, id_place, place, municipality, county, country, insee,
                                          coord_lat, coord_lon, coord_x_l93, coord_y_l93, precision, atlas_grid_name, estimation_code,
@@ -274,6 +365,120 @@ UPDATE $(evn_db_schema_import).observations_json SET site=site;
 ---------
 -- Places
 ---------
+CREATE TABLE $(evn_db_schema_vn).places(
+    uuid                UUID DEFAULT uuid_generate_v4(),
+    site                VARCHAR(50),
+    id                  INTEGER,
+    id_commune          INTEGER,
+    id_region           INTEGER,
+    name                VARCHAR(150),
+    is_private          INTEGER,
+    loc_precision       INTEGER,
+    altitude            INTEGER,
+    place_type          VARCHAR(150),
+    visible             INTEGER,
+    coord_lat           FLOAT,
+    coord_lon           FLOAT,
+    coord_x_l93         FLOAT,
+    coord_y_l93         FLOAT,
+    PRIMARY KEY (id, site)
+);
+-- Add geometry column
+\o /dev/null
+SELECT AddGeometryColumn('places', 'geom', 2154, 'POINT', 2);
+\o
+
+-- Add trigger for postgis geometry update
+DROP TRIGGER IF EXISTS trg_geom ON $(evn_db_schema_vn).places;
+CREATE TRIGGER trg_geom BEFORE INSERT or UPDATE
+    ON $(evn_db_schema_vn).places FOR EACH ROW
+    EXECUTE PROCEDURE update_geom_triggerfn();
+
+CREATE OR REPLACE FUNCTION update_places() RETURNS TRIGGER AS \$\$
+    BEGIN
+    IF (TG_OP = 'DELETE') THEN
+        -- Deleting data when JSON data is deleted
+        DELETE FROM $(evn_db_schema_vn).places
+            WHERE id = OLD.id AND site = OLD.site;
+        IF NOT FOUND THEN
+            RETURN NULL;
+        END IF;
+        RETURN OLD;
+
+    ELSIF (TG_OP = 'UPDATE') THEN
+        -- Updating or inserting data when JSON data is updated
+        UPDATE $(evn_db_schema_vn).places SET
+            id_commune    = CAST(CAST(NEW.item->>0 AS JSON)->>'id_commune' AS INTEGER),
+            id_region     = CAST(CAST(NEW.item->>0 AS JSON)->>'id_region' AS INTEGER),
+            name          = CAST(NEW.item->>0 AS JSON)->>'name',
+            is_private    = CAST(CAST(NEW.item->>0 AS JSON)->>'is_private' AS INTEGER),
+            loc_precision = CAST(CAST(NEW.item->>0 AS JSON)->>'loc_precision' AS INTEGER),
+            altitude      = CAST(CAST(NEW.item->>0 AS JSON)->>'altitude' AS INTEGER),
+            place_type    = CAST(NEW.item->>0 AS JSON)->>'place_type',
+            visible       = CAST(CAST(NEW.item->>0 AS JSON)->>'visible' AS INTEGER),
+            coord_lat     = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lat' AS FLOAT),
+            coord_lon     = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lon' AS FLOAT),
+            coord_x_l93   = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_l93' AS FLOAT),
+            coord_y_l93   = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_l93' AS FLOAT)
+        WHERE id = OLD.id AND site = OLD.site ;
+        IF NOT FOUND THEN
+            -- Inserting data in new row, usually after table re-creation
+            INSERT INTO $(evn_db_schema_vn).places(site, id, id_commune, id_region, name, is_private,
+                                                   loc_precision, altitude, place_type, visible,
+                                                   coord_lat, coord_lon, coord_x_l93, coord_y_l93)
+            VALUES (
+                NEW.site,
+                NEW.id,
+                CAST(CAST(NEW.item->>0 AS JSON)->>'id_commune' AS INTEGER),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'id_region' AS INTEGER),
+                CAST(NEW.item->>0 AS JSON)->>'name',
+                CAST(CAST(NEW.item->>0 AS JSON)->>'is_private' AS INTEGER),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'loc_precision' AS INTEGER),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'altitude' AS INTEGER),
+                CAST(NEW.item->>0 AS JSON)->>'place_type',
+                CAST(CAST(NEW.item->>0 AS JSON)->>'visible' AS INTEGER),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lat' AS FLOAT),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lon' AS FLOAT),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_l93' AS FLOAT),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_l93' AS FLOAT)
+            );
+            END IF;
+        RETURN NEW;
+
+    ELSIF (TG_OP = 'INSERT') THEN
+        -- Inserting data on src_vn.observations when raw data is inserted
+        INSERT INTO $(evn_db_schema_vn).places(site, id, id_commune, id_region, name, is_private,
+                                               loc_precision, altitude, place_type, visible,
+                                               coord_lat, coord_lon, coord_x_l93, coord_y_l93)
+        VALUES (
+            NEW.site,
+            NEW.id,
+            CAST(CAST(NEW.item->>0 AS JSON)->>'id_commune' AS INTEGER),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'id_region' AS INTEGER),
+            CAST(NEW.item->>0 AS JSON)->>'name',
+            CAST(CAST(NEW.item->>0 AS JSON)->>'is_private' AS INTEGER),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'loc_precision' AS INTEGER),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'altitude' AS INTEGER),
+            CAST(NEW.item->>0 AS JSON)->>'place_type',
+            CAST(CAST(NEW.item->>0 AS JSON)->>'visible' AS INTEGER),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lat' AS FLOAT),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lon' AS FLOAT),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_l93' AS FLOAT),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_l93' AS FLOAT)
+        );
+        RETURN NEW;
+    END IF;
+END;
+\$\$
+LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS places_trigger ON $(evn_db_schema_import).places_json;
+CREATE TRIGGER places_trigger
+AFTER INSERT OR UPDATE OR DELETE ON $(evn_db_schema_import).places_json
+    FOR EACH ROW EXECUTE FUNCTION $(evn_db_schema_vn).update_places();
+
+-- Dummy update of all rows to trigger new FUNCTION
+UPDATE $(evn_db_schema_import).places_json SET site=site;
 
 ----------
 -- Species
@@ -297,7 +502,7 @@ CREATE TABLE $(evn_db_schema_vn).species(
 CREATE OR REPLACE FUNCTION update_species() RETURNS TRIGGER AS \$\$
     BEGIN
     IF (TG_OP = 'DELETE') THEN
-        /* Deleting data when JSON data is deleted */
+        -- Deleting data when JSON data is deleted
         DELETE FROM $(evn_db_schema_vn).species
             WHERE id = OLD.id AND site = OLD.site;
         IF NOT FOUND THEN
@@ -306,7 +511,7 @@ CREATE OR REPLACE FUNCTION update_species() RETURNS TRIGGER AS \$\$
         RETURN OLD;
 
     ELSIF (TG_OP = 'UPDATE') THEN
-        /* Updating or inserting data when JSON data is updated */
+        -- Updating or inserting data when JSON data is updated
         UPDATE $(evn_db_schema_vn).species SET
             id_taxo_group = CAST(CAST(NEW.item->>0 AS JSON)->>'id_taxo_group' AS INTEGER),
             is_used       = CAST(CAST(NEW.item->>0 AS JSON)->>'is_used' AS INTEGER),
@@ -319,7 +524,7 @@ CREATE OR REPLACE FUNCTION update_species() RETURNS TRIGGER AS \$\$
             atlas_end     = CAST(CAST(NEW.item->>0 AS JSON)->>'atlas_end' AS INTEGER)
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
-            /* Inserting data in new row, usually after table re-creation */
+            -- Inserting data in new row, usually after table re-creation
             INSERT INTO $(evn_db_schema_vn).species(site, id, id_taxo_group, is_used, french_name, latin_name, rarity,
                                                          category_1, sys_order, atlas_start, atlas_end)
             VALUES (
@@ -339,7 +544,7 @@ CREATE OR REPLACE FUNCTION update_species() RETURNS TRIGGER AS \$\$
         RETURN NEW;
 
     ELSIF (TG_OP = 'INSERT') THEN
-        /* Inserting data on src_vn.observations when raw data is inserted */
+        -- Inserting data on src_vn.observations when raw data is inserted
         INSERT INTO $(evn_db_schema_vn).species(site, id, id_taxo_group, is_used, french_name, latin_name, rarity,
                                                 category_1, sys_order, atlas_start, atlas_end)
         VALUES (
@@ -383,10 +588,10 @@ CREATE TABLE $(evn_db_schema_vn).taxo_groups(
     PRIMARY KEY (id, site)
 );
 
-CREATE OR REPLACE FUNCTION update_taxo_groups()) RETURNS TRIGGER AS \$\$
+CREATE OR REPLACE FUNCTION update_taxo_groups() RETURNS TRIGGER AS \$\$
     BEGIN
     IF (TG_OP = 'DELETE') THEN
-        /* Deleting data when JSON data is deleted */
+        -- Deleting data when JSON data is deleted
         DELETE FROM $(evn_db_schema_vn).taxo_groups
             WHERE id = OLD.id AND site = OLD.site;
         IF NOT FOUND THEN
@@ -395,16 +600,15 @@ CREATE OR REPLACE FUNCTION update_taxo_groups()) RETURNS TRIGGER AS \$\$
         RETURN OLD;
 
     ELSIF (TG_OP = 'UPDATE') THEN
-        /* Updating or inserting data when JSON data is updated */
+        -- Updating or inserting data when JSON data is updated
         UPDATE $(evn_db_schema_vn).taxo_groups SET
             french_name   = CAST(NEW.item->>0 AS JSON)->>'name',
-            latin_name    = CAST(NEW.item->>0 AS JSON)->>'latin_name',
             latin_name    = CAST(NEW.item->>0 AS JSON)->>'latin_name',
             name_constant = CAST(NEW.item->>0 AS JSON)->>'name_constant',
             access_mode   = CAST(NEW.item->>0 AS JSON)->>'access_mode'
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
-            /* Inserting data in new row, usually after table re-creation */
+            -- Inserting data in new row, usually after table re-creation
             INSERT INTO $(evn_db_schema_vn).taxo_groups(site, id, french_name, latin_name, name_constant,
                                                         access_mode)
             VALUES (
@@ -419,7 +623,7 @@ CREATE OR REPLACE FUNCTION update_taxo_groups()) RETURNS TRIGGER AS \$\$
         RETURN NEW;
 
     ELSIF (TG_OP = 'INSERT') THEN
-        /* Inserting data on src_vn.observations when raw data is inserted */
+        -- Inserting data on src_vn.observations when raw data is inserted
         INSERT INTO $(evn_db_schema_vn).taxo_groups(site, id, french_name, latin_name, name_constant,
                                                     access_mode)
         VALUES (
@@ -447,3 +651,67 @@ UPDATE $(evn_db_schema_import).taxo_groups_json SET site=site;
 --------------------
 -- Territorial_units
 --------------------
+CREATE TABLE $(evn_db_schema_vn).territorial_units(
+    uuid                UUID DEFAULT uuid_generate_v4(),
+    site                VARCHAR(50),
+    id                  INTEGER,
+    id_country          INTEGER,
+    name                VARCHAR(150),
+    short_name          VARCHAR(150),
+    PRIMARY KEY (id, site)
+);
+
+CREATE OR REPLACE FUNCTION update_territorial_units() RETURNS TRIGGER AS \$\$
+    BEGIN
+    IF (TG_OP = 'DELETE') THEN
+        -- Deleting data when JSON data is deleted
+        DELETE FROM $(evn_db_schema_vn).territorial_units
+            WHERE id = OLD.id AND site = OLD.site;
+        IF NOT FOUND THEN
+            RETURN NULL;
+        END IF;
+        RETURN OLD;
+
+    ELSIF (TG_OP = 'UPDATE') THEN
+        -- Updating or inserting data when JSON data is updated
+        UPDATE $(evn_db_schema_vn).territorial_units SET
+            id_country   = CAST(CAST(NEW.item->>0 AS JSON)->>'id_country' AS INTEGER),
+            name         = CAST(NEW.item->>0 AS JSON)->>'name',
+            short_name   = CAST(NEW.item->>0 AS JSON)->>'short_name'
+        WHERE id = OLD.id AND site = OLD.site ;
+        IF NOT FOUND THEN
+            -- Inserting data in new row, usually after table re-creation
+            INSERT INTO $(evn_db_schema_vn).territorial_units(site, id, id_country, name, short_name)
+            VALUES (
+                NEW.site,
+                NEW.id,
+                CAST(CAST(NEW.item->>0 AS JSON)->>'id_country' AS INTEGER),
+                CAST(NEW.item->>0 AS JSON)->>'name',
+                CAST(NEW.item->>0 AS JSON)->>'short_name'
+            );
+            END IF;
+        RETURN NEW;
+
+    ELSIF (TG_OP = 'INSERT') THEN
+        -- Inserting data on src_vn.observations when raw data is inserted
+        INSERT INTO $(evn_db_schema_vn).territorial_units(site, id, id_country, name, short_name)
+        VALUES (
+            NEW.site,
+            NEW.id,
+            CAST(CAST(NEW.item->>0 AS JSON)->>'id_country' AS INTEGER),
+            CAST(NEW.item->>0 AS JSON)->>'name',
+            CAST(NEW.item->>0 AS JSON)->>'short_name'
+        );
+        RETURN NEW;
+    END IF;
+END;
+\$\$
+LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS territorial_units_trigger ON $(evn_db_schema_import).territorial_units_json;
+CREATE TRIGGER territorial_units_trigger
+AFTER INSERT OR UPDATE OR DELETE ON $(evn_db_schema_import).territorial_units_json
+    FOR EACH ROW EXECUTE FUNCTION $(evn_db_schema_vn).update_territorial_units();
+
+-- Dummy update of all rows to trigger new FUNCTION
+UPDATE $(evn_db_schema_import).territorial_units_json SET site=site;

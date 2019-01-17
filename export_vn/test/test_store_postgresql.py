@@ -56,12 +56,26 @@ def test_observations_api_pg_store(capsys):
     """Store observations of a taxo_group to database."""
     OBSERVATIONS.store(18, method='search')
 
+# -------
+#  Places
+# -------
+def test_places_api_pg_store(capsys):
+    """Store places to database."""
+    PLACES.store()
+
 # --------
 #  Species
 # --------
 def test_species_api_pg_store(capsys):
     """Store species to database."""
     SPECIES.store()
+
+# ------------
+#  Taxo_groups
+# ------------
+def test_taxo_groups_api_pg_store(capsys):
+    """Store taxonomic groups to database."""
+    TAXO_GROUP.store()
 
 # ------------------
 #  Territorial units
