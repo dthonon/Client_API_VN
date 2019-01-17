@@ -19,9 +19,10 @@ from export_vn.evnconf import EvnConf
 # Using faune-ardeche or faune-isere site, that needs to be created first
 SITE = 't07'
 #SITE = 't38'
+FILE = '.evn_test.yaml'
 
 # Get configuration for test site
-CFG = EvnConf(SITE)
+CFG = EvnConf(SITE, FILE)
 STORE_PG = StorePostgresql(CFG)
 ENTITIES = Entities(CFG, STORE_PG.store)
 LOCAL_ADMIN_UNITS = LocalAdminUnits(CFG, STORE_PG.store)

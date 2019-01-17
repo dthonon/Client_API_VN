@@ -18,7 +18,6 @@ import json
 from export_vn.biolovision_api import EntitiesAPI, LocalAdminUnitsAPI, ObservationsAPI, PlacesAPI
 from export_vn.biolovision_api import SpeciesAPI, TaxoGroupsAPI, TerritorialUnitsAPI
 from export_vn.biolovision_api import BiolovisionApiException, HTTPError, MaxChunksError
-from export_vn.evnconf import EvnConf
 from export_vn.regulator import PID
 
 # version of the program:

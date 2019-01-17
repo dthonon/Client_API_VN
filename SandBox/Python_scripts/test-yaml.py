@@ -7,13 +7,8 @@ Program managing VisioNature export to Postgresql database
 import sys
 import logging
 import argparse
-import json
-
-from export_vn.download_vn import DownloadVn, DownloadVnException
-from export_vn.download_vn import Entities, LocalAdminUnits, Observations, Places
-from export_vn.download_vn import Species, TaxoGroup, TerritorialUnits
-from export_vn.store_postgresql import StorePostgresql
-from export_vn.evnconf import EvnConf
+import yaml
+from pathlib import Path
 
 # version of the program:
 from setuptools_scm import get_version
@@ -40,8 +35,6 @@ def main():
                         action='store_true')
     parser.add_argument('site',
                         help='site name, used to select config file')
-    parser.add_argument('file',
-                        help='file name, used to select config file')
 
     args = parser.parse_args()
     if args.verbose:
@@ -53,19 +46,13 @@ def main():
 
     logging.info('Getting data from %s', args.site)
 
-    # Get configuration and instances
-    cfg = EvnConf(args.site, args.site)
-    store_pg = StorePostgresql(cfg)
-    entities = Entities(cfg, store_pg.store)
-    local_admin_units = LocalAdminUnits(cfg, store_pg.store)
-    observations = Observations(cfg, store_pg.store)
-    places = Places(cfg, store_pg.store)
-    species = Species(cfg, store_pg.store)
-    taxo_group = TaxoGroup(cfg, store_pg.store)
-    territorial_unit = TerritorialUnits(cfg, store_pg.store)
+    with open(str(Path.home()) + '/.evn_' + args.site + '.yaml', 'r') as stream:
+        try:
+            conf =yaml.load(stream)
+        except yaml.YAMLError as exc:
+            print(exc)
 
-    #species.store()
-    taxo_group.store()
+    logging.info('Getting data from %s', conf['site']['evn_site'])
 
 # Main wrapper
 if __name__ == "__main__":

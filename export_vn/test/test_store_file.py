@@ -15,9 +15,10 @@ from export_vn.evnconf import EvnConf
 # Using faune-ardeche or faune-isere site, that needs to be created first
 SITE = 't07'
 #SITE = 't38'
+FILE = '.evn_test.yaml'
 
 # Get configuration for test site
-CFG = EvnConf(SITE)
+CFG = EvnConf(SITE, FILE)
 STORE_FILE = StoreFile(CFG)
 
 def test_version():

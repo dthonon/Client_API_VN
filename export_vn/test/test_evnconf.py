@@ -9,10 +9,11 @@ from export_vn.evnconf import EvnConf
 
 # Create test site configuration file
 SITE = 'tst'
-shutil.copy(str(Path.home()) + '/Client_API_VN/Export/evn_template.ini',
-            str(Path.home()) + '/.evn_' + SITE + '.ini')
+FILE = '.evn_tst.yaml'
+shutil.copy(str(Path.home()) + '/Client_API_VN/export_vn/evn_template.yaml',
+            str(Path.home()) + '/' + FILE)
 
-CFG = EvnConf(SITE)
+CFG = EvnConf(SITE, FILE)
 
 def test_version():
     """Check if version is defined."""
@@ -20,7 +21,7 @@ def test_version():
 
 def test_site():
     """Check if configuration file exists."""
-    cfg_file = Path(str(Path.home()) + '/.evn_' + SITE + '.ini')
+    cfg_file = Path(str(Path.home()) + '/' + FILE)
     assert cfg_file.is_file()
 
 def test_site_name():
@@ -37,15 +38,15 @@ def test_user_email():
 
 def test_user_pw():
     """ Test property. """
-    assert CFG.user_pw == '*evn_user_pw*'
+    assert CFG.user_pw == 'evn_user_pw'
 
 def test_client_key():
     """ Test property. """
-    assert CFG.client_key == '*evn_client_key*'
+    assert CFG.client_key == 'evn_client_key'
 
 def test_client_secret():
     """ Test property. """
-    assert CFG.client_secret == '*evn_client_secret*'
+    assert CFG.client_secret == 'evn_client_secret'
 
 def test_file_store():
     """ Test property. """
@@ -61,7 +62,7 @@ def test_db_port():
 
 def test_db_name():
     """ Test property. """
-    assert CFG.db_name == '*faune_xxx*'
+    assert CFG.db_name == 'faune_xxx'
 
 def test_db_schema_import():
     """ Test property. """
@@ -73,15 +74,15 @@ def test_db_schema_vn():
 
 def test_db_group():
     """ Test property. """
-    assert CFG.db_group == '*lpo_xxx*'
+    assert CFG.db_group == 'lpo_xxx'
 
 def test_db_user():
     """ Test property. """
-    assert CFG.db_user == '*xferxx*'
+    assert CFG.db_user == 'xferxx'
 
 def test_db_pw():
     """ Test property. """
-    assert CFG.db_pw == '*evn_db_pw*'
+    assert CFG.db_pw == 'evn_db_pw'
 
 def test_sql_scripts():
     """ Test property. """
@@ -89,8 +90,8 @@ def test_sql_scripts():
 
 def test_external1_name():
     """ Test property. """
-    assert CFG.external1_name == '*evn_external1_name*'
+    assert CFG.external1_name == 'evn_external1_name'
 
 def test_external1_pw():
     """ Test property. """
-    assert CFG.external1_pw == '*evn_external1_pw*'
+    assert CFG.external1_pw == 'evn_external1_pw'

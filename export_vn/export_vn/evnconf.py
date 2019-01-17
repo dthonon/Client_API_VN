@@ -4,7 +4,7 @@
 evnconf: expose local configuration parameters as properties of class EvnConf
 
 """
-import configparser
+import yaml
 from pathlib import Path
 
 # version of the program:
@@ -15,32 +15,35 @@ class EvnConf:
     """
     Read config file and expose parameters
     """
-    def __init__(self, site):
+    def __init__(self, site, file):
         self._site = site
 
         # Read configuration parameters
-        self._config = configparser.ConfigParser()
-        self._config.read(str(Path.home()) + '/.evn_' + site + '.ini')
+        with open(str(Path.home()) + '/' + file, 'r') as stream:
+            try:
+                self._config = yaml.load(stream)
+            except yaml.YAMLError as exc:
+                print(exc)
 
         # Import parameters in properties
-        self._client_key = self._config['site']['evn_client_key']
-        self._client_secret = self._config['site']['evn_client_secret']
-        self._user_email = self._config['site']['evn_user_email']
-        self._user_pw = self._config['site']['evn_user_pw']
-        self._base_url = self._config['site']['evn_site']
-        self._file_store = self._config['site']['evn_file_store'] + '/' + site + '/'
-        self._db_host = self._config['database']['evn_db_host']
-        self._db_port = self._config['database']['evn_db_port']
-        self._db_name = self._config['database']['evn_db_name']
+        self._client_key       = self._config['site'][site]['evn_client_key']
+        self._client_secret    = self._config['site'][site]['evn_client_secret']
+        self._user_email       = self._config['site'][site]['evn_user_email']
+        self._user_pw          = self._config['site'][site]['evn_user_pw']
+        self._base_url         = self._config['site'][site]['evn_site']
+        self._file_store       = self._config['site'][site]['evn_file_store'] + '/' + site + '/'
+        self._db_host          = self._config['database']['evn_db_host']
+        self._db_port          = str(self._config['database']['evn_db_port'])
+        self._db_name          = self._config['database']['evn_db_name']
         self._db_schema_import = self._config['database']['evn_db_schema_import']
-        self._db_schema_vn = self._config['database']['evn_db_schema_vn']
-        self._db_group = self._config['database']['evn_db_group']
-        self._db_user = self._config['database']['evn_db_user']
-        self._db_pw = self._config['database']['evn_db_pw']
-        self._sql_scripts = self._config['database']['evn_sql_scripts']
-        if site in self._config:
-            self._external1_name = self._config[site]['evn_external1_name']
-            self._external1_pw = self._config[site]['evn_external1_pw']
+        self._db_schema_vn     = self._config['database']['evn_db_schema_vn']
+        self._db_group         = self._config['database']['evn_db_group']
+        self._db_user          = self._config['database']['evn_db_user']
+        self._db_pw            = self._config['database']['evn_db_pw']
+        self._sql_scripts      = self._config['database']['evn_sql_scripts']
+        if site in self._config['local']:
+            self._external1_name = self._config['local'][site]['evn_external1_name']
+            self._external1_pw   = self._config['local'][site]['evn_external1_pw']
 
     @property
     def version(self):
