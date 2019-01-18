@@ -23,7 +23,7 @@ SITE = 't07'
 FILE = '.evn_test.yaml'
 
 # Get configuration for test site
-CFG = EvnConf(SITE, FILE)
+CFG = EvnConf(FILE).site_list[SITE]
 ENTITIES_API = EntitiesAPI(CFG)
 LOCAL_ADMIN_UNITS_API = LocalAdminUnitsAPI(CFG)
 OBSERVATIONS_API = ObservationsAPI(CFG)
@@ -124,7 +124,6 @@ def test_local_admin_units_list_1(capsys):
 # ------------------------------
 # Observations controler methods
 # ------------------------------
-
 def test_observations_diff(capsys):
     """Get list of diffs from last day."""
     since = (datetime.now() - timedelta(days=1)).strftime('%H:%M:%S %d.%m.%Y')
@@ -351,7 +350,7 @@ def test_places_get(capsys):
                                     'place_type': 'place',
                                     'visible': '1'}]}
 
-
+@pytest.mark.slow
 def test_places_list_all(capsys):
     """Get list of all places."""
     places_list = PLACES_API.api_list()
@@ -395,6 +394,7 @@ def test_species_get(capsys):
     assert SPECIES_API.transfer_errors == 0
     assert specie['data'][0]['french_name'] == 'Plongeon arctique'
 
+@pytest.mark.slow
 def test_species_list_all(capsys):
     """Get list of all species."""
     species_list = SPECIES_API.api_list()

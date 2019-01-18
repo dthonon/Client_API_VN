@@ -8,7 +8,24 @@ main:
 
 # VisioNature site information
 site:
-    tst:
+    tst1:
+        # Enable download from this site
+        enabled: true
+        # URL
+        evn_site: https://www.faune-xxx.org/
+        # Username
+        evn_user_email: nom.prenom@example.net
+        # User password
+        evn_user_pw: evn_user_pw
+        # Client key, obtained from Biolovision
+        evn_client_key: evn_client_key
+        # Client secret, obtained from Biolovision
+        evn_client_secret: evn_client_secret
+        # Top level path name for downloaded file storage, relative to $HOME
+        evn_file_store: VN_files
+    tst2:
+        # Enable download from this site
+        enabled: false
         # URL
         evn_site: https://www.faune-xxx.org/
         # Username
@@ -45,7 +62,7 @@ database:
 
 # Local information, create as many sections as needed
 local:
-    tst:
+    tst1:
         # External user1 name
         evn_external1_name: evn_external1_name
         # External user1 password

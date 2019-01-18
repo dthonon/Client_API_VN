@@ -8,12 +8,12 @@ import logging
 from export_vn.evnconf import EvnConf
 
 # Create test site configuration file
-SITE = 'tst'
+SITE = 'tst1'
 FILE = '.evn_tst.yaml'
 shutil.copy(str(Path.home()) + '/Client_API_VN/export_vn/evn_template.yaml',
             str(Path.home()) + '/' + FILE)
 
-CFG = EvnConf(SITE, FILE)
+CFG = EvnConf(FILE).site_list[SITE]
 
 def test_version():
     """Check if version is defined."""
@@ -27,6 +27,10 @@ def test_site():
 def test_site_name():
     """ Test property. """
     assert CFG.site == SITE
+
+def test_enabled():
+    """ Test property. """
+    assert CFG.enabled == True
 
 def test_base_url():
     """ Test property. """

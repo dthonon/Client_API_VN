@@ -18,7 +18,7 @@ SITE = 't07'
 FILE = '.evn_test.yaml'
 
 # Get configuration for test site
-CFG = EvnConf(SITE, FILE)
+CFG = EvnConf(FILE).site_list[SITE]
 STORE_FILE = StoreFile(CFG)
 
 def test_version():

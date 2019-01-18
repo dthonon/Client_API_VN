@@ -21,7 +21,7 @@ SITE = 't07'
 FILE = '.evn_test.yaml'
 
 # Get configuration for test site
-CFG = EvnConf(SITE, FILE)
+CFG = EvnConf(FILE).site_list[SITE]
 STORE_FILE = StoreFile(CFG).store
 ENTITIES = Entities(CFG, STORE_FILE)
 LOCAL_ADMIN_UNITS = LocalAdminUnits(CFG, STORE_FILE)
@@ -114,6 +114,7 @@ def test_observations_store_search_1_2(capsys):
 # -------
 #  Places
 # -------
+@pytest.mark.slow
 def test_places_store(capsys):
     """Store places to file."""
     file_json = str(Path.home()) + '/' + CFG.file_store + 'places_1.json.gz'
@@ -131,6 +132,7 @@ def test_places_store(capsys):
 # --------
 #  Species
 # --------
+@pytest.mark.slow
 def test_species_store(capsys):
     """Store species to file."""
     file_json = str(Path.home()) + '/' + CFG.file_store + 'species_1.json.gz'

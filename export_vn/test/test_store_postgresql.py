@@ -22,7 +22,7 @@ SITE = 't07'
 FILE = '.evn_test.yaml'
 
 # Get configuration for test site
-CFG = EvnConf(SITE, FILE)
+CFG = EvnConf(FILE).site_list[SITE]
 STORE_PG = StorePostgresql(CFG)
 ENTITIES = Entities(CFG, STORE_PG.store)
 LOCAL_ADMIN_UNITS = LocalAdminUnits(CFG, STORE_PG.store)
@@ -60,6 +60,7 @@ def test_observations_api_pg_store(capsys):
 # -------
 #  Places
 # -------
+@pytest.mark.slow
 def test_places_api_pg_store(capsys):
     """Store places to database."""
     PLACES.store()
@@ -67,6 +68,7 @@ def test_places_api_pg_store(capsys):
 # --------
 #  Species
 # --------
+@pytest.mark.slow
 def test_species_api_pg_store(capsys):
     """Store species to database."""
     SPECIES.store()
