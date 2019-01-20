@@ -11,6 +11,8 @@ import json
 import shutil
 from pathlib import Path
 import pyexpander.lib as pyexpander
+import pyexpander.parser as pyparser
+import subprocess
 
 from export_vn.download_vn import DownloadVn, DownloadVnException
 from export_vn.download_vn import Entities, LocalAdminUnits, Observations, Places
@@ -48,9 +50,14 @@ def main():
     if args.verbose:
         logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                             level=logging.DEBUG)
+        SQL_QUIET=""
+        CLIENT_MIN_MESSAGE="debug1"
+
     else:
         logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                             level=logging.INFO)
+        SQL_QUIET="--quiet"
+        CLIENT_MIN_MESSAGE="warning"
 
     # Get configuration
     logging.info('Getting configuration data from %s', args.file)
@@ -69,9 +76,19 @@ def main():
             'db_user': cfg.db_user,
             'db_pw': cfg.db_pw
             }
-        #evn_db_group=\"${config[evn_db_group]}\";evn_db_user=\"${config[evn_db_user]}\""
-        pyexpander.expandFile(str(Path.home()) + '/Client_API_VN/sql/create-vn-tables.sql',
-                              db_cfg)
+        filename = str(Path.home()) + '/Client_API_VN/sql/create-vn-tables.sql'
+        with open(filename, 'r') as myfile:
+            template = myfile.read()
+        (cmd, exp_globals) = pyexpander.expandToStr(template,
+                                                    external_definitions=db_cfg)
+        filename = str(Path.home()) + '/tmp/create-vn-tables.sql'
+        with open(filename, 'w') as myfile:
+            myfile.write(cmd)
+        try:
+            subprocess.run('env PGOPTIONS="-c client-min-messages=' + CLIENT_MIN_MESSAGE + '" psql ' + SQL_QUIET + ' --dbname=' + cfg.db_name + ' --file=' + filename, check=True, shell=True)
+        except subprocess.CalledProcessError as err:
+            print('ERROR:', err)
+
 
     # Looping on sites
     for site, cfg in cfg_list.items():

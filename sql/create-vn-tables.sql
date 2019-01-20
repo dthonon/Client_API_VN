@@ -45,22 +45,6 @@ CREATE TABLE $(db_schema_vn).entities(
     PRIMARY KEY (id, site)
 );
 
-CREATE OR REPLACE PROCEDURE insert_entities(NEW RECORD)
-LANGUAGE SQL
-    INSERT INTO $(db_schema_vn).entities(site, id, short_name, full_name_french, description_french,
-                                             url, address)
-    VALUES (
-        NEW.site,
-        NEW.id,
-        CAST(NEW.item->>0 AS JSON)->>'short_name',
-        CAST(NEW.item->>0 AS JSON)->>'full_name_french',
-        CAST(NEW.item->>0 AS JSON)->>'description_french',
-        CAST(NEW.item->>0 AS JSON)->>'url',
-        CAST(NEW.item->>0 AS JSON)->>'address'
-    );
-AS \$\$
-\$\$;
-
 CREATE OR REPLACE FUNCTION update_entities() RETURNS TRIGGER AS \$\$
     BEGIN
     IF (TG_OP = 'DELETE') THEN
