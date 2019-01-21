@@ -4,45 +4,54 @@
 evnconf: expose local configuration parameters as properties of class EvnConf
 
 """
-import configparser
+import yaml
 from pathlib import Path
 
 # version of the program:
-__version__ = "1.0.0" #VERSION#
+from setuptools_scm import get_version
+__version__ = get_version(root='../..', relative_to=__file__)
 
-class EvnConf:
+class EvnSiteConf:
+    """Expose site configuration as properties
     """
-    Read config file and expose parameters
-    """
-    def __init__(self, site):
+    def __init__(self, site, config):
         self._site = site
 
-        # Read configuration parameters
-        self._config = configparser.ConfigParser()
-        self._config.read(str(Path.home()) + '/.evn_' + site + '.ini')
-
         # Import parameters in properties
-        self._client_key = self._config['site']['evn_client_key']
-        self._client_secret = self._config['site']['evn_client_secret']
-        self._user_email = self._config['site']['evn_user_email']
-        self._user_pw = self._config['site']['evn_user_pw']
-        self._base_url = self._config['site']['evn_site']
-        self._file_store = self._config['site']['evn_file_store'] + '/' + site + '/'
-        self._db_host = self._config['database']['evn_db_host']
-        self._db_port = self._config['database']['evn_db_port']
-        self._db_name = self._config['database']['evn_db_name']
-        self._db_schema = self._config['database']['evn_db_schema']
-        self._db_group = self._config['database']['evn_db_group']
-        self._db_user = self._config['database']['evn_db_user']
-        self._db_pw = self._config['database']['evn_db_pw']
-        self._sql_scripts = self._config['database']['evn_sql_scripts']
-        self._external1_name = self._config[site]['evn_external1_name']
-        self._external1_pw = self._config[site]['evn_external1_pw']
+        self._enabled          = config['site'][site]['enabled']
+        self._client_key       = config['site'][site]['evn_client_key']
+        self._client_secret    = config['site'][site]['evn_client_secret']
+        self._user_email       = config['site'][site]['evn_user_email']
+        self._user_pw          = config['site'][site]['evn_user_pw']
+        self._base_url         = config['site'][site]['evn_site']
+        self._file_store       = config['site'][site]['evn_file_store'] + '/' + site + '/'
+        self._db_host          = config['database']['evn_db_host']
+        self._db_port          = str(config['database']['evn_db_port'])
+        self._db_name          = config['database']['evn_db_name']
+        self._db_schema_import = config['database']['evn_db_schema_import']
+        self._db_schema_vn     = config['database']['evn_db_schema_vn']
+        self._db_group         = config['database']['evn_db_group']
+        self._db_user          = config['database']['evn_db_user']
+        self._db_pw            = config['database']['evn_db_pw']
+        self._sql_scripts      = config['database']['evn_sql_scripts']
+        if site in config['local']:
+            self._external1_name = config['local'][site]['evn_external1_name']
+            self._external1_pw   = config['local'][site]['evn_external1_pw']
+
+    @property
+    def version(self):
+        """Return version."""
+        return __version__
 
     @property
     def site(self):
         """Return site name, used to identify configuration file."""
         return self._site
+
+    @property
+    def enabled(self):
+        """Return enabled flag, defining is site is to be downloaded."""
+        return self._enabled
 
     @property
     def client_key(self):
@@ -90,9 +99,14 @@ class EvnConf:
         return self._db_name
 
     @property
-    def db_schema(self):
-        """Return database schema where data is stored."""
-        return self._db_schema
+    def db_schema_import(self):
+        """Return database schema where imported JSON data is stored."""
+        return self._db_schema_import
+
+    @property
+    def db_schema_vn(self):
+        """Return database schema where column data is stored."""
+        return self._db_schema_vn
 
     @property
     def db_group(self):
@@ -123,3 +137,24 @@ class EvnConf:
     def external1_pw(self):
         """Return user 1 password."""
         return self._external1_pw
+
+class EvnConf:
+    """
+    Read config file and expose list of sites configuration
+    """
+    def __init__(self, file):
+        # Read configuration parameters
+        with open(str(Path.home()) + '/' + file, 'r') as stream:
+            try:
+                self._config = yaml.load(stream)
+            except yaml.YAMLError as exc:
+                print(exc)
+
+        self._site_list = {}
+        for site in self._config['site']:
+            self._site_list[site] = EvnSiteConf(site, self._config)
+
+    @property
+    def site_list(self):
+        """Return list of site configurations."""
+        return self._site_list

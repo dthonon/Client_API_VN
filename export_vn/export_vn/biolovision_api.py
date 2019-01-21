@@ -45,7 +45,8 @@ from requests_oauthlib import OAuth1
 from functools import lru_cache
 
 # version of the program:
-__version__ = "0.1.1" #VERSION#
+from setuptools_scm import get_version
+__version__ = get_version(root='../..', relative_to=__file__)
 
 class HashableDict(dict):
     """Provide hashable dict type, to enable @lru_cache."""
@@ -85,6 +86,11 @@ class BiolovisionAPI:
         self._api_url = config.base_url + 'api/'  # URL of API
         self._oauth = OAuth1(config.client_key,
                              client_secret=config.client_secret)
+
+    @property
+    def version(self):
+        """Return version."""
+        return __version__
 
     @property
     def transfer_errors(self):
@@ -298,12 +304,27 @@ class BiolovisionAPI:
         return self._url_get(params, 'error/')
 
 
+class EntitiesAPI(BiolovisionAPI):
+    """ Implement api calls to entities controler.
+
+    Methods
+    - api_get                - Return a single entity from the controler
+    - api_list               - Return a list of entity from the controler
+
+    """
+
+    def __init__(self, config,
+                 max_retry=5, max_requests=sys.maxsize, max_chunks=10):
+        super().__init__(config, 'entities',
+                         max_retry, max_requests, max_chunks)
+
+
 class LocalAdminUnitsAPI(BiolovisionAPI):
     """ Implement api calls to local_admin_units controler.
 
     Methods
     - api_get                - Return a single entity from the controler
-    - api_list               - Return a single entity from the controler
+    - api_list               - Return a list of entity from the controler
 
     """
 
@@ -318,7 +339,7 @@ class ObservationsAPI(BiolovisionAPI):
 
     Methods
     - api_get                - Return a single observations from the controler
-    - api_list               - Return all observations from the controler
+    - api_list               - Return a list of observations from the controler
     - api_diff               - Return all changes in observations since a given date
     - api_search             - Search for observations based on parameter value
     """
@@ -329,7 +350,7 @@ class ObservationsAPI(BiolovisionAPI):
         super().__init__(config, 'observations',
                          max_retry, max_requests, max_chunks)
 
-    def api_list(self, id_taxo_group, opt_params=dict()):
+    def api_list(self, id_taxo_group, id_species=None, opt_params=dict()):
         """Query for list of observations by taxo_group from the controler.
 
         Calls  /observations API.
@@ -338,6 +359,8 @@ class ObservationsAPI(BiolovisionAPI):
         ----------
         id_taxo_group : integer
             taxo_group to query for observations
+        id_species : integer
+            optional specie to query for observations
         opt_params : dict
             optional URL parameters, empty by default. See Biolovision API documentation.
 
@@ -347,6 +370,8 @@ class ObservationsAPI(BiolovisionAPI):
             dict decoded from json if status OK, else None
         """
         opt_params['id_taxo_group'] = str(id_taxo_group)
+        if id_species != None:
+            opt_params['id_species'] = str(id_species)
         return super().api_list(HashableDict(opt_params))
 
     def api_diff(self, id_taxo_group, delta_time, modification_type='all'):
@@ -415,7 +440,7 @@ class PlacesAPI(BiolovisionAPI):
 
     Methods
     - api_get                - Return a single place from the controler
-    - api_list               - Return all places from the controler
+    - api_list               - Return a list of places from the controler
 
     """
 
@@ -430,7 +455,7 @@ class SpeciesAPI(BiolovisionAPI):
 
     Methods
     - api_get                - Return a single specie from the controler
-    - api_list               - Return all species from the controler
+    - api_list               - Return a list of species from the controler
 
     """
 
@@ -445,7 +470,7 @@ class TaxoGroupsAPI(BiolovisionAPI):
 
     Methods
     - api_get                - Return a single taxo group from the controler
-    - api_list               - Return all taxo groups from the controler
+    - api_list               - Return a list of taxo groups from the controler
 
     """
 
@@ -455,7 +480,7 @@ class TaxoGroupsAPI(BiolovisionAPI):
                          max_retry, max_requests, max_chunks)
 
     @lru_cache(maxsize=32)
-    def api_list(self):
+    def api_list(self, opt_params=None):
         """Return list of taxo groups, from cache or site."""
         return super().api_list()
 
@@ -465,7 +490,7 @@ class TerritorialUnitsAPI(BiolovisionAPI):
 
     Methods
     - api_get                - Return a single territorial unit from the controler
-    - api_list               - Return all territorial units from the controler
+    - api_list               - Return a list of territorial units from the controler
 
     """
 
@@ -475,6 +500,6 @@ class TerritorialUnitsAPI(BiolovisionAPI):
                          max_retry, max_requests, max_chunks)
 
     @lru_cache(maxsize=32)
-    def api_list(self):
+    def api_list(self, opt_params=None):
         """Return list of taxo groups, from cache or site."""
         return super().api_list()

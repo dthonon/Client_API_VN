@@ -1,80 +1,103 @@
 """Methods to download from VisioNature and store to file.
 
 
-
 Methods
 
 - download_taxo_groups      - Download and store taxo groups
 
 Properties
 
-- transfer_errors            - Return number of errors
+-
 
 """
 import sys
-from pathlib import Path
 from datetime import datetime, timedelta
 import logging
 import json
-import gzip
 
-from export_vn.biolovision_api import LocalAdminUnitsAPI, ObservationsAPI, PlacesAPI
+from export_vn.biolovision_api import EntitiesAPI, LocalAdminUnitsAPI, ObservationsAPI, PlacesAPI
 from export_vn.biolovision_api import SpeciesAPI, TaxoGroupsAPI, TerritorialUnitsAPI
 from export_vn.biolovision_api import BiolovisionApiException, HTTPError, MaxChunksError
-from export_vn.evnconf import EvnConf
+from export_vn.regulator import PID
 
 # version of the program:
-__version__ = "0.1.1" #VERSION#
+from setuptools_scm import get_version
+__version__ = get_version(root='../..', relative_to=__file__)
 
 class DownloadVnException(Exception):
     """An exception occurred while handling download or store. """
+
+class NotImplemented(DownloadVnException):
+    """Feature not implemented."""
 
 
 class DownloadVn:
     """Top class, not for direct use. Provides internal and template methods."""
 
-    def __init__(self, config, api_instance,
+    def __init__(self, config, api_instance, backend,
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
         self._config = config
+        self._api_instance = api_instance
+        self._backend = backend
         self._limits = {
             'max_retry': max_retry,
             'max_requests': max_requests,
             'max_chunks': max_chunks
         }
-        self._transfer_errors = 0
-        self._api_instance = api_instance
 
     @property
-    def transfer_errors(self):
-        """Return the number of API errors during this session."""
-        return self._transfer_errors
+    def version(self):
+        """Return version."""
+        return __version__
 
     # ----------------
     # Internal methods
     # ----------------
-    def store(self):
+
+
+    # ---------------
+    # Generic methods
+    # ---------------
+    def store(self, opt_params_iter=None):
         """Download from VN by API and store json to file.
 
         Calls  biolovision_api, convert to json and store to file.
+
+        Parameters
+        ----------
+        opt_params_iter : iterable or None
+            Provides opt_params values.
 
         """
         # GET from API
         logging.debug('Getting items from controler %s',
                       self._api_instance.controler)
-        items_dict = self._api_instance.api_list()
-        # Convert to json
-        logging.debug('Converting to json %d items',
-                      len(items_dict['data']))
-        items_json = json.dumps(items_dict, sort_keys=True, indent=4, separators=(',', ': '))
-        # Store to file
-        if (len(items_dict['data']) > 0):
-            file_json_gz = str(Path.home()) + '/' + self._config.file_store + \
-                self._api_instance.controler + '_1.json.gz'
-            logging.debug('Received data, storing json to {}'.format(file_json_gz))
-            with gzip.open(file_json_gz, 'wb', 9) as g:
-                g.write(items_json.encode())
+        i = 0
+        if opt_params_iter == None:
+            opt_params_iter = iter([None])
+        for opt_params in opt_params_iter:
+            i += 1
+            logging.debug('Iteration %s, opt_params = %s',
+                          i, opt_params)
+            items_dict = self._api_instance.api_list(opt_params=opt_params)
+            # Call backend to store results
+            self._backend(self._api_instance.controler, str(i), items_dict)
 
         return
+
+class Entities(DownloadVn):
+    """ Implement store from entities controler.
+
+    Methods
+    - store               - Download and store to json
+
+    """
+
+    def __init__(self, config, backend,
+                 max_retry=5, max_requests=sys.maxsize, max_chunks=10):
+        super().__init__(config, EntitiesAPI(config), backend,
+                         max_retry, max_requests, max_chunks)
+
 
 
 class LocalAdminUnits(DownloadVn):
@@ -85,9 +108,9 @@ class LocalAdminUnits(DownloadVn):
 
     """
 
-    def __init__(self, config,
+    def __init__(self, config, backend,
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
-        super().__init__(config, LocalAdminUnitsAPI(config),
+        super().__init__(config, LocalAdminUnitsAPI(config), backend,
                          max_retry, max_requests, max_chunks)
 
 
@@ -100,36 +123,153 @@ class Observations(DownloadVn):
 
     """
 
-    def __init__(self, config,
+    def __init__(self, config, backend,
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
-        super().__init__(config, ObservationsAPI(config),
+        super().__init__(config, ObservationsAPI(config), backend,
                          max_retry, max_requests, max_chunks)
 
+    def _store_list(self, id_taxo_group, by_specie):
+        """Download from VN by API list and store json to file.
 
-    def store(self, id_taxo_group):
-        """Download from VN by API and store json to file.
+        Calls biolovision_api to get observation, convert to json and store.
+        If id_taxo_group is defined, downloads only this taxo_group
+        Else if id_taxo_group is None, downloads all database
+        If by_specie, iterate on species
+        Else download all taxo_group in 1 call
 
-        Calls  biolovision_api, convert to json and store to file.
+        Parameters
+        ----------
+        id_taxo_group : str or None
+            If not None, taxo_group to be downloaded.
+        by_specie : bool
+            If True, downloading by specie.
 
         """
         # GET from API
-        logging.debug('Getting items from controler %s',
+        logging.debug('Getting items from controler %s, using API list',
                       self._api_instance.controler)
-        items_dict = self._api_instance.api_list(id_taxo_group)
-        # Convert to json
-        logging.debug('Converting to json %d items',
-                      len(items_dict['data']))
-        items_json = json.dumps(items_dict, sort_keys=True, indent=4, separators=(',', ': '))
-        # Store to file
-        if (len(items_dict['data']) > 0):
-            file_json_gz = str(Path.home()) + '/' + self._config.file_store + \
-                self._api_instance.controler + '_' + str(id_taxo_group) + '_1.json.gz'
-            logging.debug('Received data, storing json to {}'.format(file_json_gz))
-            with gzip.open(file_json_gz, 'wb', 9) as g:
-                g.write(items_json.encode())
+        if id_taxo_group == None:
+            taxo_groups = TaxoGroupsAPI(self._config).api_list()['data']
+        else:
+            taxo_groups = [{'id': id_taxo_group, 'access_mode': 'full'}]
+        for taxo in taxo_groups:
+            if taxo['access_mode'] != 'none':
+                id_taxo_group = taxo['id']
+                logging.info('Getting observations from taxo_group %s',
+                             id_taxo_group)
+                if by_specie:
+                    species = SpeciesAPI(self._config).api_list({'id_taxo_group': str(id_taxo_group)})['data']
+                    for specie in species:
+                        if specie['is_used'] == '1':
+                            logging.info('Getting observations from taxo_group %s, species %s',
+                                         id_taxo_group, specie['id'])
+                            items_dict = self._api_instance.api_list(id_taxo_group, specie['id'])
+                            # Call backend to store results
+                            self._backend(self._api_instance.controler, str(id_taxo_group) + '_' + specie['id'],
+                                          items_dict)
+                else:
+                    items_dict = self._api_instance.api_list(id_taxo_group)
+                    # Call backend to store results
+                    self._backend(self._api_instance.controler, str(id_taxo_group) + '_1',
+                                  items_dict)
+
 
         return
 
+    def _store_search(self, id_taxo_group):
+        """Download from VN by API search and store json to file.
+
+        Calls biolovision_api to get observation, convert to json and store.
+        If id_taxo_group is defined, downloads only this taxo_group
+        Else if id_taxo_group is None, downloads all database
+        Moves back in date range, starting from now
+        Date range is adapted to regulate flow
+
+        Parameters
+        ----------
+        id_taxo_group : str or None
+            If not None, taxo_group to be downloaded.
+
+        """
+        # GET from API
+        logging.debug('Getting items from controler %s, using API list',
+                      self._api_instance.controler)
+        if id_taxo_group == None:
+            taxo_groups = TaxoGroupsAPI(self._config).api_list()['data']
+        else:
+            taxo_groups = [{'id': id_taxo_group, 'access_mode': 'full'}]
+        for taxo in taxo_groups:
+            if taxo['access_mode'] != 'none':
+                id_taxo_group = taxo['id']
+                end_date = datetime.now()
+                start_date = end_date
+                min_date = datetime(1901, 1, 1)
+                seq = 1
+                pid = PID(kp=0.01, ki=0.025, kd=0.0,
+                          setpoint=10000, output_limits = (5, 10000))
+                delta_days = 15
+                while start_date > min_date:
+                    start_date = end_date - timedelta(days=delta_days)
+                    q_param = {'period_choice': 'range',
+                               'date_from': start_date.strftime('%d.%m.%Y'),
+                               'date_to': end_date.strftime('%d.%m.%Y'),
+                               'species_choice':'all',
+                               'taxonomic_group': taxo['id']}
+                    items_dict = self._api_instance.api_search(q_param)
+                    # Call backend to store results
+                    self._backend(self._api_instance.controler, str(id_taxo_group) + '_' + str(seq),
+                                  items_dict)
+                    nb_obs = len(items_dict['data']['sightings'])
+                    logging.info('Iter: %s, %s observations, taxo_group: %s, date: %s, interval: %s',
+                                 seq, nb_obs, id_taxo_group, start_date.strftime('%d/%m/%Y'), str(delta_days))
+                    seq += 1
+                    end_date = start_date
+                    delta_days = int(pid(nb_obs))
+        return
+
+    def store(self, id_taxo_group=None, by_specie=False, method='search'):
+        """Download from VN by API, looping on taxo_group if None and store json to file.
+
+        Calls  biolovision_api, convert to json and store to file.
+        Downloads all database if id_taxo_group is None.
+        If id_taxo_group is defined, downloads only this taxo_group
+
+        Parameters
+        ----------
+        id_taxo_group : str or None
+            If not None, taxo_group to be downloaded.
+        by_specie : bool
+            If True, downloading by specie.
+        method : str
+            API used to download, either 'search' or 'list'.
+
+        """
+        # GET from API
+        logging.debug('Getting items from controler %s, using API %s',
+                      self._api_instance.controler, method)
+
+        if id_taxo_group == None:
+            # Get all active taxo_groups
+            taxo_groups = TaxoGroupsAPI(self._config).api_list()
+            taxo_list = []
+            for taxo in taxo_groups['data']:
+                if taxo['access_mode'] != 'none':
+                    logging.debug('Storing species from taxo_group %s', taxo['id'])
+                    taxo_list.append({'id_taxo_group': taxo['id']})
+        else:
+            # Only 1 taxo_group given as parameter
+            taxo_list = [id_taxo_group]
+
+        if method == 'search':
+            for taxo in taxo_list:
+                self._store_search(taxo)
+        elif method == 'list':
+            for taxo in taxo_list:
+                self._store_list(id_taxo_group, by_specie=by_specie)
+        else:
+            raise NotImplemented
+
+        return
 
     def update(self):
         """Download increment from VN by API and store json to file.
@@ -147,15 +287,7 @@ class Observations(DownloadVn):
         # Convert to json
         logging.debug('Received %d modified or updated items',
                       len(items_dict))
-        # items_json = json.dumps(items_dict, sort_keys=True, indent=4, separators=(',', ': '))
-        # # Store to file
-        # if (len(items_dict['data']) > 0):
-        #     file_json_gz = str(Path.home()) + '/' + self._config.file_store + \
-        #         self._api_instance.controler + '_1.json.gz'
-        #     logging.debug('Received data, storing json to {}'.format(file_json_gz))
-        #     with gzip.open(file_json_gz, 'wb', 9) as g:
-        #         g.write(items_json.encode())
-
+        # TODO: process changes
         return
 
 
@@ -167,9 +299,9 @@ class Places(DownloadVn):
 
     """
 
-    def __init__(self, config,
+    def __init__(self, config, backend,
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
-        super().__init__(config, PlacesAPI(config),
+        super().__init__(config, PlacesAPI(config), backend,
                          max_retry, max_requests, max_chunks)
 
 
@@ -181,11 +313,21 @@ class Species(DownloadVn):
 
     """
 
-    def __init__(self, config,
+    def __init__(self, config, backend,
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
-        super().__init__(config, SpeciesAPI(config),
+        super().__init__(config, SpeciesAPI(config), backend,
                          max_retry, max_requests, max_chunks)
 
+    def store(self):
+        """Store species, iterating over taxo_groups
+        """
+        taxo_groups = TaxoGroupsAPI(self._config).api_list()
+        taxo_list = []
+        for taxo in taxo_groups['data']:
+            if taxo['access_mode'] != 'none':
+                logging.debug('Storing species from taxo_group %s', taxo['id'])
+                taxo_list.append({'id_taxo_group': taxo['id']})
+        super().store(iter(taxo_list))
 
 class TaxoGroup(DownloadVn):
     """ Implement store from taxo_groups controler.
@@ -195,9 +337,9 @@ class TaxoGroup(DownloadVn):
 
     """
 
-    def __init__(self, config,
+    def __init__(self, config, backend,
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
-        super().__init__(config, TaxoGroupsAPI(config),
+        super().__init__(config, TaxoGroupsAPI(config), backend,
                          max_retry, max_requests, max_chunks)
 
 
@@ -209,7 +351,7 @@ class TerritorialUnits(DownloadVn):
 
     """
 
-    def __init__(self, config,
+    def __init__(self, config, backend,
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
-        super().__init__(config, TerritorialUnitsAPI(config),
+        super().__init__(config, TerritorialUnitsAPI(config), backend,
                          max_retry, max_requests, max_chunks)
