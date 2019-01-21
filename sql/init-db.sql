@@ -3,26 +3,26 @@
 -- - Create JSON tables
 
 -- Delete existing DB and roles
-DROP DATABASE IF EXISTS $(evn_db_name);
-DROP ROLE IF EXISTS $(evn_db_group);
+DROP DATABASE IF EXISTS $(db_name);
+DROP ROLE IF EXISTS $(db_group);
 
--- Group role: $(evn_db_group)
-CREATE ROLE $(evn_db_group)
+-- Group role:
+CREATE ROLE $(db_group)
   NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION;
 
--- Import role: $(evn_db_user)
-GRANT $(evn_db_group) TO $(evn_db_user);
+-- Import role:
+GRANT $(db_group) TO $(db_user);
 
--- Database: $(evn_db_name)
-CREATE DATABASE $(evn_db_name)
-  WITH OWNER = $(evn_db_group);
-GRANT ALL ON DATABASE $(evn_db_name) TO $(evn_db_group);
+-- Database:
+CREATE DATABASE $(db_name)
+  WITH OWNER = $(db_group);
+GRANT ALL ON DATABASE $(db_name) TO $(db_group);
 
-\c $(evn_db_name)
+\c $(db_name)
 
--- Schema : $(evn_db_schema_import)
-CREATE SCHEMA $(evn_db_schema_import)
-  AUTHORIZATION $(evn_db_group);
+-- Schema
+CREATE SCHEMA $(db_schema_import)
+  AUTHORIZATION $(db_group);
 
 -- Add extensions
 CREATE EXTENSION IF NOT EXISTS pgcrypto; -- To generate pseudo ids
@@ -37,9 +37,9 @@ ALTER DEFAULT PRIVILEGES
     TO postgres;
 ALTER DEFAULT PRIVILEGES
     GRANT INSERT, SELECT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON TABLES
-    TO $(evn_db_group);
+    TO $(db_group);
 
-SET search_path TO $(evn_db_schema_import),public;
+SET search_path TO $(db_schema_import),public;
 
 ------------------
 -- Internal tables

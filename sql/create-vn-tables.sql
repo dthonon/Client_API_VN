@@ -82,7 +82,7 @@ CREATE OR REPLACE FUNCTION update_entities() RETURNS TRIGGER AS \$\$
         RETURN NEW;
 
     ELSIF (TG_OP = 'INSERT') THEN
-        -- Inserting data on src_vn.observations when raw data is inserted
+        -- Inserting row when raw data is inserted
         INSERT INTO $(db_schema_vn).entities(site, id, short_name, full_name_french, description_french,
                                                  url, address)
         VALUES (
@@ -165,7 +165,7 @@ CREATE OR REPLACE FUNCTION update_local_admin_units() RETURNS TRIGGER AS \$\$
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
             INSERT INTO $(db_schema_vn).local_admin_units(site, id, id_canton, name, insee,
-                                                              coord_lat, coord_lon, coord_x_l93, coord_y_l93)
+                                                          coord_lat, coord_lon, coord_x_l93, coord_y_l93)
             VALUES (
                 NEW.site,
                 NEW.id,
@@ -181,8 +181,9 @@ CREATE OR REPLACE FUNCTION update_local_admin_units() RETURNS TRIGGER AS \$\$
         RETURN NEW;
 
     ELSIF (TG_OP = 'INSERT') THEN
-        -- Inserting data on src_vn.observations when raw data is inserted
-        INSERT INTO $(db_schema_vn).local_admin_units(site, id, id_country, name, short_name)
+        -- Inserting row when raw data is inserted
+        INSERT INTO $(db_schema_vn).local_admin_units(site, id, id_canton, name, insee,
+                                                      coord_lat, coord_lon, coord_x_l93, coord_y_l93)
         VALUES (
             NEW.site,
             NEW.id,
@@ -260,11 +261,11 @@ SELECT AddGeometryColumn('observations', 'geom', 2154, 'POINT', 2);
 \o
 
 -- Indexes on $(db_schema_vn).observations;
-DROP INDEX IF EXISTS observations_idx_id_universal;
+/* DROP INDEX IF EXISTS observations_idx_id_universal;
 CREATE UNIQUE INDEX observations_idx_id_universal
     ON $(db_schema_vn).observations USING btree
     (id_universal)
-    TABLESPACE pg_default;
+    TABLESPACE pg_default; */
 
 -- Add trigger for postgis geometry update
 DROP TRIGGER IF EXISTS trg_geom ON $(db_schema_vn).observations;
@@ -277,7 +278,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
     IF (TG_OP = 'DELETE') THEN
         -- Deleting data on src_vn.observations when raw data is deleted
         DELETE FROM $(db_schema_vn).observations
-            WHERE id_sighting = OLD.id_sighting AND site=OLD.site;
+            WHERE id_sighting = OLD.id AND site = OLD.site;
         IF NOT FOUND THEN
             RETURN NULL;
         END IF;
@@ -322,7 +323,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             death_cause2    = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info, mortality, death_cause2}',
             insert_date     = to_timestamp(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{insert_date,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS'),
             update_date     = to_timestamp(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{update_date,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS')
-        WHERE id_sighting = OLD.id AND site = OLD.site ;
+        WHERE id_sighting = OLD.id AND site = OLD.site;
 
         IF NOT FOUND THEN
             -- Inserting data on src_vn.observations when raw data is inserted

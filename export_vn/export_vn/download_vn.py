@@ -192,7 +192,7 @@ class Observations(DownloadVn):
 
         """
         # GET from API
-        logging.debug('Getting items from controler %s, using API list',
+        logging.debug('Getting items from controler %s, using API search',
                       self._api_instance.controler)
         if id_taxo_group == None:
             taxo_groups = TaxoGroupsAPI(self._config).api_list()['data']
@@ -254,8 +254,8 @@ class Observations(DownloadVn):
             taxo_list = []
             for taxo in taxo_groups['data']:
                 if taxo['access_mode'] != 'none':
-                    logging.debug('Storing species from taxo_group %s', taxo['id'])
-                    taxo_list.append({'id_taxo_group': taxo['id']})
+                    logging.debug('Will download observations from taxo_group %s: %s', taxo['id'], taxo['name'])
+                    taxo_list.append(taxo['id'])
         else:
             # Only 1 taxo_group given as parameter
             taxo_list = [id_taxo_group]
@@ -265,7 +265,7 @@ class Observations(DownloadVn):
                 self._store_search(taxo)
         elif method == 'list':
             for taxo in taxo_list:
-                self._store_list(id_taxo_group, by_specie=by_specie)
+                self._store_list(taxo, by_specie=by_specie)
         else:
             raise NotImplemented
 

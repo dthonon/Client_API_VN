@@ -43,6 +43,9 @@ def main():
     parser.add_argument('--vn_tables',
                         help='create or recreate vn colums based tables',
                         action='store_true')
+    parser.add_argument('--init',
+                        help='Delete if exists and create database and roles',
+                        action='store_true')
     parser.add_argument('file',
                         help='file name, used to select config file')
 
@@ -62,6 +65,32 @@ def main():
     # Get configuration
     logging.info('Getting configuration data from %s', args.file)
     cfg_list = EvnConf(args.file).site_list
+
+    if args.init:
+        logging.info('Delete if exists and create database and roles')
+        cfg = list(cfg_list.values())[0]
+        db_cfg = {
+            'db_host': cfg.db_host,
+            'db_port': cfg.db_port,
+            'db_name': cfg.db_name,
+            'db_schema_import': cfg.db_schema_import,
+            'db_schema_vn': cfg.db_schema_vn,
+            'db_group': cfg.db_group,
+            'db_user': cfg.db_user,
+            'db_pw': cfg.db_pw
+            }
+        filename = str(Path.home()) + '/Client_API_VN/sql/init-db.sql'
+        with open(filename, 'r') as myfile:
+            template = myfile.read()
+        (cmd, exp_globals) = pyexpander.expandToStr(template,
+                                                    external_definitions=db_cfg)
+        filename = str(Path.home()) + '/tmp/init-db.sql'
+        with open(filename, 'w') as myfile:
+            myfile.write(cmd)
+        try:
+            subprocess.run('env PGOPTIONS="-c client-min-messages=' + CLIENT_MIN_MESSAGE + '" psql ' + SQL_QUIET + ' --dbname=postgres --file=' + filename, check=True, shell=True)
+        except subprocess.CalledProcessError as err:
+            print('ERROR:', err)
 
     if args.vn_tables:
         logging.info('Creating or recreating vn colums based files')
@@ -104,8 +133,17 @@ def main():
             taxo_group = TaxoGroup(cfg, store_pg.store)
             territorial_unit = TerritorialUnits(cfg, store_pg.store)
 
-            #species.store()
             taxo_group.store()
+            species.store()
+
+            entities.store()
+
+            territorial_unit.store()
+            local_admin_units.store()
+            places.store()
+
+            observations.store()
+
         else:
             logging.info('Skipping site %s', site)
 
