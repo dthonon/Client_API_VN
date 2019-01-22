@@ -133,14 +133,14 @@ def main():
             taxo_group = TaxoGroup(cfg, store_pg.store)
             territorial_unit = TerritorialUnits(cfg, store_pg.store)
 
-            taxo_group.store()
-            species.store()
-
-            entities.store()
-
-            territorial_unit.store()
-            local_admin_units.store()
-            places.store()
+            # taxo_group.store()
+            # species.store()
+            #
+            # entities.store()
+            #
+            # territorial_unit.store()
+            # local_admin_units.store()
+            # places.store()
 
             observations.store()
 

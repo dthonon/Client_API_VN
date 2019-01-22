@@ -205,8 +205,8 @@ class Observations(DownloadVn):
                 start_date = end_date
                 min_date = datetime(1901, 1, 1)
                 seq = 1
-                pid = PID(kp=0.01, ki=0.025, kd=0.0,
-                          setpoint=10000, output_limits = (5, 10000))
+                pid = PID(kp=0.0, ki=0.0025, kd=0.0,
+                          setpoint=10000, output_limits = (5, 1000))
                 delta_days = 15
                 while start_date > min_date:
                     start_date = end_date - timedelta(days=delta_days)

@@ -21,8 +21,6 @@ site:
         evn_client_key: evn_client_key
         # Client secret, obtained from Biolovision
         evn_client_secret: evn_client_secret
-        # Top level path name for downloaded file storage, relative to $HOME
-        evn_file_store: VN_files
     tst2:
         # Enable download from this site
         enabled: false
@@ -36,10 +34,13 @@ site:
         evn_client_key: evn_client_key
         # Client secret, obtained from Biolovision
         evn_client_secret: evn_client_secret
-        # Top level path name for downloaded file storage, relative to $HOME
-        evn_file_store: VN_files
 
-# Postgresql related information
+# File storage backend information
+file:
+    # Top level path name for downloaded file storage, relative to $HOME
+    evn_file_store: VN_files
+
+# Postgresql backend related information
 database:
     # Database host
     evn_db_host: localhost
