@@ -1,70 +1,97 @@
 # Initialization file for python scripts
 # Needs to be customized for each site. See comments below for details
 
-# General information
+# General parameters
 main:
     # Mail address for the execution report
-    evn_admin_mail: nom.prenom@example.net
+    admin_mail: nom.prenom@example.net
 
-# VisioNature site information
+# API controlers parameters
+controler:
+    entities:
+        # Enable download from this controler
+        enabled: true
+    local_admin_units:
+        # Enable download from this controler
+        enabled: true
+    observations:
+        # Enable download from this controler
+        enabled: true
+        # List of taxo_groups to exclude from download
+        taxo_exclude:
+            - 1
+    places:
+        # Enable download from this controler
+        enabled: true
+    species:
+        # Enable download from this controler
+        enabled: true
+    taxo_group:
+        # Enable download from this controler
+        enabled: true
+    territorial_unit:
+        # Enable download from this controler
+        enabled: true
+
+# VisioNature site parameters
 site:
     tst1:
         # Enable download from this site
         enabled: true
         # URL
-        evn_site: https://www.faune-xxx.org/
+        site: https://www.faune-xxx.org/
         # Username
-        evn_user_email: nom.prenom@example.net
+        user_email: nom.prenom@example.net
         # User password
-        evn_user_pw: evn_user_pw
+        user_pw: user_pw
         # Client key, obtained from Biolovision
-        evn_client_key: evn_client_key
+        client_key: client_key
         # Client secret, obtained from Biolovision
-        evn_client_secret: evn_client_secret
+        client_secret: client_secret
     tst2:
         # Enable download from this site
         enabled: false
         # URL
-        evn_site: https://www.faune-xxx.org/
+        site: https://www.faune-xxx.org/
         # Username
-        evn_user_email: nom.prenom@example.net
+        user_email: nom.prenom@example.net
         # User password
-        evn_user_pw: evn_user_pw
+        user_pw: user_pw
         # Client key, obtained from Biolovision
-        evn_client_key: evn_client_key
+        client_key: client_key
         # Client secret, obtained from Biolovision
-        evn_client_secret: evn_client_secret
+        client_secret: client_secret
 
-# File storage backend information
+# File storage backend parameters
 file:
     # Top level path name for downloaded file storage, relative to $HOME
-    evn_file_store: VN_files
+    file_store: VN_files
 
-# Postgresql backend related information
+# Postgresql backend related parameters
 database:
     # Database host
-    evn_db_host: localhost
+    db_host: localhost
     # Database IP port
-    evn_db_port: 5432
+    db_port: 5432
     # Database name
-    evn_db_name: faune_xxx
-    # Database schema inside evn_db_name database, for imported JSON data
-    evn_db_schema_import: import
-    # Database schema inside evn_db_name database, for columns extracted from JSON
-    evn_db_schema_vn: src_vn
+    db_name: faune_xxx
+    # Database schema inside db_name database, for imported JSON data
+    db_schema_import: import
+    # Database schema inside db_name database, for columns extracted from JSON
+    db_schema_vn: src_vn
     # Postgresql user group accessing imported data
-    evn_db_group: lpo_xxx
+    db_group: lpo_xxx
     # Postgresql user used to import data
-    evn_db_user: xferxx
+    db_user: xferxx
     # Postgresql user password
-    evn_db_pw: evn_db_pw
-    # Directory where SQL scripts are stored
-    evn_sql_scripts: Client_API_VN/Examples/VN_sql
+    db_pw: db_pw
 
-# Local information, create as many sections as needed
+# Local parameters, create as many sections as needed
 local:
     tst1:
         # External user1 name
-        evn_external1_name: evn_external1_name
+        external1_name: external1_name
         # External user1 password
-        evn_external1_pw: evn_external1_pw
+        external1_pw: external1_pw
+        # Directory where SQL scripts are stored
+        sql_scripts: Client_API_VN/Examples/VN_sql

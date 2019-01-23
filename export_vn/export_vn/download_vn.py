@@ -257,8 +257,12 @@ class Observations(DownloadVn):
                     logging.debug('Will download observations from taxo_group %s: %s', taxo['id'], taxo['name'])
                     taxo_list.append(taxo['id'])
         else:
-            # Only 1 taxo_group given as parameter
-            taxo_list = [id_taxo_group]
+            if isinstance(id_taxo_group, list):
+                # A list of taxo_group given as parameter
+                taxo_list = id_taxo_group
+            else:
+                # Only 1 taxo_group given as parameter
+                taxo_list = [id_taxo_group]
 
         if method == 'search':
             for taxo in taxo_list:

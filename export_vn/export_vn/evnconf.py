@@ -11,6 +11,39 @@ from pathlib import Path
 from setuptools_scm import get_version
 __version__ = get_version(root='../..', relative_to=__file__)
 
+class EvnCtrlConf:
+    """Expose controler configuration as properties
+    """
+    def __init__(self, ctrl, config):
+        self._ctrl = ctrl
+
+        # Import parameters in properties
+        self._enabled          = config['controler'][ctrl]['enabled']
+        if 'taxo_exclude' in config['controler'][ctrl]:
+            self._taxo_exclude = config['controler'][ctrl]['taxo_exclude']
+        else:
+            self._taxo_exclude = []
+
+    @property
+    def version(self):
+        """Return version."""
+        return __version__
+
+    @property
+    def site(self):
+        """Return site name, used to identify configuration file."""
+        return self._site
+
+    @property
+    def enabled(self):
+        """Return enabled flag, defining is site is to be downloaded."""
+        return self._enabled
+
+    @property
+    def taxo_exclude(self):
+        """Return list of taxo_groups excluded from download."""
+        return self._taxo_exclude
+
 class EvnSiteConf:
     """Expose site configuration as properties
     """
@@ -19,24 +52,28 @@ class EvnSiteConf:
 
         # Import parameters in properties
         self._enabled          = config['site'][site]['enabled']
-        self._client_key       = config['site'][site]['evn_client_key']
-        self._client_secret    = config['site'][site]['evn_client_secret']
-        self._user_email       = config['site'][site]['evn_user_email']
-        self._user_pw          = config['site'][site]['evn_user_pw']
-        self._base_url         = config['site'][site]['evn_site']
-        self._file_store       = config['site'][site]['evn_file_store'] + '/' + site + '/'
-        self._db_host          = config['database']['evn_db_host']
-        self._db_port          = str(config['database']['evn_db_port'])
-        self._db_name          = config['database']['evn_db_name']
-        self._db_schema_import = config['database']['evn_db_schema_import']
-        self._db_schema_vn     = config['database']['evn_db_schema_vn']
-        self._db_group         = config['database']['evn_db_group']
-        self._db_user          = config['database']['evn_db_user']
-        self._db_pw            = config['database']['evn_db_pw']
-        self._sql_scripts      = config['database']['evn_sql_scripts']
+        self._client_key       = config['site'][site]['client_key']
+        self._client_secret    = config['site'][site]['client_secret']
+        self._user_email       = config['site'][site]['user_email']
+        self._user_pw          = config['site'][site]['user_pw']
+        self._base_url         = config['site'][site]['site']
+        self._file_store       = config['file']['file_store'] + '/' + site + '/'
+        self._db_host          = config['database']['db_host']
+        self._db_port          = str(config['database']['db_port'])
+        self._db_name          = config['database']['db_name']
+        self._db_schema_import = config['database']['db_schema_import']
+        self._db_schema_vn     = config['database']['db_schema_vn']
+        self._db_group         = config['database']['db_group']
+        self._db_user          = config['database']['db_user']
+        self._db_pw            = config['database']['db_pw']
         if site in config['local']:
-            self._external1_name = config['local'][site]['evn_external1_name']
-            self._external1_pw   = config['local'][site]['evn_external1_pw']
+            self._external1_name = config['local'][site]['external1_name']
+            self._external1_pw   = config['local'][site]['external1_pw']
+            self._sql_scripts    = config['local'][site]['sql_scripts']
+        else:
+            self._external1_name = ''
+            self._external1_pw   = ''
+            self._sql_scripts    = ''
 
     @property
     def version(self):
@@ -150,9 +187,23 @@ class EvnConf:
             except yaml.YAMLError as exc:
                 print(exc)
 
+        self._ctrl_list = {}
+        for ctrl in self._config['controler']:
+            self._ctrl_list[ctrl] = EvnCtrlConf(ctrl, self._config)
+
         self._site_list = {}
         for site in self._config['site']:
             self._site_list[site] = EvnSiteConf(site, self._config)
+
+    @property
+    def version(self):
+        """Return version."""
+        return __version__
+
+    @property
+    def ctrl_list(self):
+        """Return list of controler configurations."""
+        return self._ctrl_list
 
     @property
     def site_list(self):

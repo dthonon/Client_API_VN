@@ -157,57 +157,62 @@ class BiolovisionAPI:
             logging.debug(resp.headers)
             logging.debug('Status code from %s request: %s', method, resp.status_code)
             if resp.status_code != 200:
+                # Request returned an error. Logging and checking if not too many errors to continue
                 logging.error('%s status code = %s, for URL %s',
                               method, resp.status_code, protected_url)
                 self._transfer_errors += 1
-                raise HTTPError(resp.status_code)
-
-            resp_chunk = resp.json()
-            # Initialize or append to response dict, depending on content
-            if 'data' in resp_chunk:
-                if 'sightings' in resp_chunk['data']:
-                    logging.debug('Received %d sightings in chunk %d',
-                                 len(resp_chunk['data']['sightings']), nb_chunks)
-                    if nb_chunks == 0:
-                        data_rec = resp_chunk
+                if self._transfer_errors > self._limits['max_retry']:
+                    # Too many retries. Raising exception
+                    logging.critical('Too many error %s, raising exception', self._transfer_errors)
+                    raise HTTPError(resp.status_code)
+            else:
+                # No error from request: processing response
+                resp_chunk = resp.json()
+                # Initialize or append to response dict, depending on content
+                if 'data' in resp_chunk:
+                    if 'sightings' in resp_chunk['data']:
+                        logging.debug('Received %d sightings in chunk %d',
+                                     len(resp_chunk['data']['sightings']), nb_chunks)
+                        if nb_chunks == 0:
+                            data_rec = resp_chunk
+                        else:
+                            data_rec['data']['sightings'] += resp_chunk['data']['sightings']
+                    elif 'forms'  in resp_chunk['data']:
+                        logging.debug('Received %d forms in chunk %d',
+                                     len(resp_chunk['data']['forms']), nb_chunks)
+                        if nb_chunks == 0:
+                            data_rec = resp_chunk
+                        else:
+                            data_rec['data']['forms'] += resp_chunk['data']['forms']
                     else:
-                        data_rec['data']['sightings'] += resp_chunk['data']['sightings']
-                elif 'forms'  in resp_chunk['data']:
-                    logging.debug('Received %d forms in chunk %d',
-                                 len(resp_chunk['data']['forms']), nb_chunks)
-                    if nb_chunks == 0:
-                        data_rec = resp_chunk
-                    else:
-                        data_rec['data']['forms'] += resp_chunk['data']['forms']
+                        logging.debug('Received %d data items in chunk %d',
+                                     len(resp_chunk), nb_chunks)
+                        if nb_chunks == 0:
+                            data_rec = resp_chunk
+                        else:
+                            data_rec['data'] += resp_chunk['data']
                 else:
-                    logging.debug('Received %d data items in chunk %d',
+                    logging.debug('Received %d items without data in chunk %d',
                                  len(resp_chunk), nb_chunks)
                     if nb_chunks == 0:
                         data_rec = resp_chunk
                     else:
-                        data_rec['data'] += resp_chunk['data']
-            else:
-                logging.debug('Received %d items without data in chunk %d',
-                             len(resp_chunk), nb_chunks)
-                if nb_chunks == 0:
-                    data_rec = resp_chunk
-                else:
-                    data_rec += resp_chunk
+                        data_rec += resp_chunk
 
-            # Is there more data to come?
-            if (('transfer-encoding' in resp.headers) and
-                (resp.headers['transfer-encoding'] == 'chunked') and
-                ('pagination_key' in resp.headers)):
-                logging.debug('Chunked transfer => requesting for more, with key: %s',
-                              resp.headers['pagination_key'])
-                # Update request parameters to get next chunk
-                params['pagination_key'] = resp.headers['pagination_key']
-                nb_chunks += 1
-            else:
-                logging.debug('Non-chunked transfer => finished requests')
-                if 'pagination_key' in params:
-                    del params['pagination_key']
-                break
+                # Is there more data to come?
+                if (('transfer-encoding' in resp.headers) and
+                    (resp.headers['transfer-encoding'] == 'chunked') and
+                    ('pagination_key' in resp.headers)):
+                    logging.debug('Chunked transfer => requesting for more, with key: %s',
+                                  resp.headers['pagination_key'])
+                    # Update request parameters to get next chunk
+                    params['pagination_key'] = resp.headers['pagination_key']
+                    nb_chunks += 1
+                else:
+                    logging.debug('Non-chunked transfer => finished requests')
+                    if 'pagination_key' in params:
+                        del params['pagination_key']
+                    break
 
         logging.debug('Received %d chunks', nb_chunks)
         if nb_chunks < self._limits['max_chunks']:
