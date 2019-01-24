@@ -38,11 +38,12 @@ Exceptions
 import sys
 import logging
 
+import json
+from functools import lru_cache
+
 import urllib
 import requests
-import json
 from requests_oauthlib import OAuth1
-from functools import lru_cache
 
 # version of the program:
 from setuptools_scm import get_version
@@ -62,7 +63,7 @@ class HTTPError(BiolovisionApiException):
 class MaxChunksError(BiolovisionApiException):
     """Too many chunks returned from API calls."""
 
-class NotImplemented(BiolovisionApiException):
+class NotImplementedException(BiolovisionApiException):
     """Feature not implemented."""
 
 class IncorrectParameter(BiolovisionApiException):
@@ -150,9 +151,9 @@ class BiolovisionAPI:
                                     params=payload, headers=headers)
             elif method == 'POST':
                 resp = requests.post(url=protected_url, auth=self._oauth,
-                                    params=payload, headers=headers, data=body)
+                                     params=payload, headers=headers, data=body)
             else:
-                raise NotImplemented
+                raise NotImplementedException
 
             logging.debug(resp.headers)
             logging.debug('Status code from %s request: %s', method, resp.status_code)
@@ -172,28 +173,28 @@ class BiolovisionAPI:
                 if 'data' in resp_chunk:
                     if 'sightings' in resp_chunk['data']:
                         logging.debug('Received %d sightings in chunk %d',
-                                     len(resp_chunk['data']['sightings']), nb_chunks)
+                                      len(resp_chunk['data']['sightings']), nb_chunks)
                         if nb_chunks == 0:
                             data_rec = resp_chunk
                         else:
                             data_rec['data']['sightings'] += resp_chunk['data']['sightings']
                     elif 'forms'  in resp_chunk['data']:
                         logging.debug('Received %d forms in chunk %d',
-                                     len(resp_chunk['data']['forms']), nb_chunks)
+                                      len(resp_chunk['data']['forms']), nb_chunks)
                         if nb_chunks == 0:
                             data_rec = resp_chunk
                         else:
                             data_rec['data']['forms'] += resp_chunk['data']['forms']
                     else:
                         logging.debug('Received %d data items in chunk %d',
-                                     len(resp_chunk), nb_chunks)
+                                      len(resp_chunk), nb_chunks)
                         if nb_chunks == 0:
                             data_rec = resp_chunk
                         else:
                             data_rec['data'] += resp_chunk['data']
                 else:
                     logging.debug('Received %d items without data in chunk %d',
-                                 len(resp_chunk), nb_chunks)
+                                  len(resp_chunk), nb_chunks)
                     if nb_chunks == 0:
                         data_rec = resp_chunk
                     else:
@@ -201,8 +202,8 @@ class BiolovisionAPI:
 
                 # Is there more data to come?
                 if (('transfer-encoding' in resp.headers) and
-                    (resp.headers['transfer-encoding'] == 'chunked') and
-                    ('pagination_key' in resp.headers)):
+                        (resp.headers['transfer-encoding'] == 'chunked') and
+                        ('pagination_key' in resp.headers)):
                     logging.debug('Chunked transfer => requesting for more, with key: %s',
                                   resp.headers['pagination_key'])
                     # Update request parameters to get next chunk
@@ -253,14 +254,14 @@ class BiolovisionAPI:
     # -----------------------------------------
     #  Generic methods, used by most subclasses
     # -----------------------------------------
-    def api_get(self, id):
+    def api_get(self, id_entity):
         """Query for a single entity of the given controler.
 
         Calls  /ctrl/id API.
 
         Parameters
         ----------
-        id : str
+        id_entity : str
             entity to retrieve.
 
         Returns
@@ -272,7 +273,7 @@ class BiolovisionAPI:
         params = {'user_email': self._config.user_email,
                   'user_pw': self._config.user_pw}
         # GET from API
-        return self._url_get(params, self._ctrl + '/' + str(id))
+        return self._url_get(params, self._ctrl + '/' + str(id_entity))
 
     def api_list(self, opt_params=None):
         """Query for a list of entities of the given controler.
@@ -289,7 +290,7 @@ class BiolovisionAPI:
         json : dict or None
             dict decoded from json if status OK, else None
         """
-        if opt_params == None:
+        if opt_params is None:
             return self._api_list()
         else:
             return self._api_list(HashableDict(opt_params))

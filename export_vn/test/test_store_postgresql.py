@@ -3,14 +3,9 @@
 Test each method of store_postgresql module.
 Also test them as backend to download_vn.
 """
-import sys
-from pathlib import Path
 import logging
 import pytest
-import json
-import gzip
 
-from export_vn.download_vn import DownloadVn, DownloadVnException
 from export_vn.download_vn import Entities, LocalAdminUnits, Observations, Places
 from export_vn.download_vn import Species, TaxoGroup, TerritorialUnits
 from export_vn.store_postgresql import StorePostgresql
@@ -39,21 +34,21 @@ def test_version():
 # --------
 # Entities
 # --------
-def test_entities_api_pg_store(capsys):
+def test_entities_api_pg_store():
     """Store entities to database."""
     ENTITIES.store()
 
 # -----------------
 # Local_admin_units
 # -----------------
-def test_local_admin_units_api_pg_store(capsys):
+def test_local_adm_u_api_pg_store():
     """Store local_admin_units to database."""
     LOCAL_ADMIN_UNITS.store()
 
 # -------------
 #  Observations
 # -------------
-def test_observations_api_pg_store(capsys):
+def test_observations_api_pg_store():
     """Store observations of a taxo_group to database."""
     OBSERVATIONS.store(18, method='search')
 
@@ -61,7 +56,7 @@ def test_observations_api_pg_store(capsys):
 #  Places
 # -------
 @pytest.mark.slow
-def test_places_api_pg_store(capsys):
+def test_places_api_pg_store():
     """Store places to database."""
     PLACES.store()
 
@@ -69,20 +64,20 @@ def test_places_api_pg_store(capsys):
 #  Species
 # --------
 @pytest.mark.slow
-def test_species_api_pg_store(capsys):
+def test_species_api_pg_store():
     """Store species to database."""
     SPECIES.store()
 
 # ------------
 #  Taxo_groups
 # ------------
-def test_taxo_groups_api_pg_store(capsys):
+def test_taxo_groups_api_pg_store():
     """Store taxonomic groups to database."""
     TAXO_GROUP.store()
 
 # ------------------
 #  Territorial units
 # ------------------
-def test_territorial_units_api_pg_store(capsys):
+def test_terr_u_api_pg_store():
     """Store territorial units to database."""
     TERRITORIAL_UNIT.store()

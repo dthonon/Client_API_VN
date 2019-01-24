@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 setup(
     name="export_vn",
     packages=find_packages(),
-    include_package_data = True,
+    include_package_data=True,
 
     use_scm_version={'root': '..', 'relative_to': __file__},
     setup_requires=['setuptools_scm'],
