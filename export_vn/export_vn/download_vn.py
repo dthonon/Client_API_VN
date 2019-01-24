@@ -27,7 +27,7 @@ __version__ = get_version(root='../..', relative_to=__file__)
 class DownloadVnException(Exception):
     """An exception occurred while handling download or store. """
 
-class NotImplemented(DownloadVnException):
+class NotImplementedException(DownloadVnException):
     """Feature not implemented."""
 
 
@@ -158,14 +158,16 @@ class Observations(DownloadVn):
                 logging.info('Getting observations from taxo_group %s',
                              id_taxo_group)
                 if by_specie:
-                    species = SpeciesAPI(self._config).api_list({'id_taxo_group': str(id_taxo_group)})['data']
+                    species = SpeciesAPI(self._config).api_list({'id_taxo_group':
+                                                                 str(id_taxo_group)})['data']
                     for specie in species:
                         if specie['is_used'] == '1':
                             logging.info('Getting observations from taxo_group %s, species %s',
                                          id_taxo_group, specie['id'])
                             items_dict = self._api_instance.api_list(id_taxo_group, specie['id'])
                             # Call backend to store results
-                            self._backend(self._api_instance.controler, str(id_taxo_group) + '_' + specie['id'],
+                            self._backend(self._api_instance.controler,
+                                          str(id_taxo_group) + '_' + specie['id'],
                                           items_dict)
                 else:
                     items_dict = self._api_instance.api_list(id_taxo_group)
@@ -205,8 +207,8 @@ class Observations(DownloadVn):
                 start_date = end_date
                 min_date = datetime(1901, 1, 1)
                 seq = 1
-                pid = PID(kp=0.0, ki=0.0025, kd=0.0,
-                          setpoint=10000, output_limits = (5, 1000))
+                pid = PID(kp=0.0, ki=0.003, kd=0.0,
+                          setpoint=10000, output_limits=(10, 2000))
                 delta_days = 15
                 while start_date > min_date:
                     start_date = end_date - timedelta(days=delta_days)
@@ -220,8 +222,9 @@ class Observations(DownloadVn):
                     self._backend(self._api_instance.controler, str(id_taxo_group) + '_' + str(seq),
                                   items_dict)
                     nb_obs = len(items_dict['data']['sightings'])
-                    logging.info('Iter: %s, %s observations, taxo_group: %s, date: %s, interval: %s',
-                                 seq, nb_obs, id_taxo_group, start_date.strftime('%d/%m/%Y'), str(delta_days))
+                    logging.info('Iter: %s, %s obs, taxo_group: %s, date: %s, interval: %s',
+                                 seq, nb_obs, id_taxo_group,
+                                 start_date.strftime('%d/%m/%Y'), str(delta_days))
                     seq += 1
                     end_date = start_date
                     delta_days = int(pid(nb_obs))
@@ -254,7 +257,8 @@ class Observations(DownloadVn):
             taxo_list = []
             for taxo in taxo_groups['data']:
                 if taxo['access_mode'] != 'none':
-                    logging.debug('Will download observations from taxo_group %s: %s', taxo['id'], taxo['name'])
+                    logging.debug('Will download observations from taxo_group %s: %s',
+                                  taxo['id'], taxo['name'])
                     taxo_list.append(taxo['id'])
         else:
             if isinstance(id_taxo_group, list):

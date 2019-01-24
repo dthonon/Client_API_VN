@@ -158,13 +158,15 @@ class BiolovisionAPI:
             logging.debug(resp.headers)
             logging.debug('Status code from %s request: %s', method, resp.status_code)
             if resp.status_code != 200:
-                # Request returned an error. Logging and checking if not too many errors to continue
+                # Request returned an error.
+                # Logging and checking if not too many errors to continue
                 logging.error('%s status code = %s, for URL %s',
                               method, resp.status_code, protected_url)
                 self._transfer_errors += 1
                 if self._transfer_errors > self._limits['max_retry']:
                     # Too many retries. Raising exception
-                    logging.critical('Too many error %s, raising exception', self._transfer_errors)
+                    logging.critical('Too many error %s, raising exception',
+                                     self._transfer_errors)
                     raise HTTPError(resp.status_code)
             else:
                 # No error from request: processing response
@@ -216,10 +218,10 @@ class BiolovisionAPI:
                     break
 
         logging.debug('Received %d chunks', nb_chunks)
-        if nb_chunks < self._limits['max_chunks']:
-            return data_rec
-        else:
+        if nb_chunks >= self._limits['max_chunks']:
             raise MaxChunksError
+
+        return data_rec
 
 
     def _api_list(self, opt_params=None):
@@ -291,9 +293,10 @@ class BiolovisionAPI:
             dict decoded from json if status OK, else None
         """
         if opt_params is None:
-            return self._api_list()
+            lst = self._api_list()
         else:
-            return self._api_list(HashableDict(opt_params))
+            lst = self._api_list(HashableDict(opt_params))
+        return lst
 
     # -------------------------
     # Exception testing methods
@@ -376,7 +379,7 @@ class ObservationsAPI(BiolovisionAPI):
             dict decoded from json if status OK, else None
         """
         opt_params['id_taxo_group'] = str(id_taxo_group)
-        if id_species != None:
+        if id_species is not None:
             opt_params['id_species'] = str(id_species)
         return super().api_list(HashableDict(opt_params))
 
