@@ -219,9 +219,8 @@ class Observations(DownloadVn):
                                'taxonomic_group': taxo['id']}
                     items_dict = self._api_instance.api_search(q_param)
                     # Call backend to store results
-                    self._backend(self._api_instance.controler, str(id_taxo_group) + '_' + str(seq),
+                    nb_obs = self._backend(self._api_instance.controler, str(id_taxo_group) + '_' + str(seq),
                                   items_dict)
-                    nb_obs = len(items_dict['data']['sightings'])
                     logging.info('Iter: %s, %s obs, taxo_group: %s, date: %s, interval: %s',
                                  seq, nb_obs, id_taxo_group,
                                  start_date.strftime('%d/%m/%Y'), str(delta_days))

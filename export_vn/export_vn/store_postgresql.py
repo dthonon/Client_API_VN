@@ -33,7 +33,7 @@ class StorePostgresql:
     def __init__(self, config):
         self._config = config
         # Get tables definition from Postgresql DB
-        db_string = 'postgres+psycopg2://' + \
+        db_string = 'postgresql+psycopg2://' + \
                     self._config.db_user + \
                     ':' +\
                     self._config.db_pw + \
@@ -103,6 +103,10 @@ class StorePostgresql:
         items_dict : dict
             Data returned from API call.
 
+        Returns
+        -------
+        int
+            Count of items stored (not exact for observations, due to forms).
         """
 
         # Loop on data array to store each element to database
@@ -138,6 +142,8 @@ class StorePostgresql:
         # Finished with DB
         conn.close()
 
+        return len(items_dict['data'])
+
     def _store_geometry(self, controler, items_dict):
         """Add Lambert 93 coordinates and pass to _store_simple.
 
@@ -151,6 +157,10 @@ class StorePostgresql:
         items_dict : dict
             Data returned from API call.
 
+        Returns
+        -------
+        int
+            Count of items stored (not exact for observations, due to forms).
         """
 
         in_proj = Proj(init='epsg:4326')
@@ -160,7 +170,7 @@ class StorePostgresql:
             elem['coord_x_l93'], elem['coord_y_l93'] = transform(in_proj, out_proj,
                                                                  elem['coord_lon'],
                                                                  elem['coord_lat'])
-        self._store_simple(controler, items_dict)
+        return self._store_simple(controler, items_dict)
 
     def _store_1_observation(self, controler, conn, elem, in_proj, out_proj):
         """Process and store a single observation.
@@ -182,8 +192,6 @@ class StorePostgresql:
             Projection used in input item.
         out_proj :
             Projection added to item.
-
-
         """
         # Insert simple sightings, each row contains id, update timestamp and full json body
         logging.debug('Storing observation %s to database', elem)
@@ -247,6 +255,10 @@ class StorePostgresql:
         items_dict : dict
             Data returned from API call.
 
+        Returns
+        -------
+        int
+            Count of items stored (not exact for observations, due to forms).
         """
         # Insert simple sightings, each row contains id, update timestamp and full json body
         in_proj = Proj(init='epsg:4326')
@@ -267,7 +279,8 @@ class StorePostgresql:
 
         # Finished with DB
         conn.close()
-        logging.info('Stored %d observations or forms to database', nb_obs)
+        logging.debug('Stored %d observations or forms to database', nb_obs)
+        return nb_obs
 
     # ---------------
     # External methods
@@ -288,14 +301,18 @@ class StorePostgresql:
         items_dict : dict
             Data returned from API call.
 
+        Returns
+        -------
+        int
+            Count of items stored (not exact for observations, due to forms).
         """
         if self._table_defs[controler]['type'] == 'simple':
-            self._store_simple(controler, items_dict)
+            nb_item = self._store_simple(controler, items_dict)
         elif self._table_defs[controler]['type'] == 'geometry':
-            self._store_geometry(controler, items_dict)
+            nb_item = self._store_geometry(controler, items_dict)
         elif self._table_defs[controler]['type'] == 'observation':
-            self._store_observation(controler, items_dict)
+            nb_item = self._store_observation(controler, items_dict)
         else:
             raise StorePostgresqlException('Not implemented')
 
-        return
+        return nb_item

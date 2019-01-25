@@ -4,15 +4,13 @@ Program managing VisioNature export to Postgresql database
 
 
 """
-import sys
 import logging
 import argparse
-import json
-import shutil
+import subprocess
 from pathlib import Path
 import pyexpander.lib as pyexpander
 import pyexpander.parser as pyparser
-import subprocess
+from setuptools_scm import get_version
 
 from export_vn.download_vn import DownloadVn, DownloadVnException
 from export_vn.download_vn import Entities, LocalAdminUnits, Observations, Places
@@ -22,7 +20,6 @@ from export_vn.evnconf import EvnConf
 from export_vn.biolovision_api import TaxoGroupsAPI
 
 # version of the program:
-from setuptools_scm import get_version
 version = get_version(root='../..', relative_to=__file__)
 
 def db_config(cfg):
@@ -67,14 +64,14 @@ def main():
     if args.verbose:
         logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                             level=logging.DEBUG)
-        SQL_QUIET=""
-        CLIENT_MIN_MESSAGE="debug1"
+        sql_quiet = ""
+        client_min_message = "debug1"
 
     else:
         logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                             level=logging.INFO)
-        SQL_QUIET="--quiet"
-        CLIENT_MIN_MESSAGE="warning"
+        sql_quiet = "--quiet"
+        client_min_message = "warning"
 
     # Get configuration
     logging.info('Getting configuration data from %s', args.file)
@@ -95,7 +92,9 @@ def main():
         with open(filename, 'w') as myfile:
             myfile.write(cmd)
         try:
-            subprocess.run('env PGOPTIONS="-c client-min-messages=' + CLIENT_MIN_MESSAGE + '" psql ' + SQL_QUIET + ' --dbname=postgres --file=' + filename, check=True, shell=True)
+            subprocess.run('env PGOPTIONS="-c client-min-messages=' + client_min_message +
+                           '" psql ' + sql_quiet + ' --dbname=postgres --file=' + filename,
+                           check=True, shell=True)
         except subprocess.CalledProcessError as err:
             logging.error(err)
 
@@ -112,7 +111,10 @@ def main():
         with open(filename, 'w') as myfile:
             myfile.write(cmd)
         try:
-            subprocess.run('env PGOPTIONS="-c client-min-messages=' + CLIENT_MIN_MESSAGE + '" psql ' + SQL_QUIET + ' --dbname=' + cfg.db_name + ' --file=' + filename, check=True, shell=True)
+            subprocess.run('env PGOPTIONS="-c client-min-messages=' + client_min_message +
+                           '" psql ' + sql_quiet + ' --dbname=' + cfg.db_name +
+                           ' --file=' + filename,
+                           check=True, shell=True)
         except subprocess.CalledProcessError as err:
             logging.error(err)
 
@@ -167,9 +169,9 @@ def main():
                 taxo_groups_ex = cfg_crtl_list[ctrl].taxo_exclude
                 logging.info('Excluded taxo_groups: %s', taxo_groups_ex)
                 taxo_groups_filt = []
-                for t in taxo_groups :
-                    if (not t['name_constant'] in taxo_groups_ex) and (t['access_mode'] != 'none'):
-                        taxo_groups_filt.append(t['id'])
+                for taxo in taxo_groups:
+                    if (not taxo['name_constant'] in taxo_groups_ex) and (taxo['access_mode'] != 'none'):
+                        taxo_groups_filt.append(taxo['id'])
                 logging.info('Downloading from taxo_groups: %s', taxo_groups_filt)
                 observations.store(taxo_groups_filt)
 

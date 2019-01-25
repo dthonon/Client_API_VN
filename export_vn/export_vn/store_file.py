@@ -53,10 +53,15 @@ class StoreFile:
             (Composed) sequence of data stream.
         controler : dict
             Data returned from API call.
-
+            
+        Returns
+        -------
+        int
+            Count of items stored (not exact for observations, due to forms).
         """
         # Store to file
-        if (len(items_dict['data']) > 0):
+        nb_obs = len(items_dict['data'])
+        if nb_obs > 0:
             # Convert to json
             logging.debug('Converting to json %d items',
                           len(items_dict['data']))
@@ -67,4 +72,4 @@ class StoreFile:
             with gzip.open(file_json_gz, 'wb', 9) as g:
                 g.write(items_json.encode())
 
-        return
+        return nb_obs

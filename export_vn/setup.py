@@ -1,4 +1,7 @@
+"""Setup for export_vn package.
+"""
 from setuptools import setup, find_packages
+
 setup(
     name="export_vn",
     packages=find_packages(),
