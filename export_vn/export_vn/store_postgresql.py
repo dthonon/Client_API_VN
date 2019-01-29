@@ -13,6 +13,9 @@ Properties
 import sys
 import logging
 import json
+import queue
+import threading
+
 from sqlalchemy import create_engine, update, select
 from sqlalchemy import Table, Column, Integer, String, Float, DateTime
 from sqlalchemy import MetaData, ForeignKey
@@ -27,11 +30,142 @@ __version__ = get_version(root='../..', relative_to=__file__)
 class StorePostgresqlException(Exception):
     """An exception occurred while handling download or store. """
 
+class ObservationItem:
+    """Properties of an observation, for transmission in Queue."""
+    def __init__(self, site, metadata, conn, elem, in_proj, out_proj):
+        """Item elements.
+
+        Parameters
+        ----------
+        site : str
+            VisioNature site, for column storage.
+        metadata :
+            sqlalchemy metadata for observation table.
+        conn :
+            sqlalchemy connection to database
+        elem : dict
+            Single observation to process and store.
+        in_proj :
+            Projection used in input item.
+        out_proj :
+            Projection added to item.
+        """
+        self._site = site
+        self._metadata = metadata
+        self._conn = conn
+        self._elem = elem
+        self._in_proj = in_proj
+        self._out_proj = out_proj
+
+    @property
+    def site(self):
+        """Return site."""
+        return self._site
+
+    @property
+    def metadata(self):
+        """Return metadata."""
+        return self._metadata
+
+    @property
+    def conn(self):
+        """Return conn."""
+        return self._conn
+
+    @property
+    def elem(self):
+        """Return elem."""
+        return self._elem
+
+    @property
+    def in_proj(self):
+        """Return in_proj."""
+        return self._in_proj
+
+    @property
+    def out_proj(self):
+        """Return out_proj."""
+        return self._out_proj
+
+def store_1_observation(item):
+    """Process and store a single observation.
+
+    - find insert or update date
+    - simplity data to remove redundant items: dates... (TBD)
+    - add Lambert 93 coordinates
+    - store json in Postgresql
+
+    Parameters
+    ----------
+    item : ObservationItem
+        Observation item containing all parameters.
+    """
+    # Insert simple sightings, each row contains id, update timestamp and full json body
+    elem = item.elem
+    logging.debug('Storing observation %s to database', elem)
+    # Find last update timestamp
+    if ('update_date' in elem['observers'][0]):
+        update_date = elem['observers'][0]['update_date']['@timestamp']
+    else:
+        update_date = elem['observers'][0]['insert_date']['@timestamp']
+
+    # Add Lambert 93 coordinates
+    elem['observers'][0]['coord_x_l93'], elem['observers'][0]['coord_y_l93'] = \
+        transform(item.in_proj, item.out_proj,
+                  elem['observers'][0]['coord_lon'],
+                  elem['observers'][0]['coord_lat'])
+    elem['place']['coord_x_l93'], elem['place']['coord_y_l93'] = \
+        transform(item.in_proj, item.out_proj,
+                  elem['place']['coord_lon'],
+                  elem['place']['coord_lat'])
+
+    # Store in Postgresql
+    items_json = json.dumps(elem)
+    logging.debug('Storing element %s',
+                  items_json)
+    metadata = item.metadata
+    site = item.site
+    stmt = select([metadata.c.id,
+                   metadata.c.site]).\
+            where(and_(metadata.c.id==elem['observers'][0]['id_sighting'], \
+                       metadata.c.site==site))
+    result = item.conn.execute(stmt)
+    row = result.fetchone()
+    if row == None:
+        logging.debug('Element not found in database, inserting new row')
+        stmt = metadata.insert().\
+                values(id=elem['observers'][0]['id_sighting'],
+                       site=site,
+                       update_ts=update_date,
+                       item=items_json)
+    else:
+        logging.debug('Element %s found in database, updating row', row[0])
+        stmt = metadata.update().\
+                where(and_(metadata.c.id==elem['observers'][0]['id_sighting'], \
+                           metadata.c.site==site)).\
+                values(id=elem['observers'][0]['id_sighting'],
+                       site=site,
+                       update_ts=update_date,
+                       item=items_json)
+    result = item.conn.execute(stmt)
+
+def observation_worker(i, q):
+    """Workers running in parallel to update database."""
+    while True:
+        item = q.get()
+        if item is None:
+            break
+        store_1_observation(item)
+        q.task_done()
+
+
 class StorePostgresql:
     """Provides store to Postgresql database method."""
 
     def __init__(self, config):
         self._config = config
+        self._num_worker_threads = 4
+
         # Get tables definition from Postgresql DB
         db_string = 'postgresql+psycopg2://' + \
                     self._config.db_user + \
@@ -55,11 +189,11 @@ class StorePostgresql:
         # Get dbtable definition
         self._metadata.reflect(bind=self._db)
         self._table_defs = {'entities': {'type': 'simple',
-                                            'metadata': None},
+                                         'metadata': None},
                             'forms': {'type': 'simple',
-                                              'metadata': None},
+                                      'metadata': None},
                             'local_admin_units': {'type': 'geometry',
-                                                   'metadata': None},
+                                                  'metadata': None},
                             'observations': {'type': 'observation',
                                              'metadata': None},
                             'places': {'type': 'geometry',
@@ -172,73 +306,6 @@ class StorePostgresql:
                                                                  elem['coord_lat'])
         return self._store_simple(controler, items_dict)
 
-    def _store_1_observation(self, controler, conn, elem, in_proj, out_proj):
-        """Process and store a single observation.
-
-        - find insert or update date
-        - simplity data to remove redundant items: dates... (TBD)
-        - add Lambert 93 coordinates
-        - store json in Postgresql
-
-        Parameters
-        ----------
-        controler : str
-            Name of API controler.
-        conn :
-            sqlalchemy connection to database
-        elem : dict
-            Single observation to process and store.
-        in_proj :
-            Projection used in input item.
-        out_proj :
-            Projection added to item.
-        """
-        # Insert simple sightings, each row contains id, update timestamp and full json body
-        logging.debug('Storing observation %s to database', elem)
-        # Find last update timestamp
-        if ('update_date' in elem['observers'][0]):
-            update_date = elem['observers'][0]['update_date']['@timestamp']
-        else:
-            update_date = elem['observers'][0]['insert_date']['@timestamp']
-
-        # Add Lambert 93 coordinates
-        elem['observers'][0]['coord_x_l93'], elem['observers'][0]['coord_y_l93'] = \
-            transform(in_proj, out_proj,
-                      elem['observers'][0]['coord_lon'],
-                      elem['observers'][0]['coord_lat'])
-        elem['place']['coord_x_l93'], elem['place']['coord_y_l93'] = \
-            transform(in_proj, out_proj,
-                      elem['place']['coord_lon'],
-                      elem['place']['coord_lat'])
-
-        # Store in Postgresql
-        items_json = json.dumps(elem)
-        logging.debug('Storing element %s',
-                      items_json)
-        stmt = select([self._table_defs[controler]['metadata'].c.id,
-                       self._table_defs[controler]['metadata'].c.site]).\
-                where(and_(self._table_defs[controler]['metadata'].c.id==elem['observers'][0]['id_sighting'], \
-                           self._table_defs[controler]['metadata'].c.site==self._config.site))
-        result = conn.execute(stmt)
-        row = result.fetchone()
-        if row == None:
-            logging.debug('Element not found in database, inserting new row')
-            stmt = self._table_defs[controler]['metadata'].insert().\
-                    values(id=elem['observers'][0]['id_sighting'],
-                           site=self._config.site,
-                           update_ts=update_date,
-                           item=items_json)
-        else:
-            logging.debug('Element %s found in database, updating row', row[0])
-            stmt = self._table_defs[controler]['metadata'].update().\
-                    where(and_(self._table_defs[controler]['metadata'].c.id==elem['observers'][0]['id_sighting'], \
-                               self._table_defs[controler]['metadata'].c.site==self._config.site)).\
-                    values(id=elem['observers'][0]['id_sighting'],
-                           site=self._config.site,
-                           update_ts=update_date,
-                           item=items_json)
-        result = conn.execute(stmt)
-
     def _store_observation(self, controler, items_dict):
         """Iterate through observations or forms and store.
 
@@ -260,22 +327,43 @@ class StorePostgresql:
         int
             Count of items stored (not exact for observations, due to forms).
         """
+        # Create parallel threads for database insertion/update
+        observations_queue = queue.Queue()
+        observations_threads = []
+        for i in range(self._num_worker_threads):
+            t = threading.Thread(target=observation_worker, args=(i, observations_queue))
+            t.start()
+            observations_threads.append(t)
+
         # Insert simple sightings, each row contains id, update timestamp and full json body
         in_proj = Proj(init='epsg:4326')
         out_proj = Proj(init='epsg:2154')
         conn = self._db.connect()
         nb_obs = 0
         for i in range(0, len(items_dict['data']['sightings'])):
-            elem = items_dict['data']['sightings'][i]
-            self._store_1_observation(controler, conn, elem, in_proj, out_proj)
+            obs = ObservationItem(self._config.site,
+                                self._table_defs[controler]['metadata'],
+                                conn, items_dict['data']['sightings'][i],
+                                in_proj, out_proj)
+            observations_queue.put(obs)
             nb_obs += 1
 
         if ('forms' in items_dict['data']):
             for f in range(0, len(items_dict['data']['forms'])):
                 for i in range(0, len(items_dict['data']['forms'][f]['sightings'])):
-                    elem = items_dict['data']['forms'][f]['sightings'][i]
-                    self._store_1_observation(controler, conn, elem, in_proj, out_proj)
+                    obs = ObservationItem(self._config.site,
+                                        self._table_defs[controler]['metadata'],
+                                        conn, items_dict['data']['forms'][f]['sightings'][i],
+                                        in_proj, out_proj)
+                    observations_queue.put(obs)
                     nb_obs += 1
+
+        # Wait for threads to finish and stop them
+        observations_queue.join()
+        for i in range(self._num_worker_threads):
+            observations_queue.put(None)
+        for t in observations_threads:
+            t.join()
 
         # Finished with DB
         conn.close()
