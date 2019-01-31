@@ -46,14 +46,13 @@ SET search_path TO $(db_schema_import),public;
 ------------------
 -- Table download_log, updated at each download or update from site
 DROP TABLE IF EXISTS download_log CASCADE;
--- Create table, indexes and access rights
 CREATE TABLE download_log (
     id SERIAL PRIMARY KEY,
     site character varying(100),
     controler character varying(100),
-    download_ts TIMESTAMP,
+    download_ts TIMESTAMP DEFAULT NOW(),
     error_count INTEGER,
-    warning_count INTEGER,
+    http_status INTEGER,
     comment character varying(1000)
 );
 CREATE INDEX download_log_idx_site
@@ -63,7 +62,8 @@ CREATE INDEX download_log_idx_controler
 CREATE INDEX download_log_idx_download_ts
     ON download_log (download_ts);
 
-INSERT INTO download_log (download_ts) VALUES (current_timestamp);
+INSERT INTO download_log (comment)
+    VALUES ('Creating table');
 
 -----------
 -- Entities

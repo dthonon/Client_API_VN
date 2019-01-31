@@ -80,8 +80,11 @@ class DownloadVn:
             logging.debug('Iteration %s, opt_params = %s',
                           i, opt_params)
             items_dict = self._api_instance.api_list(opt_params=opt_params)
+            # Call backend to store log
+            self._backend.log(self._config.site, self._api_instance.controler,
+                              self._api_instance.transfer_errors, self._api_instance.http_status)
             # Call backend to store results
-            self._backend(self._api_instance.controler, str(i), items_dict)
+            self._backend.store(self._api_instance.controler, str(i), items_dict)
 
         return
 
@@ -165,14 +168,20 @@ class Observations(DownloadVn):
                             logging.info('Getting observations from taxo_group %s, species %s',
                                          id_taxo_group, specie['id'])
                             items_dict = self._api_instance.api_list(id_taxo_group, specie['id'])
+                            # Call backend to store log
+                            self._backend.log(self._config.site, self._api_instance.controler,
+                                              self._api_instance.transfer_errors, self._api_instance.http_status)
                             # Call backend to store results
-                            self._backend(self._api_instance.controler,
+                            self._backend.store(self._api_instance.controler,
                                           str(id_taxo_group) + '_' + specie['id'],
                                           items_dict)
                 else:
                     items_dict = self._api_instance.api_list(id_taxo_group)
+                    # Call backend to store log
+                    self._backend.log(self._config.site, self._api_instance.controler,
+                                      self._api_instance.transfer_errors, self._api_instance.http_status)
                     # Call backend to store results
-                    self._backend(self._api_instance.controler, str(id_taxo_group) + '_1',
+                    self._backend.store(self._api_instance.controler, str(id_taxo_group) + '_1',
                                   items_dict)
 
 
@@ -218,8 +227,11 @@ class Observations(DownloadVn):
                                'species_choice':'all',
                                'taxonomic_group': taxo['id']}
                     items_dict = self._api_instance.api_search(q_param)
+                    # Call backend to store log
+                    self._backend.log(self._config.site, self._api_instance.controler,
+                                      self._api_instance.transfer_errors, self._api_instance.http_status)
                     # Call backend to store results
-                    nb_obs = self._backend(self._api_instance.controler, str(id_taxo_group) + '_' + str(seq),
+                    nb_obs = self._backend.store(self._api_instance.controler, str(id_taxo_group) + '_' + str(seq),
                                   items_dict)
                     logging.info('Iter: %s, %s obs, taxo_group: %s, date: %s, interval: %s',
                                  seq, nb_obs, id_taxo_group,

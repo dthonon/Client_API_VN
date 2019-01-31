@@ -53,7 +53,7 @@ class StoreFile:
             (Composed) sequence of data stream.
         controler : dict
             Data returned from API call.
-            
+
         Returns
         -------
         int
@@ -73,3 +73,24 @@ class StoreFile:
                 g.write(items_json.encode())
 
         return nb_obs
+
+    def log(self, site, controler,
+            error_count=0, http_status=0, comment=''):
+        """Write download log entries to database.
+
+        Parameters
+        ----------
+        site : str
+            VN site name.
+        controler : str
+            Name of API controler.
+        error_count : integer
+            Number of errors during download.
+        http_status : integer
+            HTTP status of latest download.
+        comment : str
+            Optional comment, in free text.
+
+        """
+        # Not implemented
+        return

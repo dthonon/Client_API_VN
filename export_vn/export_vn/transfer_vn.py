@@ -81,6 +81,8 @@ def main():
 
     if args.init:
         logging.info('Delete if exists and create database and roles')
+        # Force VN tables creation, even if not in args list
+        args.vn_tables = True
         cfg = list(cfg_site_list.values())[0]
         db_cfg = db_config(cfg)
         filename = str(Path.home()) + '/Client_API_VN/sql/init-db.sql'
@@ -128,43 +130,43 @@ def main():
             ctrl = 'entities'
             if cfg_crtl_list[ctrl].enabled:
                 logging.info('Using controler %s', ctrl)
-                entities = Entities(cfg, store_pg.store)
+                entities = Entities(cfg, store_pg)
                 entities.store()
 
             ctrl = 'territorial_unit'
             if cfg_crtl_list[ctrl].enabled:
                 logging.info('Using controler %s', ctrl)
-                territorial_unit = TerritorialUnits(cfg, store_pg.store)
+                territorial_unit = TerritorialUnits(cfg, store_pg)
                 territorial_unit.store()
 
             ctrl = 'local_admin_units'
             if cfg_crtl_list[ctrl].enabled:
                 logging.info('Using controler %s', ctrl)
-                local_admin_units = LocalAdminUnits(cfg, store_pg.store)
+                local_admin_units = LocalAdminUnits(cfg, store_pg)
                 local_admin_units.store()
 
             ctrl = 'places'
             if cfg_crtl_list[ctrl].enabled:
                 logging.info('Using controler %s', ctrl)
-                places = Places(cfg, store_pg.store)
+                places = Places(cfg, store_pg)
                 places.store()
 
             ctrl = 'taxo_group'
             if cfg_crtl_list[ctrl].enabled:
                 logging.info('Using controler %s', ctrl)
-                taxo_group = TaxoGroup(cfg, store_pg.store)
+                taxo_group = TaxoGroup(cfg, store_pg)
                 taxo_group.store()
 
             ctrl = 'species'
             if cfg_crtl_list[ctrl].enabled:
                 logging.info('Using controler %s', ctrl)
-                species = Species(cfg, store_pg.store)
+                species = Species(cfg, store_pg)
                 species.store()
 
             ctrl = 'observations'
             if cfg_crtl_list[ctrl].enabled:
                 logging.info('Using controler %s', ctrl)
-                observations = Observations(cfg, store_pg.store)
+                observations = Observations(cfg, store_pg)
                 taxo_groups = TaxoGroupsAPI(cfg).api_list()['data']
                 taxo_groups_ex = cfg_crtl_list[ctrl].taxo_exclude
                 logging.info('Excluded taxo_groups: %s', taxo_groups_ex)

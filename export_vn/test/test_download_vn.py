@@ -22,7 +22,7 @@ FILE = '.evn_test.yaml'
 
 # Get configuration for test site
 CFG = EvnConf(FILE).site_list[SITE]
-STORE_FILE = StoreFile(CFG).store
+STORE_FILE = StoreFile(CFG)
 ENTITIES = Entities(CFG, STORE_FILE)
 LOCAL_ADMIN_UNITS = LocalAdminUnits(CFG, STORE_FILE)
 OBSERVATIONS = Observations(CFG, STORE_FILE)

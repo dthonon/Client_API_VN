@@ -81,6 +81,7 @@ class BiolovisionAPI:
             'max_chunks': max_chunks
         }
         self._transfer_errors = 0
+        self._http_status = 0
         self._ctrl = controler
 
         # Using OAuth1 auth helper to get access
@@ -99,8 +100,13 @@ class BiolovisionAPI:
         return self._transfer_errors
 
     @property
+    def http_status(self):
+        """Return the latest HTTP status code."""
+        return self._http_status
+
+    @property
     def controler(self):
-        """Return the number of HTTP errors during this session."""
+        """Return the controler name."""
         return self._ctrl
 
     # ----------------
@@ -157,7 +163,8 @@ class BiolovisionAPI:
 
             logging.debug(resp.headers)
             logging.debug('Status code from %s request: %s', method, resp.status_code)
-            if resp.status_code != 200:
+            self._http_status = resp.status_code
+            if self._http_status != 200:
                 # Request returned an error.
                 # Logging and checking if not too many errors to continue
                 logging.error('%s status code = %s, for URL %s',

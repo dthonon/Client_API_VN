@@ -19,13 +19,13 @@ FILE = '.evn_test.yaml'
 # Get configuration for test site
 CFG = EvnConf(FILE).site_list[SITE]
 STORE_PG = StorePostgresql(CFG)
-ENTITIES = Entities(CFG, STORE_PG.store)
-LOCAL_ADMIN_UNITS = LocalAdminUnits(CFG, STORE_PG.store)
-OBSERVATIONS = Observations(CFG, STORE_PG.store)
-PLACES = Places(CFG, STORE_PG.store)
-SPECIES = Species(CFG, STORE_PG.store)
-TAXO_GROUP = TaxoGroup(CFG, STORE_PG.store)
-TERRITORIAL_UNIT = TerritorialUnits(CFG, STORE_PG.store)
+ENTITIES = Entities(CFG, STORE_PG)
+LOCAL_ADMIN_UNITS = LocalAdminUnits(CFG, STORE_PG)
+OBSERVATIONS = Observations(CFG, STORE_PG)
+PLACES = Places(CFG, STORE_PG)
+SPECIES = Species(CFG, STORE_PG)
+TAXO_GROUP = TaxoGroup(CFG, STORE_PG)
+TERRITORIAL_UNIT = TerritorialUnits(CFG, STORE_PG)
 
 def test_version():
     """Check if version is defined."""

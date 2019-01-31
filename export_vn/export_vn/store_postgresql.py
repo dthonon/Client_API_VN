@@ -342,9 +342,9 @@ class StorePostgresql:
         nb_obs = 0
         for i in range(0, len(items_dict['data']['sightings'])):
             obs = ObservationItem(self._config.site,
-                                self._table_defs[controler]['metadata'],
-                                conn, items_dict['data']['sightings'][i],
-                                in_proj, out_proj)
+                                  self._table_defs[controler]['metadata'],
+                                  conn, items_dict['data']['sightings'][i],
+                                  in_proj, out_proj)
             observations_queue.put(obs)
             nb_obs += 1
 
@@ -352,9 +352,9 @@ class StorePostgresql:
             for f in range(0, len(items_dict['data']['forms'])):
                 for i in range(0, len(items_dict['data']['forms'][f]['sightings'])):
                     obs = ObservationItem(self._config.site,
-                                        self._table_defs[controler]['metadata'],
-                                        conn, items_dict['data']['forms'][f]['sightings'][i],
-                                        in_proj, out_proj)
+                                          self._table_defs[controler]['metadata'],
+                                          conn, items_dict['data']['forms'][f]['sightings'][i],
+                                          in_proj, out_proj)
                     observations_queue.put(obs)
                     nb_obs += 1
 
@@ -404,3 +404,35 @@ class StorePostgresql:
             raise StorePostgresqlException('Not implemented')
 
         return nb_item
+
+    def log(self, site, controler,
+            error_count=0, http_status=0, comment=''):
+        """Write download log entries to database.
+
+        Parameters
+        ----------
+        site : str
+            VN site name.
+        controler : str
+            Name of API controler.
+        error_count : integer
+            Number of errors during download.
+        http_status : integer
+            HTTP status of latest download.
+        comment : str
+            Optional comment, in free text.
+
+        """
+        conn = self._db.connect()
+        metadata = self._metadata.tables[self._config.db_schema_import + '.download_log']
+        stmt = metadata.insert().\
+                values(site=site,
+                       controler=controler,
+                       error_count=error_count,
+                       http_status=http_status,
+                       comment=comment)
+        result = conn.execute(stmt)
+        # Finished with DB
+        conn.close()
+
+        return
