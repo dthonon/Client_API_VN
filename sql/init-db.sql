@@ -45,7 +45,7 @@ SET search_path TO $(db_schema_import),public;
 -- Internal tables
 ------------------
 -- Table download_log, updated at each download or update from site
-DROP TABLE IF EXISTS download_log CASCADE;
+/* DROP TABLE IF EXISTS download_log CASCADE;
 CREATE TABLE download_log (
     id SERIAL PRIMARY KEY,
     site character varying(100),
@@ -63,7 +63,7 @@ CREATE INDEX download_log_idx_download_ts
     ON download_log (download_ts);
 
 INSERT INTO download_log (comment)
-    VALUES ('Creating table');
+    VALUES ('Creating table'); */
 
 -----------
 -- Entities

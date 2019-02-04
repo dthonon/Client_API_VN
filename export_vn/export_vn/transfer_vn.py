@@ -75,16 +75,17 @@ def main():
 
     # Get configuration
     logging.info('Getting configuration data from %s', args.file)
-    cfg = EvnConf(args.file)
-    cfg_crtl_list = cfg.ctrl_list
-    cfg_site_list = cfg.site_list
+    cfg_ctrl = EvnConf(args.file)
+    cfg_crtl_list = cfg_ctrl.ctrl_list
+    cfg_site_list = cfg_ctrl.site_list
+    cfg = list(cfg_site_list.values())[0]
+    db_cfg = db_config(cfg)
+    store_pg = StorePostgresql(cfg)
 
     if args.init:
         logging.info('Delete if exists and create database and roles')
         # Force VN tables creation, even if not in args list
         args.vn_tables = True
-        cfg = list(cfg_site_list.values())[0]
-        db_cfg = db_config(cfg)
         filename = str(Path.home()) + '/Client_API_VN/sql/init-db.sql'
         with open(filename, 'r') as myfile:
             template = myfile.read()
@@ -102,8 +103,6 @@ def main():
 
     if args.vn_tables:
         logging.info('Creating or recreating vn colums based files')
-        cfg = list(cfg_site_list.values())[0]
-        db_cfg = db_config(cfg)
         filename = str(Path.home()) + '/Client_API_VN/sql/create-vn-tables.sql'
         with open(filename, 'r') as myfile:
             template = myfile.read()
@@ -124,8 +123,6 @@ def main():
     for site, cfg in cfg_site_list.items():
         if cfg.enabled:
             logging.info('Working on site %s', site)
-
-            store_pg = StorePostgresql(cfg)
 
             ctrl = 'entities'
             if cfg_crtl_list[ctrl].enabled:
