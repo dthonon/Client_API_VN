@@ -4,6 +4,7 @@ Test each method of download_vn module, using file store.
 """
 import sys
 from pathlib import Path
+from datetime import datetime, timedelta
 import logging
 import pytest
 import json
@@ -51,8 +52,6 @@ def test_entities_store(capsys):
         assert len(items_dict['data']) >= 20
     elif SITE == 't07':
         assert len(items_dict['data']) >= 8
-
-
 
 # -----------------
 #  LocalAdminUnits
@@ -110,6 +109,12 @@ def test_observations_store_search_1_2(capsys):
     OBSERVATIONS.store(2, method='search')
     assert Path(file_json).is_file()
 
+def test_observations_store_update_1_2(capsys):
+    """Get updates for 1.5 day of observations from taxo_group 2 by specie to file."""
+    interval = 0.5
+    since = (datetime.now() - timedelta(days=interval)).strftime('%H:%M:%S %d.%m.%Y')
+    OBSERVATIONS.update(since, 2)
+    assert OBSERVATIONS.transfer_errors == 0
 
 # -------
 #  Places

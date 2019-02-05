@@ -50,6 +50,11 @@ class DownloadVn:
         """Return version."""
         return __version__
 
+    @property
+    def transfer_errors(self):
+        """Return the number of HTTP errors during this session."""
+        return self._api_instance.transfer_errors
+
     # ----------------
     # Internal methods
     # ----------------
@@ -61,7 +66,7 @@ class DownloadVn:
     def store(self, opt_params_iter=None):
         """Download from VN by API and store json to file.
 
-        Calls  biolovision_api, convert to json and store to file.
+        Calls  biolovision_api, convert to json and call backend to store.
 
         Parameters
         ----------
@@ -167,7 +172,7 @@ class Observations(DownloadVn):
                         if specie['is_used'] == '1':
                             logging.info('Getting observations from taxo_group %s, species %s',
                                          id_taxo_group, specie['id'])
-                            items_dict = self._api_instance.api_list(id_taxo_group, specie['id'])
+                            items_dict = self._api_instance.api_list(id_taxo_group, id_species=specie['id'])
                             # Call backend to store log
                             self._backend.log(self._config.site, self._api_instance.controler,
                                               self._api_instance.transfer_errors, self._api_instance.http_status)
@@ -241,6 +246,26 @@ class Observations(DownloadVn):
                     delta_days = int(pid(nb_obs))
         return
 
+    def _list_taxo_groups(self, id_taxo_group):
+        if id_taxo_group == None:
+            # Get all active taxo_groups
+            taxo_groups = TaxoGroupsAPI(self._config).api_list()
+            taxo_list = []
+            for taxo in taxo_groups['data']:
+                if taxo['access_mode'] != 'none':
+                    logging.debug('Will download observations from taxo_group %s: %s',
+                                  taxo['id'], taxo['name'])
+                    taxo_list.append(taxo['id'])
+        else:
+            if isinstance(id_taxo_group, list):
+                # A list of taxo_group given as parameter
+                taxo_list = id_taxo_group
+            else:
+                # Only 1 taxo_group given as parameter
+                taxo_list = [id_taxo_group]
+
+        return taxo_list
+
     def store(self, id_taxo_group=None, by_specie=False, method='search'):
         """Download from VN by API, looping on taxo_group if None and store json to file.
 
@@ -262,22 +287,8 @@ class Observations(DownloadVn):
         logging.debug('Getting items from controler %s, using API %s',
                       self._api_instance.controler, method)
 
-        if id_taxo_group == None:
-            # Get all active taxo_groups
-            taxo_groups = TaxoGroupsAPI(self._config).api_list()
-            taxo_list = []
-            for taxo in taxo_groups['data']:
-                if taxo['access_mode'] != 'none':
-                    logging.debug('Will download observations from taxo_group %s: %s',
-                                  taxo['id'], taxo['name'])
-                    taxo_list.append(taxo['id'])
-        else:
-            if isinstance(id_taxo_group, list):
-                # A list of taxo_group given as parameter
-                taxo_list = id_taxo_group
-            else:
-                # Only 1 taxo_group given as parameter
-                taxo_list = [id_taxo_group]
+        # Get the list of taxo groups to process
+        taxo_list = self._list_taxo_groups(id_taxo_group)
 
         if method == 'search':
             for taxo in taxo_list:
@@ -290,23 +301,47 @@ class Observations(DownloadVn):
 
         return
 
-    def update(self):
+    def update(self, since, id_taxo_group=None):
         """Download increment from VN by API and store json to file.
         WIP WIP WIP
-        Calls  biolovision_api, convert to json and store to file.
+        Calls  biolovision_api, convert to json and call backend storage.
 
+        Parameters
+        ----------
+        since : datetime
+            Dates in the past to start query interval.
+        id_taxo_group : str or None
+            If not None, taxo_group to be downloaded.
         """
         # GET from API
         logging.debug('Getting items from controler %s',
                       self._api_instance.controler)
-        since = (datetime.now() - timedelta(days=1)).strftime('%H:%M:%S %d.%m.%Y')
-        logging.debug('Getting updates since {}'.format(since))
-        items_dict = self._api_instance.api_diff('2', since)
 
-        # Convert to json
-        logging.debug('Received %d modified or updated items',
-                      len(items_dict))
-        # TODO: process changes
+        # Get the list of taxo groups to process
+        taxo_list = self._list_taxo_groups(id_taxo_group)
+
+        logging.info('Getting updates since {}'.format(since))
+        items_dict = self._api_instance.api_diff(taxo_list, since)
+
+        # List by processing type
+        updated = list()
+        deleted = list()
+        for item in items_dict:
+            logging.debug('Observation %s was %s',
+                          item['id_universal'], item['modification_type'])
+            if item['modification_type'] == 'updated':
+                updated.append(item['id_universal'])
+            elif item['modification_type'] == 'deleted':
+                deleted.append(item['id_universal'])
+            else:
+                logging.error('Observation %s has unknown processing %s',
+                              item['id_universal'], item['modification_type'])
+                raise NotImplementedException
+        logging.info('Received %d updated and %d deleted items',
+                     len(updated), len(deleted))
+
+        # Process changes
+
         return
 
 

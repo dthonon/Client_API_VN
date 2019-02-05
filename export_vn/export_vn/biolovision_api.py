@@ -146,7 +146,11 @@ class BiolovisionAPI:
         # Loop on chunks
         nb_chunks = 0
         while nb_chunks < self._limits['max_chunks']:
-            # GET from API
+            # Remove DEBUG logging level to avoid too many details
+            level = logging.getLogger().level
+            logging.getLogger().setLevel(logging.INFO)
+
+            # Prepare call to API
             payload = urllib.parse.urlencode(params,
                                              quote_via=urllib.parse.quote)
             logging.debug('Params: %s', payload)
@@ -162,6 +166,7 @@ class BiolovisionAPI:
                 raise NotImplementedException
 
             logging.debug(resp.headers)
+            logging.getLogger().setLevel(level)
             logging.debug('Status code from %s request: %s', method, resp.status_code)
             self._http_status = resp.status_code
             if self._http_status != 200:
@@ -366,7 +371,7 @@ class ObservationsAPI(BiolovisionAPI):
         super().__init__(config, 'observations',
                          max_retry, max_requests, max_chunks)
 
-    def api_list(self, id_taxo_group, id_species=None, opt_params=dict()):
+    def api_list(self, id_taxo_group, **kwargs):
         """Query for list of observations by taxo_group from the controler.
 
         Calls  /observations API.
@@ -375,9 +380,7 @@ class ObservationsAPI(BiolovisionAPI):
         ----------
         id_taxo_group : integer
             taxo_group to query for observations
-        id_species : integer
-            optional specie to query for observations
-        opt_params : dict
+        **kwargs :
             optional URL parameters, empty by default. See Biolovision API documentation.
 
         Returns
@@ -385,9 +388,10 @@ class ObservationsAPI(BiolovisionAPI):
         json : dict or None
             dict decoded from json if status OK, else None
         """
+        opt_params = dict()
         opt_params['id_taxo_group'] = str(id_taxo_group)
-        if id_species is not None:
-            opt_params['id_species'] = str(id_species)
+        for key, value in kwargs.items():
+            opt_params[key] = value
         return super().api_list(HashableDict(opt_params))
 
     def api_diff(self, id_taxo_group, delta_time, modification_type='all'):
