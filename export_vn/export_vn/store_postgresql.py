@@ -280,32 +280,38 @@ class StorePostgresql:
         # Loop on data array to store each element to database
         logging.info('Storing %d items from %s to database', len(items_dict['data']), controler)
         conn = self._db.connect()
-        for elem in items_dict['data']:
-            # Convert to json
-            items_json = json.dumps(elem)
-            logging.debug('Storing element %s',
-                          items_json)
-            stmt = select([self._table_defs[controler]['metadata'].c.id,
-                           self._table_defs[controler]['metadata'].c.site]).\
-                    where(and_(self._table_defs[controler]['metadata'].c.id==elem['id'], \
-                               self._table_defs[controler]['metadata'].c.site==self._config.site))
-            result = conn.execute(stmt)
-            row = result.fetchone()
-            if row == None:
-                logging.debug('Element not found in database, inserting new row')
-                stmt = self._table_defs[controler]['metadata'].insert().\
-                        values(id=elem['id'],
-                               site=self._config.site,
-                               item=items_json)
-            else:
-                logging.debug('Element %s found in database, updating row', row[0])
-                stmt = self._table_defs[controler]['metadata'].update().\
+        trans = conn.begin()
+        try:
+            for elem in items_dict['data']:
+                # Convert to json
+                items_json = json.dumps(elem)
+                logging.debug('Storing element %s',
+                              items_json)
+                stmt = select([self._table_defs[controler]['metadata'].c.id,
+                               self._table_defs[controler]['metadata'].c.site]).\
                         where(and_(self._table_defs[controler]['metadata'].c.id==elem['id'], \
-                                   self._table_defs[controler]['metadata'].c.site==self._config.site)).\
-                        values(id=elem['id'],
-                               site=self._config.site,
-                               item=items_json)
-            result = conn.execute(stmt)
+                                   self._table_defs[controler]['metadata'].c.site==self._config.site))
+                result = conn.execute(stmt)
+                row = result.fetchone()
+                if row == None:
+                    logging.debug('Element not found in database, inserting new row')
+                    stmt = self._table_defs[controler]['metadata'].insert().\
+                            values(id=elem['id'],
+                                   site=self._config.site,
+                                   item=items_json)
+                else:
+                    logging.debug('Element %s found in database, updating row', row[0])
+                    stmt = self._table_defs[controler]['metadata'].update().\
+                            where(and_(self._table_defs[controler]['metadata'].c.id==elem['id'], \
+                                       self._table_defs[controler]['metadata'].c.site==self._config.site)).\
+                            values(id=elem['id'],
+                                   site=self._config.site,
+                                   item=items_json)
+                result = conn.execute(stmt)
+            trans.commit()
+        except:
+            trans.rollback()
+            raise
 
         # Finished with DB
         conn.close()
@@ -372,32 +378,39 @@ class StorePostgresql:
         # Insert simple sightings, each row contains id, update timestamp and full json body
         in_proj = Proj(init='epsg:4326')
         out_proj = Proj(init='epsg:2154')
-        conn = self._db.connect()
         nb_obs = 0
-        for i in range(0, len(items_dict['data']['sightings'])):
-            obs = ObservationItem(self._config.site,
-                                  self._table_defs[controler]['metadata'],
-                                  conn, items_dict['data']['sightings'][i],
-                                  in_proj, out_proj)
-            observations_queue.put(obs)
-            nb_obs += 1
+        conn = self._db.connect()
+        trans = conn.begin()
+        try:
+            for i in range(0, len(items_dict['data']['sightings'])):
+                obs = ObservationItem(self._config.site,
+                                      self._table_defs[controler]['metadata'],
+                                      conn, items_dict['data']['sightings'][i],
+                                      in_proj, out_proj)
+                observations_queue.put(obs)
+                nb_obs += 1
 
-        if ('forms' in items_dict['data']):
-            for f in range(0, len(items_dict['data']['forms'])):
-                for i in range(0, len(items_dict['data']['forms'][f]['sightings'])):
-                    obs = ObservationItem(self._config.site,
-                                          self._table_defs[controler]['metadata'],
-                                          conn, items_dict['data']['forms'][f]['sightings'][i],
-                                          in_proj, out_proj)
-                    observations_queue.put(obs)
-                    nb_obs += 1
+            if ('forms' in items_dict['data']):
+                for f in range(0, len(items_dict['data']['forms'])):
+                    for i in range(0, len(items_dict['data']['forms'][f]['sightings'])):
+                        obs = ObservationItem(self._config.site,
+                                              self._table_defs[controler]['metadata'],
+                                              conn, items_dict['data']['forms'][f]['sightings'][i],
+                                              in_proj, out_proj)
+                        observations_queue.put(obs)
+                        nb_obs += 1
 
-        # Wait for threads to finish and stop them
-        observations_queue.join()
-        for i in range(self._num_worker_threads):
-            observations_queue.put(None)
-        for t in observations_threads:
-            t.join()
+            # Wait for threads to finish and stop them
+            observations_queue.join()
+            for i in range(self._num_worker_threads):
+                observations_queue.put(None)
+            for t in observations_threads:
+                t.join()
+                
+            trans.commit()
+        except:
+            trans.rollback()
+            raise
 
         # Finished with DB
         conn.close()
