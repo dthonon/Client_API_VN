@@ -215,7 +215,7 @@ class StorePostgresql:
         self._create_table('download_log',
                            Column('site', String),
                            Column('controler', String),
-                           Column('download_ts', DateTime, default=func.now()),
+                           Column('download_ts', DateTime, server_default=func.now()),
                            Column('error_count', Integer),
                            Column('http_status', Integer),
                            Column('comment', String)
@@ -406,7 +406,7 @@ class StorePostgresql:
                 observations_queue.put(None)
             for t in observations_threads:
                 t.join()
-                
+
             trans.commit()
         except:
             trans.rollback()
