@@ -31,6 +31,13 @@ def test_version():
     """Check if version is defined."""
     logging.debug('package version: %s', STORE_PG.version)
 
+# ----
+# Logs
+# ----
+def test_log_pg_store():
+    """Create a log entry."""
+    STORE_PG.log(SITE, 'Test', 0, 0, comment='Test')
+
 # --------
 # Entities
 # --------
@@ -51,6 +58,11 @@ def test_local_adm_u_api_pg_store():
 def test_observations_api_pg_store():
     """Store observations of a taxo_group to database."""
     OBSERVATIONS.store(18, method='search')
+
+def test_observations_api_pg_delete():
+    """Delete some observations of a taxo_group to database."""
+    nb_delete = STORE_PG.delete_obs([274830, 289120])
+    assert nb_delete == 2
 
 # -------
 #  Places
