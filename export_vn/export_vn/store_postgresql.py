@@ -333,12 +333,7 @@ class PostgresqlUtils:
 
         # Reconnect to created database
         logging.info('Connecting to %s database, to finalize creation', self._config.db_name)
-        db_url = {'drivername': 'postgresql+psycopg2',
-                  'username': self._config.db_user,
-                  'password': self._config.db_pw,
-                  'host': self._config.db_host,
-                  'port': self._config.db_port,
-                  'database': self._config.db_name}
+        db_url['database'] = self._config.db_name
         db = create_engine(URL(**db_url), echo=False)
         conn = db.connect()
 
@@ -442,6 +437,7 @@ class PostgresqlUtils:
 
         return None
 
+
 class StorePostgresql:
     """Provides store to Postgresql database method."""
 
@@ -464,7 +460,6 @@ class StorePostgresql:
         # Connect and set path to include VN import schema
         self._db = create_engine(URL(**db_url), echo=False)
         conn = self._db.connect()
-        #conn.execute('SET search_path TO {},public'.format(dbschema))
 
         # Get dbtable definition
         self._metadata.reflect(bind=self._db, schema=dbschema)

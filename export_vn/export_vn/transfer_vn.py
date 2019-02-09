@@ -84,26 +84,11 @@ def main():
     db_cfg = db_config(cfg)
     if args.init:
         logging.info('Delete if exists and create database and roles')
-        # Force VN tables creation, even if not in args list
-        args.vn_tables = True
         manage_pg.drop_database()
         manage_pg.create_database()
-
-        filename = str(Path.home()) + '/Client_API_VN/sql/init-db.sql'
-        with open(filename, 'r') as myfile:
-            template = myfile.read()
-        (cmd, exp_globals) = pyexpander.expandToStr(template,
-                                                    external_definitions=db_cfg)
-        filename = str(Path.home()) + '/tmp/init-db.sql'
-        with open(filename, 'w') as myfile:
-            myfile.write(cmd)
-        try:
-            subprocess.run('env PGOPTIONS="-c client-min-messages=' + client_min_message +
-                           '" psql ' + sql_quiet + ' --dbname=postgres --file=' + filename,
-                           check=True, shell=True)
-        except subprocess.CalledProcessError as err:
-            logging.error(err)
         manage_pg.create_json_tables()
+        # Force VN tables creation, even if not in args list
+        args.vn_tables = True
 
     if args.vn_tables:
         logging.info('Creating or recreating vn colums based files')
