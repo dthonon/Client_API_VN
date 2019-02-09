@@ -18,11 +18,12 @@ import threading
 
 from sqlalchemy import create_engine, update, select
 from sqlalchemy import Table, Column, Integer, String, Float, DateTime, Sequence
-from sqlalchemy import MetaData, ForeignKey
+from sqlalchemy import MetaData, ForeignKey, PrimaryKeyConstraint
 from sqlalchemy.sql import and_, or_, not_
 from sqlalchemy import inspect, func
 from sqlalchemy.engine.url import URL
 from sqlalchemy.schema import CreateColumn
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.compiler import compiles
 
 from pyproj import Proj, transform
@@ -60,6 +61,7 @@ class ObservationItem:
         self._elem = elem
         self._in_proj = in_proj
         self._out_proj = out_proj
+        return None
 
     @property
     def site(self):
@@ -152,6 +154,7 @@ def store_1_observation(item):
                        update_ts=update_date,
                        item=items_json)
     result = item.conn.execute(stmt)
+    return None
 
 def observation_worker(i, q):
     """Workers running in parallel to update database."""
@@ -161,6 +164,7 @@ def observation_worker(i, q):
             break
         store_1_observation(item)
         q.task_done()
+    return None
 
 class StorePostgresql:
     """Provides store to Postgresql database method."""
@@ -180,6 +184,111 @@ class StorePostgresql:
             logging.info('Table %s not found => Creating it', name)
             table = Table(name, self._metadata, *cols)
             table.create(self._db)
+        return None
+
+    def _create_download_log(self):
+        """Create download_log table if it does not exist."""
+        self._create_table('download_log',
+                           Column('id', Integer, primary_key=True),
+                           Column('site', String, nullable=False, index=True),
+                           Column('controler', String, nullable=False),
+                           Column('download_ts', DateTime, server_default=func.now(), nullable=False),
+                           Column('error_count', Integer, index=True),
+                           Column('http_status', Integer, index=True),
+                           Column('comment', String)
+                           )
+        return None
+
+    def _create_increment_log(self):
+        """Create increment_log table if it does not exist."""
+        self._create_table('increment_log',
+                           Column('id', Integer, primary_key=True),
+                           Column('site', String, nullable=False),
+                           Column('taxo_group', String, nullable=False),
+                           Column('last_ts', DateTime, server_default=func.now(), nullable=False)
+                           )
+        return None
+
+    def _create_entities_json(self):
+        """Create entities_json table if it does not exist."""
+        self._create_table('entities_json',
+                           Column('id', Integer, nullable=False),
+                           Column('site', String, nullable=False),
+                           Column('item', JSONB, nullable=False),
+                           PrimaryKeyConstraint('id', 'site', name='entities_json_pk')
+                           )
+        return None
+
+    def _create_forms_json(self):
+        """Create forms_json table if it does not exist."""
+        self._create_table('forms_json',
+                           Column('id', Integer, nullable=False),
+                           Column('site', String, nullable=False),
+                           Column('item', JSONB, nullable=False),
+                           PrimaryKeyConstraint('id', 'site', name='forms_json_pk')
+                           )
+        return None
+
+    def _create_local_admin_units_json(self):
+        """Create local_admin_units_json table if it does not exist."""
+        self._create_table('local_admin_units_json',
+                           Column('id', Integer, nullable=False),
+                           Column('site', String, nullable=False),
+                           Column('item', JSONB, nullable=False),
+                           PrimaryKeyConstraint('id', 'site', name='local_admin_units_json_pk')
+                           )
+        return None
+
+    def _create_observations_json(self):
+        """Create observations_json table if it does not exist."""
+        self._create_table('observations_json',
+                           Column('id', Integer, nullable=False),
+                           Column('site', String, nullable=False),
+                           Column('item', JSONB, nullable=False),
+                           Column('update_ts', Integer, nullable=False),
+                           PrimaryKeyConstraint('id', 'site', name='observations_json_pk')
+                           )
+        return None
+
+    def _create_places_json(self):
+        """Create places_json table if it does not exist."""
+        self._create_table('places_json',
+                           Column('id', Integer, nullable=False),
+                           Column('site', String, nullable=False),
+                           Column('item', JSONB, nullable=False),
+                           PrimaryKeyConstraint('id', 'site', name='places_json_pk')
+                           )
+        return None
+
+    def _create_species_json(self):
+        """Create species_json table if it does not exist."""
+        self._create_table('species_json',
+                           Column('id', Integer, nullable=False),
+                           Column('site', String, nullable=False),
+                           Column('item', JSONB, nullable=False),
+                           PrimaryKeyConstraint('id', 'site', name='species_json_pk')
+                           )
+        return None
+
+    def _create_taxo_groups_json(self):
+        """Create taxo_groups_json table if it does not exist."""
+        self._create_table('taxo_groups_json',
+                           Column('id', Integer, nullable=False),
+                           Column('site', String, nullable=False),
+                           Column('item', JSONB, nullable=False),
+                           PrimaryKeyConstraint('id', 'site', name='taxo_groups_json_pk')
+                           )
+        return None
+
+    def _create_territorial_units_json(self):
+        """Create territorial_units_json table if it does not exist."""
+        self._create_table('territorial_units_json',
+                           Column('id', Integer, nullable=False),
+                           Column('site', String, nullable=False),
+                           Column('item', JSONB, nullable=False),
+                           PrimaryKeyConstraint('id', 'site', name='territorial_units_json_pk')
+                           )
+        return None
 
     def __init__(self, config):
         self._config = config
@@ -205,21 +314,17 @@ class StorePostgresql:
         # Get dbtable definition
         self._metadata.reflect(bind=self._db, schema=dbschema)
         # Check if tables exist or else create them
-        self._create_table('download_log',
-                           Column('id', Integer, primary_key=True),
-                           Column('site', String, nullable=False, index=True),
-                           Column('controler', String, nullable=False),
-                           Column('download_ts', DateTime, server_default=func.now(), nullable=False),
-                           Column('error_count', Integer, index=True),
-                           Column('http_status', Integer, index=True),
-                           Column('comment', String)
-                           )
-        self._create_table('increment_log',
-                           Column('id', Integer, primary_key=True),
-                           Column('site', String, nullable=False),
-                           Column('taxo_group', String, nullable=False),
-                           Column('last_ts', DateTime, server_default=func.now(), nullable=False)
-                           )
+        self._create_download_log()
+        self._create_increment_log()
+
+        self._create_entities_json()
+        self._create_forms_json()
+        self._create_local_admin_units_json()
+        self._create_observations_json()
+        self._create_places_json()
+        self._create_species_json()
+        self._create_taxo_groups_json()
+        self._create_territorial_units_json()
 
         # Map Biolovision tables in a single dict for easy reference
         self._table_defs = {'entities': {'type': 'simple',
@@ -249,6 +354,7 @@ class StorePostgresql:
 
         # Finished with DB
         conn.close()
+        return None
 
     @property
     def version(self):
@@ -513,4 +619,4 @@ class StorePostgresql:
         # Finished with DB
         conn.close()
 
-        return
+        return None
