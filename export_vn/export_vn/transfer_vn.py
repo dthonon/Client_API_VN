@@ -15,7 +15,7 @@ from setuptools_scm import get_version
 from export_vn.download_vn import DownloadVn, DownloadVnException
 from export_vn.download_vn import Entities, LocalAdminUnits, Observations, Places
 from export_vn.download_vn import Species, TaxoGroup, TerritorialUnits
-from export_vn.store_postgresql import StorePostgresql
+from export_vn.store_postgresql import StorePostgresql, PostgresqlUtils
 from export_vn.evnconf import EvnConf
 from export_vn.biolovision_api import TaxoGroupsAPI
 
@@ -79,13 +79,16 @@ def main():
     cfg_crtl_list = cfg_ctrl.ctrl_list
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
-    db_cfg = db_config(cfg)
-    store_pg = StorePostgresql(cfg)
 
+    manage_pg = PostgresqlUtils(cfg)
+    db_cfg = db_config(cfg)
     if args.init:
         logging.info('Delete if exists and create database and roles')
         # Force VN tables creation, even if not in args list
         args.vn_tables = True
+        manage_pg.drop_database()
+        manage_pg.create_database()
+
         filename = str(Path.home()) + '/Client_API_VN/sql/init-db.sql'
         with open(filename, 'r') as myfile:
             template = myfile.read()
@@ -100,6 +103,7 @@ def main():
                            check=True, shell=True)
         except subprocess.CalledProcessError as err:
             logging.error(err)
+        manage_pg.create_json_tables()
 
     if args.vn_tables:
         logging.info('Creating or recreating vn colums based files')
@@ -119,6 +123,7 @@ def main():
         except subprocess.CalledProcessError as err:
             logging.error(err)
 
+    store_pg = StorePostgresql(cfg)
     # Looping on sites
     for site, cfg in cfg_site_list.items():
         if cfg.enabled:

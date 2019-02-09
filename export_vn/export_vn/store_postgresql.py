@@ -25,6 +25,7 @@ from sqlalchemy.engine.url import URL
 from sqlalchemy.schema import CreateColumn
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.compiler import compiles
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 from pyproj import Proj, transform
 
@@ -166,9 +167,16 @@ def observation_worker(i, q):
         q.task_done()
     return None
 
-class StorePostgresql:
-    """Provides store to Postgresql database method."""
+class PostgresqlUtils:
+    """Provides create and delete Postgresql database method."""
 
+    def __init__(self, config):
+        self._config = config
+        self._num_worker_threads = 4
+
+    # ----------------
+    # Internal methods
+    # ----------------
     def _create_table(self, name, *cols):
         """Check if table exists, and create if if not
 
@@ -290,6 +298,153 @@ class StorePostgresql:
                            )
         return None
 
+    # ---------------
+    # External methods
+    # ---------------
+    def create_database(self):
+        """Create database, roles..."""
+        # Connect first using postgres database, that always exists
+        logging.info('Connecting to postgres database, to create %s database', self._config.db_name)
+        db_url = {'drivername': 'postgresql+psycopg2',
+                  'username': self._config.db_user,
+                  'password': self._config.db_pw,
+                  'host': self._config.db_host,
+                  'port': self._config.db_port,
+                  'database': 'postgres'}
+        db = create_engine(URL(**db_url), echo=False)
+        conn = db.connect()
+        conn.connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+
+        # Group role:
+        text = 'CREATE ROLE {} NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION'.format(self._config.db_group)
+        conn.execute(text)
+
+        # Import role:
+        text = 'GRANT {} TO {}'.format(self._config.db_group, self._config.db_user)
+        conn.execute(text)
+
+        # Create database:
+        text = 'CREATE DATABASE {} WITH OWNER = {}'.format(self._config.db_name, self._config.db_group)
+        conn.execute(text)
+        text = 'GRANT ALL ON DATABASE {} TO {}'.format(self._config.db_name, self._config.db_group)
+        conn.execute(text)
+        conn.close()
+        db.dispose()
+
+        # Reconnect to created database
+        logging.info('Connecting to %s database, to finalize creation', self._config.db_name)
+        db_url = {'drivername': 'postgresql+psycopg2',
+                  'username': self._config.db_user,
+                  'password': self._config.db_pw,
+                  'host': self._config.db_host,
+                  'port': self._config.db_port,
+                  'database': self._config.db_name}
+        db = create_engine(URL(**db_url), echo=False)
+        conn = db.connect()
+
+        # Add extensions
+        text = 'CREATE EXTENSION IF NOT EXISTS pgcrypto'
+        conn.execute(text)
+        text = 'CREATE EXTENSION IF NOT EXISTS adminpack'
+        conn.execute(text)
+        text = 'CREATE EXTENSION IF NOT EXISTS "uuid-ossp"'
+        conn.execute(text)
+        text = 'CREATE EXTENSION IF NOT EXISTS postgis'
+        conn.execute(text)
+        text = 'CREATE EXTENSION IF NOT EXISTS postgis_topology'
+        conn.execute(text)
+
+        # Create import schema
+        text = 'CREATE SCHEMA {} AUTHORIZATION {}'.format(self._config.db_schema_import, self._config.db_group)
+        conn.execute(text)
+
+        # Enable privileges
+        text = '''
+        ALTER DEFAULT PRIVILEGES
+           GRANT INSERT, SELECT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON TABLES
+           TO postgres'''
+        conn.execute(text)
+        text = '''
+        ALTER DEFAULT PRIVILEGES
+           GRANT INSERT, SELECT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON TABLES
+           TO {}'''.format(self._config.db_group)
+        conn.execute(text)
+
+        conn.close()
+        db.dispose()
+
+        return None
+
+    def drop_database(self):
+        """Force session deconnection and drop database, roles..."""
+        logging.info('Connecting to postgres database, to delete %s database', self._config.db_name)
+        db_url = {'drivername': 'postgresql+psycopg2',
+                  'username': self._config.db_user,
+                  'password': self._config.db_pw,
+                  'host': self._config.db_host,
+                  'port': self._config.db_port,
+                  'database': 'postgres'}
+        db = create_engine(URL(**db_url), echo=False)
+        conn = db.connect()
+        conn.connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+
+        version = conn.dialect.server_version_info
+        pid_column = (
+            'pid' if (version >= (9, 2)) else 'procpid'
+        )
+
+        text = '''
+        SELECT pg_terminate_backend(pg_stat_activity.%(pid_column)s)
+        FROM pg_stat_activity
+        WHERE pg_stat_activity.datname = '%(database)s'
+          AND %(pid_column)s <> pg_backend_pid();
+        ''' % {'pid_column': pid_column, 'database': self._config.db_name}
+        conn.execute(text)
+        text = 'DROP DATABASE IF EXISTS {}'.format(self._config.db_name)
+        conn.execute(text)
+        text = 'DROP ROLE IF EXISTS {}'.format(self._config.db_group)
+        conn.execute(text)
+
+        conn.close()
+        db.dispose()
+        return None
+
+    def create_json_tables(self):
+        """Create all internal and jsonb tables."""
+        # Initialize interface to Postgresql DB
+        db_url = {'drivername': 'postgresql+psycopg2',
+                  'username': self._config.db_user,
+                  'password': self._config.db_pw,
+                  'host': self._config.db_host,
+                  'port': self._config.db_port,
+                  'database': self._config.db_name}
+
+        dbschema = self._config.db_schema_import
+        self._metadata = MetaData(schema=dbschema)
+        logging.info('Connecting to database %s', self._config.db_name)
+
+        # Connect and set path to include VN import schema
+        self._db = create_engine(URL(**db_url), echo=False)
+        conn = self._db.connect()
+
+        # Check if tables exist or else create them
+        self._create_download_log()
+        self._create_increment_log()
+
+        self._create_entities_json()
+        self._create_forms_json()
+        self._create_local_admin_units_json()
+        self._create_observations_json()
+        self._create_places_json()
+        self._create_species_json()
+        self._create_taxo_groups_json()
+        self._create_territorial_units_json()
+
+        return None
+
+class StorePostgresql:
+    """Provides store to Postgresql database method."""
+
     def __init__(self, config):
         self._config = config
         self._num_worker_threads = 4
@@ -313,18 +468,6 @@ class StorePostgresql:
 
         # Get dbtable definition
         self._metadata.reflect(bind=self._db, schema=dbschema)
-        # Check if tables exist or else create them
-        self._create_download_log()
-        self._create_increment_log()
-
-        self._create_entities_json()
-        self._create_forms_json()
-        self._create_local_admin_units_json()
-        self._create_observations_json()
-        self._create_places_json()
-        self._create_species_json()
-        self._create_taxo_groups_json()
-        self._create_territorial_units_json()
 
         # Map Biolovision tables in a single dict for easy reference
         self._table_defs = {'entities': {'type': 'simple',
