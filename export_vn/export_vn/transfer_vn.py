@@ -35,79 +35,38 @@ def db_config(cfg):
         'db_pw': cfg.db_pw
         }
 
-def main():
-    """
-    Main.
-    """
-
+def arguments():
+    """Define and parse command arguments."""
     # Get options
     parser = argparse.ArgumentParser()
     parser.add_argument('--version',
-                        help='print version number',
+                        help='Print version number',
                         action='store_true')
     parser.add_argument('-v', '--verbose',
-                        help='increase output verbosity',
+                        help='Increase output verbosity',
                         action='store_true')
     parser.add_argument('-q', '--quiet',
-                        help='reduce output verbosity',
-                        action='store_true')
-    parser.add_argument('--vn_tables',
-                        help='create or recreate vn colums based tables',
+                        help='Reduce output verbosity',
                         action='store_true')
     parser.add_argument('--init',
-                        help='Delete if exists and create database and roles',
+                        help='Delete if exists and create database, json tables and roles',
+                        action='store_true')
+    parser.add_argument('--col_tables',
+                        help='Create or recreate colums based tables',
+                        action='store_true')
+    parser.add_argument('--full',
+                        help='Perform a full download, according to configuration file',
                         action='store_true')
     parser.add_argument('file',
-                        help='file name, used to select config file')
+                        help='Configuration file name, used to configure different processing')
 
-    args = parser.parse_args()
-    if args.verbose:
-        logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                            level=logging.DEBUG)
-        sql_quiet = ""
-        client_min_message = "debug1"
+    return parser.parse_args()
 
-    else:
-        logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                            level=logging.INFO)
-        sql_quiet = "--quiet"
-        client_min_message = "warning"
-
-    # Get configuration
-    logging.info('Getting configuration data from %s', args.file)
-    cfg_ctrl = EvnConf(args.file)
+def full_download(cfg_ctrl):
+    """Performs a full download of all sites and controlers, based on configuration file."""
     cfg_crtl_list = cfg_ctrl.ctrl_list
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
-
-    manage_pg = PostgresqlUtils(cfg)
-    db_cfg = db_config(cfg)
-    if args.init:
-        logging.info('Delete if exists and create database and roles')
-        manage_pg.drop_database()
-        manage_pg.create_database()
-        manage_pg.create_json_tables()
-        # Force VN tables creation, even if not in args list
-        args.vn_tables = True
-
-    if args.vn_tables:
-        logging.info('Creating or recreating vn colums based files')
-        filename = str(Path.home()) + '/Client_API_VN/sql/create-vn-tables.sql'
-        with open(filename, 'r') as myfile:
-            template = myfile.read()
-        (cmd, exp_globals) = pyexpander.expandToStr(template,
-                                                    external_definitions=db_cfg)
-        filename = str(Path.home()) + '/tmp/create-vn-tables.sql'
-        with open(filename, 'w') as myfile:
-            myfile.write(cmd)
-        try:
-            subprocess.run('env PGOPTIONS="-c client-min-messages=' + client_min_message +
-                           '" psql ' + sql_quiet + ' --dbname=' + cfg.db_name +
-                           ' --file=' + filename,
-                           check=True, shell=True)
-        except subprocess.CalledProcessError as err:
-            logging.error(err)
-
     store_pg = StorePostgresql(cfg)
     # Looping on sites
     for site, cfg in cfg_site_list.items():
@@ -166,6 +125,66 @@ def main():
 
         else:
             logging.info('Skipping site %s', site)
+
+    return None
+
+def main():
+    """
+    Main.
+    """
+    # Get command line arguments
+    args = arguments()
+    # Define verbosity
+    if args.verbose:
+        logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                            level=logging.DEBUG)
+        sql_quiet = ""
+        client_min_message = "debug1"
+    else:
+        logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                            level=logging.INFO)
+        sql_quiet = "--quiet"
+        client_min_message = "warning"
+
+    # Get configuration from file
+    logging.info('Getting configuration data from %s', args.file)
+    cfg_ctrl = EvnConf(args.file)
+    cfg_crtl_list = cfg_ctrl.ctrl_list
+    cfg_site_list = cfg_ctrl.site_list
+    cfg = list(cfg_site_list.values())[0]
+
+    manage_pg = PostgresqlUtils(cfg)
+    db_cfg = db_config(cfg)
+    if args.init:
+        logging.info('Delete if exists and create database and roles')
+        manage_pg.drop_database()
+        manage_pg.create_database()
+        manage_pg.create_json_tables()
+        # Force tables creation and full download, even if not in args list
+        args.col_tables = True
+        args.full = True
+
+    if args.col_tables:
+        logging.info('Creating or recreating vn colums based files')
+        filename = str(Path.home()) + '/Client_API_VN/sql/create-vn-tables.sql'
+        with open(filename, 'r') as myfile:
+            template = myfile.read()
+        (cmd, exp_globals) = pyexpander.expandToStr(template,
+                                                    external_definitions=db_cfg)
+        filename = str(Path.home()) + '/tmp/create-vn-tables.sql'
+        with open(filename, 'w') as myfile:
+            myfile.write(cmd)
+        try:
+            subprocess.run('env PGOPTIONS="-c client-min-messages=' + client_min_message +
+                           '" psql ' + sql_quiet + ' --dbname=' + cfg.db_name +
+                           ' --file=' + filename,
+                           check=True, shell=True)
+        except subprocess.CalledProcessError as err:
+            logging.error(err)
+
+    if args.full:
+        logging.info('Performing a full download')
+        full_download(cfg_ctrl)
 
 # Main wrapper
 if __name__ == "__main__":
