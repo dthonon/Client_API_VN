@@ -44,6 +44,7 @@ class DownloadVn:
             'max_requests': max_requests,
             'max_chunks': max_chunks
         }
+        return None
 
     @property
     def version(self):
@@ -91,7 +92,7 @@ class DownloadVn:
             # Call backend to store results
             self._backend.store(self._api_instance.controler, str(i), items_dict)
 
-        return
+        return None
 
 class Entities(DownloadVn):
     """ Implement store from entities controler.
@@ -105,6 +106,7 @@ class Entities(DownloadVn):
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
         super().__init__(config, EntitiesAPI(config), backend,
                          max_retry, max_requests, max_chunks)
+        return None
 
 
 
@@ -120,6 +122,7 @@ class LocalAdminUnits(DownloadVn):
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
         super().__init__(config, LocalAdminUnitsAPI(config), backend,
                          max_retry, max_requests, max_chunks)
+        return None
 
 
 class Observations(DownloadVn):
@@ -135,6 +138,7 @@ class Observations(DownloadVn):
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
         super().__init__(config, ObservationsAPI(config), backend,
                          max_retry, max_requests, max_chunks)
+        return None
 
     def _store_list(self, id_taxo_group, by_specie):
         """Download from VN by API list and store json to file.
@@ -190,7 +194,7 @@ class Observations(DownloadVn):
                                   items_dict)
 
 
-        return
+        return None
 
     def _store_search(self, id_taxo_group):
         """Download from VN by API search and store json to file.
@@ -244,7 +248,7 @@ class Observations(DownloadVn):
                     seq += 1
                     end_date = start_date
                     delta_days = int(pid(nb_obs))
-        return
+        return None
 
     def _list_taxo_groups(self, id_taxo_group):
         if id_taxo_group == None:
@@ -292,14 +296,16 @@ class Observations(DownloadVn):
 
         if method == 'search':
             for taxo in taxo_list:
+                self._backend.increment_log(self._config.site, taxo, datetime.now())
                 self._store_search(taxo)
         elif method == 'list':
             for taxo in taxo_list:
+                self._backend.increment_log(self._config.site, taxo, datetime.now())
                 self._store_list(taxo, by_specie=by_specie)
         else:
             raise NotImplemented
 
-        return
+        return None
 
     def update(self, since, id_taxo_group=None):
         """Download increment from VN by API and store json to file.
@@ -342,7 +348,7 @@ class Observations(DownloadVn):
 
         # Process changes
 
-        return
+        return None
 
 
 class Places(DownloadVn):
@@ -357,6 +363,7 @@ class Places(DownloadVn):
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
         super().__init__(config, PlacesAPI(config), backend,
                          max_retry, max_requests, max_chunks)
+        return None
 
 
 class Species(DownloadVn):
@@ -371,6 +378,7 @@ class Species(DownloadVn):
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
         super().__init__(config, SpeciesAPI(config), backend,
                          max_retry, max_requests, max_chunks)
+        return None
 
     def store(self):
         """Store species, iterating over taxo_groups
@@ -382,6 +390,8 @@ class Species(DownloadVn):
                 logging.debug('Storing species from taxo_group %s', taxo['id'])
                 taxo_list.append({'id_taxo_group': taxo['id']})
         super().store(iter(taxo_list))
+
+        return None
 
 class TaxoGroup(DownloadVn):
     """ Implement store from taxo_groups controler.
@@ -395,6 +405,7 @@ class TaxoGroup(DownloadVn):
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
         super().__init__(config, TaxoGroupsAPI(config), backend,
                          max_retry, max_requests, max_chunks)
+        return None
 
 
 class TerritorialUnits(DownloadVn):
@@ -409,3 +420,4 @@ class TerritorialUnits(DownloadVn):
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
         super().__init__(config, TerritorialUnitsAPI(config), backend,
                          max_retry, max_requests, max_chunks)
+        return None

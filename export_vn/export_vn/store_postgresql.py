@@ -212,7 +212,7 @@ class PostgresqlUtils:
         self._create_table('increment_log',
                            Column('id', Integer, primary_key=True),
                            Column('site', String, nullable=False),
-                           Column('taxo_group', String, nullable=False),
+                           Column('taxo_group', Integer, nullable=False),
                            Column('last_ts', DateTime, server_default=func.now(), nullable=False)
                            )
         return None
@@ -743,7 +743,6 @@ class StorePostgresql:
             HTTP status of latest download.
         comment : str
             Optional comment, in free text.
-
         """
         conn = self._db.connect()
         metadata = self._metadata.tables[self._config.db_schema_import + '.' + 'download_log']
@@ -753,6 +752,31 @@ class StorePostgresql:
                        error_count=error_count,
                        http_status=http_status,
                        comment=comment)
+        result = conn.execute(stmt)
+        # Finished with DB
+        conn.close()
+
+        return None
+
+    def increment_log(self, site, taxo_group,
+                      last_ts):
+        """Write download log entries to database.
+
+        Parameters
+        ----------
+        site : str
+            VN site name.
+        taxo_group : str
+            Taxo_group updated.
+        last_ts : timestamp
+            Timestamp of last update of this taxo_group.
+        """
+        conn = self._db.connect()
+        metadata = self._metadata.tables[self._config.db_schema_import + '.' + 'increment_log']
+        stmt = metadata.insert().\
+                values(site=site,
+                       taxo_group=taxo_group,
+                       last_ts=last_ts)
         result = conn.execute(stmt)
         # Finished with DB
         conn.close()

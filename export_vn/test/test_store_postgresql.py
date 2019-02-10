@@ -5,6 +5,7 @@ Also test them as backend to download_vn.
 """
 import logging
 import pytest
+from datetime import datetime
 
 from export_vn.download_vn import Entities, LocalAdminUnits, Observations, Places
 from export_vn.download_vn import Species, TaxoGroup, TerritorialUnits
@@ -37,6 +38,11 @@ def test_version():
 def test_log_pg_store():
     """Create a log entry."""
     STORE_PG.log(SITE, 'Test', 0, 0, comment='Test')
+
+def test_increment_log_pg_store():
+    """Create a log entry."""
+    STORE_PG.increment_log(SITE, 1, datetime.now())
+
 
 # --------
 # Entities
