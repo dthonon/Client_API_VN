@@ -40,9 +40,13 @@ def test_log_pg_store():
     STORE_PG.log(SITE, 'Test', 0, 0, comment='Test')
 
 def test_increment_log_pg_store():
-    """Create a log entry."""
+    """Create an increment entry."""
     STORE_PG.increment_log(SITE, 1, datetime.now())
 
+def test_increment_get_pg_store():
+    """Get an increment entry."""
+    last_ts = STORE_PG.increment_get(SITE, 1)
+    assert last_ts < datetime.now()
 
 # --------
 # Entities

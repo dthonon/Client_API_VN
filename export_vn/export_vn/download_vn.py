@@ -167,6 +167,7 @@ class Observations(DownloadVn):
         for taxo in taxo_groups:
             if taxo['access_mode'] != 'none':
                 id_taxo_group = taxo['id']
+                self._backend.increment_log(self._config.site, id_taxo_group, datetime.now())
                 logging.info('Getting observations from taxo_group %s',
                              id_taxo_group)
                 if by_specie:
@@ -221,6 +222,7 @@ class Observations(DownloadVn):
         for taxo in taxo_groups:
             if taxo['access_mode'] != 'none':
                 id_taxo_group = taxo['id']
+                self._backend.increment_log(self._config.site, id_taxo_group, datetime.now())
                 end_date = datetime.now()
                 start_date = end_date
                 min_date = datetime(1901, 1, 1)
@@ -296,57 +298,68 @@ class Observations(DownloadVn):
 
         if method == 'search':
             for taxo in taxo_list:
-                self._backend.increment_log(self._config.site, taxo, datetime.now())
                 self._store_search(taxo)
         elif method == 'list':
             for taxo in taxo_list:
-                self._backend.increment_log(self._config.site, taxo, datetime.now())
                 self._store_list(taxo, by_specie=by_specie)
         else:
             raise NotImplemented
 
         return None
 
-    def update(self, since, id_taxo_group=None):
+    def update(self, id_taxo_group=None, since=None):
         """Download increment from VN by API and store json to file.
-        WIP WIP WIP
-        Calls  biolovision_api, convert to json and call backend storage.
+
+        Gets previous update date from database and updates since then.
+        Calls  biolovision_api, finds if update or delete.
+        If update, get full observation and store to db.
+        If delete, delete from db.
 
         Parameters
         ----------
-        since : datetime
-            Dates in the past to start query interval.
         id_taxo_group : str or None
             If not None, taxo_group to be downloaded.
+        since : str or None
+            If None, updates since last download
+            Or if provided, updates since that given date.
         """
         # GET from API
-        logging.debug('Getting items from controler %s',
+        logging.debug('Getting updated observations from controler %s',
                       self._api_instance.controler)
 
         # Get the list of taxo groups to process
         taxo_list = self._list_taxo_groups(id_taxo_group)
 
-        logging.info('Getting updates since {}'.format(since))
-        items_dict = self._api_instance.api_diff(taxo_list, since)
+        if since is None:
+            get_since = True
+        else:
+            get_since = False
 
-        # List by processing type
-        updated = list()
-        deleted = list()
-        for item in items_dict:
-            logging.debug('Observation %s was %s',
-                          item['id_universal'], item['modification_type'])
-            if item['modification_type'] == 'updated':
-                updated.append(item['id_universal'])
-            elif item['modification_type'] == 'deleted':
-                deleted.append(item['id_universal'])
-            else:
-                logging.error('Observation %s has unknown processing %s',
+        for taxo in taxo_list:
+            if get_since:
+                since = self._backend.increment_get(self._config.site, taxo)
+            self._backend.increment_log(self._config.site, taxo, datetime.now())
+            logging.info('Getting updates for taxo_group {} since {}'.format(taxo, since))
+            items_dict = self._api_instance.api_diff(taxo, since)
+
+            # List by processing type
+            updated = list()
+            deleted = list()
+            for item in items_dict:
+                logging.debug('Observation %s was %s',
                               item['id_universal'], item['modification_type'])
-                raise NotImplementedException
-        logging.info('Received %d updated and %d deleted items',
-                     len(updated), len(deleted))
+                if item['modification_type'] == 'updated':
+                    updated.append(item['id_universal'])
+                elif item['modification_type'] == 'deleted':
+                    deleted.append(item['id_universal'])
+                else:
+                    logging.error('Observation %s has unknown processing %s',
+                                  item['id_universal'], item['modification_type'])
+                    raise NotImplementedException
+            logging.info('Received %d updated and %d deleted items',
+                         len(updated), len(deleted))
 
-        # Process changes
+            # Process changes
 
         return None
 

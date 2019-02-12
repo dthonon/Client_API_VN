@@ -110,10 +110,9 @@ def test_observations_store_search_1_2(capsys):
     assert Path(file_json).is_file()
 
 def test_observations_store_update_1_2(capsys):
-    """Get updates for 1.5 day of observations from taxo_group 2 by specie to file."""
-    interval = 0.5
-    since = (datetime.now() - timedelta(days=interval)).strftime('%H:%M:%S %d.%m.%Y')
-    OBSERVATIONS.update(since, 2)
+    """Get updates for 0.5 day of observations from taxo_group 2 by specie to file."""
+    since = (datetime.now() - timedelta(days=0.5)).strftime('%H:%M:%S %d.%m.%Y')
+    OBSERVATIONS.update(2, since)
     assert OBSERVATIONS.transfer_errors == 0
 
 # -------

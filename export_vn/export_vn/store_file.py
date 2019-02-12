@@ -93,4 +93,38 @@ class StoreFile:
 
         """
         # Not implemented
-        return
+        return None
+
+    def increment_log(self, site, taxo_group,
+                      last_ts):
+        """Write last increment timestamp to database.
+
+        Parameters
+        ----------
+        site : str
+            VN site name.
+        taxo_group : str
+            Taxo_group updated.
+        last_ts : timestamp
+            Timestamp of last update of this taxo_group.
+        """
+        # Not implemented
+        return None
+
+    def increment_get(self, site, taxo_group,):
+        """Get last increment timestamp from database.
+
+        Parameters
+        ----------
+        site : str
+            VN site name.
+        taxo_group : str
+            Taxo_group updated.
+
+        Returns
+        -------
+        timestamp
+            Timestamp of last update of this taxo_group.
+        """
+        # Not implemented
+        return None

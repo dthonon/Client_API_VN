@@ -760,7 +760,7 @@ class StorePostgresql:
 
     def increment_log(self, site, taxo_group,
                       last_ts):
-        """Write download log entries to database.
+        """Write last increment timestamp to database.
 
         Parameters
         ----------
@@ -782,3 +782,30 @@ class StorePostgresql:
         conn.close()
 
         return None
+
+    def increment_get(self, site, taxo_group,):
+        """Get last increment timestamp from database.
+
+        Parameters
+        ----------
+        site : str
+            VN site name.
+        taxo_group : str
+            Taxo_group updated.
+
+        Returns
+        -------
+        timestamp
+            Timestamp of last update of this taxo_group.
+        """
+        conn = self._db.connect()
+        metadata = self._metadata.tables[self._config.db_schema_import + '.' + 'increment_log']
+        stmt = select([metadata.c.last_ts]).\
+                where(and_(metadata.c.taxo_group==taxo_group, \
+                           metadata.c.site==site))
+        result = conn.execute(stmt)
+        row = result.fetchone()
+        # Finished with DB
+        conn.close()
+
+        return row[0]
