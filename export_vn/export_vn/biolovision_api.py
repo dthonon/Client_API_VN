@@ -392,7 +392,8 @@ class ObservationsAPI(BiolovisionAPI):
         opt_params['id_taxo_group'] = str(id_taxo_group)
         for key, value in kwargs.items():
             opt_params[key] = value
-        return super().api_list(HashableDict(opt_params))
+        logging.debug('In api_list, with parameters %s', opt_params)
+        return super().api_list(opt_params)
 
     def api_diff(self, id_taxo_group, delta_time, modification_type='all'):
         """Query for a list of updates or deletions since a given date.
@@ -434,7 +435,7 @@ class ObservationsAPI(BiolovisionAPI):
         Parameters
         ----------
         q_params : dict
-            Query parameters,same than in online version.
+            Query parameters, same as online version.
 
         Returns
         -------

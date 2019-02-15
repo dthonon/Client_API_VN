@@ -74,6 +74,22 @@ class StoreFile:
 
         return nb_obs
 
+    def delete_obs(self, obs_list):
+        """Delete observations stored in database.
+
+        Parameters
+        ----------
+        obs_list : list
+            Data returned from API call.
+
+        Returns
+        -------
+        int
+            Count of items deleted.
+        """
+        # Not implemented
+        return None
+
     def log(self, site, controler,
             error_count=0, http_status=0, comment=''):
         """Write download log entries to database.

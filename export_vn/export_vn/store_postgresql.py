@@ -109,7 +109,7 @@ def store_1_observation(item):
     """
     # Insert simple sightings, each row contains id, update timestamp and full json body
     elem = item.elem
-    logging.debug('Storing observation %s to database', elem)
+    logging.debug('Storing observation %s to database', elem['observers'][0]['id_sighting'])
     # Find last update timestamp
     if ('update_date' in elem['observers'][0]):
         update_date = elem['observers'][0]['update_date']['@timestamp']
@@ -128,8 +128,7 @@ def store_1_observation(item):
 
     # Store in Postgresql
     items_json = json.dumps(elem)
-    logging.debug('Storing element %s',
-                  items_json)
+    #logging.debug('store_1_observation %s', items_json)
     metadata = item.metadata
     site = item.site
     stmt = select([metadata.c.id,
@@ -139,14 +138,14 @@ def store_1_observation(item):
     result = item.conn.execute(stmt)
     row = result.fetchone()
     if row == None:
-        logging.debug('Element not found in database, inserting new row')
+        logging.info('Observation not found in database, inserting new row')
         stmt = metadata.insert().\
                 values(id=elem['observers'][0]['id_sighting'],
                        site=site,
                        update_ts=update_date,
                        item=items_json)
     else:
-        logging.debug('Element %s found in database, updating row', row[0])
+        logging.info('Observation %s found in database, updating row', row[0])
         stmt = metadata.update().\
                 where(and_(metadata.c.id==elem['observers'][0]['id_sighting'], \
                            metadata.c.site==site)).\
@@ -807,5 +806,7 @@ class StorePostgresql:
         row = result.fetchone()
         # Finished with DB
         conn.close()
-
-        return row[0]
+        if row is None:
+            return None
+        else:
+            return row[0]

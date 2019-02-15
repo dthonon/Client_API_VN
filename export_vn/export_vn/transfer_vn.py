@@ -57,6 +57,9 @@ def arguments():
     parser.add_argument('--full',
                         help='Perform a full download, according to configuration file',
                         action='store_true')
+    parser.add_argument('--increment',
+                        help='Perform an incremental download, according to configuration file',
+                        action='store_true')
     parser.add_argument('file',
                         help='Configuration file name, used to configure different processing')
 
@@ -128,6 +131,36 @@ def full_download(cfg_ctrl):
 
     return None
 
+def increment_download(cfg_ctrl):
+    """Performs an incremental download of observations from all sites and controlers, based on configuration file."""
+    cfg_crtl_list = cfg_ctrl.ctrl_list
+    cfg_site_list = cfg_ctrl.site_list
+    cfg = list(cfg_site_list.values())[0]
+    store_pg = StorePostgresql(cfg)
+    # Looping on sites
+    for site, cfg in cfg_site_list.items():
+        if cfg.enabled:
+            logging.info('Working on site %s', site)
+
+            ctrl = 'observations'
+            if cfg_crtl_list[ctrl].enabled:
+                logging.info('Using controler %s', ctrl)
+                observations = Observations(cfg, store_pg)
+                taxo_groups = TaxoGroupsAPI(cfg).api_list()['data']
+                taxo_groups_ex = cfg_crtl_list[ctrl].taxo_exclude
+                logging.info('Excluded taxo_groups: %s', taxo_groups_ex)
+                taxo_groups_filt = []
+                for taxo in taxo_groups:
+                    if (not taxo['name_constant'] in taxo_groups_ex) and (taxo['access_mode'] != 'none'):
+                        taxo_groups_filt.append(taxo['id'])
+                logging.info('Downloading from taxo_groups: %s', taxo_groups_filt)
+                observations.update(taxo_groups_filt)
+
+        else:
+            logging.info('Skipping site %s', site)
+
+    return None
+
 def main():
     """
     Main.
@@ -185,6 +218,10 @@ def main():
     if args.full:
         logging.info('Performing a full download')
         full_download(cfg_ctrl)
+
+    if args.increment:
+        logging.info('Performing an incremental download of observations')
+        increment_download(cfg_ctrl)
 
 # Main wrapper
 if __name__ == "__main__":

@@ -140,7 +140,7 @@ class Observations(DownloadVn):
                          max_retry, max_requests, max_chunks)
         return None
 
-    def _store_list(self, id_taxo_group, by_specie):
+    def _store_list(self, id_taxo_group, by_specie, id_sightings_list=None):
         """Download from VN by API list and store json to file.
 
         Calls biolovision_api to get observation, convert to json and store.
@@ -155,10 +155,12 @@ class Observations(DownloadVn):
             If not None, taxo_group to be downloaded.
         by_specie : bool
             If True, downloading by specie.
+        id_sightings_list : list or None
+            List of observations id to store (mostly for incremental update).
 
         """
         # GET from API
-        logging.debug('Getting items from controler %s, using API list',
+        logging.debug('Getting observations from controler %s, using API list',
                       self._api_instance.controler)
         if id_taxo_group == None:
             taxo_groups = TaxoGroupsAPI(self._config).api_list()['data']
@@ -168,25 +170,32 @@ class Observations(DownloadVn):
             if taxo['access_mode'] != 'none':
                 id_taxo_group = taxo['id']
                 self._backend.increment_log(self._config.site, id_taxo_group, datetime.now())
-                logging.info('Getting observations from taxo_group %s',
+                logging.info('Getting observations from taxo_group %s, in _store_list',
                              id_taxo_group)
                 if by_specie:
-                    species = SpeciesAPI(self._config).api_list({'id_taxo_group':
-                                                                 str(id_taxo_group)})['data']
-                    for specie in species:
-                        if specie['is_used'] == '1':
-                            logging.info('Getting observations from taxo_group %s, species %s',
-                                         id_taxo_group, specie['id'])
-                            items_dict = self._api_instance.api_list(id_taxo_group, id_species=specie['id'])
-                            # Call backend to store log
-                            self._backend.log(self._config.site, self._api_instance.controler,
-                                              self._api_instance.transfer_errors, self._api_instance.http_status)
-                            # Call backend to store results
-                            self._backend.store(self._api_instance.controler,
-                                          str(id_taxo_group) + '_' + specie['id'],
-                                          items_dict)
+                    if id_sightings_list is None:
+                        species = SpeciesAPI(self._config).api_list({'id_taxo_group':
+                                                                     str(id_taxo_group)})['data']
+                        for specie in species:
+                            if specie['is_used'] == '1':
+                                logging.info('Getting observations from taxo_group %s, species %s',
+                                             id_taxo_group, specie['id'])
+                                items_dict = self._api_instance.api_list(id_taxo_group, id_species=specie['id'])
+                                # Call backend to store log
+                                self._backend.log(self._config.site, self._api_instance.controler,
+                                                  self._api_instance.transfer_errors, self._api_instance.http_status)
+                                # Call backend to store results
+                                self._backend.store(self._api_instance.controler,
+                                              str(id_taxo_group) + '_' + specie['id'],
+                                              items_dict)
+                    else:
+                        logging.error('Observation_list by species and id_sightings_list are not supported')
                 else:
-                    items_dict = self._api_instance.api_list(id_taxo_group)
+                    if id_sightings_list is None:
+                        items_dict = self._api_instance.api_list(id_taxo_group)
+                    else:
+                        logging.info('Query on id_sightings_list {}'.format(id_sightings_list))
+                        items_dict = self._api_instance.api_list(id_taxo_group, id_sightings_list=id_sightings_list)
                     # Call backend to store log
                     self._backend.log(self._config.site, self._api_instance.controler,
                                       self._api_instance.transfer_errors, self._api_instance.http_status)
@@ -213,7 +222,7 @@ class Observations(DownloadVn):
 
         """
         # GET from API
-        logging.debug('Getting items from controler %s, using API search',
+        logging.debug('Getting observations from controler %s, using API search',
                       self._api_instance.controler)
         if id_taxo_group == None:
             taxo_groups = TaxoGroupsAPI(self._config).api_list()['data']
@@ -253,6 +262,7 @@ class Observations(DownloadVn):
         return None
 
     def _list_taxo_groups(self, id_taxo_group):
+        """Return the list of enabled taxo_groups."""
         if id_taxo_group == None:
             # Get all active taxo_groups
             taxo_groups = TaxoGroupsAPI(self._config).api_list()
@@ -272,7 +282,7 @@ class Observations(DownloadVn):
 
         return taxo_list
 
-    def store(self, id_taxo_group=None, by_specie=False, method='search'):
+    def store(self, id_taxo_group=None, by_specie=False, method='search', id_sightings_list=None):
         """Download from VN by API, looping on taxo_group if None and store json to file.
 
         Calls  biolovision_api, convert to json and store to file.
@@ -287,12 +297,10 @@ class Observations(DownloadVn):
             If True, downloading by specie.
         method : str
             API used to download, either 'search' or 'list'.
+        id_sightings_list : list or None
+            List of observations id to store (mostly for incremental update).
 
         """
-        # GET from API
-        logging.debug('Getting items from controler %s, using API %s',
-                      self._api_instance.controler, method)
-
         # Get the list of taxo groups to process
         taxo_list = self._list_taxo_groups(id_taxo_group)
 
@@ -301,7 +309,7 @@ class Observations(DownloadVn):
                 self._store_search(taxo)
         elif method == 'list':
             for taxo in taxo_list:
-                self._store_list(taxo, by_specie=by_specie)
+                self._store_list(taxo, by_specie=by_specie, id_sightings_list=id_sightings_list)
         else:
             raise NotImplemented
 
@@ -338,28 +346,35 @@ class Observations(DownloadVn):
         for taxo in taxo_list:
             if get_since:
                 since = self._backend.increment_get(self._config.site, taxo)
-            self._backend.increment_log(self._config.site, taxo, datetime.now())
-            logging.info('Getting updates for taxo_group {} since {}'.format(taxo, since))
-            items_dict = self._api_instance.api_diff(taxo, since)
+            if since is not None:
+                # Valid since date provided or found in database
+                self._backend.increment_log(self._config.site, taxo, datetime.now())
+                logging.info('Getting updates for taxo_group {} since {}'.format(taxo, since))
+                items_dict = self._api_instance.api_diff(taxo, since)
 
-            # List by processing type
-            updated = list()
-            deleted = list()
-            for item in items_dict:
-                logging.debug('Observation %s was %s',
-                              item['id_universal'], item['modification_type'])
-                if item['modification_type'] == 'updated':
-                    updated.append(item['id_universal'])
-                elif item['modification_type'] == 'deleted':
-                    deleted.append(item['id_universal'])
-                else:
-                    logging.error('Observation %s has unknown processing %s',
-                                  item['id_universal'], item['modification_type'])
-                    raise NotImplementedException
-            logging.info('Received %d updated and %d deleted items',
-                         len(updated), len(deleted))
+                # List by processing type
+                updated = list()
+                deleted = list()
+                for item in items_dict:
+                    logging.debug('Observation %s was %s',
+                                  item['id_sighting'], item['modification_type'])
+                    if item['modification_type'] == 'updated':
+                        updated.append(item['id_sighting'])
+                    elif item['modification_type'] == 'deleted':
+                        deleted.append(item['id_sighting'])
+                    else:
+                        logging.error('Observation %s has unknown processing %s',
+                                      item['id_universal'], item['modification_type'])
+                        raise NotImplementedException
+                logging.info('Received %d updated and %d deleted items',
+                             len(updated), len(deleted))
+            else:
+                logging.error('No date found for last download, increment not performed')
 
-            # Process changes
+            # Process updates
+            #self.store(taxo, method='list', id_sightings_list=updated)
+            # Process deletes
+            self._backend.delete_obs(deleted)
 
         return None
 
