@@ -57,7 +57,7 @@ def arguments():
     parser.add_argument('--full',
                         help='Perform a full download, according to configuration file',
                         action='store_true')
-    parser.add_argument('--increment',
+    parser.add_argument('--update',
                         help='Perform an incremental download, according to configuration file',
                         action='store_true')
     parser.add_argument('file',
@@ -219,7 +219,7 @@ def main():
         logging.info('Performing a full download')
         full_download(cfg_ctrl)
 
-    if args.increment:
+    if args.update:
         logging.info('Performing an incremental download of observations')
         increment_download(cfg_ctrl)
 
