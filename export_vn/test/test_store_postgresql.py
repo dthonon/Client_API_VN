@@ -9,7 +9,7 @@ from datetime import datetime
 
 from export_vn.download_vn import Entities, LocalAdminUnits, Observations, Places
 from export_vn.download_vn import Species, TaxoGroup, TerritorialUnits
-from export_vn.store_postgresql import StorePostgresql
+from export_vn.store_postgresql import StorePostgresql, PostgresqlUtils
 from export_vn.evnconf import EvnConf
 
 # Using faune-ardeche or faune-isere site, that needs to be created first
@@ -19,6 +19,7 @@ FILE = '.evn_test.yaml'
 
 # Get configuration for test site
 CFG = EvnConf(FILE).site_list[SITE]
+MANAGE_PG = PostgresqlUtils(CFG)
 STORE_PG = StorePostgresql(CFG)
 ENTITIES = Entities(CFG, STORE_PG)
 LOCAL_ADMIN_UNITS = LocalAdminUnits(CFG, STORE_PG)
@@ -31,6 +32,13 @@ TERRITORIAL_UNIT = TerritorialUnits(CFG, STORE_PG)
 def test_version():
     """Check if version is defined."""
     logging.debug('package version: %s', STORE_PG.version)
+
+# --------
+# Database
+# --------
+def test_create_json_tables():
+    """Create the tables, if not exists."""
+    MANAGE_PG.create_json_tables()
 
 # ----
 # Logs

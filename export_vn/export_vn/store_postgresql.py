@@ -138,14 +138,14 @@ def store_1_observation(item):
     result = item.conn.execute(stmt)
     row = result.fetchone()
     if row == None:
-        logging.info('Observation not found in database, inserting new row')
+        logging.debug('Observation not found in database, inserting new row')
         stmt = metadata.insert().\
                 values(id=elem['observers'][0]['id_sighting'],
                        site=site,
                        update_ts=update_date,
                        item=items_json)
     else:
-        logging.info('Observation %s found in database, updating row', row[0])
+        logging.debug('Observation %s found in database, updating row', row[0])
         stmt = metadata.update().\
                 where(and_(metadata.c.id==elem['observers'][0]['id_sighting'], \
                            metadata.c.site==site)).\
@@ -413,13 +413,13 @@ class PostgresqlUtils:
                   'port': self._config.db_port,
                   'database': self._config.db_name}
 
-        dbschema = self._config.db_schema_import
-        self._metadata = MetaData(schema=dbschema)
-        logging.info('Connecting to database %s', self._config.db_name)
-
         # Connect and set path to include VN import schema
+        logging.info('Connecting to database %s', self._config.db_name)
         self._db = create_engine(URL(**db_url), echo=False)
         conn = self._db.connect()
+        dbschema = self._config.db_schema_import
+        self._metadata = MetaData(schema=dbschema)
+        self._metadata.reflect(self._db)
 
         # Check if tables exist or else create them
         self._create_download_log()
