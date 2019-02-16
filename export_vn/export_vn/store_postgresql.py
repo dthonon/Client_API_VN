@@ -772,10 +772,24 @@ class StorePostgresql:
         """
         conn = self._db.connect()
         metadata = self._metadata.tables[self._config.db_schema_import + '.' + 'increment_log']
-        stmt = metadata.insert().\
-                values(site=site,
-                       taxo_group=taxo_group,
-                       last_ts=last_ts)
+        stmt = select([metadata.c.taxo_group,
+                       metadata.c.site]).\
+                where(and_(metadata.c.taxo_group==taxo_group, \
+                           metadata.c.site==site))
+        result = conn.execute(stmt)
+        row = result.fetchone()
+        if row == None:
+            stmt = metadata.insert().\
+                    values(taxo_group=taxo_group,
+                           site=site,
+                           last_ts=last_ts)
+        else:
+            stmt = metadata.update().\
+                    where(and_(metadata.c.taxo_group==taxo_group, \
+                               metadata.c.site==site)).\
+                    values(taxo_group=taxo_group,
+                           site=site,
+                           last_ts=last_ts)
         result = conn.execute(stmt)
         # Finished with DB
         conn.close()

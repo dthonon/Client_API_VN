@@ -241,7 +241,7 @@ class Observations(DownloadVn):
                                       self._api_instance.transfer_errors, self._api_instance.http_status)
                     # Call backend to store results
                     nb_obs = self._backend.store(self._api_instance.controler, str(id_taxo_group) + '_' + str(seq),
-                                  items_dict)
+                                                 items_dict)
                     logging.info('Iter: %s, %s obs, taxo_group: %s, date: %s, interval: %s',
                                  seq, nb_obs, id_taxo_group,
                                  start_date.strftime('%d/%m/%Y'), str(delta_days))
@@ -369,7 +369,8 @@ class Observations(DownloadVn):
                               items_dict)
 
             # Process deletes
-            self._backend.delete_obs(deleted)
+            if len(deleted) > 0:
+                self._backend.delete_obs(deleted)
 
         return None
 
