@@ -458,7 +458,7 @@ class StorePostgresql:
 
         # Connect and set path to include VN import schema
         self._db = create_engine(URL(**db_url), echo=False)
-        conn = self._db.connect()
+        self._conn = self._db.connect()
 
         # Get dbtable definition
         self._metadata.reflect(bind=self._db, schema=dbschema)
@@ -497,8 +497,6 @@ class StorePostgresql:
             t.start()
             self._observations_threads.append(t)
 
-        # Finished with DB
-        conn.close()
         return None
 
     def __enter__(self):
@@ -510,6 +508,7 @@ class StorePostgresql:
             self._observations_queue.put(None)
         for t in self._observations_threads:
             t.join()
+        self._conn.close()
 
     @property
     def version(self):
@@ -540,8 +539,7 @@ class StorePostgresql:
 
         # Loop on data array to store each element to database
         logging.info('Storing %d items from %s to database', len(items_dict['data']), controler)
-        conn = self._db.connect()
-        trans = conn.begin()
+        #trans = self._conn.begin()
         try:
             for elem in items_dict['data']:
                 # Convert to json
@@ -552,7 +550,7 @@ class StorePostgresql:
                                self._table_defs[controler]['metadata'].c.site]).\
                         where(and_(self._table_defs[controler]['metadata'].c.id==elem['id'], \
                                    self._table_defs[controler]['metadata'].c.site==self._config.site))
-                result = conn.execute(stmt)
+                result = self._conn.execute(stmt)
                 row = result.fetchone()
                 if row == None:
                     logging.debug('Element not found in database, inserting new row')
@@ -568,14 +566,11 @@ class StorePostgresql:
                             values(id=elem['id'],
                                    site=self._config.site,
                                    item=items_json)
-                result = conn.execute(stmt)
-            trans.commit()
+                result = self._conn.execute(stmt)
+            #trans.commit()
         except:
-            trans.rollback()
+            #trans.rollback()
             raise
-
-        # Finished with DB
-        conn.close()
 
         return len(items_dict['data'])
 
@@ -632,13 +627,13 @@ class StorePostgresql:
         in_proj = Proj(init='epsg:4326')
         out_proj = Proj(init='epsg:2154')
         nb_obs = 0
-        conn = self._db.connect()
-        trans = conn.begin()
+        #trans = self._conn.begin()
         try:
             for i in range(0, len(items_dict['data']['sightings'])):
                 obs = ObservationItem(self._config.site,
                                       self._table_defs[controler]['metadata'],
-                                      conn, items_dict['data']['sightings'][i],
+                                      self._conn,
+                                      items_dict['data']['sightings'][i],
                                       in_proj, out_proj)
                 self._observations_queue.put(obs)
                 nb_obs += 1
@@ -648,22 +643,21 @@ class StorePostgresql:
                     for i in range(0, len(items_dict['data']['forms'][f]['sightings'])):
                         obs = ObservationItem(self._config.site,
                                               self._table_defs[controler]['metadata'],
-                                              conn, items_dict['data']['forms'][f]['sightings'][i],
+                                              self._conn,
+                                              items_dict['data']['forms'][f]['sightings'][i],
                                               in_proj, out_proj)
                         self._observations_queue.put(obs)
                         nb_obs += 1
 
-            # Wait for threads to finish and stop them
-            self._observations_queue.join()
+            # Wait for threads to finish before commit
+            #self._observations_queue.join()
 
-            trans.commit()
+            #trans.commit()
         except:
-            trans.rollback()
+            #trans.rollback()
             raise
 
-        # Finished with DB
-        conn.close()
-        logging.debug('Stored %d observations or forms to database', nb_obs)
+        logging.info('Stored %d observations or forms to database', nb_obs)
         return nb_obs
 
     # ---------------
@@ -715,19 +709,18 @@ class StorePostgresql:
             Count of items deleted.
         """
         logging.info('Deleting %d observations from database', len(obs_list))
-        conn = self._db.connect()
-        trans = conn.begin()
+        #trans = conn.begin()
         nb_delete = 0
         try:
             for obs in obs_list:
-                nd = conn.execute(self._table_defs['observations']['metadata'].delete().\
+                nd = self._conn.execute(self._table_defs['observations']['metadata'].delete().\
                                   where(and_(self._table_defs['observations']['metadata'].c.id==obs, \
                                              self._table_defs['observations']['metadata'].c.site==self._config.site))
                                   )
                 nb_delete += nd.rowcount
-            trans.commit()
+            #trans.commit()
         except:
-            trans.rollback()
+            #trans.rollback()
             raise
 
         return nb_delete
@@ -749,7 +742,6 @@ class StorePostgresql:
         comment : str
             Optional comment, in free text.
         """
-        conn = self._db.connect()
         metadata = self._metadata.tables[self._config.db_schema_import + '.' + 'download_log']
         stmt = metadata.insert().\
                 values(site=site,
@@ -757,9 +749,7 @@ class StorePostgresql:
                        error_count=error_count,
                        http_status=http_status,
                        comment=comment)
-        result = conn.execute(stmt)
-        # Finished with DB
-        conn.close()
+        result = self._conn.execute(stmt)
 
         return None
 
@@ -776,13 +766,12 @@ class StorePostgresql:
         last_ts : timestamp
             Timestamp of last update of this taxo_group.
         """
-        conn = self._db.connect()
         metadata = self._metadata.tables[self._config.db_schema_import + '.' + 'increment_log']
         stmt = select([metadata.c.taxo_group,
                        metadata.c.site]).\
                 where(and_(metadata.c.taxo_group==taxo_group, \
                            metadata.c.site==site))
-        result = conn.execute(stmt)
+        result = self._conn.execute(stmt)
         row = result.fetchone()
         if row == None:
             stmt = metadata.insert().\
@@ -796,9 +785,7 @@ class StorePostgresql:
                     values(taxo_group=taxo_group,
                            site=site,
                            last_ts=last_ts)
-        result = conn.execute(stmt)
-        # Finished with DB
-        conn.close()
+        result = self._conn.execute(stmt)
 
         return None
 
@@ -817,15 +804,13 @@ class StorePostgresql:
         timestamp
             Timestamp of last update of this taxo_group.
         """
-        conn = self._db.connect()
         metadata = self._metadata.tables[self._config.db_schema_import + '.' + 'increment_log']
         stmt = select([metadata.c.last_ts]).\
                 where(and_(metadata.c.taxo_group==taxo_group, \
                            metadata.c.site==site))
-        result = conn.execute(stmt)
+        result = self._conn.execute(stmt)
         row = result.fetchone()
-        # Finished with DB
-        conn.close()
+
         if row is None:
             return None
         else:
