@@ -111,3 +111,10 @@ def test_taxo_groups_api_pg_store():
 def test_terr_u_api_pg_store():
     """Store territorial units to database."""
     TERRITORIAL_UNIT.store()
+
+# -------------
+#  Finalization
+# -------------
+def test_finish_pg_store():
+    """Finalize tasks."""
+    STORE_PG.__exit__(0, 1, 2)

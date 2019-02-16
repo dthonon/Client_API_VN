@@ -70,64 +70,64 @@ def full_download(cfg_ctrl):
     cfg_crtl_list = cfg_ctrl.ctrl_list
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
-    store_pg = StorePostgresql(cfg)
-    # Looping on sites
-    for site, cfg in cfg_site_list.items():
-        if cfg.enabled:
-            logging.info('Working on site %s', site)
+    with StorePostgresql(cfg) as store_pg:
+        # Looping on sites
+        for site, cfg in cfg_site_list.items():
+            if cfg.enabled:
+                logging.info('Working on site %s', site)
 
-            ctrl = 'entities'
-            if cfg_crtl_list[ctrl].enabled:
-                logging.info('Using controler %s', ctrl)
-                entities = Entities(cfg, store_pg)
-                entities.store()
+                ctrl = 'entities'
+                if cfg_crtl_list[ctrl].enabled:
+                    logging.info('Using controler %s', ctrl)
+                    entities = Entities(cfg, store_pg)
+                    entities.store()
 
-            ctrl = 'territorial_unit'
-            if cfg_crtl_list[ctrl].enabled:
-                logging.info('Using controler %s', ctrl)
-                territorial_unit = TerritorialUnits(cfg, store_pg)
-                territorial_unit.store()
+                ctrl = 'territorial_unit'
+                if cfg_crtl_list[ctrl].enabled:
+                    logging.info('Using controler %s', ctrl)
+                    territorial_unit = TerritorialUnits(cfg, store_pg)
+                    territorial_unit.store()
 
-            ctrl = 'local_admin_units'
-            if cfg_crtl_list[ctrl].enabled:
-                logging.info('Using controler %s', ctrl)
-                local_admin_units = LocalAdminUnits(cfg, store_pg)
-                local_admin_units.store()
+                ctrl = 'local_admin_units'
+                if cfg_crtl_list[ctrl].enabled:
+                    logging.info('Using controler %s', ctrl)
+                    local_admin_units = LocalAdminUnits(cfg, store_pg)
+                    local_admin_units.store()
 
-            ctrl = 'places'
-            if cfg_crtl_list[ctrl].enabled:
-                logging.info('Using controler %s', ctrl)
-                places = Places(cfg, store_pg)
-                places.store()
+                ctrl = 'places'
+                if cfg_crtl_list[ctrl].enabled:
+                    logging.info('Using controler %s', ctrl)
+                    places = Places(cfg, store_pg)
+                    places.store()
 
-            ctrl = 'taxo_group'
-            if cfg_crtl_list[ctrl].enabled:
-                logging.info('Using controler %s', ctrl)
-                taxo_group = TaxoGroup(cfg, store_pg)
-                taxo_group.store()
+                ctrl = 'taxo_group'
+                if cfg_crtl_list[ctrl].enabled:
+                    logging.info('Using controler %s', ctrl)
+                    taxo_group = TaxoGroup(cfg, store_pg)
+                    taxo_group.store()
 
-            ctrl = 'species'
-            if cfg_crtl_list[ctrl].enabled:
-                logging.info('Using controler %s', ctrl)
-                species = Species(cfg, store_pg)
-                species.store()
+                ctrl = 'species'
+                if cfg_crtl_list[ctrl].enabled:
+                    logging.info('Using controler %s', ctrl)
+                    species = Species(cfg, store_pg)
+                    species.store()
 
-            ctrl = 'observations'
-            if cfg_crtl_list[ctrl].enabled:
-                logging.info('Using controler %s', ctrl)
-                observations = Observations(cfg, store_pg)
-                taxo_groups = TaxoGroupsAPI(cfg).api_list()['data']
-                taxo_groups_ex = cfg_crtl_list[ctrl].taxo_exclude
-                logging.info('Excluded taxo_groups: %s', taxo_groups_ex)
-                taxo_groups_filt = []
-                for taxo in taxo_groups:
-                    if (not taxo['name_constant'] in taxo_groups_ex) and (taxo['access_mode'] != 'none'):
-                        taxo_groups_filt.append(taxo['id'])
-                logging.info('Downloading from taxo_groups: %s', taxo_groups_filt)
-                observations.store(taxo_groups_filt)
+                ctrl = 'observations'
+                if cfg_crtl_list[ctrl].enabled:
+                    logging.info('Using controler %s', ctrl)
+                    observations = Observations(cfg, store_pg)
+                    taxo_groups = TaxoGroupsAPI(cfg).api_list()['data']
+                    taxo_groups_ex = cfg_crtl_list[ctrl].taxo_exclude
+                    logging.info('Excluded taxo_groups: %s', taxo_groups_ex)
+                    taxo_groups_filt = []
+                    for taxo in taxo_groups:
+                        if (not taxo['name_constant'] in taxo_groups_ex) and (taxo['access_mode'] != 'none'):
+                            taxo_groups_filt.append(taxo['id'])
+                    logging.info('Downloading from taxo_groups: %s', taxo_groups_filt)
+                    observations.store(taxo_groups_filt)
 
-        else:
-            logging.info('Skipping site %s', site)
+            else:
+                logging.info('Skipping site %s', site)
 
     return None
 
@@ -136,28 +136,28 @@ def increment_download(cfg_ctrl):
     cfg_crtl_list = cfg_ctrl.ctrl_list
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
-    store_pg = StorePostgresql(cfg)
-    # Looping on sites
-    for site, cfg in cfg_site_list.items():
-        if cfg.enabled:
-            logging.info('Working on site %s', site)
+    with StorePostgresql(cfg) as store_pg:
+        # Looping on sites
+        for site, cfg in cfg_site_list.items():
+            if cfg.enabled:
+                logging.info('Working on site %s', site)
 
-            ctrl = 'observations'
-            if cfg_crtl_list[ctrl].enabled:
-                logging.info('Using controler %s', ctrl)
-                observations = Observations(cfg, store_pg)
-                taxo_groups = TaxoGroupsAPI(cfg).api_list()['data']
-                taxo_groups_ex = cfg_crtl_list[ctrl].taxo_exclude
-                logging.info('Excluded taxo_groups: %s', taxo_groups_ex)
-                taxo_groups_filt = []
-                for taxo in taxo_groups:
-                    if (not taxo['name_constant'] in taxo_groups_ex) and (taxo['access_mode'] != 'none'):
-                        taxo_groups_filt.append(taxo['id'])
-                logging.info('Downloading from taxo_groups: %s', taxo_groups_filt)
-                observations.update(taxo_groups_filt)
+                ctrl = 'observations'
+                if cfg_crtl_list[ctrl].enabled:
+                    logging.info('Using controler %s', ctrl)
+                    observations = Observations(cfg, store_pg)
+                    taxo_groups = TaxoGroupsAPI(cfg).api_list()['data']
+                    taxo_groups_ex = cfg_crtl_list[ctrl].taxo_exclude
+                    logging.info('Excluded taxo_groups: %s', taxo_groups_ex)
+                    taxo_groups_filt = []
+                    for taxo in taxo_groups:
+                        if (not taxo['name_constant'] in taxo_groups_ex) and (taxo['access_mode'] != 'none'):
+                            taxo_groups_filt.append(taxo['id'])
+                    logging.info('Downloading from taxo_groups: %s', taxo_groups_filt)
+                    observations.update(taxo_groups_filt)
 
-        else:
-            logging.info('Skipping site %s', site)
+            else:
+                logging.info('Skipping site %s', site)
 
     return None
 

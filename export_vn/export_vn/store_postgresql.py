@@ -489,9 +489,27 @@ class StorePostgresql:
         self._table_defs['taxo_groups']['metadata'] = self._metadata.tables[dbschema + '.taxo_groups_json']
         self._table_defs['territorial_units']['metadata'] = self._metadata.tables[dbschema + '.territorial_units_json']
 
+        # Create parallel workers for database queries
+        self._observations_queue = queue.Queue()
+        self._observations_threads = []
+        for i in range(self._num_worker_threads):
+            t = threading.Thread(target=observation_worker, args=(i, self._observations_queue))
+            t.start()
+            self._observations_threads.append(t)
+
         # Finished with DB
         conn.close()
         return None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        """Send finish signal to workers and wait for tasks to finish."""
+        for i in range(self._num_worker_threads):
+            self._observations_queue.put(None)
+        for t in self._observations_threads:
+            t.join()
 
     @property
     def version(self):
@@ -610,14 +628,6 @@ class StorePostgresql:
         int
             Count of items stored (not exact for observations, due to forms).
         """
-        # Create parallel threads for database insertion/update
-        observations_queue = queue.Queue()
-        observations_threads = []
-        for i in range(self._num_worker_threads):
-            t = threading.Thread(target=observation_worker, args=(i, observations_queue))
-            t.start()
-            observations_threads.append(t)
-
         # Insert simple sightings, each row contains id, update timestamp and full json body
         in_proj = Proj(init='epsg:4326')
         out_proj = Proj(init='epsg:2154')
@@ -630,7 +640,7 @@ class StorePostgresql:
                                       self._table_defs[controler]['metadata'],
                                       conn, items_dict['data']['sightings'][i],
                                       in_proj, out_proj)
-                observations_queue.put(obs)
+                self._observations_queue.put(obs)
                 nb_obs += 1
 
             if ('forms' in items_dict['data']):
@@ -640,15 +650,11 @@ class StorePostgresql:
                                               self._table_defs[controler]['metadata'],
                                               conn, items_dict['data']['forms'][f]['sightings'][i],
                                               in_proj, out_proj)
-                        observations_queue.put(obs)
+                        self._observations_queue.put(obs)
                         nb_obs += 1
 
             # Wait for threads to finish and stop them
-            observations_queue.join()
-            for i in range(self._num_worker_threads):
-                observations_queue.put(None)
-            for t in observations_threads:
-                t.join()
+            self._observations_queue.join()
 
             trans.commit()
         except:
