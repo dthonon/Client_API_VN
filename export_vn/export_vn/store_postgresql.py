@@ -315,7 +315,19 @@ class PostgresqlUtils:
         conn.connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
 
         # Group role:
-        text = 'CREATE ROLE {} NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION'.format(self._config.db_group)
+        text = """
+            SELECT FROM pg_catalog.pg_roles WHERE rolname = '{db_group}'
+            """.format(db_group=self._config.db_group)
+        result = conn.execute(text)
+        row = result.fetchone()
+        if row == None:
+            text="""
+                CREATE ROLE {db_group} NOLOGIN NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION
+                """.format(db_group=self._config.db_group)
+        else:
+            text = """
+                ALTER ROLE {db_group} NOLOGIN NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION
+                """.format(db_group=self._config.db_group)
         conn.execute(text)
 
         # Import role:

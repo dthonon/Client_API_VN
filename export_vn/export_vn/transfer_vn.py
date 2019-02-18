@@ -48,10 +48,16 @@ def arguments():
     parser.add_argument('-q', '--quiet',
                         help='Reduce output verbosity',
                         action='store_true')
-    parser.add_argument('--init',
-                        help='Delete if exists and create database, json tables and roles',
+    parser.add_argument('--db_drop',
+                        help='Delete if exists database and roles',
                         action='store_true')
-    parser.add_argument('--col_tables',
+    parser.add_argument('--db_create',
+                        help='Create database and roles',
+                        action='store_true')
+    parser.add_argument('--json_tables_create',
+                        help='Create or recreate json tables',
+                        action='store_true')
+    parser.add_argument('--col_tables_create',
                         help='Create or recreate colums based tables',
                         action='store_true')
     parser.add_argument('--full',
@@ -70,10 +76,9 @@ def full_download(cfg_ctrl):
     cfg_crtl_list = cfg_ctrl.ctrl_list
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
-        # Looping on sites
+    # Looping on sites
     for site, cfg in cfg_site_list.items():
         with StorePostgresql(cfg) as store_pg:
-            #print(site, cfg.site)
             if cfg.enabled:
                 logging.info('Working on site %s', cfg.site)
 
@@ -137,7 +142,7 @@ def increment_download(cfg_ctrl):
     cfg_crtl_list = cfg_ctrl.ctrl_list
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
-        # Looping on sites
+    # Looping on sites
     for site, cfg in cfg_site_list.items():
         with StorePostgresql(cfg) as store_pg:
             if cfg.enabled:
@@ -183,16 +188,30 @@ def main():
     # Get configuration from file
     logging.info('Getting configuration data from %s', args.file)
     cfg_ctrl = EvnConf(args.file)
-    cfg_crtl_list = cfg_ctrl.ctrl_list
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
 
     manage_pg = PostgresqlUtils(cfg)
     db_cfg = db_config(cfg)
-    if args.init:
-        logging.info('Delete if exists and create database and roles')
+    if args.db_drop:
+        logging.info('Delete if exists database and roles')
         manage_pg.drop_database()
+        # Force tables creation and full download, even if not in args list
+        args.db_create = True
+        args.json_tables = True
+        args.col_tables = True
+        args.full = True
+
+    if args.db_create:
+        logging.info('Create database and roles')
         manage_pg.create_database()
+        # Force tables creation and full download, even if not in args list
+        args.json_tables = True
+        args.col_tables = True
+        args.full = True
+
+    if args.json_tables:
+        logging.info('Delete if exists and create json tables')
         manage_pg.create_json_tables()
         # Force tables creation and full download, even if not in args list
         args.col_tables = True
