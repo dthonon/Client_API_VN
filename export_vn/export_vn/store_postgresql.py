@@ -538,7 +538,7 @@ class StorePostgresql:
         """
 
         # Loop on data array to store each element to database
-        logging.info('Storing %d items from %s to database', len(items_dict['data']), controler)
+        logging.info('Storing %d items from %s of site %s', len(items_dict['data']), controler, self._config.site)
         #trans = self._conn.begin()
         try:
             for elem in items_dict['data']:
@@ -657,7 +657,7 @@ class StorePostgresql:
             #trans.rollback()
             raise
 
-        logging.info('Stored %d observations or forms to database', nb_obs)
+        logging.debug('Stored %d observations or forms to database', nb_obs)
         return nb_obs
 
     # ---------------

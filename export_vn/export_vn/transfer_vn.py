@@ -70,51 +70,52 @@ def full_download(cfg_ctrl):
     cfg_crtl_list = cfg_ctrl.ctrl_list
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
-    with StorePostgresql(cfg) as store_pg:
         # Looping on sites
-        for site, cfg in cfg_site_list.items():
+    for site, cfg in cfg_site_list.items():
+        with StorePostgresql(cfg) as store_pg:
+            #print(site, cfg.site)
             if cfg.enabled:
-                logging.info('Working on site %s', site)
+                logging.info('Working on site %s', cfg.site)
 
                 ctrl = 'entities'
                 if cfg_crtl_list[ctrl].enabled:
-                    logging.info('Using controler %s', ctrl)
+                    logging.info('Using controler %s on site %s', ctrl, cfg.site)
                     entities = Entities(cfg, store_pg)
                     entities.store()
 
                 ctrl = 'territorial_unit'
                 if cfg_crtl_list[ctrl].enabled:
-                    logging.info('Using controler %s', ctrl)
+                    logging.info('Using controler %s on site %s', ctrl, cfg.site)
                     territorial_unit = TerritorialUnits(cfg, store_pg)
                     territorial_unit.store()
 
                 ctrl = 'local_admin_units'
                 if cfg_crtl_list[ctrl].enabled:
-                    logging.info('Using controler %s', ctrl)
+                    logging.info('Using controler %s on site %s', ctrl, cfg.site)
                     local_admin_units = LocalAdminUnits(cfg, store_pg)
                     local_admin_units.store()
 
                 ctrl = 'places'
                 if cfg_crtl_list[ctrl].enabled:
-                    logging.info('Using controler %s', ctrl)
+                    logging.info('Using controler %s on site %s', ctrl, cfg.site)
                     places = Places(cfg, store_pg)
                     places.store()
 
                 ctrl = 'taxo_group'
                 if cfg_crtl_list[ctrl].enabled:
-                    logging.info('Using controler %s', ctrl)
+                    logging.info('Using controler %s on site %s', ctrl, cfg.site)
                     taxo_group = TaxoGroup(cfg, store_pg)
                     taxo_group.store()
 
                 ctrl = 'species'
                 if cfg_crtl_list[ctrl].enabled:
-                    logging.info('Using controler %s', ctrl)
+                    logging.info('Using controler %s on site %s', ctrl, cfg.site)
                     species = Species(cfg, store_pg)
                     species.store()
 
                 ctrl = 'observations'
                 if cfg_crtl_list[ctrl].enabled:
-                    logging.info('Using controler %s', ctrl)
+                    logging.info('Using controler %s on site %s', ctrl, cfg.site)
                     observations = Observations(cfg, store_pg)
                     taxo_groups = TaxoGroupsAPI(cfg).api_list()['data']
                     taxo_groups_ex = cfg_crtl_list[ctrl].taxo_exclude
@@ -136,9 +137,9 @@ def increment_download(cfg_ctrl):
     cfg_crtl_list = cfg_ctrl.ctrl_list
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
-    with StorePostgresql(cfg) as store_pg:
         # Looping on sites
-        for site, cfg in cfg_site_list.items():
+    for site, cfg in cfg_site_list.items():
+        with StorePostgresql(cfg) as store_pg:
             if cfg.enabled:
                 logging.info('Working on site %s', site)
 
