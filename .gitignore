@@ -108,3 +108,6 @@ venv.bak/
 
 # JetBrains IDE
 .idea/
+
+# VSCode
+.vscode/

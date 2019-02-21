@@ -198,26 +198,26 @@ def main():
         manage_pg.drop_database()
         # Force tables creation and full download, even if not in args list
         args.db_create = True
-        args.json_tables = True
-        args.col_tables = True
+        args.json_tables_create = True
+        args.col_tables_create = True
         args.full = True
 
     if args.db_create:
         logging.info('Create database and roles')
         manage_pg.create_database()
         # Force tables creation and full download, even if not in args list
-        args.json_tables = True
-        args.col_tables = True
+        args.json_tables_create = True
+        args.col_tables_create = True
         args.full = True
 
-    if args.json_tables:
+    if args.json_tables_create:
         logging.info('Delete if exists and create json tables')
         manage_pg.create_json_tables()
         # Force tables creation and full download, even if not in args list
-        args.col_tables = True
+        args.col_tables_create = True
         args.full = True
 
-    if args.col_tables:
+    if args.col_tables_create:
         logging.info('Creating or recreating vn colums based files')
         filename = str(Path.home()) + '/Client_API_VN/sql/create-vn-tables.sql'
         with open(filename, 'r') as myfile:
@@ -244,5 +244,5 @@ def main():
         increment_download(cfg_ctrl)
 
 # Main wrapper
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
