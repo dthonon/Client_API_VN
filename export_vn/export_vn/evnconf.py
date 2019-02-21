@@ -18,7 +18,7 @@ class EvnCtrlConf:
         self._ctrl = ctrl
 
         # Import parameters in properties
-        self._enabled          = config['controler'][ctrl]['enabled']
+        self._enabled = config['controler'][ctrl]['enabled']
         if 'taxo_exclude' in config['controler'][ctrl]:
             self._taxo_exclude = config['controler'][ctrl]['taxo_exclude']
         else:

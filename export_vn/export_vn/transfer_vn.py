@@ -9,10 +9,10 @@ import argparse
 import subprocess
 from pathlib import Path
 import pyexpander.lib as pyexpander
-import pyexpander.parser as pyparser
+#import pyexpander.parser as pyparser
 from setuptools_scm import get_version
 
-from export_vn.download_vn import DownloadVn, DownloadVnException
+#from export_vn.download_vn import DownloadVn, DownloadVnException
 from export_vn.download_vn import Entities, LocalAdminUnits, Observations, Places
 from export_vn.download_vn import Species, TaxoGroup, TerritorialUnits
 from export_vn.store_postgresql import StorePostgresql, PostgresqlUtils
@@ -20,7 +20,7 @@ from export_vn.evnconf import EvnConf
 from export_vn.biolovision_api import TaxoGroupsAPI
 
 # version of the program:
-version = get_version(root='../..', relative_to=__file__)
+__version__ = get_version(root='../..', relative_to=__file__)
 
 def db_config(cfg):
     """Return database related parameters."""
@@ -127,7 +127,8 @@ def full_download(cfg_ctrl):
                     logging.info('Excluded taxo_groups: %s', taxo_groups_ex)
                     taxo_groups_filt = []
                     for taxo in taxo_groups:
-                        if (not taxo['name_constant'] in taxo_groups_ex) and (taxo['access_mode'] != 'none'):
+                        if (not taxo['name_constant'] in taxo_groups_ex) \
+                            and (taxo['access_mode'] != 'none'):
                             taxo_groups_filt.append(taxo['id'])
                     logging.info('Downloading from taxo_groups: %s', taxo_groups_filt)
                     observations.store(taxo_groups_filt)
@@ -138,7 +139,8 @@ def full_download(cfg_ctrl):
     return None
 
 def increment_download(cfg_ctrl):
-    """Performs an incremental download of observations from all sites and controlers, based on configuration file."""
+    """Performs an incremental download of observations from all sites and controlers,
+    based on configuration file."""
     cfg_crtl_list = cfg_ctrl.ctrl_list
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
@@ -157,7 +159,8 @@ def increment_download(cfg_ctrl):
                     logging.info('Excluded taxo_groups: %s', taxo_groups_ex)
                     taxo_groups_filt = []
                     for taxo in taxo_groups:
-                        if (not taxo['name_constant'] in taxo_groups_ex) and (taxo['access_mode'] != 'none'):
+                        if (not taxo['name_constant'] in taxo_groups_ex)\
+                            and (taxo['access_mode'] != 'none'):
                             taxo_groups_filt.append(taxo['id'])
                     logging.info('Downloading from taxo_groups: %s', taxo_groups_filt)
                     observations.update(taxo_groups_filt)
@@ -185,7 +188,14 @@ def main():
         sql_quiet = "--quiet"
         client_min_message = "warning"
 
+    if args.version:
+        logging.info('Version %s', __version__)
+
     # Get configuration from file
+    if not Path(str(Path.home()) + '/' + args.file).is_file():
+        logging.critical('File %s does not exist', str(Path.home()) + '/' + args.file)
+        return None
+
     logging.info('Getting configuration data from %s', args.file)
     cfg_ctrl = EvnConf(args.file)
     cfg_site_list = cfg_ctrl.site_list
@@ -242,6 +252,9 @@ def main():
     if args.update:
         logging.info('Performing an incremental download of observations')
         increment_download(cfg_ctrl)
+
+    return None
+
 
 # Main wrapper
 if __name__ == '__main__':
