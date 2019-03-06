@@ -448,6 +448,75 @@ class PostgresqlUtils:
 
         return None
 
+    def count_json_obs(self):
+        """Count observations stored in json table, by site and taxonomy.
+
+        Returns
+        -------
+        dict
+            Count of observations by site and taxonomy.
+        """
+        logging.info('Counting observations in database for all sites')
+        db_url = {'drivername': 'postgresql+psycopg2',
+                  'username': self._config.db_user,
+                  'password': self._config.db_pw,
+                  'host': self._config.db_host,
+                  'port': self._config.db_port,
+                  'database': self._config.db_name}
+
+        # Connect and set path to include VN import schema
+        logging.info('Connecting to database %s', self._config.db_name)
+        self._db = create_engine(URL(**db_url), echo=False)
+        conn = self._db.connect()
+        dbschema = self._config.db_schema_import
+        self._metadata = MetaData(schema=dbschema)
+        #self._metadata.reflect(self._db)
+
+        text = '''
+        SELECT site, ((item->>0)::json->'species') ->> 'taxonomy' AS taxonomy, COUNT(id)
+	       FROM {}.observations_json
+	       GROUP BY site, ((item->>0)::json->'species') ->> 'taxonomy';
+        '''.format(dbschema)
+
+        result = conn.execute(text).fetchall()
+
+        return result
+
+    def count_col_obs(self):
+        """Count observations stored in column table, by site and taxonomy.
+
+        Returns
+        -------
+        dict
+            Count of observations by site and taxonomy.
+        """
+        logging.info('Counting observations in database for all sites')
+        db_url = {'drivername': 'postgresql+psycopg2',
+                  'username': self._config.db_user,
+                  'password': self._config.db_pw,
+                  'host': self._config.db_host,
+                  'port': self._config.db_port,
+                  'database': self._config.db_name}
+
+        # Connect and set path to include VN import schema
+        logging.info('Connecting to database %s', self._config.db_name)
+        self._db = create_engine(URL(**db_url), echo=False)
+        conn = self._db.connect()
+        dbschema = self._config.db_schema_vn
+        self._metadata = MetaData(schema=dbschema)
+        #self._metadata.reflect(self._db)
+
+        text = '''
+        SELECT o.site, o.taxonomy, t.name, COUNT(o.id_sighting)
+            FROM {}.observations AS o
+                LEFT JOIN {}.taxo_groups AS t ON (o.taxonomy::integer = t.id AND o.site LIKE t.site)
+            GROUP BY o.site, o.taxonomy, t.name
+        '''.format(dbschema, dbschema)
+
+        result = conn.execute(text).fetchall()
+
+        return result
+
 
 class StorePostgresql:
     """Provides store to Postgresql database method."""
@@ -641,6 +710,8 @@ class StorePostgresql:
         nb_obs = 0
         #trans = self._conn.begin()
         try:
+            logging.debug('Storing %d single observations',
+                          len(items_dict['data']['sightings']))
             for i in range(0, len(items_dict['data']['sightings'])):
                 obs = ObservationItem(self._config.site,
                                       self._table_defs[controler]['metadata'],
@@ -652,6 +723,9 @@ class StorePostgresql:
 
             if ('forms' in items_dict['data']):
                 for f in range(0, len(items_dict['data']['forms'])):
+                    logging.debug('Storing %d observations in form %d',
+                                  len(items_dict['data']['forms'][f]['sightings']),
+                                  f)
                     for i in range(0, len(items_dict['data']['forms'][f]['sightings'])):
                         obs = ObservationItem(self._config.site,
                                               self._table_defs[controler]['metadata'],

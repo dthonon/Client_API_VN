@@ -9,10 +9,8 @@ import argparse
 import subprocess
 from pathlib import Path
 import pyexpander.lib as pyexpander
-#import pyexpander.parser as pyparser
 from setuptools_scm import get_version
 
-#from export_vn.download_vn import DownloadVn, DownloadVnException
 from export_vn.download_vn import Entities, LocalAdminUnits, Observations, Places
 from export_vn.download_vn import Species, TaxoGroup, TerritorialUnits
 from export_vn.store_postgresql import StorePostgresql, PostgresqlUtils
@@ -65,6 +63,9 @@ def arguments():
                         action='store_true')
     parser.add_argument('--update',
                         help='Perform an incremental download, according to configuration file',
+                        action='store_true')
+    parser.add_argument('--count',
+                        help='Count observations by site and taxo_group',
                         action='store_true')
     parser.add_argument('file',
                         help='Configuration file name, used to configure different processing')
@@ -170,6 +171,16 @@ def increment_download(cfg_ctrl):
 
     return None
 
+def count_observations(cfg_ctrl):
+    """Count observations by site and taxo_group."""
+    cfg_site_list = cfg_ctrl.site_list
+    cfg = list(cfg_site_list.values())[0]
+    manage_pg = PostgresqlUtils(cfg)
+    print(manage_pg.count_json_obs())
+    print(manage_pg.count_col_obs())
+
+    return None
+
 def main():
     """
     Main.
@@ -252,6 +263,10 @@ def main():
     if args.update:
         logging.info('Performing an incremental download of observations')
         increment_download(cfg_ctrl)
+
+    if args.count:
+        logging.info('Counting observations')
+        count_observations(cfg_ctrl)
 
     return None
 

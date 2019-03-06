@@ -221,6 +221,7 @@ CREATE TABLE $(db_schema_vn).observations (
     id_species          INTEGER,
     french_name         VARCHAR(150),
     latin_name          VARCHAR(150),
+    taxonomy            VARCHAR(150),
     date                DATE,
     date_year           INTEGER, -- Missing time_start & time_stop
     timing              TIMESTAMP,
@@ -291,6 +292,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             id_species      = CAST(CAST(NEW.item->>0 AS JSON) #>> '{species,@id}' AS INTEGER),
             french_name     = CAST(NEW.item->>0 AS JSON) #>> '{species,name}',
             latin_name      = CAST(NEW.item->>0 AS JSON) #>> '{species,latin_name}',
+            taxonomy        = CAST(NEW.item->>0 AS JSON) #>> '{species,taxonomy}',
             "date"          = to_date(CAST(NEW.item->>0 AS JSON) #>> '{date,@ISO8601}', 'YYYY-MM-DD'),
             date_year       = CAST(extract(year from to_date(CAST(NEW.item->>0 AS JSON) #>> '{date,@ISO8601}', 'YYYY-MM-DD')) AS INTEGER),
             timing          = to_timestamp(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{timing,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS'),
@@ -327,7 +329,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
 
         IF NOT FOUND THEN
             -- Inserting data on src_vn.observations when raw data is inserted
-            INSERT INTO $(db_schema_vn).observations (site, id_sighting, pseudo_id_sighting, id_universal, id_species, french_name, latin_name,
+            INSERT INTO $(db_schema_vn).observations (site, id_sighting, pseudo_id_sighting, id_universal, id_species, french_name, latin_name, taxonomy,
                                              date, date_year, timing, id_place, place, municipality, county, country, insee,
                                              coord_lat, coord_lon, coord_x_l93, coord_y_l93, precision, atlas_grid_name, estimation_code,
                                              count, atlas_code, altitude, project_code, hidden, admin_hidden, name, anonymous, entity, details,
@@ -340,6 +342,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
                 CAST(CAST(NEW.item->>0 AS JSON) #>> '{species,@id}' AS INTEGER),
                 CAST(NEW.item->>0 AS JSON) #>> '{species,name}',
                 CAST(NEW.item->>0 AS JSON) #>> '{species,latin_name}',
+                CAST(NEW.item->>0 AS JSON) #>> '{species,taxonomy}',
                 to_date(CAST(NEW.item->>0 AS JSON) #>> '{date,@ISO8601}', 'YYYY-MM-DD'),
                 CAST(extract(year from to_date(CAST(NEW.item->>0 AS JSON) #>> '{date,@ISO8601}', 'YYYY-MM-DD')) AS INTEGER),
                 -- Missing time_start & time_stop
@@ -378,7 +381,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
 
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting data on src_vn.observations when raw data is inserted
-        INSERT INTO $(db_schema_vn).observations (site, id_sighting, pseudo_id_sighting, id_universal, id_species, french_name, latin_name,
+        INSERT INTO $(db_schema_vn).observations (site, id_sighting, pseudo_id_sighting, id_universal, id_species, french_name, latin_name, taxonomy,
                                          date, date_year, timing, id_place, place, municipality, county, country, insee,
                                          coord_lat, coord_lon, coord_x_l93, coord_y_l93, precision, atlas_grid_name, estimation_code,
                                          count, atlas_code, altitude, project_code, hidden, admin_hidden, name, anonymous, entity, details,
@@ -391,6 +394,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             CAST(CAST(NEW.item->>0 AS JSON) #>> '{species,@id}' AS INTEGER),
             CAST(NEW.item->>0 AS JSON) #>> '{species,name}',
             CAST(NEW.item->>0 AS JSON) #>> '{species,latin_name}',
+            CAST(NEW.item->>0 AS JSON) #>> '{species,taxonomy}',
             to_date(CAST(NEW.item->>0 AS JSON) #>> '{date,@ISO8601}', 'YYYY-MM-DD'),
             CAST(extract(year from to_date(CAST(NEW.item->>0 AS JSON) #>> '{date,@ISO8601}', 'YYYY-MM-DD')) AS INTEGER),
             -- Missing time_start & time_stop
@@ -657,7 +661,7 @@ CREATE TABLE $(db_schema_vn).taxo_groups(
     uuid                UUID DEFAULT uuid_generate_v4(),
     site                VARCHAR(50),
     id                  INTEGER,
-    french_name         VARCHAR(150),
+    name                VARCHAR(150),
     latin_name          VARCHAR(150),
     name_constant       VARCHAR(150),
     access_mode         VARCHAR(50),
@@ -678,19 +682,19 @@ CREATE OR REPLACE FUNCTION update_taxo_groups() RETURNS TRIGGER AS \$\$
     ELSIF (TG_OP = 'UPDATE') THEN
         -- Updating or inserting data when JSON data is updated
         UPDATE $(db_schema_vn).taxo_groups SET
-            french_name   = CAST(NEW.item->>0 AS JSON)->>'name',
+            name          = CAST(NEW.item->>0 AS JSON)->>'name',
             latin_name    = CAST(NEW.item->>0 AS JSON)->>'latin_name',
             name_constant = CAST(NEW.item->>0 AS JSON)->>'name_constant',
             access_mode   = CAST(NEW.item->>0 AS JSON)->>'access_mode'
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
-            INSERT INTO $(db_schema_vn).taxo_groups(site, id, french_name, latin_name, name_constant,
+            INSERT INTO $(db_schema_vn).taxo_groups(site, id, name, latin_name, name_constant,
                                                         access_mode)
             VALUES (
                 NEW.site,
                 NEW.id,
-                CAST(NEW.item->>0 AS JSON)->>'french_name',
+                CAST(NEW.item->>0 AS JSON)->>'name',
                 CAST(NEW.item->>0 AS JSON)->>'latin_name',
                 CAST(NEW.item->>0 AS JSON)->>'name_constant',
                 CAST(NEW.item->>0 AS JSON)->>'access_mode'
@@ -700,12 +704,12 @@ CREATE OR REPLACE FUNCTION update_taxo_groups() RETURNS TRIGGER AS \$\$
 
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting data on src_vn.observations when raw data is inserted
-        INSERT INTO $(db_schema_vn).taxo_groups(site, id, french_name, latin_name, name_constant,
+        INSERT INTO $(db_schema_vn).taxo_groups(site, id, name, latin_name, name_constant,
                                                     access_mode)
         VALUES (
             NEW.site,
             NEW.id,
-            CAST(NEW.item->>0 AS JSON)->>'french_name',
+            CAST(NEW.item->>0 AS JSON)->>'name',
             CAST(NEW.item->>0 AS JSON)->>'latin_name',
             CAST(NEW.item->>0 AS JSON)->>'name_constant',
             CAST(NEW.item->>0 AS JSON)->>'access_mode'
