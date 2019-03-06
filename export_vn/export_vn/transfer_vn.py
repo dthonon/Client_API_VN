@@ -217,26 +217,14 @@ def main():
     if args.db_drop:
         logging.info('Delete if exists database and roles')
         manage_pg.drop_database()
-        # Force tables creation and full download, even if not in args list
-        args.db_create = True
-        args.json_tables_create = True
-        args.col_tables_create = True
-        args.full = True
 
     if args.db_create:
         logging.info('Create database and roles')
         manage_pg.create_database()
-        # Force tables creation and full download, even if not in args list
-        args.json_tables_create = True
-        args.col_tables_create = True
-        args.full = True
 
     if args.json_tables_create:
         logging.info('Delete if exists and create json tables')
         manage_pg.create_json_tables()
-        # Force tables creation and full download, even if not in args list
-        args.col_tables_create = True
-        args.full = True
 
     if args.col_tables_create:
         logging.info('Creating or recreating vn colums based files')
