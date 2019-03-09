@@ -11,6 +11,7 @@ import requests
 import pytest
 import timeit
 
+from export_vn.store_file import StoreFile
 from export_vn.biolovision_api import BiolovisionAPI, BiolovisionApiException
 from export_vn.biolovision_api import EntitiesAPI, LocalAdminUnitsAPI, ObservationsAPI, PlacesAPI
 from export_vn.biolovision_api import SpeciesAPI, TaxoGroupsAPI, TerritorialUnitsAPI
@@ -24,6 +25,7 @@ FILE = '.evn_test.yaml'
 
 # Get configuration for test site
 CFG = EvnConf(FILE).site_list[SITE]
+STORE_FILE = StoreFile(CFG)
 ENTITIES_API = EntitiesAPI(CFG)
 LOCAL_ADMIN_UNITS_API = LocalAdminUnitsAPI(CFG)
 OBSERVATIONS_API = ObservationsAPI(CFG)
@@ -142,6 +144,36 @@ def test_observations_list_1(capsys):
     list = OBSERVATIONS_API.api_list('18')
     assert OBSERVATIONS_API.transfer_errors == 0
     assert len(list) > 0
+
+def test_observations_list_2_1(capsys):
+    """Get the list of sightings, from taxo_group 1, specie 518."""
+    file_json = str(Path.home()) + '/' + CFG.file_store + 'test_observations_list_2_1.json.gz'
+    if Path(file_json).is_file():
+        Path(file_json).unlink()
+    list = OBSERVATIONS_API.api_list('1', id_species='518', short_version='1')
+    assert OBSERVATIONS_API.transfer_errors == 0
+    assert len(list) > 0
+    STORE_FILE.store('test_observations_list_2', str(1), list)
+
+def test_observations_list_3_0(capsys):
+    """Get the list of sightings, from taxo_group 1, specie 382."""
+    file_json = str(Path.home()) + '/' + CFG.file_store + 'test_observations_list_3_0.json.gz'
+    if Path(file_json).is_file():
+        Path(file_json).unlink()
+    list = OBSERVATIONS_API.api_list('1', id_species='382')
+    assert OBSERVATIONS_API.transfer_errors == 0
+    assert len(list) > 0
+    STORE_FILE.store('test_observations_list_3', str(0), list)
+
+def test_observations_list_3_1(capsys):
+    """Get the list of sightings, from taxo_group 1, specie 382."""
+    file_json = str(Path.home()) + '/' + CFG.file_store + 'test_observations_list_3_1.json.gz'
+    if Path(file_json).is_file():
+        Path(file_json).unlink()
+    list = OBSERVATIONS_API.api_list('1', id_species='382', short_version='1')
+    assert OBSERVATIONS_API.transfer_errors == 0
+    assert len(list) > 0
+    STORE_FILE.store('test_observations_list_3', str(1), list)
 
 def test_observations_get(capsys):
     """Get a specific sighting."""
