@@ -132,7 +132,7 @@ def full_download(cfg_ctrl):
                             and (taxo['access_mode'] != 'none'):
                             taxo_groups_filt.append(taxo['id'])
                     logging.info('Downloading from taxo_groups: %s', taxo_groups_filt)
-                    observations.store(taxo_groups_filt)
+                    observations.store(taxo_groups_filt, method='list', by_specie=True)
 
             else:
                 logging.info('Skipping site %s', site)

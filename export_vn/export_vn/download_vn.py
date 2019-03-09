@@ -140,7 +140,7 @@ class Observations(DownloadVn):
                          max_retry, max_requests, max_chunks)
         return None
 
-    def _store_list(self, id_taxo_group, by_specie, id_sightings_list=None):
+    def _store_list(self, id_taxo_group, by_specie):
         """Download from VN by API list and store json to file.
 
         Calls biolovision_api to get observation, convert to json and store.
@@ -179,7 +179,9 @@ class Observations(DownloadVn):
                             items_dict = self._api_instance.api_list(id_taxo_group, id_species=specie['id'])
                             # Call backend to store log
                             self._backend.log(self._config.site, self._api_instance.controler,
-                                              self._api_instance.transfer_errors, self._api_instance.http_status)
+                                              self._api_instance.transfer_errors, self._api_instance.http_status,
+                                              'observations from taxo_group {}, species {}'.\
+                                              format(id_taxo_group, specie['id']))
                             # Call backend to store results
                             self._backend.store(self._api_instance.controler,
                                           str(id_taxo_group) + '_' + specie['id'],

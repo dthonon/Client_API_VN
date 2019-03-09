@@ -29,6 +29,8 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 from pyproj import Proj, transform
 
+from export_vn.store_file import StoreFile
+
 # version of the program:
 from setuptools_scm import get_version
 __version__ = get_version(root='../..', relative_to=__file__)
@@ -523,6 +525,8 @@ class StorePostgresql:
 
     def __init__(self, config):
         self._config = config
+        self._file_store = StoreFile(config)
+
         self._num_worker_threads = 4
 
         # Initialize interface to Postgresql DB
@@ -770,6 +774,7 @@ class StorePostgresql:
         int
             Count of items stored (not exact for observations, due to forms).
         """
+        self._file_store.store(controler, seq, items_dict)
         if self._table_defs[controler]['type'] == 'simple':
             nb_item = self._store_simple(controler, items_dict)
         elif self._table_defs[controler]['type'] == 'geometry':
