@@ -150,7 +150,9 @@ def test_observations_list_2_1(capsys):
     file_json = str(Path.home()) + '/' + CFG.file_store + 'test_observations_list_2_1.json.gz'
     if Path(file_json).is_file():
         Path(file_json).unlink()
-    list = OBSERVATIONS_API.api_list('1', id_species='518', short_version='1')
+    with capsys.disabled():
+        list = OBSERVATIONS_API.api_list('1', id_species='518', short_version='1')
+        logging.debug('local test_observations_list_3_0 unit {} sightings/forms '.format(len(list)))
     assert OBSERVATIONS_API.transfer_errors == 0
     assert len(list) > 0
     STORE_FILE.store('test_observations_list_2', str(1), list)
@@ -160,7 +162,9 @@ def test_observations_list_3_0(capsys):
     file_json = str(Path.home()) + '/' + CFG.file_store + 'test_observations_list_3_0.json.gz'
     if Path(file_json).is_file():
         Path(file_json).unlink()
-    list = OBSERVATIONS_API.api_list('1', id_species='382')
+    with capsys.disabled():
+        list = OBSERVATIONS_API.api_list('1', id_species='382')
+        logging.debug('local test_observations_list_3_0 unit {} sightings/forms '.format(len(list)))
     assert OBSERVATIONS_API.transfer_errors == 0
     assert len(list) > 0
     STORE_FILE.store('test_observations_list_3', str(0), list)
@@ -170,7 +174,9 @@ def test_observations_list_3_1(capsys):
     file_json = str(Path.home()) + '/' + CFG.file_store + 'test_observations_list_3_1.json.gz'
     if Path(file_json).is_file():
         Path(file_json).unlink()
-    list = OBSERVATIONS_API.api_list('1', id_species='382', short_version='1')
+    with capsys.disabled():
+        list = OBSERVATIONS_API.api_list('1', id_species='382', short_version='1')
+        logging.debug('local test_observations_list_3_0 unit {} sightings/forms '.format(len(list)))
     assert OBSERVATIONS_API.transfer_errors == 0
     assert len(list) > 0
     STORE_FILE.store('test_observations_list_3', str(1), list)

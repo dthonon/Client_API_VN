@@ -185,21 +185,31 @@ class BiolovisionAPI:
                 resp_chunk = resp.json()
                 # Initialize or append to response dict, depending on content
                 if 'data' in resp_chunk:
+                    observations = False
                     if 'sightings' in resp_chunk['data']:
+                        observations = True
                         logging.debug('Received %d sightings in chunk %d',
                                       len(resp_chunk['data']['sightings']), nb_chunks)
                         if nb_chunks == 0:
                             data_rec = resp_chunk
                         else:
-                            data_rec['data']['sightings'] += resp_chunk['data']['sightings']
-                    elif 'forms'  in resp_chunk['data']:
+                            if 'sightings' in data_rec['data']:
+                                data_rec['data']['sightings'] += resp_chunk['data']['sightings']
+                            else:
+                                data_rec['data']['sightings'] = resp_chunk['data']['sightings']
+                    if 'forms' in resp_chunk['data']:
+                        observations = True
                         logging.debug('Received %d forms in chunk %d',
                                       len(resp_chunk['data']['forms']), nb_chunks)
                         if nb_chunks == 0:
                             data_rec = resp_chunk
                         else:
-                            data_rec['data']['forms'] += resp_chunk['data']['forms']
-                    else:
+                            if 'forms' in data_rec['data']:
+                                data_rec['data']['forms'] += resp_chunk['data']['forms']
+                            else:
+                                data_rec['data']['forms'] = resp_chunk['data']['forms']
+
+                    if not observations:
                         logging.debug('Received %d data items in chunk %d',
                                       len(resp_chunk), nb_chunks)
                         if nb_chunks == 0:
