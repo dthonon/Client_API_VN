@@ -344,43 +344,6 @@ class PostgresqlUtils:
         conn.close()
         db.dispose()
 
-        # Reconnect to created database
-        logging.info('Connecting to %s database, to finalize creation', self._config.db_name)
-        db_url['database'] = self._config.db_name
-        db = create_engine(URL(**db_url), echo=False)
-        conn = db.connect()
-
-        # Add extensions
-        text = 'CREATE EXTENSION IF NOT EXISTS pgcrypto'
-        conn.execute(text)
-        text = 'CREATE EXTENSION IF NOT EXISTS adminpack'
-        conn.execute(text)
-        text = 'CREATE EXTENSION IF NOT EXISTS "uuid-ossp"'
-        conn.execute(text)
-        text = 'CREATE EXTENSION IF NOT EXISTS postgis'
-        conn.execute(text)
-        text = 'CREATE EXTENSION IF NOT EXISTS postgis_topology'
-        conn.execute(text)
-
-        # Create import schema
-        text = 'CREATE SCHEMA {} AUTHORIZATION {}'.format(self._config.db_schema_import, self._config.db_group)
-        conn.execute(text)
-
-        # Enable privileges
-        text = '''
-        ALTER DEFAULT PRIVILEGES
-           GRANT INSERT, SELECT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON TABLES
-           TO postgres'''
-        conn.execute(text)
-        text = '''
-        ALTER DEFAULT PRIVILEGES
-           GRANT INSERT, SELECT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON TABLES
-           TO {}'''.format(self._config.db_group)
-        conn.execute(text)
-
-        conn.close()
-        db.dispose()
-
         return None
 
     def drop_database(self):
@@ -427,10 +390,40 @@ class PostgresqlUtils:
                   'port': self._config.db_port,
                   'database': self._config.db_name}
 
-        # Connect and set path to include VN import schema
-        logging.info('Connecting to database %s', self._config.db_name)
+        # Connect to database
+        logging.info('Connecting to %s database, to finalize creation', self._config.db_name)
         self._db = create_engine(URL(**db_url), echo=False)
         conn = self._db.connect()
+
+        # Add extensions
+        text = 'CREATE EXTENSION IF NOT EXISTS pgcrypto'
+        conn.execute(text)
+        text = 'CREATE EXTENSION IF NOT EXISTS adminpack'
+        conn.execute(text)
+        text = 'CREATE EXTENSION IF NOT EXISTS "uuid-ossp"'
+        conn.execute(text)
+        text = 'CREATE EXTENSION IF NOT EXISTS postgis'
+        conn.execute(text)
+        text = 'CREATE EXTENSION IF NOT EXISTS postgis_topology'
+        conn.execute(text)
+
+        # Create import schema
+        text = 'CREATE SCHEMA IF NOT EXISTS {} AUTHORIZATION {}'.format(self._config.db_schema_import, self._config.db_group)
+        conn.execute(text)
+
+        # Enable privileges
+        text = '''
+        ALTER DEFAULT PRIVILEGES
+           GRANT INSERT, SELECT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON TABLES
+           TO postgres'''
+        conn.execute(text)
+        text = '''
+        ALTER DEFAULT PRIVILEGES
+           GRANT INSERT, SELECT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON TABLES
+           TO {}'''.format(self._config.db_group)
+        conn.execute(text)
+
+        # Set path to include VN import schema
         dbschema = self._config.db_schema_import
         self._metadata = MetaData(schema=dbschema)
         self._metadata.reflect(self._db)
@@ -447,6 +440,9 @@ class PostgresqlUtils:
         self._create_species_json()
         self._create_taxo_groups_json()
         self._create_territorial_units_json()
+
+        conn.close()
+        self._db.dispose()
 
         return None
 
