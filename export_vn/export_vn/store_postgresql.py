@@ -575,7 +575,7 @@ class StorePostgresql:
         self._table_defs['territorial_units']['metadata'] = self._metadata.tables[dbschema + '.territorial_units_json']
 
         # Create parallel workers for database queries
-        self._observations_queue = queue.Queue()
+        self._observations_queue = queue.Queue(maxsize=100000)
         self._observations_threads = []
         for i in range(self._num_worker_threads):
             t = threading.Thread(target=observation_worker, args=(i, self._observations_queue))
