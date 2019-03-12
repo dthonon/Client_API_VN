@@ -2,10 +2,8 @@
 """
 Test each method of store_file module.
 """
-import sys
 from pathlib import Path
 import logging
-import pytest
 import json
 import gzip
 
@@ -28,7 +26,7 @@ def test_version():
 # ------------
 # General data
 # ------------
-def test_general_data_file_store(capsys):
+def test_general_data_file_store():
     """Store general items_dict to file."""
     file_json = str(Path.home()) + '/' + CFG.file_store + 'general_data_1.json.gz'
     if Path(file_json).is_file():
@@ -52,11 +50,6 @@ def test_general_data_file_store(capsys):
         }]}
     STORE_FILE.store('general_data', str(1), items_dict)
     assert Path(file_json).is_file()
-    with gzip.open(file_json, 'rb') as g:
-        items_dict = json.loads(g.read().decode('utf-8'))
-    assert len(items_dict['data']) ==2
-
-
-# -------------
-#  Observations
-# -------------
+    with gzip.open(file_json, 'rb') as gziped:
+        items_dict = json.loads(gziped.read().decode('utf-8'))
+    assert len(items_dict['data']) == 2

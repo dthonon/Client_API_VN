@@ -4,6 +4,7 @@ Test each method of download_vn module, using file store.
 """
 import sys
 from pathlib import Path
+from datetime import datetime, timedelta
 import logging
 import pytest
 import json
@@ -22,7 +23,7 @@ FILE = '.evn_test.yaml'
 
 # Get configuration for test site
 CFG = EvnConf(FILE).site_list[SITE]
-STORE_FILE = StoreFile(CFG).store
+STORE_FILE = StoreFile(CFG)
 ENTITIES = Entities(CFG, STORE_FILE)
 LOCAL_ADMIN_UNITS = LocalAdminUnits(CFG, STORE_FILE)
 OBSERVATIONS = Observations(CFG, STORE_FILE)
@@ -51,8 +52,6 @@ def test_entities_store(capsys):
         assert len(items_dict['data']) >= 20
     elif SITE == 't07':
         assert len(items_dict['data']) >= 8
-
-
 
 # -----------------
 #  LocalAdminUnits
@@ -110,6 +109,11 @@ def test_observations_store_search_1_2(capsys):
     OBSERVATIONS.store(2, method='search')
     assert Path(file_json).is_file()
 
+def test_observations_store_update_1_2(capsys):
+    """Get updates for 0.5 day of observations from taxo_group 2 by specie to file."""
+    since = (datetime.now() - timedelta(days=0.5)).strftime('%H:%M:%S %d.%m.%Y')
+    OBSERVATIONS.update(2, since)
+    assert OBSERVATIONS.transfer_errors == 0
 
 # -------
 #  Places

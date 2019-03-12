@@ -54,9 +54,14 @@ class StoreFile:
         controler : dict
             Data returned from API call.
 
+        Returns
+        -------
+        int
+            Count of items stored (not exact for observations, due to forms).
         """
         # Store to file
-        if (len(items_dict['data']) > 0):
+        nb_obs = len(items_dict['data'])
+        if nb_obs > 0:
             # Convert to json
             logging.debug('Converting to json %d items',
                           len(items_dict['data']))
@@ -67,4 +72,75 @@ class StoreFile:
             with gzip.open(file_json_gz, 'wb', 9) as g:
                 g.write(items_json.encode())
 
-        return
+        return nb_obs
+
+    def delete_obs(self, obs_list):
+        """Delete observations stored in database.
+
+        Parameters
+        ----------
+        obs_list : list
+            Data returned from API call.
+
+        Returns
+        -------
+        int
+            Count of items deleted.
+        """
+        # Not implemented
+        return None
+
+    def log(self, site, controler,
+            error_count=0, http_status=0, comment=''):
+        """Write download log entries to database.
+
+        Parameters
+        ----------
+        site : str
+            VN site name.
+        controler : str
+            Name of API controler.
+        error_count : integer
+            Number of errors during download.
+        http_status : integer
+            HTTP status of latest download.
+        comment : str
+            Optional comment, in free text.
+
+        """
+        # Not implemented
+        return None
+
+    def increment_log(self, site, taxo_group,
+                      last_ts):
+        """Write last increment timestamp to database.
+
+        Parameters
+        ----------
+        site : str
+            VN site name.
+        taxo_group : str
+            Taxo_group updated.
+        last_ts : timestamp
+            Timestamp of last update of this taxo_group.
+        """
+        # Not implemented
+        return None
+
+    def increment_get(self, site, taxo_group,):
+        """Get last increment timestamp from database.
+
+        Parameters
+        ----------
+        site : str
+            VN site name.
+        taxo_group : str
+            Taxo_group updated.
+
+        Returns
+        -------
+        timestamp
+            Timestamp of last update of this taxo_group.
+        """
+        # Not implemented
+        return None
