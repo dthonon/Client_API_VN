@@ -39,7 +39,8 @@ def arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('--version',
                         help='Print version number',
-                        action='store_true')
+                        action='version',
+                        version=__version__)
     parser.add_argument('-v', '--verbose',
                         help='Increase output verbosity',
                         action='store_true')
