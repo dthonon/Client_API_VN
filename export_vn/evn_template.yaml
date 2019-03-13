@@ -19,7 +19,38 @@ controler:
         enabled: true
         # List of taxo_groups to exclude from download
         taxo_exclude:
-            - 1
+            #- TAXO_GROUP_BIRD
+            #- TAXO_GROUP_BAT
+            #- TAXO_GROUP_MAMMAL
+            #- TAXO_GROUP_SEA_MAMMAL
+            #- TAXO_GROUP_REPTILIAN
+            #- TAXO_GROUP_AMPHIBIAN
+            #- TAXO_GROUP_ODONATA
+            #- TAXO_GROUP_BUTTERFLY
+            #- TAXO_GROUP_MOTH
+            #- TAXO_GROUP_ORTHOPTERA
+            #- TAXO_GROUP_HYMENOPTERA
+            #- TAXO_GROUP_ORCHIDACEAE
+            #- TAXO_GROUP_TRASH
+            #- TAXO_GROUP_EPHEMEROPTERA
+            #- TAXO_GROUP_PLECOPTERA
+            #- TAXO_GROUP_MANTODEA
+            #- TAXO_GROUP_AUCHENORRHYNCHA
+            #- TAXO_GROUP_HETEROPTERA
+            #- TAXO_GROUP_COLEOPTERA
+            #- TAXO_GROUP_NEVROPTERA
+            #- TAXO_GROUP_TRICHOPTERA
+            #- TAXO_GROUP_MECOPTERA
+            #- TAXO_GROUP_DIPTERA
+            #- TAXO_GROUP_PHASMATODEA
+            #- TAXO_GROUP_ARACHNIDA
+            #- TAXO_GROUP_SCORPIONES
+            #- TAXO_GROUP_FISH
+            #- TAXO_GROUP_MALACOSTRACA
+            #- TAXO_GROUP_GASTROPODA
+            #- TAXO_GROUP_BIVALVIA
+            #- TAXO_GROUP_BRANCHIOPODA
+            - TAXO_GROUP_ALIEN_PLANTS
     places:
         # Enable download from this controler
         enabled: true
@@ -64,6 +95,8 @@ site:
 
 # File storage backend parameters
 file:
+    # Enable storing to file
+    enabled: false
     # Top level path name for downloaded file storage, relative to $HOME
     file_store: VN_files
 

@@ -55,6 +55,10 @@ def test_client_secret():
     """ Test property. """
     assert SCFG.client_secret == 'client_secret'
 
+def test_file_enabled():
+    """ Test property. """
+    assert SCFG.file_enabled == False
+
 def test_file_store():
     """ Test property. """
     assert SCFG.file_store == 'VN_files' + '/' + SITE + '/'
