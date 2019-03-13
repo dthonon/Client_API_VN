@@ -115,18 +115,20 @@ def store_1_observation(item):
     # Find last update timestamp
     if ('update_date' in elem['observers'][0]):
         update_date = elem['observers'][0]['update_date']['@timestamp']
+        #update_date = elem['observers'][0]['update_date']
     else:
-        update_date = elem['observers'][0]['insert_date']['@timestamp']
+        #update_date = elem['observers'][0]['insert_date']['@timestamp']
+        update_date = elem['observers'][0]['insert_date']
 
     # Add Lambert 93 coordinates
     elem['observers'][0]['coord_x_l93'], elem['observers'][0]['coord_y_l93'] = \
         transform(item.in_proj, item.out_proj,
                   elem['observers'][0]['coord_lon'],
                   elem['observers'][0]['coord_lat'])
-    elem['place']['coord_x_l93'], elem['place']['coord_y_l93'] = \
-        transform(item.in_proj, item.out_proj,
-                  elem['place']['coord_lon'],
-                  elem['place']['coord_lat'])
+    # elem['place']['coord_x_l93'], elem['place']['coord_y_l93'] = \
+    #     transform(item.in_proj, item.out_proj,
+    #               elem['place']['coord_lon'],
+    #               elem['place']['coord_lat'])
 
     # Store in Postgresql
     items_json = json.dumps(elem)

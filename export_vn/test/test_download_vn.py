@@ -101,12 +101,20 @@ def test_observations_store_list_2_18(capsys):
     elif SITE == 't07':
         assert len(items_dict['data']['sightings']) >= 18
 
-def test_observations_store_search_1_2(capsys):
+def test_observations_store_search_1_1(capsys):
     """Store observations from taxo_group 2 by specie to file, using search."""
     file_json = str(Path.home()) + '/' + CFG.file_store + 'observations_2_1.json.gz'
     if Path(file_json).is_file():
         Path(file_json).unlink()
     OBSERVATIONS.store(2, method='search')
+    assert Path(file_json).is_file()
+
+def test_observations_store_search_1_2(capsys):
+    """Store observations from taxo_group 2 by specie to file, using search."""
+    file_json = str(Path.home()) + '/' + CFG.file_store + 'observations_2_1.json.gz'
+    if Path(file_json).is_file():
+        Path(file_json).unlink()
+    OBSERVATIONS.store(2, method='search', short_version='1')
     assert Path(file_json).is_file()
 
 def test_observations_store_update_1_2(capsys):

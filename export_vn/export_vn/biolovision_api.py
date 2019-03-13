@@ -424,7 +424,6 @@ class ObservationsAPI(BiolovisionAPI):
         -------
         json : dict or None
             dict decoded from json if status OK, else None
-
         """
         # Mandatory parameters.
         params = {'user_email': self._config.user_email,
@@ -436,7 +435,7 @@ class ObservationsAPI(BiolovisionAPI):
         # GET from API
         return super()._url_get(params, 'observations/diff/')
 
-    def api_search(self, q_params):
+    def api_search(self, q_params, **kwargs):
         """Search for observations, based on parameter conditions.
 
         Calls /observations/search to get observations
@@ -451,11 +450,14 @@ class ObservationsAPI(BiolovisionAPI):
         -------
         json : dict or None
             dict decoded from json if status OK, else None
-
+        **kwargs :
+            optional URL parameters, empty by default. See Biolovision API documentation.
         """
         # Mandatory parameters.
         params = {'user_email': self._config.user_email,
                   'user_pw': self._config.user_pw}
+        for key, value in kwargs.items():
+            params[key] = value
         # Specific parameters.
         if q_params is not None:
             body = json.dumps(q_params)

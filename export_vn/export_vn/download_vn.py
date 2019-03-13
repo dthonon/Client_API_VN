@@ -140,7 +140,7 @@ class Observations(DownloadVn):
                          max_retry, max_requests, max_chunks)
         return None
 
-    def _store_list(self, id_taxo_group, by_specie):
+    def _store_list(self, id_taxo_group, by_specie, short_version='1'):
         """Download from VN by API list and store json to file.
 
         Calls biolovision_api to get observation, convert to json and store.
@@ -155,6 +155,8 @@ class Observations(DownloadVn):
             If not None, taxo_group to be downloaded.
         by_specie : bool
             If True, downloading by specie.
+        short_version : str
+            '0' for long JSON and '1' for short_version.
         """
         # GET from API
         logging.debug('Getting observations from controler %s, using API list',
@@ -176,10 +178,14 @@ class Observations(DownloadVn):
                         if specie['is_used'] == '1':
                             logging.info('Getting observations from taxo_group %s, species %s',
                                          id_taxo_group, specie['id'])
-                            items_dict = self._api_instance.api_list(id_taxo_group, id_species=specie['id'])
+                            items_dict = self._api_instance.api_list(id_taxo_group,
+                                                                     id_species=specie['id'],
+                                                                     short_version=short_version)
                             # Call backend to store log
-                            self._backend.log(self._config.site, self._api_instance.controler,
-                                              self._api_instance.transfer_errors, self._api_instance.http_status,
+                            self._backend.log(self._config.site,
+                                              self._api_instance.controler,
+                                              self._api_instance.transfer_errors,
+                                              self._api_instance.http_status,
                                               'observations from taxo_group {}, species {}'.\
                                               format(id_taxo_group, specie['id']))
                             # Call backend to store results
@@ -187,17 +193,21 @@ class Observations(DownloadVn):
                                           str(id_taxo_group) + '_' + specie['id'],
                                           items_dict)
                 else:
-                    items_dict = self._api_instance.api_list(id_taxo_group)
+                    items_dict = self._api_instance.api_list(id_taxo_group,
+                                                             short_version=short_version)
                     # Call backend to store log
-                    self._backend.log(self._config.site, self._api_instance.controler,
-                                      self._api_instance.transfer_errors, self._api_instance.http_status)
+                    self._backend.log(self._config.site,
+                                      self._api_instance.controler,
+                                      self._api_instance.transfer_errors,
+                                      self._api_instance.http_status)
                     # Call backend to store results
-                    self._backend.store(self._api_instance.controler, str(id_taxo_group) + '_1',
-                                  items_dict)
+                    self._backend.store(self._api_instance.controler,
+                                        str(id_taxo_group) + '_1',
+                                        items_dict)
 
         return None
 
-    def _store_search(self, id_taxo_group):
+    def _store_search(self, id_taxo_group, short_version='1'):
         """Download from VN by API search and store json to file.
 
         Calls biolovision_api to get observation, convert to json and store.
@@ -210,7 +220,8 @@ class Observations(DownloadVn):
         ----------
         id_taxo_group : str or None
             If not None, taxo_group to be downloaded.
-
+        short_version : str
+            '0' for long JSON and '1' for short_version.
         """
         # GET from API
         logging.debug('Getting observations from controler %s, using API search',
@@ -237,12 +248,16 @@ class Observations(DownloadVn):
                                'date_to': end_date.strftime('%d.%m.%Y'),
                                'species_choice':'all',
                                'taxonomic_group': taxo['id']}
-                    items_dict = self._api_instance.api_search(q_param)
+                    items_dict = self._api_instance.api_search(q_param,
+                                                               short_version=short_version)
                     # Call backend to store log
-                    self._backend.log(self._config.site, self._api_instance.controler,
-                                      self._api_instance.transfer_errors, self._api_instance.http_status)
+                    self._backend.log(self._config.site,
+                                      self._api_instance.controler,
+                                      self._api_instance.transfer_errors,
+                                      self._api_instance.http_status)
                     # Call backend to store results
-                    nb_obs = self._backend.store(self._api_instance.controler, str(id_taxo_group) + '_' + str(seq),
+                    nb_obs = self._backend.store(self._api_instance.controler,
+                                                 str(id_taxo_group) + '_' + str(seq),
                                                  items_dict)
                     logging.info('Iter: %s, %s obs, taxo_group: %s, date: %s, interval: %s',
                                  seq, nb_obs, id_taxo_group,
@@ -273,7 +288,7 @@ class Observations(DownloadVn):
 
         return taxo_list
 
-    def store(self, id_taxo_group=None, by_specie=False, method='search'):
+    def store(self, id_taxo_group=None, by_specie=False, method='search', short_version='1'):
         """Download from VN by API, looping on taxo_group if None and store json to file.
 
         Calls  biolovision_api, convert to json and store to file.
@@ -288,16 +303,18 @@ class Observations(DownloadVn):
             If True, downloading by specie.
         method : str
             API used to download, either 'search' or 'list'.
+        short_version : str
+            '0' for long JSON and '1' for short_version.
         """
         # Get the list of taxo groups to process
         taxo_list = self._list_taxo_groups(id_taxo_group)
 
         if method == 'search':
             for taxo in taxo_list:
-                self._store_search(taxo)
+                self._store_search(taxo, short_version=short_version)
         elif method == 'list':
             for taxo in taxo_list:
-                self._store_list(taxo, by_specie=by_specie)
+                self._store_list(taxo, by_specie=by_specie, short_version=short_version)
         else:
             raise NotImplemented
 

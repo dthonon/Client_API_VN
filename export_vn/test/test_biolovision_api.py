@@ -349,6 +349,22 @@ def test_observations_search_1(capsys):
     else:
         fail
 
+def test_observations_search_2(capsys):
+    """Query sightings, from taxo_group 18: Mantodea and date range."""
+    q_param = {'period_choice': 'range',
+               'date_from': '01.09.2017',
+               'date_to': '30.09.2017',
+               'species_choice':'all',
+               'taxonomic_group': '18'}
+    list = OBSERVATIONS_API.api_search(q_param, short_version='1')
+    assert OBSERVATIONS_API.transfer_errors == 0
+    if SITE == 't38':
+        assert len(list['data']['sightings']) >= 17
+    elif SITE == 't07':
+        assert len(list['data']['sightings']) >= 3
+    else:
+        fail
+
 # -------------------------
 #  Places controler methods
 # -------------------------
