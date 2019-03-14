@@ -6,6 +6,7 @@ Program managing VisioNature export to Postgresql database
 """
 import logging
 import argparse
+import sys
 import subprocess
 from pathlib import Path
 import pyexpander.lib as pyexpander
@@ -40,7 +41,7 @@ def arguments():
     parser.add_argument('--version',
                         help='Print version number',
                         action='version',
-                        version=__version__)
+                        version='%(prog)s {version}'.format(version=__version__))
     parser.add_argument('-v', '--verbose',
                         help='Increase output verbosity',
                         action='store_true')
@@ -71,7 +72,9 @@ def arguments():
     parser.add_argument('file',
                         help='Configuration file name, used to configure different processing')
 
-    return parser.parse_args()
+    args = parser.parse_args()
+    return args
+
 
 def full_download(cfg_ctrl):
     """Performs a full download of all sites and controlers, based on configuration file."""
@@ -200,8 +203,8 @@ def main():
         sql_quiet = "--quiet"
         client_min_message = "warning"
 
-    if args.version:
-        logging.info('Version %s', __version__)
+    logging.info('%s, version %s', sys.argv[0], __version__)
+    logging.info('Arguments: %s', sys.argv[1:])
 
     # Get configuration from file
     if not Path(str(Path.home()) + '/' + args.file).is_file():
@@ -224,7 +227,7 @@ def main():
         manage_pg.create_database()
 
     if args.json_tables_create:
-        logging.info('Delete if exists and create json tables')
+        logging.info('Create, if not exists, json tables')
         manage_pg.create_json_tables()
 
     if args.col_tables_create:
