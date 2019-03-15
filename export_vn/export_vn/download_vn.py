@@ -320,7 +320,7 @@ class Observations(DownloadVn):
 
         return None
 
-    def update(self, id_taxo_group=None, since=None):
+    def update(self, id_taxo_group=None, since=None, short_version='1'):
         """Download increment from VN by API and store json to file.
 
         Gets previous update date from database and updates since then.
@@ -335,6 +335,8 @@ class Observations(DownloadVn):
         since : str or None
             If None, updates since last download
             Or if provided, updates since that given date.
+        short_version : str
+            '0' for long JSON and '1' for short_version.
         """
         # GET from API
         logging.debug('Getting updated observations from controler %s',
@@ -379,13 +381,17 @@ class Observations(DownloadVn):
             # Process updates
             for obs in updated:
                 logging.debug('Getting observation {}'.format(obs))
-                items_dict = self._api_instance.api_get(obs)
+                items_dict = self._api_instance.api_get(obs,
+                                                        short_version=short_version)
                 # Call backend to store log
-                self._backend.log(self._config.site, self._api_instance.controler,
-                                  self._api_instance.transfer_errors, self._api_instance.http_status)
+                self._backend.log(self._config.site,
+                                  self._api_instance.controler,
+                                  self._api_instance.transfer_errors,
+                                  self._api_instance.http_status)
                 # Call backend to store results
-                self._backend.store(self._api_instance.controler, str(id_taxo_group) + '_1',
-                              items_dict)
+                self._backend.store(self._api_instance.controler,
+                                    str(id_taxo_group) + '_1',
+                                    items_dict)
 
             # Process deletes
             if len(deleted) > 0:

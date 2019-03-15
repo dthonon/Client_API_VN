@@ -278,7 +278,7 @@ class BiolovisionAPI:
     # -----------------------------------------
     #  Generic methods, used by most subclasses
     # -----------------------------------------
-    def api_get(self, id_entity):
+    def api_get(self, id_entity, **kwargs):
         """Query for a single entity of the given controler.
 
         Calls  /ctrl/id API.
@@ -287,6 +287,8 @@ class BiolovisionAPI:
         ----------
         id_entity : str
             entity to retrieve.
+        **kwargs :
+            optional URL parameters, empty by default. See Biolovision API documentation.
 
         Returns
         -------
@@ -296,6 +298,9 @@ class BiolovisionAPI:
         # Mandatory parameters.
         params = {'user_email': self._config.user_email,
                   'user_pw': self._config.user_pw}
+        for key, value in kwargs.items():
+            params[key] = value
+        logging.debug('In api_get, with parameters %s', params)
         # GET from API
         return self._url_get(params, self._ctrl + '/' + str(id_entity))
 
