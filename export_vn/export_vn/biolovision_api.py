@@ -39,6 +39,7 @@ import sys
 import logging
 
 import json
+import gzip
 from functools import lru_cache
 
 import urllib
@@ -183,6 +184,7 @@ class BiolovisionAPI:
             else:
                 # No error from request: processing response
                 resp_chunk = resp.json()
+
                 # Initialize or append to response dict, depending on content
                 if 'data' in resp_chunk:
                     observations = False

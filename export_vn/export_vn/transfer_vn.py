@@ -111,40 +111,40 @@ def full_download(cfg_ctrl):
                             and (taxo['access_mode'] != 'none'):
                             taxo_groups_filt.append(taxo['id'])
                     logging.info('Downloading from taxo_groups: %s', taxo_groups_filt)
-                    observations.store(taxo_groups_filt, method='search', by_specie=False)
+                    observations.store(taxo_groups_filt, method='list', by_specie=False)
+
+                ctrl = 'entities'
+                if cfg_crtl_list[ctrl].enabled:
+                    logging.info('Using controler %s on site %s', ctrl, cfg.site)
+                    entities = Entities(cfg, store_pg)
+                    entities.store()
+
+                ctrl = 'territorial_unit'
+                if cfg_crtl_list[ctrl].enabled:
+                    logging.info('Using controler %s on site %s', ctrl, cfg.site)
+                    territorial_unit = TerritorialUnits(cfg, store_pg)
+                    territorial_unit.store()
+
+                ctrl = 'local_admin_units'
+                if cfg_crtl_list[ctrl].enabled:
+                    logging.info('Using controler %s on site %s', ctrl, cfg.site)
+                    local_admin_units = LocalAdminUnits(cfg, store_pg)
+                    local_admin_units.store()
+
+                ctrl = 'places'
+                if cfg_crtl_list[ctrl].enabled:
+                    logging.info('Using controler %s on site %s', ctrl, cfg.site)
+                    places = Places(cfg, store_pg)
+                    places.store()
+
+                ctrl = 'species'
+                if cfg_crtl_list[ctrl].enabled:
+                    logging.info('Using controler %s on site %s', ctrl, cfg.site)
+                    species = Species(cfg, store_pg)
+                    species.store()
 
             else:
                 logging.info('Skipping site %s', site)
-
-            ctrl = 'entities'
-            if cfg_crtl_list[ctrl].enabled:
-                logging.info('Using controler %s on site %s', ctrl, cfg.site)
-                entities = Entities(cfg, store_pg)
-                entities.store()
-
-            ctrl = 'territorial_unit'
-            if cfg_crtl_list[ctrl].enabled:
-                logging.info('Using controler %s on site %s', ctrl, cfg.site)
-                territorial_unit = TerritorialUnits(cfg, store_pg)
-                territorial_unit.store()
-
-            ctrl = 'local_admin_units'
-            if cfg_crtl_list[ctrl].enabled:
-                logging.info('Using controler %s on site %s', ctrl, cfg.site)
-                local_admin_units = LocalAdminUnits(cfg, store_pg)
-                local_admin_units.store()
-
-            ctrl = 'places'
-            if cfg_crtl_list[ctrl].enabled:
-                logging.info('Using controler %s on site %s', ctrl, cfg.site)
-                places = Places(cfg, store_pg)
-                places.store()
-
-            ctrl = 'species'
-            if cfg_crtl_list[ctrl].enabled:
-                logging.info('Using controler %s on site %s', ctrl, cfg.site)
-                species = Species(cfg, store_pg)
-                species.store()
 
     return None
 
