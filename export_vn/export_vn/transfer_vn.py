@@ -11,6 +11,11 @@ import subprocess
 from pathlib import Path
 import pyexpander.lib as pyexpander
 from setuptools_scm import get_version
+from tabulate import tabulate
+import requests
+from lxml import html
+from bs4 import BeautifulSoup
+import re
 
 from export_vn.download_vn import Entities, LocalAdminUnits, Observations, Places
 from export_vn.download_vn import Species, TaxoGroup, TerritorialUnits
@@ -180,8 +185,21 @@ def count_observations(cfg_ctrl):
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
     manage_pg = PostgresqlUtils(cfg)
-    print(manage_pg.count_json_obs())
-    print(manage_pg.count_col_obs())
+    #print(tabulate(manage_pg.count_json_obs()))
+    print(tabulate(manage_pg.count_col_obs(),
+                   headers=['Site', 'TaxoGroup', 'TaxoName', 'Count'],
+                   tablefmt="psql"))
+
+    # url='https://www.faune-ardeche.org/index.php?m_id=23'
+    # page = requests.get(url)
+    # #print(page.content)
+    # soup = BeautifulSoup(page.text, 'html.parser')
+    #
+    # #print(soup.prettify())
+    # class_list = ["Oiseaux"] # can add any other classes to this list.
+    # # will find any divs with any names in class_list:
+    # mydivs = soup.find_all('div', class_='row')
+    # print(mydivs)
 
     return None
 
