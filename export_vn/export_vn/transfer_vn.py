@@ -186,20 +186,35 @@ def count_observations(cfg_ctrl):
     cfg = list(cfg_site_list.values())[0]
     manage_pg = PostgresqlUtils(cfg)
     #print(tabulate(manage_pg.count_json_obs()))
-    print(tabulate(manage_pg.count_col_obs(),
-                   headers=['Site', 'TaxoGroup', 'TaxoName', 'Count'],
-                   tablefmt="psql"))
 
-    # url='https://www.faune-ardeche.org/index.php?m_id=23'
-    # page = requests.get(url)
-    # #print(page.content)
-    # soup = BeautifulSoup(page.text, 'html.parser')
-    #
-    # #print(soup.prettify())
-    # class_list = ["Oiseaux"] # can add any other classes to this list.
-    # # will find any divs with any names in class_list:
-    # mydivs = soup.find_all('div', class_='row')
-    # print(mydivs)
+    col_counts = manage_pg.count_col_obs()
+
+    for site, cfg in cfg_site_list.items():
+        if cfg.site == 'Haute-Savoie':
+            continue
+        url = cfg.base_url + 'index.php?m_id=23'
+        logging.info('Getting counts from %s', url)
+        page = requests.get(url)
+        soup = BeautifulSoup(page.text, 'html.parser')
+
+        counts = soup.find_all('table')[2].contents[1].contents[3]
+        rows = counts.contents[5].contents[0].contents[0].contents[1:-1]
+        site_counts = list()
+        for i in range(0, len(rows)):
+            if i % 5 == 0:
+                taxo = rows[i].contents[0]['title']
+            elif i % 5 == 4:
+                col_c = 0
+                for r in col_counts:
+                    if r[0] == site and r[2] == taxo:
+                        col_c = r[3]
+                site_counts.append([cfg.site, 
+                                    taxo, 
+                                    int(rows[i].contents[0].contents[0].replace(' ', '')),
+                                    col_c])
+        print(tabulate(site_counts, 
+                       headers=['Site', 'TaxoName', 'Remote count', 'Local count'], 
+                       tablefmt='psql')
 
     return None
 
