@@ -183,15 +183,17 @@ def increment_download(cfg_ctrl):
 def count_observations(cfg_ctrl):
     """Count observations by site and taxo_group."""
     cfg_site_list = cfg_ctrl.site_list
-    cfg = list(cfg_site_list.values())[0]
-    manage_pg = PostgresqlUtils(cfg)
-    #print(tabulate(manage_pg.count_json_obs()))
-
-    col_counts = manage_pg.count_col_obs()
-
+ 
+    col_counts = None
     for site, cfg in cfg_site_list.items():
         if cfg.site == 'Haute-Savoie':
             continue
+
+        if col_counts is None:
+            manage_pg = PostgresqlUtils(cfg)
+            #print(tabulate(manage_pg.count_json_obs()))
+            col_counts = manage_pg.count_col_obs()
+
         url = cfg.base_url + 'index.php?m_id=23'
         logging.info('Getting counts from %s', url)
         page = requests.get(url)
@@ -214,7 +216,7 @@ def count_observations(cfg_ctrl):
                                     col_c])
         print(tabulate(site_counts, 
                        headers=['Site', 'TaxoName', 'Remote count', 'Local count'], 
-                       tablefmt='psql')
+                       tablefmt='psql'))
 
     return None
 
