@@ -12,6 +12,8 @@ from pathlib import Path
 from setuptools_scm import get_version
 __version__ = get_version(root='../..', relative_to=__file__)
 
+logger = logging.getLogger('transfer_vn.evn_conf')
+
 class EvnCtrlConf:
     """Expose controler configuration as properties
     """
@@ -77,7 +79,7 @@ class EvnSiteConf:
                 self._external1_pw   = ''
                 self._sql_scripts    = ''
         except Exception as e:
-            logging.error(e, exc_info=True)
+            logger.error(e, exc_info=True)
             raise
         return None
 

@@ -87,6 +87,7 @@ def arguments():
 def full_download(cfg_ctrl):
     """Performs a full download of all sites and controlers,
        based on configuration file."""
+    logger = logging.getLogger('transfer_vn')
     cfg_crtl_list = cfg_ctrl.ctrl_list
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
@@ -94,70 +95,70 @@ def full_download(cfg_ctrl):
     for site, cfg in cfg_site_list.items():
         with StorePostgresql(cfg) as store_pg:
             if cfg.enabled:
-                logging.info('Working on site %s', cfg.site)
+                logger.info('Working on site %s', cfg.site)
 
                 ctrl = 'taxo_group'
                 if cfg_crtl_list[ctrl].enabled:
-                    logging.info('Using controler %s on site %s',
+                    logger.info('Using controler %s on site %s',
                                  ctrl, cfg.site)
                     taxo_group = TaxoGroup(cfg, store_pg)
                     taxo_group.store()
 
                 ctrl = 'observations'
                 if cfg_crtl_list[ctrl].enabled:
-                    logging.info('Using controler %s on site %s',
+                    logger.info('Using controler %s on site %s',
                                  ctrl, cfg.site)
                     observations = Observations(cfg, store_pg)
                     taxo_groups = TaxoGroupsAPI(cfg).api_list()['data']
                     taxo_groups_ex = cfg_crtl_list[ctrl].taxo_exclude
-                    logging.info('Excluded taxo_groups: %s', taxo_groups_ex)
+                    logger.info('Excluded taxo_groups: %s', taxo_groups_ex)
                     taxo_groups_filt = []
                     for taxo in taxo_groups:
                         if (not taxo['name_constant'] in taxo_groups_ex) \
                                 and (taxo['access_mode'] != 'none'):
                             taxo_groups_filt.append(taxo['id'])
-                    logging.info(
+                    logger.info(
                         'Downloading from taxo_groups: %s', taxo_groups_filt)
                     observations.store(
                         taxo_groups_filt, method='search', by_specie=False)
 
                 ctrl = 'entities'
                 if cfg_crtl_list[ctrl].enabled:
-                    logging.info('Using controler %s on site %s',
+                    logger.info('Using controler %s on site %s',
                                  ctrl, cfg.site)
                     entities = Entities(cfg, store_pg)
                     entities.store()
 
                 ctrl = 'territorial_unit'
                 if cfg_crtl_list[ctrl].enabled:
-                    logging.info('Using controler %s on site %s',
+                    logger.info('Using controler %s on site %s',
                                  ctrl, cfg.site)
                     territorial_unit = TerritorialUnits(cfg, store_pg)
                     territorial_unit.store()
 
                 ctrl = 'local_admin_units'
                 if cfg_crtl_list[ctrl].enabled:
-                    logging.info('Using controler %s on site %s',
+                    logger.info('Using controler %s on site %s',
                                  ctrl, cfg.site)
                     local_admin_units = LocalAdminUnits(cfg, store_pg)
                     local_admin_units.store()
 
                 ctrl = 'places'
                 if cfg_crtl_list[ctrl].enabled:
-                    logging.info('Using controler %s on site %s',
+                    logger.info('Using controler %s on site %s',
                                  ctrl, cfg.site)
                     places = Places(cfg, store_pg)
                     places.store()
 
                 ctrl = 'species'
                 if cfg_crtl_list[ctrl].enabled:
-                    logging.info('Using controler %s on site %s',
+                    logger.info('Using controler %s on site %s',
                                  ctrl, cfg.site)
                     species = Species(cfg, store_pg)
                     species.store()
 
             else:
-                logging.info('Skipping site %s', site)
+                logger.info('Skipping site %s', site)
 
     return None
 
@@ -165,6 +166,7 @@ def full_download(cfg_ctrl):
 def increment_download(cfg_ctrl):
     """Performs an incremental download of observations from all sites and controlers,
     based on configuration file."""
+    logger = logging.getLogger('transfer_vn')
     cfg_crtl_list = cfg_ctrl.ctrl_list
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
@@ -172,69 +174,71 @@ def increment_download(cfg_ctrl):
     for site, cfg in cfg_site_list.items():
         with StorePostgresql(cfg) as store_pg:
             if cfg.enabled:
-                logging.info('Working on site %s', site)
+                logger.info('Working on site %s', site)
 
                 ctrl = 'observations'
                 if cfg_crtl_list[ctrl].enabled:
-                    logging.info('Using controler %s', ctrl)
+                    logger.info('Using controler %s', ctrl)
                     observations = Observations(cfg, store_pg)
                     taxo_groups = TaxoGroupsAPI(cfg).api_list()['data']
                     taxo_groups_ex = cfg_crtl_list[ctrl].taxo_exclude
-                    logging.info('Excluded taxo_groups: %s', taxo_groups_ex)
+                    logger.info('Excluded taxo_groups: %s', taxo_groups_ex)
                     taxo_groups_filt = []
                     for taxo in taxo_groups:
                         if (not taxo['name_constant'] in taxo_groups_ex)\
                                 and (taxo['access_mode'] != 'none'):
                             taxo_groups_filt.append(taxo['id'])
-                    logging.info(
+                    logger.info(
                         'Downloading from taxo_groups: %s', taxo_groups_filt)
                     observations.update(taxo_groups_filt)
 
             else:
-                logging.info('Skipping site %s', site)
+                logger.info('Skipping site %s', site)
 
     return None
 
 
 def count_observations(cfg_ctrl):
     """Count observations by site and taxo_group."""
+    logger = logging.getLogger('transfer_vn')
     cfg_site_list = cfg_ctrl.site_list
 
     col_counts = None
     for site, cfg in cfg_site_list.items():
-        if cfg.site == 'Haute-Savoie':
-            continue
+        if cfg.enabled:
+            if cfg.site == 'Haute-Savoie':
+                continue
 
-        if col_counts is None:
-            manage_pg = PostgresqlUtils(cfg)
-            # print(tabulate(manage_pg.count_json_obs()))
-            col_counts = manage_pg.count_col_obs()
+            if col_counts is None:
+                manage_pg = PostgresqlUtils(cfg)
+                # print(tabulate(manage_pg.count_json_obs()))
+                col_counts = manage_pg.count_col_obs()
 
-        url = cfg.base_url + 'index.php?m_id=23'
-        logging.info('Getting counts from %s', url)
-        page = requests.get(url)
-        soup = BeautifulSoup(page.text, 'html.parser')
+            url = cfg.base_url + 'index.php?m_id=23'
+            logger.info('Getting counts from %s', url)
+            page = requests.get(url)
+            soup = BeautifulSoup(page.text, 'html.parser')
 
-        counts = soup.find_all('table')[2].contents[1].contents[3]
-        rows = counts.contents[5].contents[0].contents[0].contents[1:-1]
-        site_counts = list()
-        for i in range(0, len(rows)):
-            if i % 5 == 0:
-                taxo = rows[i].contents[0]['title']
-            elif i % 5 == 4:
-                col_c = 0
-                for r in col_counts:
-                    if r[0] == site and r[2] == taxo:
-                        col_c = r[3]
-                site_counts.append([cfg.site,
-                                    taxo,
-                                    int(rows[i].contents[0].contents[0].replace(
-                                        ' ', '')),
-                                    col_c])
-        print(tabulate(site_counts,
-                       headers=['Site', 'TaxoName',
-                                'Remote count', 'Local count'],
-                       tablefmt='psql'))
+            counts = soup.find_all('table')[2].contents[1].contents[3]
+            rows = counts.contents[5].contents[0].contents[0].contents[1:-1]
+            site_counts = list()
+            for i in range(0, len(rows)):
+                if i % 5 == 0:
+                    taxo = rows[i].contents[0]['title']
+                elif i % 5 == 4:
+                    col_c = 0
+                    for r in col_counts:
+                        if r[0] == site and r[2] == taxo:
+                            col_c = r[3]
+                    site_counts.append([cfg.site,
+                                        taxo,
+                                        int(rows[i].contents[0].contents[0].replace(
+                                            ' ', '')),
+                                        col_c])
+            print(tabulate(site_counts,
+                        headers=['Site', 'TaxoName',
+                                    'Remote count', 'Local count'],
+                        tablefmt='psql'))
 
     return None
 
@@ -243,30 +247,43 @@ def main():
     """
     Main.
     """
+    # Define logger format and handlers
+    logger = logging.getLogger('transfer_vn')
+    # create file handler which logs even debug messages
+    fh = logging.FileHandler('../../transfer_vn.log')
+    # create console handler with a higher log level
+    ch = logging.StreamHandler()
+    # create formatter and add it to the handlers
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    fh.setFormatter(formatter)
+    ch.setFormatter(formatter)
+    # add the handlers to the logger
+    logger.addHandler(fh)
+    logger.addHandler(ch)
+
     # Get command line arguments
     args = arguments()
+
     # Define verbosity
     if args.verbose:
-        logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                            level=logging.DEBUG)
+        logger.setLevel(logging.DEBUG)
         sql_quiet = ""
         client_min_message = "debug1"
     else:
-        logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                            level=logging.INFO)
+        logger.setLevel(logging.INFO)
         sql_quiet = "--quiet"
         client_min_message = "warning"
 
-    logging.info('%s, version %s', sys.argv[0], __version__)
-    logging.info('Arguments: %s', sys.argv[1:])
+    logger.info('%s, version %s', sys.argv[0], __version__)
+    logger.info('Arguments: %s', sys.argv[1:])
 
     # Get configuration from file
     if not Path(str(Path.home()) + '/' + args.file).is_file():
-        logging.critical('File %s does not exist',
+        logger.critical('File %s does not exist',
                          str(Path.home()) + '/' + args.file)
         return None
 
-    logging.info('Getting configuration data from %s', args.file)
+    logger.info('Getting configuration data from %s', args.file)
     cfg_ctrl = EvnConf(args.file)
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
@@ -274,19 +291,19 @@ def main():
     manage_pg = PostgresqlUtils(cfg)
     db_cfg = db_config(cfg)
     if args.db_drop:
-        logging.info('Delete if exists database and roles')
+        logger.info('Delete if exists database and roles')
         manage_pg.drop_database()
 
     if args.db_create:
-        logging.info('Create database and roles')
+        logger.info('Create database and roles')
         manage_pg.create_database()
 
     if args.json_tables_create:
-        logging.info('Create, if not exists, json tables')
+        logger.info('Create, if not exists, json tables')
         manage_pg.create_json_tables()
 
     if args.col_tables_create:
-        logging.info('Creating or recreating vn colums based files')
+        logger.info('Creating or recreating vn colums based files')
         filename = str(Path.home()) + '/Client_API_VN/sql/create-vn-tables.sql'
         with open(filename, 'r') as myfile:
             template = myfile.read()
@@ -303,18 +320,18 @@ def main():
                            ' --file=' + filename,
                            check=True, shell=True)
         except subprocess.CalledProcessError as err:
-            logging.error(err)
+            logger.error(err)
 
     if args.full:
-        logging.info('Performing a full download')
+        logger.info('Performing a full download')
         full_download(cfg_ctrl)
 
     if args.update:
-        logging.info('Performing an incremental download of observations')
+        logger.info('Performing an incremental download of observations')
         increment_download(cfg_ctrl)
 
     if args.count:
-        logging.info('Counting observations')
+        logger.info('Counting observations')
         count_observations(cfg_ctrl)
 
     return None

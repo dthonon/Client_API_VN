@@ -24,6 +24,8 @@ from export_vn.regulator import PID
 from setuptools_scm import get_version
 __version__ = get_version(root='../..', relative_to=__file__)
 
+logger = logging.getLogger('transfer_vn.download_vn')
+
 class DownloadVnException(Exception):
     """An exception occurred while handling download or store. """
 

@@ -15,6 +15,8 @@ import logging
 from setuptools_scm import get_version
 __version__ = get_version(root='../..', relative_to=__file__)
 
+logger = logging.getLogger('transfer_vn.regulator')
+
 class PID(object):
     """
     A simple PID controller. No fuss.
