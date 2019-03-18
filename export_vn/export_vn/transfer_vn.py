@@ -6,6 +6,7 @@ Program managing VisioNature export to Postgresql database
 """
 import argparse
 import logging
+from logging.handlers import TimedRotatingFileHandler
 import subprocess
 import sys
 from pathlib import Path
@@ -250,11 +251,14 @@ def main():
     # Define logger format and handlers
     logger = logging.getLogger('transfer_vn')
     # create file handler which logs even debug messages
-    fh = logging.FileHandler('../../transfer_vn.log')
+    fh = TimedRotatingFileHandler(str(Path.home()) + '/tmp/transfer_vn.log',
+                                          when='midnight',
+                                          interval=1,
+                                          backupCount=100)
     # create console handler with a higher log level
     ch = logging.StreamHandler()
     # create formatter and add it to the handlers
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s')
     fh.setFormatter(formatter)
     ch.setFormatter(formatter)
     # add the handlers to the logger

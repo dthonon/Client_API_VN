@@ -78,14 +78,14 @@ class DownloadVn:
 
         """
         # GET from API
-        logging.debug('Getting items from controler %s',
+        logger.debug('Getting items from controler %s',
                       self._api_instance.controler)
         i = 0
         if opt_params_iter == None:
             opt_params_iter = iter([None])
         for opt_params in opt_params_iter:
             i += 1
-            logging.debug('Iteration %s, opt_params = %s',
+            logger.debug('Iteration %s, opt_params = %s',
                           i, opt_params)
             items_dict = self._api_instance.api_list(opt_params=opt_params)
             # Call backend to store log
@@ -161,7 +161,7 @@ class Observations(DownloadVn):
             '0' for long JSON and '1' for short_version.
         """
         # GET from API
-        logging.debug('Getting observations from controler %s, using API list',
+        logger.debug('Getting observations from controler %s, using API list',
                       self._api_instance.controler)
         if id_taxo_group == None:
             taxo_groups = TaxoGroupsAPI(self._config).api_list()['data']
@@ -171,14 +171,14 @@ class Observations(DownloadVn):
             if taxo['access_mode'] != 'none':
                 id_taxo_group = taxo['id']
                 self._backend.increment_log(self._config.site, id_taxo_group, datetime.now())
-                logging.info('Getting observations from taxo_group %s, in _store_list',
+                logger.info('Getting observations from taxo_group %s, in _store_list',
                              id_taxo_group)
                 if by_specie:
                     species = SpeciesAPI(self._config).api_list({'id_taxo_group':
                                                                  str(id_taxo_group)})['data']
                     for specie in species:
                         if specie['is_used'] == '1':
-                            logging.info('Getting observations from taxo_group %s, species %s',
+                            logger.info('Getting observations from taxo_group %s, species %s',
                                          id_taxo_group, specie['id'])
                             items_dict = self._api_instance.api_list(id_taxo_group,
                                                                      id_species=specie['id'],
@@ -226,7 +226,7 @@ class Observations(DownloadVn):
             '0' for long JSON and '1' for short_version.
         """
         # GET from API
-        logging.debug('Getting observations from controler %s, using API search',
+        logger.debug('Getting observations from controler %s, using API search',
                       self._api_instance.controler)
         if id_taxo_group == None:
             taxo_groups = TaxoGroupsAPI(self._config).api_list()['data']
@@ -261,7 +261,7 @@ class Observations(DownloadVn):
                     nb_obs = self._backend.store(self._api_instance.controler,
                                                  str(id_taxo_group) + '_' + str(seq),
                                                  items_dict)
-                    logging.info('Iter: %s, %s obs, taxo_group: %s, date: %s, interval: %s',
+                    logger.info('Iter: %s, %s obs, taxo_group: %s, date: %s, interval: %s',
                                  seq, nb_obs, id_taxo_group,
                                  start_date.strftime('%d/%m/%Y'), str(delta_days))
                     seq += 1
@@ -277,7 +277,7 @@ class Observations(DownloadVn):
             taxo_list = []
             for taxo in taxo_groups['data']:
                 if taxo['access_mode'] != 'none':
-                    logging.debug('Will download observations from taxo_group %s: %s',
+                    logger.debug('Will download observations from taxo_group %s: %s',
                                   taxo['id'], taxo['name'])
                     taxo_list.append(taxo['id'])
         else:
@@ -341,7 +341,7 @@ class Observations(DownloadVn):
             '0' for long JSON and '1' for short_version.
         """
         # GET from API
-        logging.debug('Getting updated observations from controler %s',
+        logger.debug('Getting updated observations from controler %s',
                       self._api_instance.controler)
 
         # Get the list of taxo groups to process
@@ -360,29 +360,29 @@ class Observations(DownloadVn):
             if since is not None:
                 # Valid since date provided or found in database
                 self._backend.increment_log(self._config.site, taxo, datetime.now())
-                logging.info('Getting updates for taxo_group {} since {}'.format(taxo, since))
+                logger.info('Getting updates for taxo_group {} since {}'.format(taxo, since))
                 items_dict = self._api_instance.api_diff(taxo, since)
 
                 # List by processing type
                 for item in items_dict:
-                    logging.debug('Observation %s was %s',
+                    logger.debug('Observation %s was %s',
                                   item['id_sighting'], item['modification_type'])
                     if item['modification_type'] == 'updated':
                         updated.append(item['id_sighting'])
                     elif item['modification_type'] == 'deleted':
                         deleted.append(item['id_sighting'])
                     else:
-                        logging.error('Observation %s has unknown processing %s',
+                        logger.error('Observation %s has unknown processing %s',
                                       item['id_universal'], item['modification_type'])
                         raise NotImplementedException
-                logging.info('Received %d updated and %d deleted items',
+                logger.info('Received %d updated and %d deleted items',
                              len(updated), len(deleted))
             else:
-                logging.error('No date found for last download, increment not performed')
+                logger.error('No date found for last download, increment not performed')
 
             # Process updates
             for obs in updated:
-                logging.debug('Getting observation {}'.format(obs))
+                logger.debug('Getting observation {}'.format(obs))
                 items_dict = self._api_instance.api_get(obs,
                                                         short_version=short_version)
                 # Call backend to store log
@@ -438,7 +438,7 @@ class Species(DownloadVn):
         taxo_list = []
         for taxo in taxo_groups['data']:
             if taxo['access_mode'] != 'none':
-                logging.debug('Storing species from taxo_group %s', taxo['id'])
+                logger.debug('Storing species from taxo_group %s', taxo['id'])
                 taxo_list.append({'id_taxo_group': taxo['id']})
         super().store(iter(taxo_list))
 
