@@ -318,7 +318,7 @@ class Observations(DownloadVn):
             for taxo in taxo_list:
                 self._store_list(taxo, by_specie=by_specie, short_version=short_version)
         else:
-            raise NotImplemented
+            raise NotImplementedException
 
         return None
 

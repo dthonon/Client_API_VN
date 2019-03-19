@@ -207,35 +207,37 @@ def count_observations(cfg_ctrl):
     col_counts = None
     for site, cfg in cfg_site_list.items():
         if cfg.enabled:
-            if cfg.site == 'Haute-Savoie':
-                continue
-
             if col_counts is None:
                 manage_pg = PostgresqlUtils(cfg)
                 # print(tabulate(manage_pg.count_json_obs()))
                 col_counts = manage_pg.count_col_obs()
 
-            url = cfg.base_url + 'index.php?m_id=23'
-            logger.info('Getting counts from %s', url)
-            page = requests.get(url)
-            soup = BeautifulSoup(page.text, 'html.parser')
-
-            counts = soup.find_all('table')[2].contents[1].contents[3]
-            rows = counts.contents[5].contents[0].contents[0].contents[1:-1]
+            logger.info('Getting counts from %s', cfg.site)
             site_counts = list()
-            for i in range(0, len(rows)):
-                if i % 5 == 0:
-                    taxo = rows[i].contents[0]['title']
-                elif i % 5 == 4:
-                    col_c = 0
-                    for r in col_counts:
-                        if r[0] == site and r[2] == taxo:
-                            col_c = r[3]
-                    site_counts.append([cfg.site,
-                                        taxo,
-                                        int(rows[i].contents[0].contents[0].
-                                            replace(' ', '')),
-                                        col_c])
+            if cfg.site == 'Haute-Savoie':
+                for r in col_counts:
+                    if r[0] == 'Haute-Savoie':
+                        site_counts.append([r[0], r[2], -1, r[3]])
+            else:
+                url = cfg.base_url + 'index.php?m_id=23'
+                page = requests.get(url)
+                soup = BeautifulSoup(page.text, 'html.parser')
+
+                counts = soup.find_all('table')[2].contents[1].contents[3]
+                rows = counts.contents[5].contents[0].contents[0].contents[1:-1]
+                for i in range(0, len(rows)):
+                    if i % 5 == 0:
+                        taxo = rows[i].contents[0]['title']
+                    elif i % 5 == 4:
+                        col_c = 0
+                        for r in col_counts:
+                            if r[0] == site and r[2] == taxo:
+                                col_c = r[3]
+                        site_counts.append([cfg.site,
+                                            taxo,
+                                            int(rows[i].contents[0].contents[0].
+                                                replace(' ', '')),
+                                            col_c])
             print(tabulate(site_counts,
                            headers=['Site', 'TaxoName',
                                     'Remote count', 'Local count'],

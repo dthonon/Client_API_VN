@@ -115,6 +115,7 @@ def store_1_observation(item):
     elem = item.elem
     logger.debug('Storing observation %s to database',
                  elem['observers'][0]['id_sighting'])
+    # logger.debug('store_1_observation %s', elem)
     # Find last update timestamp
     if ('update_date' in elem['observers'][0]):
         update_date = elem['observers'][0]['update_date']['@timestamp']
@@ -124,11 +125,11 @@ def store_1_observation(item):
         update_date = elem['observers'][0]['insert_date']
 
     # Add Lambert 93 coordinates
-    elem['observers'][0]['coord_x_l93'],
-    elem['observers'][0]['coord_y_l93'] = \
-        transform(item.in_proj, item.out_proj,
-                  elem['observers'][0]['coord_lon'],
-                  elem['observers'][0]['coord_lat'])
+    x, y = transform(item.in_proj, item.out_proj,
+                     elem['observers'][0]['coord_lon'],
+                     elem['observers'][0]['coord_lat'])
+    elem['observers'][0]['coord_x_l93'] = x
+    elem['observers'][0]['coord_y_l93'] = y
     # elem['place']['coord_x_l93'], elem['place']['coord_y_l93'] = \
     #     transform(item.in_proj, item.out_proj,
     #               elem['place']['coord_lon'],

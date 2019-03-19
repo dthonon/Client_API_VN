@@ -15,6 +15,14 @@ __version__ = get_version(root='../..', relative_to=__file__)
 logger = logging.getLogger('transfer_vn.evn_conf')
 
 
+class EvnConfException(Exception):
+    """An exception occurred while loading parameters."""
+
+
+class IncorrectParameter(EvnConfException):
+    """Incorrect or missing parameter."""
+
+
 class EvnCtrlConf:
     """Expose controler configuration as properties
     """
@@ -22,7 +30,10 @@ class EvnCtrlConf:
         self._ctrl = ctrl
 
         # Import parameters in properties
-        self._enabled = config['controler'][ctrl]['enabled']
+        if 'enabled' in config['controler'][ctrl]:
+            self._enabled = config['controler'][ctrl]['enabled']
+        else:
+            self._enabled = True
         if 'taxo_exclude' in config['controler'][ctrl]:
             self._taxo_exclude = config['controler'][ctrl]['taxo_exclude']
         else:
@@ -32,11 +43,6 @@ class EvnCtrlConf:
     def version(self):
         """Return version."""
         return __version__
-
-    @property
-    def site(self):
-        """Return site name, used to identify configuration file."""
-        return self._site
 
     @property
     def enabled(self):
@@ -56,14 +62,27 @@ class EvnSiteConf:
         self._site = site
         # Import parameters in properties
         try:
-            self._enabled = config['site'][site]['enabled']
+            if 'enabled' in config['site'][site]:
+                self._enabled = config['site'][site]['enabled']
+            else:
+                self._enabled = True
             self._client_key = config['site'][site]['client_key']
             self._client_secret = config['site'][site]['client_secret']
             self._user_email = config['site'][site]['user_email']
             self._user_pw = config['site'][site]['user_pw']
             self._base_url = config['site'][site]['site']
-            self._file_enabled = config['file']['enabled']
-            self._file_store = config['file']['file_store'] + '/' + site + '/'
+            if 'enabled' in config['file']:
+                self._file_enabled = config['file']['enabled']
+            else:
+                self._file_enabled = False
+            if 'file_store' in config['file']:
+                self._file_store = config['file']['file_store'] + '/' + site + '/'
+            else:
+                if self._file_enabled:
+                    logger.error('file:file_store must be defined')
+                    raise IncorrectParameter
+                else:
+                    self._file_store = None
             self._db_host = config['database']['db_host']
             self._db_port = str(config['database']['db_port'])
             self._db_name = config['database']['db_name']

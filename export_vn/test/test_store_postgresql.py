@@ -73,11 +73,12 @@ def test_local_adm_u_api_pg_store():
 # -------------
 #  Observations
 # -------------
-def test_observations_api_pg_store():
+def test_observations_api_pg_store(capsys):
     """Store observations of a taxo_group to database."""
-    OBSERVATIONS.store(18, method='search')
+    with capsys.disabled():
+        OBSERVATIONS.store(18, method='search')
 
-def test_observations_api_pg_delete():
+def test_observations_api_pg_delete(capsys):
     """Delete some observations of a taxo_group to database."""
     nb_delete = STORE_PG.delete_obs([274830, 289120])
     assert nb_delete == 2

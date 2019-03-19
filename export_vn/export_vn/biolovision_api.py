@@ -42,10 +42,9 @@ import urllib
 from functools import lru_cache
 
 import requests
+from requests_oauthlib import OAuth1
 # version of the program:
 from setuptools_scm import get_version
-
-from requests_oauthlib import OAuth1
 
 __version__ = get_version(root='../..', relative_to=__file__)
 
