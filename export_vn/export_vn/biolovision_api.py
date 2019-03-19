@@ -35,42 +35,48 @@ Exceptions
 - MaxChunksError             - Too many chunks returned from API calls
 - IncorrectParameter         - Incorrect or missing parameter
 """
-import sys
-import logging
-
 import json
-import gzip
+import logging
+import sys
+import urllib
 from functools import lru_cache
 
-import urllib
 import requests
-from requests_oauthlib import OAuth1
-
 # version of the program:
 from setuptools_scm import get_version
+
+from requests_oauthlib import OAuth1
+
 __version__ = get_version(root='../..', relative_to=__file__)
 
 logger = logging.getLogger('transfer_vn.biolovision_api')
+
 
 class HashableDict(dict):
     """Provide hashable dict type, to enable @lru_cache."""
     def __hash__(self):
         return hash(frozenset(self))
 
+
 class BiolovisionApiException(Exception):
     """An exception occurred while handling your request."""
+
 
 class HTTPError(BiolovisionApiException):
     """An HTTP error occurred."""
 
+
 class MaxChunksError(BiolovisionApiException):
     """Too many chunks returned from API calls."""
+
 
 class NotImplementedException(BiolovisionApiException):
     """Feature not implemented."""
 
+
 class IncorrectParameter(BiolovisionApiException):
     """Incorrect or missing parameter."""
+
 
 class BiolovisionAPI:
     """Top class, not for direct use. Provides internal and template methods."""
@@ -170,18 +176,19 @@ class BiolovisionAPI:
 
             logger.debug(resp.headers)
             logging.getLogger().setLevel(level)
-            logger.debug('Status code from %s request: %s', method, resp.status_code)
+            logger.debug('%s status code = %s, for URL %s',
+                         method, resp.status_code, protected_url)
             self._http_status = resp.status_code
             if self._http_status != 200:
                 # Request returned an error.
                 # Logging and checking if not too many errors to continue
                 logger.error('%s status code = %s, for URL %s',
-                              method, resp.status_code, protected_url)
+                             method, resp.status_code, protected_url)
                 self._transfer_errors += 1
                 if self._transfer_errors > self._limits['max_retry']:
                     # Too many retries. Raising exception
                     logger.critical('Too many error %s, raising exception',
-                                     self._transfer_errors)
+                                    self._transfer_errors)
                     raise HTTPError(resp.status_code)
             else:
                 # No error from request: processing response
@@ -193,7 +200,7 @@ class BiolovisionAPI:
                     if 'sightings' in resp_chunk['data']:
                         observations = True
                         logger.debug('Received %d sightings in chunk %d',
-                                      len(resp_chunk['data']['sightings']), nb_chunks)
+                                     len(resp_chunk['data']['sightings']), nb_chunks)
                         if nb_chunks == 0:
                             data_rec = resp_chunk
                         else:
@@ -204,7 +211,7 @@ class BiolovisionAPI:
                     if 'forms' in resp_chunk['data']:
                         observations = True
                         logger.debug('Received %d forms in chunk %d',
-                                      len(resp_chunk['data']['forms']), nb_chunks)
+                                     len(resp_chunk['data']['forms']), nb_chunks)
                         if nb_chunks == 0:
                             data_rec = resp_chunk
                         else:
@@ -215,14 +222,14 @@ class BiolovisionAPI:
 
                     if not observations:
                         logger.debug('Received %d data items in chunk %d',
-                                      len(resp_chunk), nb_chunks)
+                                     len(resp_chunk), nb_chunks)
                         if nb_chunks == 0:
                             data_rec = resp_chunk
                         else:
                             data_rec['data'] += resp_chunk['data']
                 else:
                     logger.debug('Received %d items without data in chunk %d',
-                                  len(resp_chunk), nb_chunks)
+                                 len(resp_chunk), nb_chunks)
                     if nb_chunks == 0:
                         data_rec = resp_chunk
                     else:
@@ -233,7 +240,7 @@ class BiolovisionAPI:
                         (resp.headers['transfer-encoding'] == 'chunked') and
                         ('pagination_key' in resp.headers)):
                     logger.debug('Chunked transfer => requesting for more, with key: %s',
-                                  resp.headers['pagination_key'])
+                                 resp.headers['pagination_key'])
                     # Update request parameters to get next chunk
                     params['pagination_key'] = resp.headers['pagination_key']
                     nb_chunks += 1
@@ -248,7 +255,6 @@ class BiolovisionAPI:
             raise MaxChunksError
 
         return data_rec
-
 
     def _api_list(self, opt_params=None):
         """Query for a list of entities of the given controler.
@@ -271,17 +277,17 @@ class BiolovisionAPI:
         if opt_params is not None:
             params.update(opt_params)
         logger.debug('List from %s, with option %s',
-                      self._ctrl, params)
+                     self._ctrl, params)
         # GET from API
         entities = self._url_get(params, self._ctrl)['data']
         logger.debug('Number of entities = %i',
-                      len(entities))
+                     len(entities))
         return {'data': entities}
-
 
     # -----------------------------------------
     #  Generic methods, used by most subclasses
     # -----------------------------------------
+
     def api_get(self, id_entity, **kwargs):
         """Query for a single entity of the given controler.
 
@@ -384,7 +390,6 @@ class ObservationsAPI(BiolovisionAPI):
     - api_search             - Search for observations based on parameter value
     """
 
-
     def __init__(self, config,
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
         super().__init__(config, 'observations',
@@ -473,9 +478,10 @@ class ObservationsAPI(BiolovisionAPI):
         else:
             raise IncorrectParameter
         logger.debug('Search from %s, with option %s and body %s',
-                      self._ctrl, params, body)
+                     self._ctrl, params, body)
         # GET from API
         return super()._url_get(params, 'observations/search/', 'POST', body)
+
 
 class PlacesAPI(BiolovisionAPI):
     """ Implement api calls to places controler.

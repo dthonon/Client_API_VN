@@ -14,6 +14,7 @@ __version__ = get_version(root='../..', relative_to=__file__)
 
 logger = logging.getLogger('transfer_vn.evn_conf')
 
+
 class EvnCtrlConf:
     """Expose controler configuration as properties
     """
@@ -47,6 +48,7 @@ class EvnCtrlConf:
         """Return list of taxo_groups excluded from download."""
         return self._taxo_exclude
 
+
 class EvnSiteConf:
     """Expose site configuration as properties
     """
@@ -54,30 +56,30 @@ class EvnSiteConf:
         self._site = site
         # Import parameters in properties
         try:
-            self._enabled          = config['site'][site]['enabled']
-            self._client_key       = config['site'][site]['client_key']
-            self._client_secret    = config['site'][site]['client_secret']
-            self._user_email       = config['site'][site]['user_email']
-            self._user_pw          = config['site'][site]['user_pw']
-            self._base_url         = config['site'][site]['site']
-            self._file_enabled     = config['file']['enabled']
-            self._file_store       = config['file']['file_store'] + '/' + site + '/'
-            self._db_host          = config['database']['db_host']
-            self._db_port          = str(config['database']['db_port'])
-            self._db_name          = config['database']['db_name']
+            self._enabled = config['site'][site]['enabled']
+            self._client_key = config['site'][site]['client_key']
+            self._client_secret = config['site'][site]['client_secret']
+            self._user_email = config['site'][site]['user_email']
+            self._user_pw = config['site'][site]['user_pw']
+            self._base_url = config['site'][site]['site']
+            self._file_enabled = config['file']['enabled']
+            self._file_store = config['file']['file_store'] + '/' + site + '/'
+            self._db_host = config['database']['db_host']
+            self._db_port = str(config['database']['db_port'])
+            self._db_name = config['database']['db_name']
             self._db_schema_import = config['database']['db_schema_import']
-            self._db_schema_vn     = config['database']['db_schema_vn']
-            self._db_group         = config['database']['db_group']
-            self._db_user          = config['database']['db_user']
-            self._db_pw            = config['database']['db_pw']
+            self._db_schema_vn = config['database']['db_schema_vn']
+            self._db_group = config['database']['db_group']
+            self._db_user = config['database']['db_user']
+            self._db_pw = config['database']['db_pw']
             if site in config['local']:
                 self._external1_name = config['local'][site]['external1_name']
-                self._external1_pw   = config['local'][site]['external1_pw']
-                self._sql_scripts    = config['local'][site]['sql_scripts']
+                self._external1_pw = config['local'][site]['external1_pw']
+                self._sql_scripts = config['local'][site]['sql_scripts']
             else:
                 self._external1_name = ''
-                self._external1_pw   = ''
-                self._sql_scripts    = ''
+                self._external1_pw = ''
+                self._sql_scripts = ''
         except Exception as e:
             logger.error(e, exc_info=True)
             raise
@@ -120,12 +122,14 @@ class EvnSiteConf:
 
     @property
     def base_url(self):
-        """Return base URL of VisioNature site, used as prefix for API calls."""
+        """Return base URL of VisioNature site,
+        used as prefix for API calls."""
         return self._base_url
 
     @property
     def file_enabled(self):
-        """Return flag to enable or not file storage on top of Postgresql storage."""
+        """Return flag to enable or not file storage
+        on top of Postgresql storage."""
         return self._file_enabled
 
     @property
@@ -187,6 +191,7 @@ class EvnSiteConf:
     def external1_pw(self):
         """Return user 1 password."""
         return self._external1_pw
+
 
 class EvnConf:
     """
