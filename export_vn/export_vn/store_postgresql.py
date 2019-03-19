@@ -10,38 +10,36 @@ Properties
 -
 
 """
-import sys
-import logging
 import json
+import logging
 import queue
 import threading
 
-from sqlalchemy import create_engine, update, select
-from sqlalchemy import Table, Column, Integer, String, Float, DateTime, Sequence
-from sqlalchemy import MetaData, ForeignKey, PrimaryKeyConstraint
-from sqlalchemy.sql import and_, or_, not_
-from sqlalchemy import inspect, func
-from sqlalchemy.engine.url import URL
-from sqlalchemy.schema import CreateColumn
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.ext.compiler import compiles
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-
 from pyproj import Proj, transform
-
-from export_vn.store_file import StoreFile
-
 # version of the program:
 from setuptools_scm import get_version
+
+from export_vn.store_file import StoreFile
+from sqlalchemy import (Column, DateTime, Integer, MetaData,
+                        PrimaryKeyConstraint, String, Table,
+                        create_engine, func, select)
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.engine.url import URL
+from sqlalchemy.sql import and_
+
 __version__ = get_version(root='../..', relative_to=__file__)
 
 logger = logging.getLogger('transfer_vn.store_postgresql')
 
+
 class StorePostgresqlException(Exception):
     """An exception occurred while handling download or store. """
 
+
 class ObservationItem:
     """Properties of an observation, for transmission in Queue."""
+
     def __init__(self, site, metadata, conn, elem, in_proj, out_proj):
         """Item elements.
 
@@ -98,6 +96,7 @@ class ObservationItem:
         """Return out_proj."""
         return self._out_proj
 
+
 def store_1_observation(item):
     """Process and store a single observation.
 
@@ -111,19 +110,22 @@ def store_1_observation(item):
     item : ObservationItem
         Observation item containing all parameters.
     """
-    # Insert simple sightings, each row contains id, update timestamp and full json body
+    # Insert simple sightings,
+    # each row contains id, update timestamp and full json body
     elem = item.elem
-    logger.debug('Storing observation %s to database', elem['observers'][0]['id_sighting'])
+    logger.debug('Storing observation %s to database',
+                 elem['observers'][0]['id_sighting'])
     # Find last update timestamp
     if ('update_date' in elem['observers'][0]):
         update_date = elem['observers'][0]['update_date']['@timestamp']
-        #update_date = elem['observers'][0]['update_date']
+        # update_date = elem['observers'][0]['update_date']
     else:
-        #update_date = elem['observers'][0]['insert_date']['@timestamp']
+        # update_date = elem['observers'][0]['insert_date']['@timestamp']
         update_date = elem['observers'][0]['insert_date']
 
     # Add Lambert 93 coordinates
-    elem['observers'][0]['coord_x_l93'], elem['observers'][0]['coord_y_l93'] = \
+    elem['observers'][0]['coord_x_l93'],
+    elem['observers'][0]['coord_y_l93'] = \
         transform(item.in_proj, item.out_proj,
                   elem['observers'][0]['coord_lon'],
                   elem['observers'][0]['coord_lat'])
@@ -134,33 +136,34 @@ def store_1_observation(item):
 
     # Store in Postgresql
     items_json = json.dumps(elem)
-    #logger.debug('store_1_observation %s', items_json)
+    # logger.debug('store_1_observation %s', items_json)
     metadata = item.metadata
     site = item.site
     stmt = select([metadata.c.id,
                    metadata.c.site]).\
-            where(and_(metadata.c.id==elem['observers'][0]['id_sighting'], \
-                       metadata.c.site==site))
+        where(and_(metadata.c.id == elem['observers'][0]['id_sighting'],
+                   metadata.c.site == site))
     result = item.conn.execute(stmt)
     row = result.fetchone()
-    if row == None:
+    if row is None:
         logger.debug('Observation not found in database, inserting new row')
         stmt = metadata.insert().\
-                values(id=elem['observers'][0]['id_sighting'],
-                       site=site,
-                       update_ts=update_date,
-                       item=items_json)
+            values(id=elem['observers'][0]['id_sighting'],
+                   site=site,
+                   update_ts=update_date,
+                   item=items_json)
     else:
         logger.debug('Observation %s found in database, updating row', row[0])
         stmt = metadata.update().\
-                where(and_(metadata.c.id==elem['observers'][0]['id_sighting'], \
-                           metadata.c.site==site)).\
-                values(id=elem['observers'][0]['id_sighting'],
-                       site=site,
-                       update_ts=update_date,
-                       item=items_json)
+            where(and_(metadata.c.id == elem['observers'][0]['id_sighting'],
+                       metadata.c.site == site)).\
+            values(id=elem['observers'][0]['id_sighting'],
+                   site=site,
+                   update_ts=update_date,
+                   item=items_json)
     result = item.conn.execute(stmt)
     return None
+
 
 def observation_worker(i, q):
     """Workers running in parallel to update database."""
@@ -171,6 +174,7 @@ def observation_worker(i, q):
         store_1_observation(item)
         q.task_done()
     return None
+
 
 class PostgresqlUtils:
     """Provides create and delete Postgresql database method."""
@@ -205,7 +209,8 @@ class PostgresqlUtils:
                            Column('id', Integer, primary_key=True),
                            Column('site', String, nullable=False, index=True),
                            Column('controler', String, nullable=False),
-                           Column('download_ts', DateTime, server_default=func.now(), nullable=False),
+                           Column('download_ts', DateTime,
+                                  server_default=func.now(), nullable=False),
                            Column('error_count', Integer, index=True),
                            Column('http_status', Integer, index=True),
                            Column('comment', String)
@@ -218,7 +223,8 @@ class PostgresqlUtils:
                            Column('id', Integer, primary_key=True),
                            Column('site', String, nullable=False),
                            Column('taxo_group', Integer, nullable=False),
-                           Column('last_ts', DateTime, server_default=func.now(), nullable=False)
+                           Column('last_ts', DateTime,
+                                  server_default=func.now(), nullable=False)
                            )
         return None
 
@@ -228,7 +234,8 @@ class PostgresqlUtils:
                            Column('id', Integer, nullable=False),
                            Column('site', String, nullable=False),
                            Column('item', JSONB, nullable=False),
-                           PrimaryKeyConstraint('id', 'site', name='entities_json_pk')
+                           PrimaryKeyConstraint(
+                               'id', 'site', name='entities_json_pk')
                            )
         return None
 
@@ -238,7 +245,8 @@ class PostgresqlUtils:
                            Column('id', Integer, nullable=False),
                            Column('site', String, nullable=False),
                            Column('item', JSONB, nullable=False),
-                           PrimaryKeyConstraint('id', 'site', name='forms_json_pk')
+                           PrimaryKeyConstraint(
+                               'id', 'site', name='forms_json_pk')
                            )
         return None
 
@@ -248,7 +256,8 @@ class PostgresqlUtils:
                            Column('id', Integer, nullable=False),
                            Column('site', String, nullable=False),
                            Column('item', JSONB, nullable=False),
-                           PrimaryKeyConstraint('id', 'site', name='local_admin_units_json_pk')
+                           PrimaryKeyConstraint(
+                               'id', 'site', name='local_admin_units_json_pk')
                            )
         return None
 
@@ -259,7 +268,8 @@ class PostgresqlUtils:
                            Column('site', String, nullable=False),
                            Column('item', JSONB, nullable=False),
                            Column('update_ts', Integer, nullable=False),
-                           PrimaryKeyConstraint('id', 'site', name='observations_json_pk')
+                           PrimaryKeyConstraint(
+                               'id', 'site', name='observations_json_pk')
                            )
         return None
 
@@ -269,7 +279,8 @@ class PostgresqlUtils:
                            Column('id', Integer, nullable=False),
                            Column('site', String, nullable=False),
                            Column('item', JSONB, nullable=False),
-                           PrimaryKeyConstraint('id', 'site', name='places_json_pk')
+                           PrimaryKeyConstraint(
+                               'id', 'site', name='places_json_pk')
                            )
         return None
 
@@ -279,7 +290,8 @@ class PostgresqlUtils:
                            Column('id', Integer, nullable=False),
                            Column('site', String, nullable=False),
                            Column('item', JSONB, nullable=False),
-                           PrimaryKeyConstraint('id', 'site', name='species_json_pk')
+                           PrimaryKeyConstraint(
+                               'id', 'site', name='species_json_pk')
                            )
         return None
 
@@ -289,7 +301,8 @@ class PostgresqlUtils:
                            Column('id', Integer, nullable=False),
                            Column('site', String, nullable=False),
                            Column('item', JSONB, nullable=False),
-                           PrimaryKeyConstraint('id', 'site', name='taxo_groups_json_pk')
+                           PrimaryKeyConstraint(
+                               'id', 'site', name='taxo_groups_json_pk')
                            )
         return None
 
@@ -299,7 +312,8 @@ class PostgresqlUtils:
                            Column('id', Integer, nullable=False),
                            Column('site', String, nullable=False),
                            Column('item', JSONB, nullable=False),
-                           PrimaryKeyConstraint('id', 'site', name='territorial_units_json_pk')
+                           PrimaryKeyConstraint(
+                               'id', 'site', name='territorial_units_json_pk')
                            )
         return None
 
@@ -309,7 +323,8 @@ class PostgresqlUtils:
     def create_database(self):
         """Create database, roles..."""
         # Connect first using postgres database, that always exists
-        logger.info('Connecting to postgres database, to create %s database', self._config.db_name)
+        logger.info(
+            'Connecting to postgres database, to create %s database', self._config.db_name)
         db_url = {'drivername': 'postgresql+psycopg2',
                   'username': self._config.db_user,
                   'password': self._config.db_pw,
@@ -326,8 +341,8 @@ class PostgresqlUtils:
             """.format(db_group=self._config.db_group)
         result = conn.execute(text)
         row = result.fetchone()
-        if row == None:
-            text="""
+        if row is None:
+            text = """
                 CREATE ROLE {db_group} NOLOGIN NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION
                 """.format(db_group=self._config.db_group)
         else:
@@ -337,13 +352,16 @@ class PostgresqlUtils:
         conn.execute(text)
 
         # Import role:
-        text = 'GRANT {} TO {}'.format(self._config.db_group, self._config.db_user)
+        text = 'GRANT {} TO {}'.format(
+            self._config.db_group, self._config.db_user)
         conn.execute(text)
 
         # Create database:
-        text = 'CREATE DATABASE {} WITH OWNER = {}'.format(self._config.db_name, self._config.db_group)
+        text = 'CREATE DATABASE {} WITH OWNER = {}'.format(
+            self._config.db_name, self._config.db_group)
         conn.execute(text)
-        text = 'GRANT ALL ON DATABASE {} TO {}'.format(self._config.db_name, self._config.db_group)
+        text = 'GRANT ALL ON DATABASE {} TO {}'.format(
+            self._config.db_name, self._config.db_group)
         conn.execute(text)
         conn.close()
         db.dispose()
@@ -352,7 +370,8 @@ class PostgresqlUtils:
 
     def drop_database(self):
         """Force session deconnection and drop database, roles..."""
-        logger.info('Connecting to postgres database, to delete %s database', self._config.db_name)
+        logger.info(
+            'Connecting to postgres database, to delete %s database', self._config.db_name)
         db_url = {'drivername': 'postgresql+psycopg2',
                   'username': self._config.db_user,
                   'password': self._config.db_pw,
@@ -395,7 +414,8 @@ class PostgresqlUtils:
                   'database': self._config.db_name}
 
         # Connect to database
-        logger.info('Connecting to %s database, to finalize creation', self._config.db_name)
+        logger.info('Connecting to %s database, to finalize creation',
+                    self._config.db_name)
         self._db = create_engine(URL(**db_url), echo=False)
         conn = self._db.connect()
 
@@ -412,7 +432,8 @@ class PostgresqlUtils:
         conn.execute(text)
 
         # Create import schema
-        text = 'CREATE SCHEMA IF NOT EXISTS {} AUTHORIZATION {}'.format(self._config.db_schema_import, self._config.db_group)
+        text = 'CREATE SCHEMA IF NOT EXISTS {} AUTHORIZATION {}'.format(
+            self._config.db_schema_import, self._config.db_group)
         conn.execute(text)
 
         # Enable privileges
@@ -472,12 +493,12 @@ class PostgresqlUtils:
         conn = self._db.connect()
         dbschema = self._config.db_schema_import
         self._metadata = MetaData(schema=dbschema)
-        #self._metadata.reflect(self._db)
+        # self._metadata.reflect(self._db)
 
         text = '''
         SELECT site, ((item->>0)::json->'species') ->> 'taxonomy' AS taxonomy, COUNT(id)
-	       FROM {}.observations_json
-	       GROUP BY site, ((item->>0)::json->'species') ->> 'taxonomy';
+              FROM {}.observations_json
+              GROUP BY site, ((item->>0)::json->'species') ->> 'taxonomy';
         '''.format(dbschema)
 
         result = conn.execute(text).fetchall()
@@ -506,7 +527,7 @@ class PostgresqlUtils:
         conn = self._db.connect()
         dbschema = self._config.db_schema_vn
         self._metadata = MetaData(schema=dbschema)
-        #self._metadata.reflect(self._db)
+        # self._metadata.reflect(self._db)
 
         text = '''
         SELECT o.site, o.taxonomy, t.name, COUNT(o.id_sighting)
@@ -567,18 +588,22 @@ class StorePostgresql:
                                                   'metadata': None}}
         self._table_defs['entities']['metadata'] = self._metadata.tables[dbschema + '.entities_json']
         self._table_defs['forms']['metadata'] = self._metadata.tables[dbschema + '.forms_json']
-        self._table_defs['local_admin_units']['metadata'] = self._metadata.tables[dbschema + '.local_admin_units_json']
-        self._table_defs['observations']['metadata'] = self._metadata.tables[dbschema + '.observations_json']
+        self._table_defs['local_admin_units']['metadata'] = self._metadata.tables[dbschema +
+                                                                                  '.local_admin_units_json']
+        self._table_defs['observations']['metadata'] = self._metadata.tables[dbschema +
+                                                                             '.observations_json']
         self._table_defs['places']['metadata'] = self._metadata.tables[dbschema + '.places_json']
         self._table_defs['species']['metadata'] = self._metadata.tables[dbschema + '.species_json']
         self._table_defs['taxo_groups']['metadata'] = self._metadata.tables[dbschema + '.taxo_groups_json']
-        self._table_defs['territorial_units']['metadata'] = self._metadata.tables[dbschema + '.territorial_units_json']
+        self._table_defs['territorial_units']['metadata'] = self._metadata.tables[dbschema +
+                                                                                  '.territorial_units_json']
 
         # Create parallel workers for database queries
         self._observations_queue = queue.Queue(maxsize=100000)
         self._observations_threads = []
         for i in range(self._num_worker_threads):
-            t = threading.Thread(target=observation_worker, args=(i, self._observations_queue))
+            t = threading.Thread(target=observation_worker,
+                                 args=(i, self._observations_queue))
             t.start()
             self._observations_threads.append(t)
 
@@ -623,38 +648,41 @@ class StorePostgresql:
         """
 
         # Loop on data array to store each element to database
-        logger.info('Storing %d items from %s of site %s', len(items_dict['data']), controler, self._config.site)
-        #trans = self._conn.begin()
+        logger.info('Storing %d items from %s of site %s', len(
+            items_dict['data']), controler, self._config.site)
+        # trans = self._conn.begin()
         try:
             for elem in items_dict['data']:
                 # Convert to json
                 items_json = json.dumps(elem)
                 logger.debug('Storing element %s',
-                              items_json)
+                             items_json)
                 stmt = select([self._table_defs[controler]['metadata'].c.id,
                                self._table_defs[controler]['metadata'].c.site]).\
-                        where(and_(self._table_defs[controler]['metadata'].c.id==elem['id'], \
-                                   self._table_defs[controler]['metadata'].c.site==self._config.site))
+                    where(and_(self._table_defs[controler]['metadata'].c.id == elem['id'],
+                               self._table_defs[controler]['metadata'].c.site == self._config.site))
                 result = self._conn.execute(stmt)
                 row = result.fetchone()
-                if row == None:
-                    logger.debug('Element not found in database, inserting new row')
+                if row is None:
+                    logger.debug(
+                        'Element not found in database, inserting new row')
                     stmt = self._table_defs[controler]['metadata'].insert().\
-                            values(id=elem['id'],
-                                   site=self._config.site,
-                                   item=items_json)
+                        values(id=elem['id'],
+                               site=self._config.site,
+                               item=items_json)
                 else:
-                    logger.debug('Element %s found in database, updating row', row[0])
+                    logger.debug(
+                        'Element %s found in database, updating row', row[0])
                     stmt = self._table_defs[controler]['metadata'].update().\
-                            where(and_(self._table_defs[controler]['metadata'].c.id==elem['id'], \
-                                       self._table_defs[controler]['metadata'].c.site==self._config.site)).\
-                            values(id=elem['id'],
-                                   site=self._config.site,
-                                   item=items_json)
+                        where(and_(self._table_defs[controler]['metadata'].c.id == elem['id'],
+                                   self._table_defs[controler]['metadata'].c.site == self._config.site)).\
+                        values(id=elem['id'],
+                               site=self._config.site,
+                               item=items_json)
                 result = self._conn.execute(stmt)
-            #trans.commit()
+            # trans.commit()
         except:
-            #trans.rollback()
+            # trans.rollback()
             raise
 
         return len(items_dict['data'])
@@ -712,10 +740,10 @@ class StorePostgresql:
         in_proj = Proj(init='epsg:4326')
         out_proj = Proj(init='epsg:2154')
         nb_obs = 0
-        #trans = self._conn.begin()
+        # trans = self._conn.begin()
         try:
             logger.debug('Storing %d single observations',
-                          len(items_dict['data']['sightings']))
+                         len(items_dict['data']['sightings']))
             for i in range(0, len(items_dict['data']['sightings'])):
                 obs = ObservationItem(self._config.site,
                                       self._table_defs[controler]['metadata'],
@@ -728,8 +756,9 @@ class StorePostgresql:
             if ('forms' in items_dict['data']):
                 for f in range(0, len(items_dict['data']['forms'])):
                     logger.debug('Storing %d observations in form %d',
-                                  len(items_dict['data']['forms'][f]['sightings']),
-                                  f)
+                                 len(items_dict['data']
+                                     ['forms'][f]['sightings']),
+                                 f)
                     for i in range(0, len(items_dict['data']['forms'][f]['sightings'])):
                         obs = ObservationItem(self._config.site,
                                               self._table_defs[controler]['metadata'],
@@ -740,11 +769,11 @@ class StorePostgresql:
                         nb_obs += 1
 
             # Wait for threads to finish before commit
-            #self._observations_queue.join()
+            # self._observations_queue.join()
 
-            #trans.commit()
+            # trans.commit()
         except:
-            #trans.rollback()
+            # trans.rollback()
             raise
 
         logger.debug('Stored %d observations or forms to database', nb_obs)
@@ -800,18 +829,18 @@ class StorePostgresql:
             Count of items deleted.
         """
         logger.info('Deleting %d observations from database', len(obs_list))
-        #trans = conn.begin()
+        # trans = conn.begin()
         nb_delete = 0
         try:
             for obs in obs_list:
-                nd = self._conn.execute(self._table_defs['observations']['metadata'].delete().\
-                                  where(and_(self._table_defs['observations']['metadata'].c.id==obs, \
-                                             self._table_defs['observations']['metadata'].c.site==self._config.site))
-                                  )
+                nd = self._conn.execute(self._table_defs['observations']['metadata'].delete().
+                                        where(and_(self._table_defs['observations']['metadata'].c.id == obs,
+                                                   self._table_defs['observations']['metadata'].c.site == self._config.site))
+                                        )
                 nb_delete += nd.rowcount
-            #trans.commit()
+            # trans.commit()
         except:
-            #trans.rollback()
+            # trans.rollback()
             raise
 
         return nb_delete
@@ -833,14 +862,15 @@ class StorePostgresql:
         comment : str
             Optional comment, in free text.
         """
-        metadata = self._metadata.tables[self._config.db_schema_import + '.' + 'download_log']
+        metadata = self._metadata.tables[self._config.db_schema_import +
+                                         '.' + 'download_log']
         stmt = metadata.insert().\
-                values(site=site,
-                       controler=controler,
-                       error_count=error_count,
-                       http_status=http_status,
-                       comment=comment)
-        result = self._conn.execute(stmt)
+            values(site=site,
+                   controler=controler,
+                   error_count=error_count,
+                   http_status=http_status,
+                   comment=comment)
+        self._conn.execute(stmt)
 
         return None
 
@@ -857,25 +887,26 @@ class StorePostgresql:
         last_ts : timestamp
             Timestamp of last update of this taxo_group.
         """
-        metadata = self._metadata.tables[self._config.db_schema_import + '.' + 'increment_log']
+        metadata = self._metadata.tables[self._config.db_schema_import +
+                                         '.' + 'increment_log']
         stmt = select([metadata.c.taxo_group,
                        metadata.c.site]).\
-                where(and_(metadata.c.taxo_group==taxo_group, \
-                           metadata.c.site==site))
+            where(and_(metadata.c.taxo_group == taxo_group,
+                       metadata.c.site == site))
         result = self._conn.execute(stmt)
         row = result.fetchone()
-        if row == None:
+        if row is None:
             stmt = metadata.insert().\
-                    values(taxo_group=taxo_group,
-                           site=site,
-                           last_ts=last_ts)
+                values(taxo_group=taxo_group,
+                       site=site,
+                       last_ts=last_ts)
         else:
             stmt = metadata.update().\
-                    where(and_(metadata.c.taxo_group==taxo_group, \
-                               metadata.c.site==site)).\
-                    values(taxo_group=taxo_group,
-                           site=site,
-                           last_ts=last_ts)
+                where(and_(metadata.c.taxo_group == taxo_group,
+                           metadata.c.site == site)).\
+                values(taxo_group=taxo_group,
+                       site=site,
+                       last_ts=last_ts)
         result = self._conn.execute(stmt)
 
         return None
@@ -895,10 +926,11 @@ class StorePostgresql:
         timestamp
             Timestamp of last update of this taxo_group.
         """
-        metadata = self._metadata.tables[self._config.db_schema_import + '.' + 'increment_log']
+        metadata = self._metadata.tables[self._config.db_schema_import +
+                                         '.' + 'increment_log']
         stmt = select([metadata.c.last_ts]).\
-                where(and_(metadata.c.taxo_group==taxo_group, \
-                           metadata.c.site==site))
+            where(and_(metadata.c.taxo_group == taxo_group,
+                       metadata.c.site == site))
         result = self._conn.execute(stmt)
         row = result.fetchone()
 

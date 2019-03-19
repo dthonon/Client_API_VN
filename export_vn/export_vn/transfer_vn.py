@@ -101,14 +101,14 @@ def full_download(cfg_ctrl):
                 ctrl = 'taxo_group'
                 if cfg_crtl_list[ctrl].enabled:
                     logger.info('Using controler %s on site %s',
-                                 ctrl, cfg.site)
+                                ctrl, cfg.site)
                     taxo_group = TaxoGroup(cfg, store_pg)
                     taxo_group.store()
 
                 ctrl = 'observations'
                 if cfg_crtl_list[ctrl].enabled:
                     logger.info('Using controler %s on site %s',
-                                 ctrl, cfg.site)
+                                ctrl, cfg.site)
                     observations = Observations(cfg, store_pg)
                     taxo_groups = TaxoGroupsAPI(cfg).api_list()['data']
                     taxo_groups_ex = cfg_crtl_list[ctrl].taxo_exclude
@@ -126,35 +126,35 @@ def full_download(cfg_ctrl):
                 ctrl = 'entities'
                 if cfg_crtl_list[ctrl].enabled:
                     logger.info('Using controler %s on site %s',
-                                 ctrl, cfg.site)
+                                ctrl, cfg.site)
                     entities = Entities(cfg, store_pg)
                     entities.store()
 
                 ctrl = 'territorial_unit'
                 if cfg_crtl_list[ctrl].enabled:
                     logger.info('Using controler %s on site %s',
-                                 ctrl, cfg.site)
+                                ctrl, cfg.site)
                     territorial_unit = TerritorialUnits(cfg, store_pg)
                     territorial_unit.store()
 
                 ctrl = 'local_admin_units'
                 if cfg_crtl_list[ctrl].enabled:
                     logger.info('Using controler %s on site %s',
-                                 ctrl, cfg.site)
+                                ctrl, cfg.site)
                     local_admin_units = LocalAdminUnits(cfg, store_pg)
                     local_admin_units.store()
 
                 ctrl = 'places'
                 if cfg_crtl_list[ctrl].enabled:
                     logger.info('Using controler %s on site %s',
-                                 ctrl, cfg.site)
+                                ctrl, cfg.site)
                     places = Places(cfg, store_pg)
                     places.store()
 
                 ctrl = 'species'
                 if cfg_crtl_list[ctrl].enabled:
                     logger.info('Using controler %s on site %s',
-                                 ctrl, cfg.site)
+                                ctrl, cfg.site)
                     species = Species(cfg, store_pg)
                     species.store()
 
@@ -165,8 +165,8 @@ def full_download(cfg_ctrl):
 
 
 def increment_download(cfg_ctrl):
-    """Performs an incremental download of observations from all sites and controlers,
-    based on configuration file."""
+    """Performs an incremental download of observations from all sites
+    and controlers, based on configuration file."""
     logger = logging.getLogger('transfer_vn')
     cfg_crtl_list = cfg_ctrl.ctrl_list
     cfg_site_list = cfg_ctrl.site_list
@@ -233,13 +233,13 @@ def count_observations(cfg_ctrl):
                             col_c = r[3]
                     site_counts.append([cfg.site,
                                         taxo,
-                                        int(rows[i].contents[0].contents[0].replace(
-                                            ' ', '')),
+                                        int(rows[i].contents[0].contents[0].
+                                            replace(' ', '')),
                                         col_c])
             print(tabulate(site_counts,
-                        headers=['Site', 'TaxoName',
+                           headers=['Site', 'TaxoName',
                                     'Remote count', 'Local count'],
-                        tablefmt='psql'))
+                           tablefmt='psql'))
 
     return None
 
@@ -252,13 +252,14 @@ def main():
     logger = logging.getLogger('transfer_vn')
     # create file handler which logs even debug messages
     fh = TimedRotatingFileHandler(str(Path.home()) + '/tmp/transfer_vn.log',
-                                          when='midnight',
-                                          interval=1,
-                                          backupCount=100)
+                                  when='midnight',
+                                  interval=1,
+                                  backupCount=100)
     # create console handler with a higher log level
     ch = logging.StreamHandler()
     # create formatter and add it to the handlers
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s')
+    formatter = logging.Formatter(
+        '%(asctime)s - %(levelname)s - %(name)s - %(message)s')
     fh.setFormatter(formatter)
     ch.setFormatter(formatter)
     # add the handlers to the logger
@@ -284,7 +285,7 @@ def main():
     # Get configuration from file
     if not Path(str(Path.home()) + '/' + args.file).is_file():
         logger.critical('File %s does not exist',
-                         str(Path.home()) + '/' + args.file)
+                        str(Path.home()) + '/' + args.file)
         return None
 
     logger.info('Getting configuration data from %s', args.file)
@@ -319,7 +320,7 @@ def main():
         try:
             subprocess.run('env PGOPTIONS="-c client-min-messages=' +
                            client_min_message +
-                           '" psql ' + sql_quiet + ' --dbname=' + 
+                           '" psql ' + sql_quiet + ' --dbname=' +
                            cfg.db_name +
                            ' --file=' + filename,
                            check=True, shell=True)
