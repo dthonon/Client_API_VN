@@ -2,13 +2,13 @@
 """
 Program managing VisioNature export to Postgresql database
 
-
 """
 import argparse
+import gettext
 import logging
-from logging.handlers import TimedRotatingFileHandler
 import subprocess
 import sys
+from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
 import requests
@@ -26,6 +26,12 @@ from export_vn.store_postgresql import PostgresqlUtils, StorePostgresql
 
 # version of the program:
 __version__ = get_version(root='../..', relative_to=__file__)
+
+# Install gettext for any file in the application
+localedir = Path(__file__).resolve().parent.parent / 'locale'
+print(localedir)
+# translate = gettext.translation('transfer_vn', str(localedir), fallback=True)
+gettext.install('transfer_vn', str(localedir))
 
 
 def db_config(cfg):
@@ -47,15 +53,15 @@ def arguments():
     # Get options
     parser = argparse.ArgumentParser()
     parser.add_argument('--version',
-                        help='Print version number',
+                        help=_('Print version number'),
                         action='version',
                         version='%(prog)s {version}'.
                         format(version=__version__))
     parser.add_argument('-v', '--verbose',
-                        help='Increase output verbosity',
+                        help=_('Increase output verbosity'),
                         action='store_true')
     parser.add_argument('-q', '--quiet',
-                        help='Reduce output verbosity',
+                        help=_('Reduce output verbosity'),
                         action='store_true')
     parser.add_argument('--db_drop',
                         help='Delete if exists database and roles',
@@ -338,7 +344,7 @@ def main():
         increment_download(cfg_ctrl)
 
     if args.count:
-        logger.info('Counting observations')
+        logger.info(_('Counting observations'))
         count_observations(cfg_ctrl)
 
     return None
