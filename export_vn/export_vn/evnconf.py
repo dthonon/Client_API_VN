@@ -6,6 +6,7 @@ evnconf: expose local configuration parameters as properties of class EvnConf
 """
 import yaml
 import logging
+import gettext
 from pathlib import Path
 
 # version of the program:
@@ -14,6 +15,9 @@ __version__ = get_version(root='../..', relative_to=__file__)
 
 logger = logging.getLogger('transfer_vn.evn_conf')
 
+localedir = Path(__file__).resolve().parent.parent / 'locale'
+t = gettext.translation('transfer_vn', str(localedir), fallback=True)
+_ = t.gettext
 
 class EvnConfException(Exception):
     """An exception occurred while loading parameters."""
@@ -79,7 +83,7 @@ class EvnSiteConf:
                 self._file_store = config['file']['file_store'] + '/' + site + '/'
             else:
                 if self._file_enabled:
-                    logger.error('file:file_store must be defined')
+                    logger.error(_('file:file_store must be defined'))
                     raise IncorrectParameter
                 else:
                     self._file_store = None

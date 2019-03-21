@@ -12,6 +12,7 @@ Properties
 """
 import sys
 import os
+import gettext
 from pathlib import Path
 import logging
 import json
@@ -20,6 +21,10 @@ import gzip
 # version of the program:
 from setuptools_scm import get_version
 __version__ = get_version(root='../..', relative_to=__file__)
+
+localedir = Path(__file__).resolve().parent.parent / 'locale'
+t = gettext.translation('transfer_vn', str(localedir), fallback=True)
+_ = t.gettext
 
 logger = logging.getLogger('transfer_vn.store_file')
 
@@ -69,19 +74,19 @@ class StoreFile:
                 try:
                     os.makedirs(json_path)
                 except OSError:
-                    logger.error('Creation of the directory %s failed' % json_path)
+                    logger.error(_('Creation of the directory %s failed'), json_path)
                     raise
                 else:
-                    logger.info('Successfully created the directory %s' % json_path)
+                    logger.info(_('Successfully created the directory %s'), json_path)
 
             nb_obs = len(items_dict['data'])
             if nb_obs > 0:
                 # Convert to json
-                logger.debug('Converting to json %d items',
+                logger.debug(_('Converting to json %d items'),
                               len(items_dict['data']))
                 items_json = json.dumps(items_dict, sort_keys=True, indent=4, separators=(',', ': '))
                 file_json_gz = json_path + controler + '_' + seq + '.json.gz'
-                logger.debug('Received data, storing json to {}'.format(file_json_gz))
+                logger.debug(_('Received data, storing json to {}').format(file_json_gz))
                 with gzip.open(file_json_gz, 'wb', 9) as g:
                     g.write(items_json.encode())
             return nb_obs

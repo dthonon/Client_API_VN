@@ -14,6 +14,8 @@ import json
 import logging
 import queue
 import threading
+import gettext
+from pathlib import Path
 
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from pyproj import Proj, transform
@@ -22,11 +24,15 @@ from setuptools_scm import get_version
 
 from export_vn.store_file import StoreFile
 from sqlalchemy import (Column, DateTime, Integer, MetaData,
-                        PrimaryKeyConstraint, String, Table,
-                        create_engine, func, select)
+                        PrimaryKeyConstraint, String, Table, create_engine,
+                        func, select)
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.engine.url import URL
 from sqlalchemy.sql import and_
+
+localedir = Path(__file__).resolve().parent.parent / 'locale'
+t = gettext.translation('transfer_vn', str(localedir), fallback=True)
+_ = t.gettext
 
 __version__ = get_version(root='../..', relative_to=__file__)
 
@@ -113,9 +119,8 @@ def store_1_observation(item):
     # Insert simple sightings,
     # each row contains id, update timestamp and full json body
     elem = item.elem
-    logger.debug('Storing observation %s to database',
+    logger.debug(_('Storing observation %s to database'),
                  elem['observers'][0]['id_sighting'])
-    # logger.debug('store_1_observation %s', elem)
     # Find last update timestamp
     if ('update_date' in elem['observers'][0]):
         update_date = elem['observers'][0]['update_date']['@timestamp']
@@ -137,7 +142,6 @@ def store_1_observation(item):
 
     # Store in Postgresql
     items_json = json.dumps(elem)
-    # logger.debug('store_1_observation %s', items_json)
     metadata = item.metadata
     site = item.site
     stmt = select([metadata.c.id,
@@ -147,14 +151,14 @@ def store_1_observation(item):
     result = item.conn.execute(stmt)
     row = result.fetchone()
     if row is None:
-        logger.debug('Observation not found in database, inserting new row')
+        logger.debug(_('Observation not found in database, inserting new row'))
         stmt = metadata.insert().\
             values(id=elem['observers'][0]['id_sighting'],
                    site=site,
                    update_ts=update_date,
                    item=items_json)
     else:
-        logger.debug('Observation %s found in database, updating row', row[0])
+        logger.debug(_('Observation %s found in database, updating row'), row[0])
         stmt = metadata.update().\
             where(and_(metadata.c.id == elem['observers'][0]['id_sighting'],
                        metadata.c.site == site)).\
@@ -199,7 +203,7 @@ class PostgresqlUtils:
 
         """
         if (self._config.db_schema_import + '.' + name) not in self._metadata.tables:
-            logger.info('Table %s not found => Creating it', name)
+            logger.info(_('Table %s not found => Creating it'), name)
             table = Table(name, self._metadata, *cols)
             table.create(self._db)
         return None
@@ -325,7 +329,7 @@ class PostgresqlUtils:
         """Create database, roles..."""
         # Connect first using postgres database, that always exists
         logger.info(
-            'Connecting to postgres database, to create %s database', self._config.db_name)
+            _('Connecting to postgres database, to create %s database'), self._config.db_name)
         db_url = {'drivername': 'postgresql+psycopg2',
                   'username': self._config.db_user,
                   'password': self._config.db_pw,
@@ -372,7 +376,7 @@ class PostgresqlUtils:
     def drop_database(self):
         """Force session deconnection and drop database, roles..."""
         logger.info(
-            'Connecting to postgres database, to delete %s database', self._config.db_name)
+            _('Connecting to postgres database, to delete %s database'), self._config.db_name)
         db_url = {'drivername': 'postgresql+psycopg2',
                   'username': self._config.db_user,
                   'password': self._config.db_pw,
@@ -415,7 +419,7 @@ class PostgresqlUtils:
                   'database': self._config.db_name}
 
         # Connect to database
-        logger.info('Connecting to %s database, to finalize creation',
+        logger.info(_('Connecting to %s database, to finalize creation'),
                     self._config.db_name)
         self._db = create_engine(URL(**db_url), echo=False)
         conn = self._db.connect()
@@ -489,7 +493,7 @@ class PostgresqlUtils:
                   'database': self._config.db_name}
 
         # Connect and set path to include VN import schema
-        logger.info('Connecting to database %s', self._config.db_name)
+        logger.info(_('Connecting to database %s'), self._config.db_name)
         self._db = create_engine(URL(**db_url), echo=False)
         conn = self._db.connect()
         dbschema = self._config.db_schema_import
@@ -514,7 +518,7 @@ class PostgresqlUtils:
         dict
             Count of observations by site and taxonomy.
         """
-        logger.info('Counting observations in database for all sites')
+        logger.info(_('Counting observations in database for all sites'))
         db_url = {'drivername': 'postgresql+psycopg2',
                   'username': self._config.db_user,
                   'password': self._config.db_pw,
@@ -523,7 +527,7 @@ class PostgresqlUtils:
                   'database': self._config.db_name}
 
         # Connect and set path to include VN import schema
-        logger.info('Connecting to database %s', self._config.db_name)
+        logger.info(_('Connecting to database %s'), self._config.db_name)
         self._db = create_engine(URL(**db_url), echo=False)
         conn = self._db.connect()
         dbschema = self._config.db_schema_vn
@@ -561,7 +565,7 @@ class StorePostgresql:
 
         dbschema = self._config.db_schema_import
         self._metadata = MetaData(schema=dbschema)
-        logger.info('Connecting to database %s', self._config.db_name)
+        logger.info(_('Connecting to database %s'), self._config.db_name)
 
         # Connect and set path to include VN import schema
         self._db = create_engine(URL(**db_url), echo=False)
@@ -649,14 +653,14 @@ class StorePostgresql:
         """
 
         # Loop on data array to store each element to database
-        logger.info('Storing %d items from %s of site %s', len(
+        logger.info(_('Storing %d items from %s of site %s'), len(
             items_dict['data']), controler, self._config.site)
         # trans = self._conn.begin()
         try:
             for elem in items_dict['data']:
                 # Convert to json
                 items_json = json.dumps(elem)
-                logger.debug('Storing element %s',
+                logger.debug(_('Storing element %s'),
                              items_json)
                 stmt = select([self._table_defs[controler]['metadata'].c.id,
                                self._table_defs[controler]['metadata'].c.site]).\
@@ -666,14 +670,14 @@ class StorePostgresql:
                 row = result.fetchone()
                 if row is None:
                     logger.debug(
-                        'Element not found in database, inserting new row')
+                        _('Element not found in database, inserting new row'))
                     stmt = self._table_defs[controler]['metadata'].insert().\
                         values(id=elem['id'],
                                site=self._config.site,
                                item=items_json)
                 else:
                     logger.debug(
-                        'Element %s found in database, updating row', row[0])
+                        _('Element %s found in database, updating row'), row[0])
                     stmt = self._table_defs[controler]['metadata'].update().\
                         where(and_(self._table_defs[controler]['metadata'].c.id == elem['id'],
                                    self._table_defs[controler]['metadata'].c.site == self._config.site)).\
@@ -743,7 +747,7 @@ class StorePostgresql:
         nb_obs = 0
         # trans = self._conn.begin()
         try:
-            logger.debug('Storing %d single observations',
+            logger.debug(_('Storing %d single observations'),
                          len(items_dict['data']['sightings']))
             for i in range(0, len(items_dict['data']['sightings'])):
                 obs = ObservationItem(self._config.site,
@@ -777,7 +781,7 @@ class StorePostgresql:
             # trans.rollback()
             raise
 
-        logger.debug('Stored %d observations or forms to database', nb_obs)
+        logger.debug(_('Stored %d observations or forms to database'), nb_obs)
         return nb_obs
 
     # ---------------
@@ -812,7 +816,7 @@ class StorePostgresql:
         elif self._table_defs[controler]['type'] == 'observation':
             nb_item = self._store_observation(controler, items_dict)
         else:
-            raise StorePostgresqlException('Not implemented')
+            raise StorePostgresqlException(_('Not implemented'))
 
         return nb_item
 
@@ -829,7 +833,7 @@ class StorePostgresql:
         int
             Count of items deleted.
         """
-        logger.info('Deleting %d observations from database', len(obs_list))
+        logger.info(_('Deleting %d observations from database'), len(obs_list))
         # trans = conn.begin()
         nb_delete = 0
         try:

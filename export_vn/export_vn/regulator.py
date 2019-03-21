@@ -8,8 +8,13 @@ Derived from https://github.com/m-lundberg/simple-pid
 
 """
 import sys
+import gettext
+from pathlib import Path
 import logging
 
+localedir = Path(__file__).resolve().parent.parent / 'locale'
+t = gettext.translation('transfer_vn', str(localedir), fallback=True)
+_ = t.gettext
 
 # version of the program:
 from setuptools_scm import get_version
@@ -108,7 +113,8 @@ class PID(object):
         min_output, max_output = limits
 
         if None not in limits and max_output < min_output:
-            raise ValueError('lower limit must be less than upper limit')
+            logger.error(_('lower limit must be less than upper limit'))
+            raise ValueError(_('lower limit must be less than upper limit'))
 
         self._min_output = min_output
         self._max_output = max_output
