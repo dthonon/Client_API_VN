@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: export_vn 2.0.0b3.dev9+gaddbec0.d20190322\n"
+"Project-Id-Version: export_vn 2.0.0b3.dev11+g83686ad.d20190328\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-03-22 00:01+0100\n"
+"POT-Creation-Date: 2019-03-28 00:03+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -117,52 +117,60 @@ msgid "Getting observations from taxo_group %s, species %s"
 msgstr ""
 
 #: export_vn/download_vn.py:197
-msgid "observations from taxo_group {}, species {}"
+#, python-format
+msgid "observations from taxo_group %s, species %s"
 msgstr ""
 
-#: export_vn/download_vn.py:270
+#: export_vn/download_vn.py:234
+#, python-format
+msgid "Getting observations from controler %s, using API search"
+msgstr ""
+
+#: export_vn/download_vn.py:269
 #, python-format
 msgid "Iter: %s, %s obs, taxo_group: %s, date: %s, interval: %s"
 msgstr ""
 
-#: export_vn/download_vn.py:286
+#: export_vn/download_vn.py:285
 #, python-format
 msgid "Starting to download observations from taxo_group %s: %s"
 msgstr ""
 
-#: export_vn/download_vn.py:350
+#: export_vn/download_vn.py:349
 #, python-format
 msgid "Getting updated observations from controler %s"
 msgstr ""
 
-#: export_vn/download_vn.py:369
-msgid "Getting updates for taxo_group {} since {}"
+#: export_vn/download_vn.py:368
+#, python-format
+msgid "Getting updates for taxo_group %s since %s"
 msgstr ""
 
-#: export_vn/download_vn.py:374
+#: export_vn/download_vn.py:373
 #, python-format
 msgid "Observation %s was %s"
 msgstr ""
 
-#: export_vn/download_vn.py:381
+#: export_vn/download_vn.py:380
 #, python-format
 msgid "Observation %s has unknown processing %s"
 msgstr ""
 
-#: export_vn/download_vn.py:384
+#: export_vn/download_vn.py:383
 #, python-format
 msgid "Received %d updated and %d deleted items"
 msgstr ""
 
-#: export_vn/download_vn.py:387
+#: export_vn/download_vn.py:386
 msgid "No date found for last download, increment not performed"
 msgstr ""
 
-#: export_vn/download_vn.py:391
-msgid "Getting observation {}"
+#: export_vn/download_vn.py:390
+#, python-format
+msgid "Getting observation %s"
 msgstr ""
 
-#: export_vn/download_vn.py:447
+#: export_vn/download_vn.py:446
 #, python-format
 msgid "Storing species from taxo_group %s"
 msgstr ""
@@ -191,7 +199,8 @@ msgid "Converting to json %d items"
 msgstr ""
 
 #: export_vn/store_file.py:89
-msgid "Received data, storing json to {}"
+#, python-format
+msgid "Received data, storing json to %s"
 msgstr ""
 
 #: export_vn/store_postgresql.py:122

@@ -86,7 +86,7 @@ class StoreFile:
                               len(items_dict['data']))
                 items_json = json.dumps(items_dict, sort_keys=True, indent=4, separators=(',', ': '))
                 file_json_gz = json_path + controler + '_' + seq + '.json.gz'
-                logger.debug(_('Received data, storing json to {}').format(file_json_gz))
+                logger.debug(_('Received data, storing json to %s'), file_json_gz)
                 with gzip.open(file_json_gz, 'wb', 9) as g:
                     g.write(items_json.encode())
             return nb_obs

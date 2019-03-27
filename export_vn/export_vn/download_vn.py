@@ -194,8 +194,7 @@ class Observations(DownloadVn):
                                               self._api_instance.controler,
                                               self._api_instance.transfer_errors,
                                               self._api_instance.http_status,
-                                              _('observations from taxo_group {}, species {}').\
-                                              format(id_taxo_group, specie['id']))
+                                              (_('observations from taxo_group %s, species %s'), id_taxo_group, specie['id']))
                             # Call backend to store results
                             self._backend.store(self._api_instance.controler,
                                           str(id_taxo_group) + '_' + specie['id'],
@@ -232,7 +231,7 @@ class Observations(DownloadVn):
             '0' for long JSON and '1' for short_version.
         """
         # GET from API
-        logger.debug('Getting observations from controler %s, using API search',
+        logger.debug(_('Getting observations from controler %s, using API search'),
                       self._api_instance.controler)
         if id_taxo_group == None:
             taxo_groups = TaxoGroupsAPI(self._config).api_list()['data']
@@ -366,7 +365,7 @@ class Observations(DownloadVn):
             if since is not None:
                 # Valid since date provided or found in database
                 self._backend.increment_log(self._config.site, taxo, datetime.now())
-                logger.info(_('Getting updates for taxo_group {} since {}').format(taxo, since))
+                logger.info(_('Getting updates for taxo_group %s since %s'), taxo, since)
                 items_dict = self._api_instance.api_diff(taxo, since)
 
                 # List by processing type
@@ -388,7 +387,7 @@ class Observations(DownloadVn):
 
             # Process updates
             for obs in updated:
-                logger.debug(_('Getting observation {}').format(obs))
+                logger.debug(_('Getting observation %s'), obs)
                 items_dict = self._api_instance.api_get(obs,
                                                         short_version=short_version)
                 # Call backend to store log
