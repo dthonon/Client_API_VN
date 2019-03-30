@@ -50,8 +50,8 @@ coverage.xml
 .hypothesis/
 
 # Translations
-*.mo
-*.pot
+#*.mo
+#*.pot
 
 # Django stuff:
 *.log
@@ -106,3 +106,8 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+# JetBrains IDE
+.idea/
+
+# VSCode
+.vscode/
