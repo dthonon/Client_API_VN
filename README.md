@@ -1,40 +1,70 @@
 # Client_API_VN
 
-One Paragraph of project description goes here
+Python application that transfers data from Biolovision/VisoNature web sites to a local Postgresql database.
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+Download a copy of the code:
+```bash
+$ git clone https://framagit.org/lpo/Client_API_VN.git
+```
+
+Copy the sample YAML file to your HOME directory and edit with your local details.
+```bash
+$ cp export_vn/export_vn/evn_template.yaml $HOME/.evn_your_site.yaml
+$ editor $HOME/.evn_your_site.yaml
+```
+
+You can then download all data, as enabled in the YAML file. 
+Beware that, depending on the volume of observations, this can take hours. 
+We recommend starting with a small taxonomic group first.
+```bash
+python3 export_vn/export_vn/transfer_vn.py --db-create --json_tables_create --col_tables_create --full .evn_your_site.yaml 
+```
+
+Once this is done, you can update the database with new observations:
+```bash
+python3 export_vn/export_vn/transfer_vn.py --update .evn_your_site.yaml 
+```
 
 ### Prerequisites
 
-What things you need to install the software and how to install them
-
-```
-Give examples
-```
+Installation requires the followinf python module
+- 
 
 ### Installing
 
-A step by step series of examples that tell you how to get a development env running
-
-Say what the step will be
-
-```
-Give the example
-```
-
-And repeat
-
-```
-until finished
-```
-
-End with an example of getting some data out of the system or using it for a little demo
 
 ## Running the tests
 
 Explain how to run the automated tests for this system
+
+## Running the application
+
+The application runs as:
+```bash
+python3 export_vn/export_vn/transfer_vn.py options file
+```
+or
+```bash
+python3 -m export_vn.transfer_vn options file
+```
+where:
+- options: command line options described below
+- file: YAML file, located in $HOME directory, described in sample file
+
+### Command-line options
+  -h, --help            show this help message and exit
+  --version             Imprime la version
+  -v, --verbose         Plus verbeux
+  -q, --quiet           Moins verbeux
+  --db_drop             Détruit la base de données et les rôles
+  --db_create           Crée la base de données et les rôle
+  --json_tables_create  Crée, si elles n'existent pas, les tables JSON
+  --col_tables_create   Crée ou recrée les tables en colonne
+  --full                Réalise un téléchargement complèt
+  --update              Réalise un téléchargement incrémental
+  --count               Statistiques des observations par site et groupe taxonomique
 
 
 ## Contributing
@@ -50,9 +80,9 @@ See also the list of [contributors](https://framagit.org/lpo/Client_API_VN/graph
 
 ## License
 
-This project is licensed under the GNU GPL V3 License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the GNU GPL V3 License - see the [LICENSE.md](LICENSE) file for details
 
 ## Acknowledgments
 
-* Gaëtan Delaloye, for providing examples and support during the development.
+* **Gaëtan Delaloye**, for providing examples and support during the development.
 
