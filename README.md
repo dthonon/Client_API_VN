@@ -29,11 +29,12 @@ python3 export_vn/export_vn/transfer_vn.py --update .evn_your_site.yaml
 
 ### Prerequisites
 
-Installation requires the followinf python module
-- 
+Installation requires the following python module
+- requests
 
 ### Installing
 
+You just need to download the code from framagit (or github). 
 
 ## Running the tests
 
@@ -55,7 +56,7 @@ where:
 
 ### Command-line options
   -h, --help            show this help message and exit
-  --version             Imprime la version
+  --version             Affiche la version
   -v, --verbose         Plus verbeux
   -q, --quiet           Moins verbeux
   --db_drop             Détruit la base de données et les rôles
