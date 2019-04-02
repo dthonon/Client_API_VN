@@ -19,6 +19,7 @@ Classes
 - BiolovisionAPI         - Top class, not for direct use
 - LocalAdminUnitsAPI     - Controls local_admin_units
 - ObservationsAPI        - Controls observations
+- ObserversAPI           - Controls observers
 - PlacesAPI              - Controls places
 - SpeciesAPI             - Controls species
 - TaxoGroupsAPI          - Controls taxo_groups
@@ -485,6 +486,21 @@ class ObservationsAPI(BiolovisionAPI):
                      self._ctrl, params, body)
         # GET from API
         return super()._url_get(params, 'observations/search/', 'POST', body)
+
+
+class ObserversAPI(BiolovisionAPI):
+    """ Implement api calls to observers controler.
+
+    Methods
+    - api_get                - Return a single entity from the controler
+    - api_list               - Return a list of entity from the controler
+
+    """
+
+    def __init__(self, config,
+                 max_retry=5, max_requests=sys.maxsize, max_chunks=10):
+        super().__init__(config, 'observers',
+                         max_retry, max_requests, max_chunks)
 
 
 class PlacesAPI(BiolovisionAPI):
