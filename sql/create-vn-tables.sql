@@ -413,7 +413,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
 --            ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'atlas_grid_name',
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'estimation_code',
             CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'count' AS INTEGER),
-            CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{atlas_code,#text}' AS INTEGER),
+            CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> 'atlas_code' AS INTEGER),
             CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'altitude' AS INTEGER),
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'project_code',
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'hidden',
