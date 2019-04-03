@@ -10,20 +10,22 @@ Properties
 -
 
 """
+import gettext
+import logging
 import sys
 from datetime import datetime, timedelta
-import logging
-import json
-import gettext
 from pathlib import Path
 
-from export_vn.biolovision_api import EntitiesAPI, LocalAdminUnitsAPI, ObservationsAPI, PlacesAPI
-from export_vn.biolovision_api import SpeciesAPI, TaxoGroupsAPI, TerritorialUnitsAPI
-from export_vn.biolovision_api import BiolovisionApiException, HTTPError, MaxChunksError
+from setuptools_scm import get_version
+
+from export_vn.biolovision_api import (EntitiesAPI, HTTPError,
+                                       LocalAdminUnitsAPI, MaxChunksError,
+                                       ObservationsAPI, ObserversAPI,
+                                       PlacesAPI, SpeciesAPI, TaxoGroupsAPI,
+                                       TerritorialUnitsAPI)
 from export_vn.regulator import PID
 
 # version of the program:
-from setuptools_scm import get_version
 __version__ = get_version(root='../..', relative_to=__file__)
 
 localedir = Path(__file__).resolve().parent.parent / 'locale'
@@ -32,8 +34,10 @@ _ = t.gettext
 
 logger = logging.getLogger('transfer_vn.download_vn')
 
+
 class DownloadVnException(Exception):
     """An exception occurred while handling download or store. """
+
 
 class NotImplementedException(DownloadVnException):
     """Feature not implemented."""
@@ -102,6 +106,7 @@ class DownloadVn:
 
         return None
 
+
 class Entities(DownloadVn):
     """ Implement store from entities controler.
 
@@ -115,7 +120,6 @@ class Entities(DownloadVn):
         super().__init__(config, EntitiesAPI(config), backend,
                          max_retry, max_requests, max_chunks)
         return None
-
 
 
 class LocalAdminUnits(DownloadVn):
@@ -407,6 +411,21 @@ class Observations(DownloadVn):
         return None
 
 
+class Observers(DownloadVn):
+    """ Implement store from observers controler.
+
+    Methods
+    - store               - Download and store to json
+
+    """
+
+    def __init__(self, config, backend,
+                 max_retry=5, max_requests=sys.maxsize, max_chunks=10):
+        super().__init__(config, ObserversAPI(config), backend,
+                         max_retry, max_requests, max_chunks)
+        return None
+
+
 class Places(DownloadVn):
     """ Implement store from places controler.
 
@@ -448,6 +467,7 @@ class Species(DownloadVn):
         super().store(iter(taxo_list))
 
         return None
+
 
 class TaxoGroup(DownloadVn):
     """ Implement store from taxo_groups controler.

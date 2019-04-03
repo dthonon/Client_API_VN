@@ -453,8 +453,6 @@ def test_observers_get(capsys):
                    'surname': 'Daniel',
                    'use_latin_search': 'N',
                    'work_phone': ''}]}
-
-
     elif SITE == 't07':
         assert observer == \
         {'data': [{'anonymous': '0',
@@ -512,8 +510,6 @@ def test_observers_get(capsys):
                    'surname': 'Daniel',
                    'use_latin_search': 'N',
                    'work_phone': ''}]}
-
-
 
 
 def test_observers_list_all(capsys):

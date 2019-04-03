@@ -19,7 +19,7 @@ from tabulate import tabulate
 import pyexpander.lib as pyexpander
 from export_vn.biolovision_api import TaxoGroupsAPI
 from export_vn.download_vn import (Entities, LocalAdminUnits, Observations,
-                                   Places, Species, TaxoGroup,
+                                   Observers, Places, Species, TaxoGroup,
                                    TerritorialUnits)
 from export_vn.evnconf import EvnConf
 from export_vn.store_postgresql import PostgresqlUtils, StorePostgresql
@@ -161,6 +161,13 @@ def full_download(cfg_ctrl):
                                 ctrl, cfg.site)
                     species = Species(cfg, store_pg)
                     species.store()
+
+                ctrl = 'observers'
+                if cfg_crtl_list[ctrl].enabled:
+                    logger.info(_('Using controler %s on site %s'),
+                                ctrl, cfg.site)
+                    places = Observers(cfg, store_pg)
+                    places.store()
 
             else:
                 logger.info(_('Skipping site %s'), site)

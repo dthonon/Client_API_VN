@@ -219,24 +219,17 @@ CREATE TABLE $(db_schema_vn).observations (
     pseudo_id_sighting  VARCHAR(200),
     id_universal        VARCHAR(200),
     id_species          INTEGER,
---    french_name         VARCHAR(150),
---    latin_name          VARCHAR(150),
     taxonomy            VARCHAR(150),
     date                DATE,
     date_year           INTEGER, -- Missing time_start & time_stop
     timing              TIMESTAMP,
     id_place            INTEGER,
     place               VARCHAR(150),
---    municipality        VARCHAR(150),
---    county              VARCHAR(150),
---    country             VARCHAR(100),
---    insee               CHAR(5),
     coord_lat           FLOAT,
     coord_lon           FLOAT,
     coord_x_l93         FLOAT,
     coord_y_l93         FLOAT,
     precision           VARCHAR(100),
---    atlas_grid_name     VARCHAR(50),
     estimation_code     VARCHAR(100),
     count               INTEGER,
     atlas_code          INTEGER,
@@ -290,24 +283,17 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
         UPDATE $(db_schema_vn).observations SET
             id_universal    = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'id_universal',
             id_species      = CAST(CAST(NEW.item->>0 AS JSON) #>> '{species,@id}' AS INTEGER),
---            french_name     = CAST(NEW.item->>0 AS JSON) #>> '{species,name}',
---            latin_name      = CAST(NEW.item->>0 AS JSON) #>> '{species,latin_name}',
             taxonomy        = CAST(NEW.item->>0 AS JSON) #>> '{species,taxonomy}',
             "date"          = to_date(CAST(NEW.item->>0 AS JSON) #>> '{date,@ISO8601}', 'YYYY-MM-DD'),
             date_year       = CAST(extract(year from to_date(CAST(NEW.item->>0 AS JSON) #>> '{date,@ISO8601}', 'YYYY-MM-DD')) AS INTEGER),
             timing          = to_timestamp(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{timing,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS'),
             id_place        = CAST(CAST(NEW.item->>0 AS JSON) #>> '{place,@id}' AS INTEGER),
             place           = CAST(NEW.item->>0 AS JSON) #>> '{place,name}',
---            municipality    = CAST(NEW.item->>0 AS JSON) #>> '{place,municipality}',
---            county          = CAST(NEW.item->>0 AS JSON) #>> '{place,county}',
---            country         = CAST(NEW.item->>0 AS JSON) #>> '{place,country}',
---            insee           = CAST(NEW.item->>0 AS JSON) #>> '{place,insee}',
             coord_lat       = CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_lat' AS FLOAT),
             coord_lon       = CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_lon' AS FLOAT),
             coord_x_l93     = CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_x_l93' AS FLOAT),
             coord_y_l93     = CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_y_l93' AS FLOAT),
             precision       = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'precision',
---            atlas_grid_name = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'atlas_grid_name',
             estimation_code = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'estimation_code',
             count           = CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'count' AS INTEGER),
             atlas_code      = CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'atlas_code' AS INTEGER),
@@ -340,8 +326,6 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
                 encode(hmac(NEW.id::text, '8Zz9C*%I*gY&eM*Ei', 'sha1'), 'hex'),
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'id_universal',
                 CAST(CAST(NEW.item->>0 AS JSON) #>> '{species,@id}' AS INTEGER),
---                CAST(NEW.item->>0 AS JSON) #>> '{species,name}',
---                CAST(NEW.item->>0 AS JSON) #>> '{species,latin_name}',
                 CAST(NEW.item->>0 AS JSON) #>> '{species,taxonomy}',
                 to_date(CAST(NEW.item->>0 AS JSON) #>> '{date,@ISO8601}', 'YYYY-MM-DD'),
                 CAST(extract(year from to_date(CAST(NEW.item->>0 AS JSON) #>> '{date,@ISO8601}', 'YYYY-MM-DD')) AS INTEGER),
@@ -349,16 +333,11 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
                 to_timestamp(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{timing,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS'),
                 CAST(CAST(NEW.item->>0 AS JSON) #>> '{place,@id}' AS INTEGER),
                 CAST(NEW.item->>0 AS JSON) #>> '{place,name}',
---                CAST(NEW.item->>0 AS JSON) #>> '{place,municipality}',
---                CAST(NEW.item->>0 AS JSON) #>> '{place,county}',
---                CAST(NEW.item->>0 AS JSON) #>> '{place,country}',
---                CAST(NEW.item->>0 AS JSON) #>> '{place,insee}',
                 CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_lat' AS FLOAT),
                 CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_lon' AS FLOAT),
                 CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_x_l93' AS FLOAT),
                 CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_y_l93' AS FLOAT),
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'precision',
---                ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'atlas_grid_name',
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'estimation_code',
                 CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'count' AS INTEGER),
                 CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> 'atlas_code' AS INTEGER),
@@ -392,8 +371,6 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             encode(hmac(NEW.id::text, '8Zz9C*%I*gY&eM*Ei', 'sha1'), 'hex'),
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'id_universal',
             CAST(CAST(NEW.item->>0 AS JSON) #>> '{species,@id}' AS INTEGER),
---            CAST(NEW.item->>0 AS JSON) #>> '{species,name}',
---            CAST(NEW.item->>0 AS JSON) #>> '{species,latin_name}',
             CAST(NEW.item->>0 AS JSON) #>> '{species,taxonomy}',
             to_date(CAST(NEW.item->>0 AS JSON) #>> '{date,@ISO8601}', 'YYYY-MM-DD'),
             CAST(extract(year from to_date(CAST(NEW.item->>0 AS JSON) #>> '{date,@ISO8601}', 'YYYY-MM-DD')) AS INTEGER),
@@ -401,16 +378,11 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             to_timestamp(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{timing,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS'),
             CAST(CAST(NEW.item->>0 AS JSON) #>> '{place,@id}' AS INTEGER),
             CAST(NEW.item->>0 AS JSON) #>> '{place,name}',
---            CAST(NEW.item->>0 AS JSON) #>> '{place,municipality}',
---            CAST(NEW.item->>0 AS JSON) #>> '{place,county}',
---            CAST(NEW.item->>0 AS JSON) #>> '{place,country}',
---            CAST(NEW.item->>0 AS JSON) #>> '{place,insee}',
             CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_lat' AS FLOAT),
             CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_lon' AS FLOAT),
             CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_x_l93' AS FLOAT),
             CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_y_l93' AS FLOAT),
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'precision',
---            ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'atlas_grid_name',
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'estimation_code',
             CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'count' AS INTEGER),
             CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> 'atlas_code' AS INTEGER),
@@ -441,6 +413,92 @@ AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).observations_json
 
 -- Dummy update of all rows to trigger new FUNCTION
 UPDATE $(db_schema_import).observations_json SET site=site;
+
+------------
+-- Observers
+------------
+CREATE TABLE $(db_schema_vn).observers(
+    uuid                UUID DEFAULT uuid_generate_v4(),
+    site                VARCHAR(50),
+    id                  INTEGER,
+    id_universal        INTEGER,
+    id_entity           INTEGER,
+    anonymous           INTEGER,
+    collectif           VARCHAR(100),
+    default_hidden      INTEGER,
+    name                VARCHAR(100),
+    surname             VARCHAR(100),
+    PRIMARY KEY (id, site)
+);
+
+CREATE OR REPLACE FUNCTION update_observers() RETURNS TRIGGER AS \$\$
+    BEGIN
+    IF (TG_OP = 'DELETE') THEN
+        -- Deleting data when JSON data is deleted
+        DELETE FROM $(db_schema_vn).observers
+            WHERE id = OLD.id AND site = OLD.site;
+        IF NOT FOUND THEN
+            RETURN NULL;
+        END IF;
+        RETURN OLD;
+
+    ELSIF (TG_OP = 'UPDATE') THEN
+        -- Updating or inserting data when JSON data is updated
+        UPDATE $(db_schema_vn).observers SET
+            id_universal   = CAST(CAST(NEW.item->>0 AS JSON)->>'id_universal' AS INTEGER),
+            id_entity      = CAST(CAST(NEW.item->>0 AS JSON)->>'id_entity' AS INTEGER),
+            anonymous      = CAST(CAST(NEW.item->>0 AS JSON)->>'anonymous' AS INTEGER),
+            collectif      = CAST(NEW.item->>0 AS JSON)->>'collectif',
+            default_hidden = CAST(CAST(NEW.item->>0 AS JSON)->>'default_hidden' AS INTEGER),
+            name           = CAST(NEW.item->>0 AS JSON)->>'name',
+            surname        = CAST(NEW.item->>0 AS JSON)->>'surname'
+        WHERE id = OLD.id AND site = OLD.site ;
+        IF NOT FOUND THEN
+            -- Inserting data in new row, usually after table re-creation
+            INSERT INTO $(db_schema_vn).observers(site, id, id_universal, id_entity, anonymous,
+                                                  collectif, default_hidden, name, surname)
+            VALUES (
+                NEW.site,
+                NEW.id,
+                CAST(CAST(NEW.item->>0 AS JSON)->>'id_universal' AS INTEGER),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'id_entity' AS INTEGER),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'anonymous' AS INTEGER),
+                CAST(NEW.item->>0 AS JSON)->>'collectif',
+                CAST(CAST(NEW.item->>0 AS JSON)->>'default_hidden' AS INTEGER),
+                CAST(NEW.item->>0 AS JSON)->>'name',
+                CAST(NEW.item->>0 AS JSON)->>'surname'
+            );
+            END IF;
+        RETURN NEW;
+
+    ELSIF (TG_OP = 'INSERT') THEN
+        -- Inserting data on src_vn.observations when raw data is inserted
+        INSERT INTO $(db_schema_vn).observers(site, id, id_universal, id_entity, anonymous,
+                                              collectif, default_hidden, name, surname)
+        VALUES (
+            NEW.site,
+            NEW.id,
+            CAST(CAST(NEW.item->>0 AS JSON)->>'id_universal' AS INTEGER),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'id_entity' AS INTEGER),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'anonymous' AS INTEGER),
+            CAST(NEW.item->>0 AS JSON)->>'collectif',
+            CAST(CAST(NEW.item->>0 AS JSON)->>'default_hidden' AS INTEGER),
+            CAST(NEW.item->>0 AS JSON)->>'name',
+            CAST(NEW.item->>0 AS JSON)->>'surname'
+        );
+        RETURN NEW;
+    END IF;
+END;
+\$\$
+LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS observers_trigger ON $(db_schema_import).observers_json;
+CREATE TRIGGER observers_trigger
+AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).observers_json
+    FOR EACH ROW EXECUTE FUNCTION $(db_schema_vn).update_observers();
+
+-- Dummy update of all rows to trigger new FUNCTION
+UPDATE $(db_schema_import).observers_json SET site=site;
 
 ---------
 -- Places
