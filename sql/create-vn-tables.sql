@@ -42,8 +42,15 @@ CREATE TABLE $(db_schema_vn).entities(
     description_french  VARCHAR(100000),
     url                 VARCHAR(1000),
     address             VARCHAR(1000),
-    PRIMARY KEY (id, site)
+    PRIMARY KEY (uuid)
 );
+
+DROP INDEX IF EXISTS entities_idx_site;
+CREATE INDEX entities_idx_site
+    ON $(db_schema_vn).entities USING btree(site);
+DROP INDEX IF EXISTS entities_idx_id;
+CREATE INDEX entities_idx_id
+    ON $(db_schema_vn).entities USING btree(id);
 
 CREATE OR REPLACE FUNCTION update_entities() RETURNS TRIGGER AS \$\$
     BEGIN
@@ -127,12 +134,19 @@ CREATE TABLE $(db_schema_vn).local_admin_units(
     coord_lon           FLOAT,
     coord_x_l93         FLOAT,
     coord_y_l93         FLOAT,
-    PRIMARY KEY (id, site)
+    PRIMARY KEY (uuid)
 );
 -- Add geometry column
 \o /dev/null
 SELECT AddGeometryColumn('local_admin_units', 'geom', 2154, 'POINT', 2);
 \o
+
+DROP INDEX IF EXISTS local_admin_units_idx_site;
+CREATE INDEX local_admin_units_idx_site
+    ON $(db_schema_vn).local_admin_units USING btree(site);
+DROP INDEX IF EXISTS local_admin_units_idx_id;
+CREATE INDEX local_admin_units_idx_id
+    ON $(db_schema_vn).local_admin_units USING btree(id);
 
 -- Add trigger for postgis geometry update
 DROP TRIGGER IF EXISTS trg_geom ON $(db_schema_vn).local_admin_units;
@@ -247,19 +261,22 @@ CREATE TABLE $(db_schema_vn).observations (
     death_cause2        VARCHAR(100),
     insert_date         TIMESTAMP,
     update_date         TIMESTAMP,
-    PRIMARY KEY (id_sighting, site)
+    PRIMARY KEY (uuid)
 );
 -- Add geometry column
 \o /dev/null
 SELECT AddGeometryColumn('observations', 'geom', 2154, 'POINT', 2);
 \o
 
--- Indexes on $(db_schema_vn).observations;
-/* DROP INDEX IF EXISTS observations_idx_id_universal;
-CREATE UNIQUE INDEX observations_idx_id_universal
-    ON $(db_schema_vn).observations USING btree
-    (id_universal)
-    TABLESPACE pg_default; */
+DROP INDEX IF EXISTS observations_idx_site;
+CREATE INDEX observations_idx_site
+    ON $(db_schema_vn).observations USING btree(site);
+DROP INDEX IF EXISTS observations_idx_id_sighting;
+CREATE INDEX observations_idx_id_sighting
+    ON $(db_schema_vn).observations USING btree(id_sighting);
+DROP INDEX IF EXISTS observations_idx_id_universal;
+CREATE INDEX observations_idx_id_universal
+    ON $(db_schema_vn).observations USING btree(id_universal);
 
 -- Add trigger for postgis geometry update
 DROP TRIGGER IF EXISTS trg_geom ON $(db_schema_vn).observations;
@@ -340,7 +357,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'precision',
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'estimation_code',
                 CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'count' AS INTEGER),
-                CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> 'atlas_code' AS INTEGER),
+                CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'atlas_code' AS INTEGER),
                 CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'altitude' AS INTEGER),
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'project_code',
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'hidden',
@@ -385,7 +402,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'precision',
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'estimation_code',
             CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'count' AS INTEGER),
-            CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> 'atlas_code' AS INTEGER),
+            CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'atlas_code' AS INTEGER),
             CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'altitude' AS INTEGER),
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'project_code',
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'hidden',
@@ -428,8 +445,15 @@ CREATE TABLE $(db_schema_vn).observers(
     default_hidden      INTEGER,
     name                VARCHAR(100),
     surname             VARCHAR(100),
-    PRIMARY KEY (id, site)
+    PRIMARY KEY (uuid)
 );
+
+DROP INDEX IF EXISTS observers_idx_site;
+CREATE INDEX observers_idx_site
+    ON $(db_schema_vn).observers USING btree(site);
+DROP INDEX IF EXISTS observers_idx_id;
+CREATE INDEX observers_idx_id
+    ON $(db_schema_vn).observers USING btree(id);
 
 CREATE OR REPLACE FUNCTION update_observers() RETURNS TRIGGER AS \$\$
     BEGIN
@@ -519,12 +543,19 @@ CREATE TABLE $(db_schema_vn).places(
     coord_lon           FLOAT,
     coord_x_l93         FLOAT,
     coord_y_l93         FLOAT,
-    PRIMARY KEY (id, site)
+    PRIMARY KEY (uuid)
 );
 -- Add geometry column
 \o /dev/null
 SELECT AddGeometryColumn('places', 'geom', 2154, 'POINT', 2);
 \o
+
+DROP INDEX IF EXISTS places_idx_site;
+CREATE INDEX places_idx_site
+    ON $(db_schema_vn).places USING btree(site);
+DROP INDEX IF EXISTS places_idx_id;
+CREATE INDEX places_idx_id
+    ON $(db_schema_vn).places USING btree(id);
 
 -- Add trigger for postgis geometry update
 DROP TRIGGER IF EXISTS trg_geom ON $(db_schema_vn).places;
@@ -634,8 +665,15 @@ CREATE TABLE $(db_schema_vn).species(
     sys_order           INTEGER,
     atlas_start         INTEGER,
     atlas_end           INTEGER,
-    PRIMARY KEY (id, site)
+    PRIMARY KEY (uuid)
 );
+
+DROP INDEX IF EXISTS species_idx_site;
+CREATE INDEX species_idx_site
+    ON $(db_schema_vn).species USING btree(site);
+DROP INDEX IF EXISTS species_idx_id;
+CREATE INDEX species_idx_id
+    ON $(db_schema_vn).species USING btree(id);
 
 CREATE OR REPLACE FUNCTION update_species() RETURNS TRIGGER AS \$\$
     BEGIN
@@ -723,8 +761,15 @@ CREATE TABLE $(db_schema_vn).taxo_groups(
     latin_name          VARCHAR(150),
     name_constant       VARCHAR(150),
     access_mode         VARCHAR(50),
-    PRIMARY KEY (id, site)
+    PRIMARY KEY (uuid)
 );
+
+DROP INDEX IF EXISTS taxo_groups_idx_site;
+CREATE INDEX taxo_groups_idx_site
+    ON $(db_schema_vn).taxo_groups USING btree(site);
+DROP INDEX IF EXISTS taxo_groups_idx_id;
+CREATE INDEX taxo_groups_idx_id
+    ON $(db_schema_vn).taxo_groups USING btree(id);
 
 CREATE OR REPLACE FUNCTION update_taxo_groups() RETURNS TRIGGER AS \$\$
     BEGIN
@@ -796,8 +841,15 @@ CREATE TABLE $(db_schema_vn).territorial_units(
     id_country          INTEGER,
     name                VARCHAR(150),
     short_name          VARCHAR(150),
-    PRIMARY KEY (id, site)
+    PRIMARY KEY (uuid)
 );
+
+DROP INDEX IF EXISTS territorial_units_idx_site;
+CREATE INDEX territorial_units_idx_site
+    ON $(db_schema_vn).territorial_units USING btree(site);
+DROP INDEX IF EXISTS territorial_units_idx_id;
+CREATE INDEX territorial_units_idx_id
+    ON $(db_schema_vn).territorial_units USING btree(id);
 
 CREATE OR REPLACE FUNCTION update_territorial_units() RETURNS TRIGGER AS \$\$
     BEGIN
