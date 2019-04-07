@@ -192,7 +192,7 @@ class PostgresqlUtils:
     # Internal methods
     # ----------------
     def _create_table(self, name, *cols):
-        """Check if table exists, and create if if not
+        """Check if table exists, and create it if not
 
         Parameters
         ----------
@@ -206,6 +206,8 @@ class PostgresqlUtils:
             logger.info(_('Table %s not found => Creating it'), name)
             table = Table(name, self._metadata, *cols)
             table.create(self._db)
+        else:
+            logger.info(_('Table %s already exists => Keeping it'), name)
         return None
 
     def _create_download_log(self):
@@ -275,6 +277,17 @@ class PostgresqlUtils:
                            Column('update_ts', Integer, nullable=False),
                            PrimaryKeyConstraint(
                                'id', 'site', name='observations_json_pk')
+                           )
+        return None
+
+    def _create_observers_json(self):
+        """Create observers_json table if it does not exist."""
+        self._create_table('observers_json',
+                           Column('id', Integer, nullable=False),
+                           Column('site', String, nullable=False),
+                           Column('item', JSONB, nullable=False),
+                           PrimaryKeyConstraint(
+                               'id', 'site', name='observers_json_pk')
                            )
         return None
 
@@ -466,6 +479,7 @@ class PostgresqlUtils:
         self._create_forms_json()
         self._create_local_admin_units_json()
         self._create_observations_json()
+        self._create_observers_json()
         self._create_places_json()
         self._create_species_json()
         self._create_taxo_groups_json()
@@ -583,6 +597,8 @@ class StorePostgresql:
                                                   'metadata': None},
                             'observations': {'type': 'observation',
                                              'metadata': None},
+                            'observers': {'type': 'simple',
+                                       'metadata': None},
                             'places': {'type': 'geometry',
                                        'metadata': None},
                             'species': {'type': 'simple',
@@ -597,6 +613,7 @@ class StorePostgresql:
                                                                                   '.local_admin_units_json']
         self._table_defs['observations']['metadata'] = self._metadata.tables[dbschema +
                                                                              '.observations_json']
+        self._table_defs['observers']['metadata'] = self._metadata.tables[dbschema + '.observers_json']
         self._table_defs['places']['metadata'] = self._metadata.tables[dbschema + '.places_json']
         self._table_defs['species']['metadata'] = self._metadata.tables[dbschema + '.species_json']
         self._table_defs['taxo_groups']['metadata'] = self._metadata.tables[dbschema + '.taxo_groups_json']

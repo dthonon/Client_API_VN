@@ -19,6 +19,7 @@ Classes
 - BiolovisionAPI         - Top class, not for direct use
 - LocalAdminUnitsAPI     - Controls local_admin_units
 - ObservationsAPI        - Controls observations
+- ObserversAPI           - Controls observers
 - PlacesAPI              - Controls places
 - SpeciesAPI             - Controls species
 - TaxoGroupsAPI          - Controls taxo_groups
@@ -196,7 +197,19 @@ class BiolovisionAPI:
                     raise HTTPError(resp.status_code)
             else:
                 # No error from request: processing response
-                resp_chunk = resp.json()
+                try:
+                    resp_chunk = resp.json()
+                except Exception:
+                    # Error during JSON decoding => Logging error and no further processing of empty chunk
+                    resp_chunk = json.loads('{}')
+                    logger.error(_('Incorrect response content: %s'), resp.text)
+                    logger.exception(_('Exception raised during JSON decoding'))
+                    self._transfer_errors += 1
+                    if self._transfer_errors > self._limits['max_retry']:
+                        # Too many retries. Raising exception
+                        logger.critical(_('Too many error %s, raising exception'),
+                                        self._transfer_errors)
+                        raise HTTPError('resp.json exception')
 
                 # Initialize or append to response dict, depending on content
                 if 'data' in resp_chunk:
@@ -485,6 +498,21 @@ class ObservationsAPI(BiolovisionAPI):
                      self._ctrl, params, body)
         # GET from API
         return super()._url_get(params, 'observations/search/', 'POST', body)
+
+
+class ObserversAPI(BiolovisionAPI):
+    """ Implement api calls to observers controler.
+
+    Methods
+    - api_get                - Return a single entity from the controler
+    - api_list               - Return a list of entity from the controler
+
+    """
+
+    def __init__(self, config,
+                 max_retry=5, max_requests=sys.maxsize, max_chunks=10):
+        super().__init__(config, 'observers',
+                         max_retry, max_requests, max_chunks)
 
 
 class PlacesAPI(BiolovisionAPI):

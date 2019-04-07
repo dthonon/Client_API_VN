@@ -51,6 +51,9 @@ controler:
             #- TAXO_GROUP_BIVALVIA
             #- TAXO_GROUP_BRANCHIOPODA
             - TAXO_GROUP_ALIEN_PLANTS
+    observers:
+        # Enable download from this controler
+        enabled: true
     places:
         # Enable download from this controler
         enabled: true

@@ -2,21 +2,21 @@
 """
 Test each API call of biolovision_api module.
 """
-import sys
-from datetime import datetime, timedelta
-import time
-from pathlib import Path
 import logging
-import requests
-import pytest
-import timeit
+import time
+from datetime import datetime, timedelta
+from pathlib import Path
 
-from export_vn.store_file import StoreFile
-from export_vn.biolovision_api import BiolovisionAPI, BiolovisionApiException
-from export_vn.biolovision_api import EntitiesAPI, LocalAdminUnitsAPI, ObservationsAPI, PlacesAPI
-from export_vn.biolovision_api import SpeciesAPI, TaxoGroupsAPI, TerritorialUnitsAPI
-from export_vn.biolovision_api import HTTPError, MaxChunksError
+import requests
+
+import pytest
+from export_vn.biolovision_api import (BiolovisionApiException, EntitiesAPI,
+                                       HTTPError, LocalAdminUnitsAPI,
+                                       MaxChunksError, ObservationsAPI,
+                                       ObserversAPI, PlacesAPI, SpeciesAPI,
+                                       TaxoGroupsAPI, TerritorialUnitsAPI)
 from export_vn.evnconf import EvnConf
+from export_vn.store_file import StoreFile
 
 # Using faune-ardeche or faune-isere site, that needs to be created first
 SITE = 't07'
@@ -29,15 +29,18 @@ STORE_FILE = StoreFile(CFG)
 ENTITIES_API = EntitiesAPI(CFG)
 LOCAL_ADMIN_UNITS_API = LocalAdminUnitsAPI(CFG)
 OBSERVATIONS_API = ObservationsAPI(CFG)
+OBSERVERS_API = ObserversAPI(CFG)
 PLACES_API = PlacesAPI(CFG)
 SPECIES_API = SpeciesAPI(CFG)
 SPECIES_API_ERR = SpeciesAPI(CFG, max_retry=1, max_requests=1, max_chunks = 1)
 TAXO_GROUPS_API = TaxoGroupsAPI(CFG)
 TERRITORIAL_UNITS_API = TerritorialUnitsAPI(CFG)
 
+
 def test_version():
     """Check if version is defined."""
     logging.debug('package version: %s', ENTITIES_API.version)
+
 
 # --------------------------
 # Entities controler methods
@@ -48,12 +51,14 @@ def test_entities_get():
     assert ENTITIES_API.transfer_errors == 0
     assert entity['data'][0]['short_name'] == 'LPO 07'
 
+
 def test_entities_list():
     """Get list of entities."""
     entities = ENTITIES_API.api_list()
     assert ENTITIES_API.transfer_errors == 0
     assert len(entities['data']) >= 8
     assert entities['data'][0]['short_name'] == '-'
+
 
 # ------------------------------------
 #  Local admin units controler methods
@@ -62,6 +67,7 @@ def test_controler(capsys):
     """Check controler name."""
     ctrl = LOCAL_ADMIN_UNITS_API.controler
     assert ctrl == 'local_admin_units'
+
 
 def test_local_admin_units_get(capsys):
     """Get a single local admin unit."""
@@ -93,6 +99,7 @@ def test_local_admin_units_get(capsys):
                 'insee': '07001',
                 'name': 'Accons'}]}
 
+
 def test_local_admin_units_list_all(capsys):
     """Get list of all local admin units."""
     logging.debug('Getting all local admin unit')
@@ -104,6 +111,7 @@ def test_local_admin_units_list_all(capsys):
         assert len(local_admin_units_list['data']) >= 534
     elif SITE == 't07':
         assert len(local_admin_units_list['data']) >= 340
+
 
 def test_local_admin_units_list_1(capsys):
     """Get a list of local_admin_units from territorial unit 39 (Isère)."""
@@ -123,6 +131,7 @@ def test_local_admin_units_list_1(capsys):
         assert len(local_admin_units_list['data']) >= 340
         assert local_admin_units_list['data'][0]['name'] == 'Accons'
 
+
 # ------------------------------
 # Observations controler methods
 # ------------------------------
@@ -139,11 +148,13 @@ def test_observations_diff(capsys):
     diff = OBSERVATIONS_API.api_diff('1', since, 'only_deleted')
     assert OBSERVATIONS_API.transfer_errors == 0
 
+
 def test_observations_list_1(capsys):
     """Get the list of sightings, from taxo_group 18: Mantodea."""
     list = OBSERVATIONS_API.api_list('18')
     assert OBSERVATIONS_API.transfer_errors == 0
     assert len(list) > 0
+
 
 def test_observations_list_2_1(capsys):
     """Get the list of sightings, from taxo_group 1, specie 518."""
@@ -157,6 +168,7 @@ def test_observations_list_2_1(capsys):
     assert len(list) > 0
     STORE_FILE.store('test_observations_list_2', str(1), list)
 
+
 def test_observations_list_3_0(capsys):
     """Get the list of sightings, from taxo_group 1, specie 382."""
     file_json = str(Path.home()) + '/' + CFG.file_store + 'test_observations_list_3_0.json.gz'
@@ -168,6 +180,7 @@ def test_observations_list_3_0(capsys):
     assert OBSERVATIONS_API.transfer_errors == 0
     assert len(list) > 0
     STORE_FILE.store('test_observations_list_3', str(0), list)
+
 
 def test_observations_list_3_1(capsys):
     """Get the list of sightings, from taxo_group 1, specie 382."""
@@ -181,12 +194,13 @@ def test_observations_list_3_1(capsys):
     assert len(list) > 0
     STORE_FILE.store('test_observations_list_3', str(1), list)
 
+
 def test_observations_get(capsys):
     """Get a specific sighting."""
     if SITE == 't38':
         sighting = OBSERVATIONS_API.api_get('2246086')
         assert sighting == {
-            'data':{
+            'data': {
                 'sightings': [{
                     'place': {
                         'county': '38',
@@ -213,7 +227,7 @@ def test_observations_get(capsys):
                         'name': 'Canard colvert',
                         '@id': '86',
                         'taxonomy': '1'},
-                    'observers':[{
+                    'observers': [{
                         'estimation_code': 'MINIMUM',
                         'count': '15',
                         'id_sighting': '2246086',
@@ -225,7 +239,7 @@ def test_observations_get(capsys):
                             '@timestamp': '1537033501'},
                         'atlas_grid_name': 'E091N645',
                         'name': 'Daniel Thonon',
-                        'medias':[{
+                        'medias': [{
                             'media_is_hidden': '0',
                             'filename': '3_1537024802877-15194452-5272.jpg',
                             'path': 'http://media.biolovision.net/data.biolovision.net/2018-09',
@@ -333,6 +347,7 @@ def test_observations_get(capsys):
                             'taxonomy': '18'
                         }}]}}
 
+
 def test_observations_search_1(capsys):
     """Query sightings, from taxo_group 18: Mantodea and date range."""
     q_param = {'period_choice': 'range',
@@ -349,6 +364,7 @@ def test_observations_search_1(capsys):
     else:
         fail
 
+
 def test_observations_search_2(capsys):
     """Query sightings, from taxo_group 18: Mantodea and date range."""
     q_param = {'period_choice': 'range',
@@ -364,6 +380,150 @@ def test_observations_search_2(capsys):
         assert len(list['data']['sightings']) >= 3
     else:
         fail
+
+
+# ----------------------------
+#  Observers controler methods
+# ----------------------------
+def test_observers_get(capsys):
+    """Get a single observer."""
+    if SITE == 't38':
+        o = '33'
+    elif SITE == 't07':
+        o = '1084'
+    else:
+        fail
+    logging.debug('Getting observer #s', o)
+    observer = OBSERVERS_API.api_get(o)
+    assert OBSERVERS_API.transfer_errors == 0
+    if SITE == 't38':
+        assert observer == \
+        {'data': [{'anonymous': '0',
+                   'archive_account': '0',
+                   'atlas_list': '16',
+                   'birth_year': '1959',
+                   'bypass_purchase': '0',
+                   'collectif': '0',
+                   'debug_file_upload': '0',
+                   'default_hidden': '0',
+                   'display_order': 'DATE_PLACE_SPECIES',
+                   'email': 'd.thonon9@gmail.com',
+                   'external_id': '0',
+                   'has_search_access': '0',
+                   'hide_email': '0',
+                   'id': '1084',
+                   'id_entity': '1',
+                   'id_universal': '11675',
+                   'item_per_page_gallery': '12',
+                   'item_per_page_obs': '20',
+                   'langu': 'fr',
+                   'last_inserted_data': {'#text': 'mardi 1 novembre 2016, 17:03:06',
+                                          '@ISO8601': '2016-11-01T17:03:06+01:00',
+                                          '@notime': '0',
+                                          '@offset': '3600',
+                                          '@timestamp': '1478016186'},
+                   'last_login': {'#text': 'dimanche 6 janvier 2019, 21:32:23',
+                                  '@ISO8601': '2019-01-06T21:32:23+01:00',
+                                  '@notime': '0',
+                                  '@offset': '3600',
+                                  '@timestamp': '1546806743'},
+                   'lat': '44.7221149943671',
+                   'lon': '4.59373711385036',
+                   'mobile_phone': '0675291894',
+                   'mobile_use_form': '0',
+                   'mobile_use_mortality': '0',
+                   'mobile_use_protocol': '0',
+                   'mobile_use_trace': '0',
+                   'municipality': 'Meylan',
+                   'name': 'Thonon',
+                   'number': '',
+                   'photo': '',
+                   'postcode': '38240',
+                   'presentation': '',
+                   'private_phone': '09 53 74 56 59',
+                   'private_website': '',
+                   'registration_date': {'#text': 'vendredi 1 mai 2015',
+                                         '@ISO8601': '2015-05-01T19:11:31+02:00',
+                                         '@notime': '1',
+                                         '@offset': '7200',
+                                         '@timestamp': '1430500291'},
+                   'show_precise': '0',
+                   'species_order': 'ALPHA',
+                   'street': '13, Av. du Vercors',
+                   'surname': 'Daniel',
+                   'use_latin_search': 'N',
+                   'work_phone': ''}]}
+    elif SITE == 't07':
+        assert observer == \
+        {'data': [{'anonymous': '0',
+                   'archive_account': '0',
+                   'atlas_list': '16',
+                   'birth_year': '1959',
+                   'bypass_purchase': '0',
+                   'collectif': '0',
+                   'debug_file_upload': '0',
+                   'default_hidden': '0',
+                   'display_order': 'DATE_PLACE_SPECIES',
+                   'email': 'd.thonon9@gmail.com',
+                   'external_id': '0',
+                   'has_search_access': '0',
+                   'hide_email': '0',
+                   'id': '1084',
+                   'id_entity': '1',
+                   'id_universal': '11675',
+                   'item_per_page_gallery': '12',
+                   'item_per_page_obs': '20',
+                   'langu': 'fr',
+                   'last_inserted_data': {'#text': 'mardi 1 novembre 2016, 17:03:06',
+                                          '@ISO8601': '2016-11-01T17:03:06+01:00',
+                                          '@notime': '0',
+                                          '@offset': '3600',
+                                          '@timestamp': '1478016186'},
+                   'last_login': {'#text': 'dimanche 6 janvier 2019, 21:32:23',
+                                  '@ISO8601': '2019-01-06T21:32:23+01:00',
+                                  '@notime': '0',
+                                  '@offset': '3600',
+                                  '@timestamp': '1546806743'},
+                   'lat': '44.7221149943671',
+                   'lon': '4.59373711385036',
+                   'mobile_phone': '0675291894',
+                   'mobile_use_form': '0',
+                   'mobile_use_mortality': '0',
+                   'mobile_use_protocol': '0',
+                   'mobile_use_trace': '0',
+                   'municipality': 'Meylan',
+                   'name': 'Thonon',
+                   'number': '',
+                   'photo': '',
+                   'postcode': '38240',
+                   'presentation': '',
+                   'private_phone': '09 53 74 56 59',
+                   'private_website': '',
+                   'registration_date': {'#text': 'vendredi 1 mai 2015',
+                                         '@ISO8601': '2015-05-01T19:11:31+02:00',
+                                         '@notime': '1',
+                                         '@offset': '7200',
+                                         '@timestamp': '1430500291'},
+                   'show_precise': '0',
+                   'species_order': 'ALPHA',
+                   'street': '13, Av. du Vercors',
+                   'surname': 'Daniel',
+                   'use_latin_search': 'N',
+                   'work_phone': ''}]}
+
+
+def test_observers_list_all(capsys):
+    """Get list of all observers."""
+    observers_list = OBSERVERS_API.api_list()
+    logging.debug('Received %d observers', len(observers_list['data']))
+    assert OBSERVERS_API.transfer_errors == 0
+    if SITE == 't38':
+        assert len(observers_list['data']) >= 4500
+        assert observers_list['data'][0]['name'] == 'Biolovision'
+    elif SITE == 't07':
+        assert len(observers_list['data']) >= 2400
+        assert observers_list['data'][0]['name'] == 'Biolovision'
+
 
 # -------------------------
 #  Places controler methods
@@ -404,6 +564,7 @@ def test_places_get(capsys):
                                     'place_type': 'place',
                                     'visible': '1'}]}
 
+
 @pytest.mark.slow
 def test_places_list_all(capsys):
     """Get list of all places."""
@@ -416,6 +577,7 @@ def test_places_list_all(capsys):
     elif SITE == 't07':
         assert len(places_list['data']) >= 23566
         assert places_list['data'][0]['name'] == 'Accons - sans lieu-dit défini'
+
 
 def test_places_list_1(capsys):
     """Get a list of places from a single local admin unit."""
@@ -438,6 +600,7 @@ def test_places_list_1(capsys):
         assert len(places_list['data']) <= 50
         assert places_list['data'][0]['name'] == 'Accons - sans lieu-dit défini'
 
+
 # -------------------------
 # Species controler methods
 # -------------------------
@@ -448,6 +611,7 @@ def test_species_get(capsys):
     assert SPECIES_API.transfer_errors == 0
     assert specie['data'][0]['french_name'] == 'Plongeon arctique'
 
+
 @pytest.mark.slow
 def test_species_list_all(capsys):
     """Get list of all species."""
@@ -455,6 +619,7 @@ def test_species_list_all(capsys):
     logging.debug('Received %d species', len(species_list['data']))
     assert SPECIES_API.transfer_errors == 0
     assert len(species_list['data']) >= 38820
+
 
 def test_species_list_1(capsys):
     """Get a list of species from taxo_group 1."""
@@ -465,6 +630,7 @@ def test_species_list_1(capsys):
     assert len(species_list['data']) >= 11150
     assert species_list['data'][0]['french_name'] == 'Plongeon catmarin'
 
+
 def test_species_list_30(capsys):
     """Get a list of species from taxo_group 30."""
     species_list = SPECIES_API.api_list({'id_taxo_group': '30'})
@@ -473,10 +639,12 @@ def test_species_list_30(capsys):
     assert SPECIES_API.transfer_errors == 0
     assert species_list['data'][0]['french_name'] == 'Aucune espèce'
 
+
 def test_species_list_error(capsys):
     """Get a list of species from taxo_group 1, limited to 1 chunk."""
     with pytest.raises(MaxChunksError) as excinfo:
         species_list = SPECIES_API_ERR.api_list({'id_taxo_group': '1'})
+
 
 # ----------------------------
 # Taxo_group controler methods
@@ -486,6 +654,7 @@ def test_taxo_groups_get():
     taxo_group = TAXO_GROUPS_API.api_get('2')
     assert TAXO_GROUPS_API.transfer_errors == 0
     assert taxo_group['data'][0]['name'] == 'Chauves-souris'
+
 
 def test_taxo_groups_list():
     """Get list of taxo_groups."""
@@ -510,6 +679,7 @@ def test_taxo_groups_list():
     assert len(taxo_groups['data']) >= 30
     assert taxo_groups['data'][0]['name'] == 'Oiseaux'
 
+
 # -----------------------------------
 # Territorial_units controler methods
 # -----------------------------------
@@ -524,6 +694,7 @@ def test_territorial_units_get():
         assert territorial_unit['data'][0]['name'] == 'Isère'
     elif SITE == 't07':
         assert territorial_unit['data'][0]['name'] == 'Ardèche'
+
 
 def test_territorial_units_list():
     """Get list of territorial_units."""
@@ -544,6 +715,7 @@ def test_territorial_units_list():
     took = (time.clock() - start) * 1000.0
     logging.debug('territorial_units_list, call 2 took: ' + str(took) + ' ms')
     assert TERRITORIAL_UNITS_API.transfer_errors == 0
+
 
 # -------------
 # Error testing
