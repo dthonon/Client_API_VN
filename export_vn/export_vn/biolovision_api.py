@@ -202,6 +202,7 @@ class BiolovisionAPI:
                 except Exception:
                     # Error during JSON decoding => Logging error and no further processing of empty chunk
                     resp_chunk = json.loads('{}')
+                    logger.error(_('Incorrect response content: %s'), resp.text)
                     logger.exception(_('Exception raised during JSON decoding'))
                     self._transfer_errors += 1
                     if self._transfer_errors > self._limits['max_retry']:
