@@ -2,29 +2,178 @@
 
 # Installation de l'outil d'export sur un serveur
 
+## Installation système
+Procédure d'installation sur Linux Debian 9.
+
+Notes :
+- les lignes encadrées sont des commandes bash à exécuter
+- les lignes précédées de => sont des éditions à faire manuellement
+- selon l'hébergeur, certaines étapes de préparation ne sont pas nécessaires
+- le texte entre * est à remplacer par le votre
+- non testé avec d'autres distributions
+
+1. Préparer l'installation
+```shell
+sudo dpkg-reconfigure tzdata
+```
+=> Sélectionner `Europe / Paris`
+```shell
+sudo dpkg-reconfigure locales
+```
+=> Sélectionner `fr_FR.UTF-8` et `fr_FR.UTF-8` par défaut
+```shell
+sudo hostnamectl set-hostname *votre_nom_de_serveur* --static
+sudo apt -y update
+sudo apt -y dist-upgrade
+sudo apt -y install openntpd git less
+```
+
+2. Installer postgresql depuis le dépôt postgresql (11 actuellement)
+```shell
+sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | \
+  sudo apt-key add -
+sudo apt-get update
+sudo apt -y install postgresql postgresql-contrib postgis postgresql-11-postgis-2.5 postgresql-11-postgis-2.5-scripts
+sudo nano /etc/postgresql/11/main/postgresql.conf
+```
+=> changer `#listen_addresses='localhost'` en `listen_addresses='*'`
+```shell
+sudo nano /etc/postgresql/11/main/pg_hba.conf
+```
+=> ajouter la ligne suivante pour autoriser l'accès exterieur à postgresql.
+`host all all  0.0.0.0/0   md5`
+```shell
+sudo systemctl reload postgresql
+sudo -iu postgres
+```
+```sql
+psql
+ CREATE EXTENSION adminpack;
+ CREATE EXTENSION postgis;
+ CREATE EXTENSION postgis_topology;
+ CREATE ROLE xfer38 LOGIN PASSWORD '*whateveryouwant*' SUPERUSER CREATEDB CREATEROLE;
+```
+Optionnel, pour fournir pgAdmin4 serveur:
+```script
+sudo apt -y install pgadmin4-apache2
+```
+
+3. Installer les modules python
+```shell
+sudo apt -y install python3-pip python3-wheel python3-setuptools python3-venv
+sudo apt -y install python3-dev python3-flake8
+sudo apt -y install python3-psycopg2 python3-sqlalchemy 
+sudo apt -y install python3-oauthlib python3-requests python3-requests-oauthlib
+pip3 install --upgrade pip
+sudo pip3 install params pyexpander pprint
+```
+
+4. Sécurisation du système, en retirant les accès aux comptes par défaut et installant un firewall
+```shell
+sudo adduser adm_xfer
+sudo usermod -a -G sudo adm_xfer
+sudo nano /etc/sudoers
+```
+=> Modifier la ligne `%sudo   ALL=(ALL:ALL) NOPASSWD:ALL`
+```shell
+sudo -iu adm_xfer
+nano .profile
+```
+=> ajouter la ligne `PATH="$PATH:/usr/local/sbin:/usr/sbin:/sbin:/bin"` en fin de fichier
+```shell
+mkdir .ssh
+chmod 700 .ssh
+nano .ssh/authorized_keys
+```
+=> copier la clé publique et sauvegarder
+```shell
+chmod 600 .ssh/authorized_keys
+exit
+sudo nano /etc/ssh/sshd_config
+```
+=> Modifier `PermitRootLogin no`
+```shell
+sudo nano /etc/passwd
+```
+=> remplacer `/bin/bash` par `/bin/false`pour les comptes debian et postgres
+```shell
+sudo apt -y install ufw
+sudo ufw allow ssh
+sudo ufw allow postgresql
+# Pour les serveurs fournissant plus que postgres (developpement...)
+sudo ufw allow ftp
+sudo ufw allow http
+sudo ufw allow https
+sudo ufw enable
+sudo reboot
+```
+
+5. Créer le compte et installer les scripts de téléchargement
+```shell
+sudo adduser xfer38
+sudo -iu xfer38
+git clone https://framagit.org/lpo/Client_API_VN.git
+```
+
+10. Optionnel : installation serveur FTP
+```shell
+sudo apt -y install proftpd
+sudo nano /etc/proftpd/proftpd.conf
+```
+=> Mettre `UseIPv6 off`  
+=> Modifier `ServerName`  
+=> Decommenter `DefaultRoot                     ~` et ajouter `RootLogin off`  
+=> Modifier `PassivePorts                  50000 50100` et `MasqueradeAddress               1.2.3.4` avec votre adresse IP
+```shell
+sudo ufw allow 50000:50100/tcp
+```
+
+11. Optionnel : ajouter un disque supplémentaire
+```shell
+sudo apt -y install lvm2
+sudo cfdisk /dev/sdb
+sudo pvcreate /dev/sdb1
+sudo vgcreate storage /dev/sdb1
+sudo lvcreate -l 100%FREE -n sharing storage
+sudo mkfs.ext4 /dev/storage/sharing
+sudo nano /etc/fstab
+```
+=> Ajouter la ligne `/dev/storage/sharing  /home/sharing  ext4  defaults  0 2
+`
+```shell
+sudo mkdir /home/sharing/
+sudo chown xfer38 /home/sharing/
+sudo chgrp xfer38 /home/sharing/
+sudo mount /home/sharing/
+```
+
+12. Optionnel : mise en place des outils de mail, surveillance...
+```shell
+sudo apt -y install mailutils postfix
+```
+=> Sélectionner `Distribution directe par SMTP (site Internet)` 
+=> Valeurs par défaut par la suite
+```shell
+sudo apt -y install opendkim opendkim-tools
+sudo nano /etc/opendkim.conf
+```
+=> voir https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-dkim-with-postfix-on-debian-wheezy
+```shell
+sudo apt -y install logwatch
+sudo mkdir /var/cache/logwatch
+sudo cp /usr/share/logwatch/default.conf/logwatch.conf /etc/logwatch/conf/
+sudo nano /etc/logwatch/conf/logwatch.conf
+```
+=> `MailTo = adresse@domaine.tld`
+```shell
+sudo apt install fail2ban
+```
+=> Voir https://www.digitalocean.com/community/tutorials/how-to-protect-ssh-with-fail2ban-on-debian-7
+
 ## Installation de l'environnement
 
 Voir https://framagit.org/lpo/Client_API_VN/wikis/Installation%20guide%20debian%209
 
 ## Configuration de l'application
-L'initialisation de l'application nécessite a minima un argument qui est un identifiant de votre site visionature (ex fauneardeche ou vn07 pour faune-ardeche.org).
-
-``` sh
-cd Client_API_VN/Export
-./evn.sh --site vn07 --edit
-```
-
-L'application créée alors à la racine de votre dossier utilisateur un fichier de configuration qui dans le cas de cet exemple sera `~/.evn_vn07.ini` et l'ouvre dans un éditeur de texte (par défaut `nano`, quelques infos sur cet éditeur [ici](https://korben.info/utiliser-nano.html))
-
-## Création de l'utilisateur de la bdd
-
-``` sql
-create role dbuser login superuser encrypted password 'dbpwd';
-```
-
-## Initialisation de l'application
-
-``` sh
-cd Client_API_VN/Export
-./evn.sh --site=vn07 --init
-```
+Ouvre dans un éditeur de texte (par défaut `nano`, quelques infos sur cet éditeur [ici](https://korben.info/utiliser-nano.html))
