@@ -19,18 +19,23 @@ You can then download all data, as enabled in the YAML file.
 Beware that, depending on the volume of observations, this can take hours. 
 We recommend starting with a small taxonomic group first.
 ```bash
-python3 export_vn/export_vn/transfer_vn.py --db-create --json_tables_create --col_tables_create --full .evn_your_site.yaml 
+python3 -m export_vn.transfer_vn --db-create --json_tables_create --col_tables_create --full .evn_your_site.yaml 
 ```
 
 Once this is done, you can update the database with new observations:
 ```bash
-python3 export_vn/export_vn/transfer_vn.py --update .evn_your_site.yaml 
+python3 -m export_vn.transfer_vn --update .evn_your_site.yaml 
 ```
 
 ### Prerequisites
 
 Installation requires the following python module
 - requests
+- bs4
+- setuptools-scm
+- tabulate
+- pyproj
+- sqlalchemy
 
 ### Installing
 
@@ -44,11 +49,7 @@ Explain how to run the automated tests for this system
 
 The application runs as:
 ```bash
-python3 export_vn/export_vn/transfer_vn.py options file
-```
-or
-```bash
-python3 -m export_vn.transfer_vn options file
+python3 -m export_vn.transfer_vn  options file
 ```
 where:
 - options: command line options described below

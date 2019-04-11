@@ -112,9 +112,6 @@ CREATE TRIGGER entities_trigger
 AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).entities_json
     FOR EACH ROW EXECUTE FUNCTION $(db_schema_vn).update_entities();
 
--- Dummy update of all rows to trigger new FUNCTION
-UPDATE $(db_schema_import).entities_json SET site=site;
-
 
 --------
 -- Forms
@@ -220,8 +217,6 @@ CREATE TRIGGER local_admin_units_trigger
 AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).local_admin_units_json
     FOR EACH ROW EXECUTE FUNCTION $(db_schema_vn).update_local_admin_units();
 
--- Dummy update of all rows to trigger new FUNCTION
-UPDATE $(db_schema_import).local_admin_units_json SET site=site;
 
 ---------------
 -- Observations
@@ -428,8 +423,6 @@ CREATE TRIGGER observations_trigger
 AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).observations_json
     FOR EACH ROW EXECUTE FUNCTION update_observations();
 
--- Dummy update of all rows to trigger new FUNCTION
-UPDATE $(db_schema_import).observations_json SET site=site;
 
 ------------
 -- Observers
@@ -521,8 +514,6 @@ CREATE TRIGGER observers_trigger
 AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).observers_json
     FOR EACH ROW EXECUTE FUNCTION $(db_schema_vn).update_observers();
 
--- Dummy update of all rows to trigger new FUNCTION
-UPDATE $(db_schema_import).observers_json SET site=site;
 
 ---------
 -- Places
@@ -646,8 +637,6 @@ CREATE TRIGGER places_trigger
 AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).places_json
     FOR EACH ROW EXECUTE FUNCTION $(db_schema_vn).update_places();
 
--- Dummy update of all rows to trigger new FUNCTION
-UPDATE $(db_schema_import).places_json SET site=site;
 
 ----------
 -- Species
@@ -747,8 +736,6 @@ CREATE TRIGGER species_trigger
 AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).species_json
     FOR EACH ROW EXECUTE FUNCTION $(db_schema_vn).update_species();
 
--- Dummy update of all rows to trigger new FUNCTION
-UPDATE $(db_schema_import).species_json SET site=site;
 
 --------------
 -- Taxo_groups
@@ -828,9 +815,6 @@ CREATE TRIGGER taxo_groups_trigger
 AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).taxo_groups_json
     FOR EACH ROW EXECUTE FUNCTION $(db_schema_vn).update_taxo_groups();
 
--- Dummy update of all rows to trigger new FUNCTION
-UPDATE $(db_schema_import).taxo_groups_json SET site=site;
-
 --------------------
 -- Territorial_units
 --------------------
@@ -904,4 +888,11 @@ AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).territorial_units_json
     FOR EACH ROW EXECUTE FUNCTION $(db_schema_vn).update_territorial_units();
 
 -- Dummy update of all rows to trigger new FUNCTION
+UPDATE $(db_schema_import).entities_json SET site=site;
 UPDATE $(db_schema_import).territorial_units_json SET site=site;
+UPDATE $(db_schema_import).local_admin_units_json SET site=site;
+UPDATE $(db_schema_import).places_json SET site=site;
+UPDATE $(db_schema_import).taxo_groups_json SET site=site;
+UPDATE $(db_schema_import).species_json SET site=site;
+UPDATE $(db_schema_import).observers_json SET site=site;
+UPDATE $(db_schema_import).observations_json SET site=site;
