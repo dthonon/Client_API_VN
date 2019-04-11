@@ -36,12 +36,13 @@ Exceptions
 - MaxChunksError             - Too many chunks returned from API calls
 - IncorrectParameter         - Incorrect or missing parameter
 """
+import gettext
 import json
 import logging
 import sys
+import time
 import urllib
 from functools import lru_cache
-import gettext
 from pathlib import Path
 
 import requests
@@ -190,6 +191,7 @@ class BiolovisionAPI:
                 logger.error(_('%s status code = %s, for URL %s'),
                              method, resp.status_code, protected_url)
                 self._transfer_errors += 1
+                time.sleep(5)
                 if self._transfer_errors > self._limits['max_retry']:
                     # Too many retries. Raising exception
                     logger.critical(_('Too many error %s, raising exception'),
