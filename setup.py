@@ -3,11 +3,11 @@
 """
 from setuptools import setup, find_packages
 
-with open("../README.md", "r") as fh:
+with open('README.md', 'r') as fh:
     long_description = fh.read()
 
 setup(
-    name="export_vn",
+    name='export_vn',
     packages=find_packages(),
     include_package_data=True,
 
