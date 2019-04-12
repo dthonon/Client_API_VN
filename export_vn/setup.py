@@ -18,10 +18,13 @@ setup(
     # installed or upgraded on the target machine
     install_requires=[
         'beautifulsoup4>=4.5',
+        'psycopg2-binary>=2.8',
         'pyexpander>=1.8'
-        'pyproj>=1.9',
+        'pyproj>=2.1',
+        'pyYAML>=5.1',
         'requests>=2.12',
         'requests-oauthlib>=0.7',
+        'setuptools_scm>=3.2',
         'SQLAlchemy>=1.0',
         'tabulate>=0.7',
         'xmltodict>=0.10'
