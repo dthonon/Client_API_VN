@@ -11,7 +11,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
 
-    use_scm_version={'root': '..', 'relative_to': __file__},
+    use_scm_version={'root': '.', 'relative_to': __file__},
     setup_requires=['setuptools_scm'],
 
     # Project uses reStructuredText, so ensure that the docutils get
