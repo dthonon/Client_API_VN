@@ -39,10 +39,13 @@ setup(
     description="Transfer data from VisioNature web site to Postgresql database",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    license="GPL",
+    license="GPL v3",
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: GPL",
-        "Operating System :: OS Independent",
+        "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+        "Operating System :: POSIX :: Linux",
+        "Development Status :: 5 - Production/Stable",
+        "Environment :: Console",
+        "Topic :: Scientific/Engineering :: Bio-Informatics",
     ],
 )
