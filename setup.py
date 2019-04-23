@@ -11,13 +11,13 @@ setup(
     packages=find_packages(),
     include_package_data=True,
 
-    use_scm_version={'root': '..', 'relative_to': __file__},
+    use_scm_version={'root': '.', 'relative_to': __file__},
     setup_requires=['setuptools_scm'],
 
     # Project uses reStructuredText, so ensure that the docutils get
     # installed or upgraded on the target machine
     install_requires=[
-        'docutils>=0.3',
+        'docutils>=0.14',
         'beautifulsoup4>=4.5',
         'psycopg2-binary>=2.8',
         'pyexpander>=1.8'
