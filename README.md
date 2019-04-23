@@ -3,10 +3,16 @@
 Python application that transfers data from Biolovision/VisoNature web sites to a local Postgresql database.
 
 ## Getting Started
-
-Download a copy of the code:
+Create a python virtual environment and activate it. Then update basic tools.
 ```bash
-$ git clone https://framagit.org/lpo/Client_API_VN.git
+python3 -m venv VN_env
+source VN_env/bin/activate
+python -m pip install --upgrade pip setuptools wheel
+```
+
+Install from test.pypi (until ready for PyPI).
+```bash
+pip install -i https://test.pypi.org/simple/ --extra https://pypi.org/simple export-vn
 ```
 
 Copy the sample YAML file to your HOME directory and edit with your local details.
