@@ -16,17 +16,12 @@ import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from setuptools_scm import get_version
-
 from export_vn.biolovision_api import (EntitiesAPI, HTTPError,
                                        LocalAdminUnitsAPI, MaxChunksError,
                                        ObservationsAPI, ObserversAPI,
                                        PlacesAPI, SpeciesAPI, TaxoGroupsAPI,
                                        TerritorialUnitsAPI)
 from export_vn.regulator import PID
-
-# version of the program:
-__version__ = get_version(root='../..', relative_to=__file__)
 
 localedir = Path(__file__).resolve().parent.parent / 'locale'
 t = gettext.translation('transfer_vn', str(localedir), fallback=True)

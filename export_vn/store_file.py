@@ -18,10 +18,6 @@ import logging
 import json
 import gzip
 
-# version of the program:
-from setuptools_scm import get_version
-__version__ = get_version(root='../..', relative_to=__file__)
-
 localedir = Path(__file__).resolve().parent.parent / 'locale'
 t = gettext.translation('transfer_vn', str(localedir), fallback=True)
 _ = t.gettext

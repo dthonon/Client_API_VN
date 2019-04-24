@@ -19,8 +19,6 @@ from pathlib import Path
 
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from pyproj import Proj, transform
-# version of the program:
-from setuptools_scm import get_version
 
 from export_vn.store_file import StoreFile
 from sqlalchemy import (Column, DateTime, Integer, MetaData,
@@ -33,8 +31,6 @@ from sqlalchemy.sql import and_
 localedir = Path(__file__).resolve().parent.parent / 'locale'
 t = gettext.translation('transfer_vn', str(localedir), fallback=True)
 _ = t.gettext
-
-__version__ = get_version(root='../..', relative_to=__file__)
 
 logger = logging.getLogger('transfer_vn.store_postgresql')
 

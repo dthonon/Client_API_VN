@@ -9,10 +9,6 @@ import logging
 import gettext
 from pathlib import Path
 
-# version of the program:
-from setuptools_scm import get_version
-__version__ = get_version(root='../..', relative_to=__file__)
-
 logger = logging.getLogger('transfer_vn.evn_conf')
 
 localedir = Path(__file__).resolve().parent.parent / 'locale'

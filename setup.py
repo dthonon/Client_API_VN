@@ -17,18 +17,18 @@ setup(
     # Project uses reStructuredText, so ensure that the docutils get
     # installed or upgraded on the target machine
     install_requires=[
-        'docutils>=0.14',
-        'beautifulsoup4>=4.5',
-        'psycopg2-binary>=2.8',
-        'pyexpander>=1.8'
-        'pyproj>=2.1',
-        'pyYAML>=5.1',
-        'requests>=2.12',
-        'requests-oauthlib>=0.7',
-        'setuptools_scm>=3.2',
-        'SQLAlchemy>=1.0',
-        'tabulate>=0.7',
-        'xmltodict>=0.10'
+        'docutils',
+        'beautifulsoup4',
+        'psycopg2-binary',
+        'pyexpander'
+        'pyproj',
+        'pyYAML',
+        'requests',
+        'requests-oauthlib',
+        'setuptools_scm',
+        'SQLAlchemy',
+        'tabulate',
+        'xmltodict'
     ],
 
     package_data={

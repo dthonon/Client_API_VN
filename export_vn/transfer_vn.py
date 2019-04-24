@@ -13,7 +13,7 @@ from pathlib import Path
 
 import requests
 from bs4 import BeautifulSoup
-from setuptools_scm import get_version
+from pkg_resources import get_distribution, DistributionNotFound
 from tabulate import tabulate
 
 import pyexpander.lib as pyexpander
@@ -25,7 +25,11 @@ from export_vn.evnconf import EvnConf
 from export_vn.store_postgresql import PostgresqlUtils, StorePostgresql
 
 # version of the program:
-__version__ = get_version(root='../..', relative_to=__file__)
+try:
+    __version__ = get_distribution(__name__).version
+except DistributionNotFound:
+    # package is not installed
+    pass
 
 # Install gettext for any file in the application
 localedir = Path(__file__).resolve().parent.parent / 'locale'
