@@ -10,19 +10,26 @@ Properties
 -
 
 """
-import sys
-import os
 import gettext
-from pathlib import Path
-import logging
-import json
 import gzip
+import json
+import logging
+import os
+from pathlib import Path
+
+from pkg_resources import DistributionNotFound, get_distribution
+
+try:
+    __version__ = get_distribution('export_vn').version
+except DistributionNotFound:
+    __version__ = '0.0.0'
 
 localedir = Path(__file__).resolve().parent.parent / 'locale'
 t = gettext.translation('transfer_vn', str(localedir), fallback=True)
 _ = t.gettext
 
 logger = logging.getLogger('transfer_vn.store_file')
+
 
 class StoreFileException(Exception):
     """An exception occurred while handling download or store. """

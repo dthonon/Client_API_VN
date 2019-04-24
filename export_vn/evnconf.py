@@ -4,16 +4,24 @@
 evnconf: expose local configuration parameters as properties of class EvnConf
 
 """
-import yaml
-import logging
 import gettext
+import logging
 from pathlib import Path
+
+import yaml
+from pkg_resources import DistributionNotFound, get_distribution
+
+try:
+    __version__ = get_distribution('export_vn').version
+except DistributionNotFound:
+    __version__ = '0.0.0'
 
 logger = logging.getLogger('transfer_vn.evn_conf')
 
 localedir = Path(__file__).resolve().parent.parent / 'locale'
 t = gettext.translation('transfer_vn', str(localedir), fallback=True)
 _ = t.gettext
+
 
 class EvnConfException(Exception):
     """An exception occurred while loading parameters."""
@@ -220,7 +228,7 @@ class EvnConf:
         # Read configuration parameters
         with open(str(Path.home()) + '/' + file, 'r') as stream:
             try:
-                self._config = yaml.load(stream)
+                self._config = yaml.full_load(stream)
             except yaml.YAMLError as exc:
                 print(exc)
 

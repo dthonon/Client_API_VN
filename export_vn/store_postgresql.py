@@ -10,13 +10,14 @@ Properties
 -
 
 """
+import gettext
 import json
 import logging
 import queue
 import threading
-import gettext
 from pathlib import Path
 
+from pkg_resources import DistributionNotFound, get_distribution
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from pyproj import Proj, transform
 
@@ -27,6 +28,11 @@ from sqlalchemy import (Column, DateTime, Integer, MetaData,
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.engine.url import URL
 from sqlalchemy.sql import and_
+
+try:
+    __version__ = get_distribution('export_vn').version
+except DistributionNotFound:
+    __version__ = '0.0.0'
 
 localedir = Path(__file__).resolve().parent.parent / 'locale'
 t = gettext.translation('transfer_vn', str(localedir), fallback=True)

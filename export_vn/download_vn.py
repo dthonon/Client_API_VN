@@ -16,12 +16,19 @@ import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
+from pkg_resources import DistributionNotFound, get_distribution
+
 from export_vn.biolovision_api import (EntitiesAPI, HTTPError,
                                        LocalAdminUnitsAPI, MaxChunksError,
                                        ObservationsAPI, ObserversAPI,
                                        PlacesAPI, SpeciesAPI, TaxoGroupsAPI,
                                        TerritorialUnitsAPI)
 from export_vn.regulator import PID
+
+try:
+    __version__ = get_distribution('export_vn').version
+except DistributionNotFound:
+    __version__ = '0.0.0'
 
 localedir = Path(__file__).resolve().parent.parent / 'locale'
 t = gettext.translation('transfer_vn', str(localedir), fallback=True)

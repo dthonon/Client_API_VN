@@ -20,14 +20,19 @@ FILE = '.evn_test.yaml'
 # Get configuration for test site
 CFG = EvnConf(FILE).site_list[SITE]
 MANAGE_PG = PostgresqlUtils(CFG)
-STORE_PG = StorePostgresql(CFG)
-ENTITIES = Entities(CFG, STORE_PG)
-LOCAL_ADMIN_UNITS = LocalAdminUnits(CFG, STORE_PG)
-OBSERVATIONS = Observations(CFG, STORE_PG)
-PLACES = Places(CFG, STORE_PG)
-SPECIES = Species(CFG, STORE_PG)
-TAXO_GROUP = TaxoGroup(CFG, STORE_PG)
-TERRITORIAL_UNIT = TerritorialUnits(CFG, STORE_PG)
+# Skip exception if json tables are not yet created
+# Need to run test_create_json_tables first
+try:
+    STORE_PG = StorePostgresql(CFG)
+    ENTITIES = Entities(CFG, STORE_PG)
+    LOCAL_ADMIN_UNITS = LocalAdminUnits(CFG, STORE_PG)
+    OBSERVATIONS = Observations(CFG, STORE_PG)
+    PLACES = Places(CFG, STORE_PG)
+    SPECIES = Species(CFG, STORE_PG)
+    TAXO_GROUP = TaxoGroup(CFG, STORE_PG)
+    TERRITORIAL_UNIT = TerritorialUnits(CFG, STORE_PG)
+except:
+    pass
 
 def test_version():
     """Check if version is defined."""
