@@ -20,7 +20,7 @@ setup(
         'docutils',
         'beautifulsoup4',
         'psycopg2-binary',
-        'pyexpander'
+        'pyexpander',
         'pyproj',
         'pyYAML',
         'requests',

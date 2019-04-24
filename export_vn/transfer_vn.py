@@ -266,6 +266,9 @@ def main():
     """
     Main.
     """
+    # Create $HOME/tmp directory if it does not exist
+    Path(str(Path.home()) + '/tmp').mkdir(exist_ok=True)
+
     # Define logger format and handlers
     logger = logging.getLogger('transfer_vn')
     # create file handler which logs even debug messages
