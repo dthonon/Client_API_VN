@@ -7,7 +7,7 @@ Create a python virtual environment and activate it. Then update basic tools.
 ```bash
 python3 -m venv VN_env
 source VN_env/bin/activate
-python -m pip install --upgrade pip setuptools wheel
+python -m pip install --upgrade pip setuptools
 ```
 
 Install from test.pypi (until ready for PyPI).
