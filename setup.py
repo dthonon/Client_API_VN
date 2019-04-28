@@ -3,7 +3,7 @@
 """
 from setuptools import setup, find_packages
 
-version='2.2.0b6'
+version = '2.2.0b7'
 
 with open('README.md', 'r') as fh:
     long_description = fh.read()
