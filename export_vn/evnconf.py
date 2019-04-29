@@ -4,12 +4,32 @@
 evnconf: expose local configuration parameters as properties of class EvnConf
 
 """
-import yaml
+import gettext
+import logging
 from pathlib import Path
 
-# version of the program:
-from setuptools_scm import get_version
-__version__ = get_version(root='../..', relative_to=__file__)
+import yaml
+from pkg_resources import DistributionNotFound, get_distribution
+
+try:
+    __version__ = get_distribution('export_vn').version
+except DistributionNotFound:
+    __version__ = '0.0.0'
+
+logger = logging.getLogger('transfer_vn.evn_conf')
+
+localedir = Path(__file__).resolve().parent.parent / 'locale'
+t = gettext.translation('transfer_vn', str(localedir), fallback=True)
+_ = t.gettext
+
+
+class EvnConfException(Exception):
+    """An exception occurred while loading parameters."""
+
+
+class IncorrectParameter(EvnConfException):
+    """Incorrect or missing parameter."""
+
 
 class EvnCtrlConf:
     """Expose controler configuration as properties
@@ -18,7 +38,10 @@ class EvnCtrlConf:
         self._ctrl = ctrl
 
         # Import parameters in properties
-        self._enabled = config['controler'][ctrl]['enabled']
+        if 'enabled' in config['controler'][ctrl]:
+            self._enabled = config['controler'][ctrl]['enabled']
+        else:
+            self._enabled = True
         if 'taxo_exclude' in config['controler'][ctrl]:
             self._taxo_exclude = config['controler'][ctrl]['taxo_exclude']
         else:
@@ -30,11 +53,6 @@ class EvnCtrlConf:
         return __version__
 
     @property
-    def site(self):
-        """Return site name, used to identify configuration file."""
-        return self._site
-
-    @property
     def enabled(self):
         """Return enabled flag, defining is site is to be downloaded."""
         return self._enabled
@@ -44,36 +62,55 @@ class EvnCtrlConf:
         """Return list of taxo_groups excluded from download."""
         return self._taxo_exclude
 
+
 class EvnSiteConf:
     """Expose site configuration as properties
     """
     def __init__(self, site, config):
         self._site = site
-
         # Import parameters in properties
-        self._enabled          = config['site'][site]['enabled']
-        self._client_key       = config['site'][site]['client_key']
-        self._client_secret    = config['site'][site]['client_secret']
-        self._user_email       = config['site'][site]['user_email']
-        self._user_pw          = config['site'][site]['user_pw']
-        self._base_url         = config['site'][site]['site']
-        self._file_store       = config['file']['file_store'] + '/' + site + '/'
-        self._db_host          = config['database']['db_host']
-        self._db_port          = str(config['database']['db_port'])
-        self._db_name          = config['database']['db_name']
-        self._db_schema_import = config['database']['db_schema_import']
-        self._db_schema_vn     = config['database']['db_schema_vn']
-        self._db_group         = config['database']['db_group']
-        self._db_user          = config['database']['db_user']
-        self._db_pw            = config['database']['db_pw']
-        if site in config['local']:
-            self._external1_name = config['local'][site]['external1_name']
-            self._external1_pw   = config['local'][site]['external1_pw']
-            self._sql_scripts    = config['local'][site]['sql_scripts']
-        else:
-            self._external1_name = ''
-            self._external1_pw   = ''
-            self._sql_scripts    = ''
+        try:
+            if 'enabled' in config['site'][site]:
+                self._enabled = config['site'][site]['enabled']
+            else:
+                self._enabled = True
+            self._client_key = config['site'][site]['client_key']
+            self._client_secret = config['site'][site]['client_secret']
+            self._user_email = config['site'][site]['user_email']
+            self._user_pw = config['site'][site]['user_pw']
+            self._base_url = config['site'][site]['site']
+            if 'enabled' in config['file']:
+                self._file_enabled = config['file']['enabled']
+            else:
+                self._file_enabled = False
+            if 'file_store' in config['file']:
+                self._file_store = config['file']['file_store'] + '/' + site + '/'
+            else:
+                if self._file_enabled:
+                    logger.error(_('file:file_store must be defined'))
+                    raise IncorrectParameter
+                else:
+                    self._file_store = None
+            self._db_host = config['database']['db_host']
+            self._db_port = str(config['database']['db_port'])
+            self._db_name = config['database']['db_name']
+            self._db_schema_import = config['database']['db_schema_import']
+            self._db_schema_vn = config['database']['db_schema_vn']
+            self._db_group = config['database']['db_group']
+            self._db_user = config['database']['db_user']
+            self._db_pw = config['database']['db_pw']
+            if site in config['local']:
+                self._external1_name = config['local'][site]['external1_name']
+                self._external1_pw = config['local'][site]['external1_pw']
+                self._sql_scripts = config['local'][site]['sql_scripts']
+            else:
+                self._external1_name = ''
+                self._external1_pw = ''
+                self._sql_scripts = ''
+        except Exception as e:
+            logger.error(e, exc_info=True)
+            raise
+        return None
 
     @property
     def version(self):
@@ -112,8 +149,15 @@ class EvnSiteConf:
 
     @property
     def base_url(self):
-        """Return base URL of VisioNature site, used as prefix for API calls."""
+        """Return base URL of VisioNature site,
+        used as prefix for API calls."""
         return self._base_url
+
+    @property
+    def file_enabled(self):
+        """Return flag to enable or not file storage
+        on top of Postgresql storage."""
+        return self._file_enabled
 
     @property
     def file_store(self):
@@ -175,6 +219,7 @@ class EvnSiteConf:
         """Return user 1 password."""
         return self._external1_pw
 
+
 class EvnConf:
     """
     Read config file and expose list of sites configuration
@@ -183,7 +228,7 @@ class EvnConf:
         # Read configuration parameters
         with open(str(Path.home()) + '/' + file, 'r') as stream:
             try:
-                self._config = yaml.load(stream)
+                self._config = yaml.full_load(stream)
             except yaml.YAMLError as exc:
                 print(exc)
 

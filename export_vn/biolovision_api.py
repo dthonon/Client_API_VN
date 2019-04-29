@@ -19,6 +19,7 @@ Classes
 - BiolovisionAPI         - Top class, not for direct use
 - LocalAdminUnitsAPI     - Controls local_admin_units
 - ObservationsAPI        - Controls observations
+- ObserversAPI           - Controls observers
 - PlacesAPI              - Controls places
 - SpeciesAPI             - Controls species
 - TaxoGroupsAPI          - Controls taxo_groups
@@ -35,39 +36,56 @@ Exceptions
 - MaxChunksError             - Too many chunks returned from API calls
 - IncorrectParameter         - Incorrect or missing parameter
 """
-import sys
-import logging
-
+import gettext
 import json
-from functools import lru_cache
-
+import logging
+import sys
+import time
 import urllib
+from functools import lru_cache
+from pathlib import Path
+
 import requests
+from pkg_resources import DistributionNotFound, get_distribution
+
 from requests_oauthlib import OAuth1
 
-# version of the program:
-from setuptools_scm import get_version
-__version__ = get_version(root='../..', relative_to=__file__)
+try:
+    __version__ = get_distribution('export_vn').version
+except DistributionNotFound:
+    __version__ = '0.0.0'
+
+logger = logging.getLogger('transfer_vn.biolovision_api')
+
+localedir = Path(__file__).resolve().parent.parent / 'locale'
+t = gettext.translation('transfer_vn', str(localedir), fallback=True)
+_ = t.gettext
 
 class HashableDict(dict):
     """Provide hashable dict type, to enable @lru_cache."""
     def __hash__(self):
         return hash(frozenset(self))
 
+
 class BiolovisionApiException(Exception):
     """An exception occurred while handling your request."""
+
 
 class HTTPError(BiolovisionApiException):
     """An HTTP error occurred."""
 
+
 class MaxChunksError(BiolovisionApiException):
     """Too many chunks returned from API calls."""
+
 
 class NotImplementedException(BiolovisionApiException):
     """Feature not implemented."""
 
+
 class IncorrectParameter(BiolovisionApiException):
     """Incorrect or missing parameter."""
+
 
 class BiolovisionAPI:
     """Top class, not for direct use. Provides internal and template methods."""
@@ -153,7 +171,7 @@ class BiolovisionAPI:
             # Prepare call to API
             payload = urllib.parse.urlencode(params,
                                              quote_via=urllib.parse.quote)
-            logging.debug('Params: %s', payload)
+            logger.debug(_('Params: %s'), payload)
             headers = {'Content-Type': 'application/json;charset=UTF-8'}
             protected_url = self._api_url + scope
             if method == 'GET':
@@ -165,50 +183,75 @@ class BiolovisionAPI:
             else:
                 raise NotImplementedException
 
-            logging.debug(resp.headers)
+            logger.debug(resp.headers)
             logging.getLogger().setLevel(level)
-            logging.debug('Status code from %s request: %s', method, resp.status_code)
+            logger.debug(_('%s status code = %s, for URL %s'),
+                         method, resp.status_code, protected_url)
             self._http_status = resp.status_code
             if self._http_status != 200:
                 # Request returned an error.
                 # Logging and checking if not too many errors to continue
-                logging.error('%s status code = %s, for URL %s',
-                              method, resp.status_code, protected_url)
+                logger.error(_('%s status code = %s, for URL %s'),
+                             method, resp.status_code, protected_url)
                 self._transfer_errors += 1
+                time.sleep(5)
                 if self._transfer_errors > self._limits['max_retry']:
                     # Too many retries. Raising exception
-                    logging.critical('Too many error %s, raising exception',
-                                     self._transfer_errors)
+                    logger.critical(_('Too many error %s, raising exception'),
+                                    self._transfer_errors)
                     raise HTTPError(resp.status_code)
             else:
                 # No error from request: processing response
-                resp_chunk = resp.json()
+                try:
+                    resp_chunk = resp.json()
+                except Exception:
+                    # Error during JSON decoding => Logging error and no further processing of empty chunk
+                    resp_chunk = json.loads('{}')
+                    logger.error(_('Incorrect response content: %s'), resp.text)
+                    logger.exception(_('Exception raised during JSON decoding'))
+                    self._transfer_errors += 1
+                    if self._transfer_errors > self._limits['max_retry']:
+                        # Too many retries. Raising exception
+                        logger.critical(_('Too many error %s, raising exception'),
+                                        self._transfer_errors)
+                        raise HTTPError('resp.json exception')
+
                 # Initialize or append to response dict, depending on content
                 if 'data' in resp_chunk:
+                    observations = False
                     if 'sightings' in resp_chunk['data']:
-                        logging.debug('Received %d sightings in chunk %d',
-                                      len(resp_chunk['data']['sightings']), nb_chunks)
+                        observations = True
+                        logger.debug(_('Received %d sightings in chunk %d'),
+                                     len(resp_chunk['data']['sightings']), nb_chunks)
                         if nb_chunks == 0:
                             data_rec = resp_chunk
                         else:
-                            data_rec['data']['sightings'] += resp_chunk['data']['sightings']
-                    elif 'forms'  in resp_chunk['data']:
-                        logging.debug('Received %d forms in chunk %d',
-                                      len(resp_chunk['data']['forms']), nb_chunks)
+                            if 'sightings' in data_rec['data']:
+                                data_rec['data']['sightings'] += resp_chunk['data']['sightings']
+                            else:
+                                data_rec['data']['sightings'] = resp_chunk['data']['sightings']
+                    if 'forms' in resp_chunk['data']:
+                        observations = True
+                        logger.debug(_('Received %d forms in chunk %d'),
+                                     len(resp_chunk['data']['forms']), nb_chunks)
                         if nb_chunks == 0:
                             data_rec = resp_chunk
                         else:
-                            data_rec['data']['forms'] += resp_chunk['data']['forms']
-                    else:
-                        logging.debug('Received %d data items in chunk %d',
-                                      len(resp_chunk), nb_chunks)
+                            if 'forms' in data_rec['data']:
+                                data_rec['data']['forms'] += resp_chunk['data']['forms']
+                            else:
+                                data_rec['data']['forms'] = resp_chunk['data']['forms']
+
+                    if not observations:
+                        logger.debug(_('Received %d data items in chunk %d'),
+                                     len(resp_chunk), nb_chunks)
                         if nb_chunks == 0:
                             data_rec = resp_chunk
                         else:
                             data_rec['data'] += resp_chunk['data']
                 else:
-                    logging.debug('Received %d items without data in chunk %d',
-                                  len(resp_chunk), nb_chunks)
+                    logger.debug(_('Received %d items without data in chunk %d'),
+                                 len(resp_chunk), nb_chunks)
                     if nb_chunks == 0:
                         data_rec = resp_chunk
                     else:
@@ -218,23 +261,22 @@ class BiolovisionAPI:
                 if (('transfer-encoding' in resp.headers) and
                         (resp.headers['transfer-encoding'] == 'chunked') and
                         ('pagination_key' in resp.headers)):
-                    logging.debug('Chunked transfer => requesting for more, with key: %s',
-                                  resp.headers['pagination_key'])
+                    logger.debug(_('Chunked transfer => requesting for more, with key: %s'),
+                                 resp.headers['pagination_key'])
                     # Update request parameters to get next chunk
                     params['pagination_key'] = resp.headers['pagination_key']
                     nb_chunks += 1
                 else:
-                    logging.debug('Non-chunked transfer => finished requests')
+                    logger.debug(_('Non-chunked transfer => finished requests'))
                     if 'pagination_key' in params:
                         del params['pagination_key']
                     break
 
-        logging.debug('Received %d chunks', nb_chunks)
+        logger.debug(_('Received %d chunks'), nb_chunks)
         if nb_chunks >= self._limits['max_chunks']:
             raise MaxChunksError
 
         return data_rec
-
 
     def _api_list(self, opt_params=None):
         """Query for a list of entities of the given controler.
@@ -256,19 +298,19 @@ class BiolovisionAPI:
                   'user_pw': self._config.user_pw}
         if opt_params is not None:
             params.update(opt_params)
-        logging.debug('List from %s, with option %s',
-                      self._ctrl, params)
+        logger.debug(_('List from %s, with option %s'),
+                     self._ctrl, params)
         # GET from API
         entities = self._url_get(params, self._ctrl)['data']
-        logging.debug('Number of entities = %i',
-                      len(entities))
+        logger.debug(_('Number of entities = %i'),
+                     len(entities))
         return {'data': entities}
-
 
     # -----------------------------------------
     #  Generic methods, used by most subclasses
     # -----------------------------------------
-    def api_get(self, id_entity):
+
+    def api_get(self, id_entity, **kwargs):
         """Query for a single entity of the given controler.
 
         Calls  /ctrl/id API.
@@ -277,6 +319,8 @@ class BiolovisionAPI:
         ----------
         id_entity : str
             entity to retrieve.
+        **kwargs :
+            optional URL parameters, empty by default. See Biolovision API documentation.
 
         Returns
         -------
@@ -286,6 +330,9 @@ class BiolovisionAPI:
         # Mandatory parameters.
         params = {'user_email': self._config.user_email,
                   'user_pw': self._config.user_pw}
+        for key, value in kwargs.items():
+            params[key] = value
+        logger.debug(_('In api_get, with parameters %s'), params)
         # GET from API
         return self._url_get(params, self._ctrl + '/' + str(id_entity))
 
@@ -365,7 +412,6 @@ class ObservationsAPI(BiolovisionAPI):
     - api_search             - Search for observations based on parameter value
     """
 
-
     def __init__(self, config,
                  max_retry=5, max_requests=sys.maxsize, max_chunks=10):
         super().__init__(config, 'observations',
@@ -392,7 +438,7 @@ class ObservationsAPI(BiolovisionAPI):
         opt_params['id_taxo_group'] = str(id_taxo_group)
         for key, value in kwargs.items():
             opt_params[key] = value
-        logging.debug('In api_list, with parameters %s', opt_params)
+        logger.debug(_('In api_list, with parameters %s'), opt_params)
         return super().api_list(opt_params)
 
     def api_diff(self, id_taxo_group, delta_time, modification_type='all'):
@@ -414,7 +460,6 @@ class ObservationsAPI(BiolovisionAPI):
         -------
         json : dict or None
             dict decoded from json if status OK, else None
-
         """
         # Mandatory parameters.
         params = {'user_email': self._config.user_email,
@@ -426,7 +471,7 @@ class ObservationsAPI(BiolovisionAPI):
         # GET from API
         return super()._url_get(params, 'observations/diff/')
 
-    def api_search(self, q_params):
+    def api_search(self, q_params, **kwargs):
         """Search for observations, based on parameter conditions.
 
         Calls /observations/search to get observations
@@ -441,20 +486,39 @@ class ObservationsAPI(BiolovisionAPI):
         -------
         json : dict or None
             dict decoded from json if status OK, else None
-
+        **kwargs :
+            optional URL parameters, empty by default. See Biolovision API documentation.
         """
         # Mandatory parameters.
         params = {'user_email': self._config.user_email,
                   'user_pw': self._config.user_pw}
+        for key, value in kwargs.items():
+            params[key] = value
         # Specific parameters.
         if q_params is not None:
             body = json.dumps(q_params)
         else:
             raise IncorrectParameter
-        logging.debug('Search from %s, with option %s and body %s',
-                      self._ctrl, params, body)
+        logger.debug(_('Search from %s, with option %s and body %s'),
+                     self._ctrl, params, body)
         # GET from API
         return super()._url_get(params, 'observations/search/', 'POST', body)
+
+
+class ObserversAPI(BiolovisionAPI):
+    """ Implement api calls to observers controler.
+
+    Methods
+    - api_get                - Return a single entity from the controler
+    - api_list               - Return a list of entity from the controler
+
+    """
+
+    def __init__(self, config,
+                 max_retry=5, max_requests=sys.maxsize, max_chunks=10):
+        super().__init__(config, 'observers',
+                         max_retry, max_requests, max_chunks)
+
 
 class PlacesAPI(BiolovisionAPI):
     """ Implement api calls to places controler.

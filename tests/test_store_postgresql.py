@@ -20,14 +20,19 @@ FILE = '.evn_test.yaml'
 # Get configuration for test site
 CFG = EvnConf(FILE).site_list[SITE]
 MANAGE_PG = PostgresqlUtils(CFG)
-STORE_PG = StorePostgresql(CFG)
-ENTITIES = Entities(CFG, STORE_PG)
-LOCAL_ADMIN_UNITS = LocalAdminUnits(CFG, STORE_PG)
-OBSERVATIONS = Observations(CFG, STORE_PG)
-PLACES = Places(CFG, STORE_PG)
-SPECIES = Species(CFG, STORE_PG)
-TAXO_GROUP = TaxoGroup(CFG, STORE_PG)
-TERRITORIAL_UNIT = TerritorialUnits(CFG, STORE_PG)
+# Skip exception if json tables are not yet created
+# Need to run test_create_json_tables first
+try:
+    STORE_PG = StorePostgresql(CFG)
+    ENTITIES = Entities(CFG, STORE_PG)
+    LOCAL_ADMIN_UNITS = LocalAdminUnits(CFG, STORE_PG)
+    OBSERVATIONS = Observations(CFG, STORE_PG)
+    PLACES = Places(CFG, STORE_PG)
+    SPECIES = Species(CFG, STORE_PG)
+    TAXO_GROUP = TaxoGroup(CFG, STORE_PG)
+    TERRITORIAL_UNIT = TerritorialUnits(CFG, STORE_PG)
+except:
+    pass
 
 def test_version():
     """Check if version is defined."""
@@ -73,11 +78,12 @@ def test_local_adm_u_api_pg_store():
 # -------------
 #  Observations
 # -------------
-def test_observations_api_pg_store():
+def test_observations_api_pg_store(capsys):
     """Store observations of a taxo_group to database."""
-    OBSERVATIONS.store(18, method='search')
+    with capsys.disabled():
+        OBSERVATIONS.store(18, method='search')
 
-def test_observations_api_pg_delete():
+def test_observations_api_pg_delete(capsys):
     """Delete some observations of a taxo_group to database."""
     nb_delete = STORE_PG.delete_obs([274830, 289120])
     assert nb_delete == 2

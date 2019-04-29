@@ -7,13 +7,24 @@ The controled variable is the time interval, in days.
 Derived from https://github.com/m-lundberg/simple-pid
 
 """
-import sys
+import gettext
 import logging
+import sys
+from pathlib import Path
 
+from pkg_resources import DistributionNotFound, get_distribution
 
-# version of the program:
-from setuptools_scm import get_version
-__version__ = get_version(root='../..', relative_to=__file__)
+try:
+    __version__ = get_distribution('export_vn').version
+except DistributionNotFound:
+    __version__ = '0.0.0'
+
+localedir = Path(__file__).resolve().parent.parent / 'locale'
+t = gettext.translation('transfer_vn', str(localedir), fallback=True)
+_ = t.gettext
+
+logger = logging.getLogger('transfer_vn.regulator')
+
 
 class PID(object):
     """
@@ -106,7 +117,8 @@ class PID(object):
         min_output, max_output = limits
 
         if None not in limits and max_output < min_output:
-            raise ValueError('lower limit must be less than upper limit')
+            logger.error(_('lower limit must be less than upper limit'))
+            raise ValueError(_('lower limit must be less than upper limit'))
 
         self._min_output = min_output
         self._max_output = max_output
