@@ -26,12 +26,12 @@ You can then download all data, as enabled in the YAML file.
 Beware that, depending on the volume of observations, this can take hours. 
 We recommend starting with a small taxonomic group first.
 ```bash
-python3 -m export_vn.transfer_vn --db-create --json_tables_create --col_tables_create --full .evn_your_site.yaml 
+python -m export_vn.transfer_vn --db-create --json_tables_create --col_tables_create --full .evn_your_site.yaml 
 ```
 
 Once this is done, you can update the database with new observations:
 ```bash
-python3 -m export_vn.transfer_vn --update .evn_your_site.yaml 
+python -m export_vn.transfer_vn --update .evn_your_site.yaml 
 ```
 Note: this script should run hourly or dayly in a cron job. It must run at least every week.
 
