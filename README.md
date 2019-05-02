@@ -1,13 +1,13 @@
 # Client_API_VN
 
-Python application that transfers data from Biolovision/VisoNature web sites to a local Postgresql database.
+Python application that transfers data from Biolovision/VisoNature web sites and stores them to a Postgresql database.
 
 ## Getting Started
 Create a python virtual environment and activate it. Then update basic tools.
 ```bash
 python3 -m venv VN_env
 source VN_env/bin/activate
-python -m pip install --upgrade pip setuptools
+python -m pip install --upgrade pip
 ```
 
 Install from test.pypi (until ready for PyPI).
@@ -16,8 +16,9 @@ pip install -i https://test.pypi.org/simple/ --extra https://pypi.org/simple exp
 ```
 
 Copy the sample YAML file to your HOME directory and edit with your local details.
+*NOTE: this a transient hack, until --init option is developed.*
 ```bash
-$ cp export_vn/export_vn/evn_template.yaml $HOME/.evn_your_site.yaml
+$ cp $HOME/VN_env/lib/python3.5/site-packages/*/export_vn/data/evn_template.yaml $HOME/.evn_your_site.yaml
 $ editor $HOME/.evn_your_site.yaml
 ```
 
@@ -32,24 +33,18 @@ Once this is done, you can update the database with new observations:
 ```bash
 python3 -m export_vn.transfer_vn --update .evn_your_site.yaml 
 ```
+Note: this script should run hourly or dayly in a cron job. It must run at least every week.
 
 ### Prerequisites
 
 Installation requires the following python module
-- requests
-- bs4
-- setuptools-scm
-- tabulate
-- pyproj
-- sqlalchemy
+- pip
 
-### Installing
-
-You just need to download the code from framagit (or github). 
+All other dependencies are managed by ```pip install```.
 
 ## Running the tests
 
-Explain how to run the automated tests for this system
+WIP.
 
 ## Running the application
 
@@ -62,17 +57,19 @@ where:
 - file: YAML file, located in $HOME directory, described in sample file
 
 ### Command-line options
-  -h, --help            show this help message and exit
-  --version             Affiche la version
-  -v, --verbose         Plus verbeux
-  -q, --quiet           Moins verbeux
-  --db_drop             Détruit la base de données et les rôles
-  --db_create           Crée la base de données et les rôle
-  --json_tables_create  Crée, si elles n'existent pas, les tables JSON
-  --col_tables_create   Crée ou recrée les tables en colonne
-  --full                Réalise un téléchargement complèt
-  --update              Réalise un téléchargement incrémental
-  --count               Statistiques des observations par site et groupe taxonomique
+Option |  Explaination
+-------|--------------
+  -h, --help          | show this help message and exit
+  --version           | Affiche la version
+  -v, --verbose       | Plus verbeux
+  -q, --quiet         |  Moins verbeux
+  --db_drop           |  Détruit la base de données et les rôles
+  --db_create         |  Crée la base de données et les rôle
+  --json_tables_create | Crée, si elles n'existent pas, les tables JSON
+  --col_tables_create  | Crée ou recrée les tables en colonne
+  --full               | Réalise un téléchargement complèt
+  --update             | Réalise un téléchargement incrémental
+  --count              | Statistiques des observations par site et groupe taxonomique
 
 
 ## Contributing

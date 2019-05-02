@@ -48,10 +48,19 @@ def db_config(cfg):
     }
 
 
-def arguments():
-    """Define and parse command arguments."""
+def arguments(args):
+    """Define and parse command arguments.
+        
+    Args:
+        args ([str]): command line parameters as list of strings
+
+    Returns:
+        :obj:`argparse.Namespace`: command line parameters namespace
+    """
     # Get options
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description='Script that transfers data from Biolovision and stores it to a Postgresql database.'
+    )
     parser.add_argument('--version',
                         help=_('Print version number'),
                         action='version',
@@ -87,8 +96,7 @@ def arguments():
     parser.add_argument('file',
                         help=_('Configuration file name'))
 
-    args = parser.parse_args()
-    return args
+    return parser.parse_args(args)
 
 
 def full_download(cfg_ctrl):
@@ -262,9 +270,11 @@ def count_observations(cfg_ctrl):
     return None
 
 
-def main():
-    """
-    Main.
+def main(args):
+    """Main entry point allowing external calls
+
+    Args:
+      args ([str]): command line parameter list
     """
     # Create $HOME/tmp directory if it does not exist
     Path(str(Path.home()) + '/tmp').mkdir(exist_ok=True)
@@ -288,7 +298,7 @@ def main():
     logger.addHandler(ch)
 
     # Get command line arguments
-    args = arguments()
+    args = arguments(args)
 
     # Define verbosity
     if args.verbose:
@@ -362,7 +372,12 @@ def main():
 
     return None
 
+def run():
+    """Entry point for console_scripts
+    """
+    main(sys.argv[1:])
+
 
 # Main wrapper
 if __name__ == '__main__':
-    main()
+    run()

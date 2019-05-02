@@ -11,7 +11,7 @@ from export_vn.evnconf import EvnConf
 CRTL = 'observations'
 SITE = 'tst1'
 FILE = '.evn_tst.yaml'
-shutil.copy(str(Path.home()) + '/Client_API_VN/data/evn_template.yaml',
+shutil.copy(str(Path.home()) + '/Client_API_VN/export_vn/data/evn_template.yaml',
             str(Path.home()) + '/' + FILE)
 
 CFG = EvnConf(FILE)
