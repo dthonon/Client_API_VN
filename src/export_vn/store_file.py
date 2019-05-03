@@ -10,7 +10,6 @@ Properties
 -
 
 """
-import gettext
 import gzip
 import json
 import logging
@@ -24,9 +23,6 @@ try:
 except DistributionNotFound:
     __version__ = '0.0.0'
 
-localedir = Path(__file__).resolve().parent.parent / 'locale'
-t = gettext.translation('transfer_vn', str(localedir), fallback=True)
-_ = t.gettext
 
 logger = logging.getLogger('transfer_vn.store_file')
 

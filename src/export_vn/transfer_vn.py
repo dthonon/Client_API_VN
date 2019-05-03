@@ -29,10 +29,6 @@ try:
 except DistributionNotFound:
      __version__ = '0.0.0'
 
-# Install gettext for any file in the application
-localedir = Path(__file__).resolve().parent.parent / 'locale'
-gettext.install('transfer_vn', str(localedir))
-
 
 def db_config(cfg):
     """Return database related parameters."""

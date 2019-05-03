@@ -36,14 +36,12 @@ Exceptions
 - MaxChunksError             - Too many chunks returned from API calls
 - IncorrectParameter         - Incorrect or missing parameter
 """
-import gettext
 import json
 import logging
 import sys
 import time
 import urllib
 from functools import lru_cache
-from pathlib import Path
 
 import requests
 from pkg_resources import DistributionNotFound, get_distribution
@@ -56,10 +54,6 @@ except DistributionNotFound:
     __version__ = '0.0.0'
 
 logger = logging.getLogger('transfer_vn.biolovision_api')
-
-localedir = Path(__file__).resolve().parent.parent / 'locale'
-t = gettext.translation('transfer_vn', str(localedir), fallback=True)
-_ = t.gettext
 
 class HashableDict(dict):
     """Provide hashable dict type, to enable @lru_cache."""

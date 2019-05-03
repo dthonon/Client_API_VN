@@ -7,10 +7,8 @@ The controled variable is the time interval, in days.
 Derived from https://github.com/m-lundberg/simple-pid
 
 """
-import gettext
+
 import logging
-import sys
-from pathlib import Path
 
 from pkg_resources import DistributionNotFound, get_distribution
 
@@ -19,9 +17,6 @@ try:
 except DistributionNotFound:
     __version__ = '0.0.0'
 
-localedir = Path(__file__).resolve().parent.parent / 'locale'
-t = gettext.translation('transfer_vn', str(localedir), fallback=True)
-_ = t.gettext
 
 logger = logging.getLogger('transfer_vn.regulator')
 

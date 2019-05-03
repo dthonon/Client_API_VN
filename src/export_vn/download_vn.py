@@ -10,11 +10,9 @@ Properties
 -
 
 """
-import gettext
 import logging
 import sys
 from datetime import datetime, timedelta
-from pathlib import Path
 
 from pkg_resources import DistributionNotFound, get_distribution
 
@@ -30,9 +28,6 @@ try:
 except DistributionNotFound:
     __version__ = '0.0.0'
 
-localedir = Path(__file__).resolve().parent.parent / 'locale'
-t = gettext.translation('transfer_vn', str(localedir), fallback=True)
-_ = t.gettext
 
 logger = logging.getLogger('transfer_vn.download_vn')
 
@@ -91,7 +86,7 @@ class DownloadVn:
         """
         # GET from API
         logger.debug(_('Getting items from controler %s'),
-                      self._api_instance.controler)
+                     self._api_instance.controler)
         i = 0
         if opt_params_iter == None:
             opt_params_iter = iter([None])
