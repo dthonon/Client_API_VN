@@ -10,9 +10,9 @@ source VN_env/bin/activate
 python -m pip install --upgrade pip
 ```
 
-Install from test.pypi (until ready for PyPI).
+Install from PyPI.
 ```bash
-pip install -i https://test.pypi.org/simple/ --extra https://pypi.org/simple export-vn
+pip install export-vn
 ```
 
 Copy the sample YAML file to your HOME directory and edit with your local details.
