@@ -156,6 +156,7 @@ def test_observations_list_1(capsys):
     assert len(list) > 0
 
 
+@pytest.mark.slow
 def test_observations_list_2_1(capsys):
     """Get the list of sightings, from taxo_group 1, specie 518."""
     file_json = str(Path.home()) + '/' + CFG.file_store + 'test_observations_list_2_1.json.gz'

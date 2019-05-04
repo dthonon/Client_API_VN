@@ -44,7 +44,14 @@ All other dependencies are managed by ```pip install```.
 
 ## Running the tests
 
-WIP.
+If not yet installed, install pytest.
+```bash
+pip install pytest 
+```
+Run tests:
+```bash
+pytest -s -v 
+```
 
 ## Running the application
 
