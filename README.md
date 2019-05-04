@@ -22,16 +22,16 @@ $ cp $HOME/VN_env/lib/python3.5/site-packages/*/export_vn/data/evn_template.yaml
 $ editor $HOME/.evn_your_site.yaml
 ```
 
-You can then download all data, as enabled in the YAML file. 
+You can then download data, as enabled in the YAML file. 
 Beware that, depending on the volume of observations, this can take hours. 
 We recommend starting with a small taxonomic group first.
 ```bash
-python -m export_vn.transfer_vn --db-create --json_tables_create --col_tables_create --full .evn_your_site.yaml 
+transfer_vn --db-create --json_tables_create --col_tables_create --full .evn_your_site.yaml 
 ```
 
 Once this is done, you can update the database with new observations:
 ```bash
-python -m export_vn.transfer_vn --update .evn_your_site.yaml 
+transfer_vn --update .evn_your_site.yaml 
 ```
 Note: this script should run hourly or dayly in a cron job. It must run at least every week.
 
@@ -57,7 +57,7 @@ pytest -s -v
 
 The application runs as:
 ```bash
-python3 -m export_vn.transfer_vn  options file
+transfer_vn  options file
 ```
 where:
 - options: command line options described below
