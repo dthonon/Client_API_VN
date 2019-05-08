@@ -52,17 +52,6 @@ Installation requires the following python module
 
 All other dependencies are managed by pip install.
 
-Running the tests
------------------
-
-If not yet installed, install pytest::
-
-    pip install pytest
-
-Run tests::
-
-    pytest -s -v
-
 Running the application
 -----------------------
 

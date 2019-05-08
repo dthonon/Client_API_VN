@@ -2,12 +2,15 @@
 Contributing to Client_API_VN
 =============================
 
+Installing the environment
+--------------------------
+
 Note: install Debian development environment first::
 
     sudo apt install build-essential
     sudo apt install python3.5-dev
 
-Create a python virtual environment, activate it and install or 
+Create a python virtual environment, activate it and install or
 update basic tools::
 
     python3 -m venv VN_env
@@ -15,10 +18,27 @@ update basic tools::
     python -m pip install --upgrade pip
     pip install --upgrade setuptools wheel twine
 
+Running the tests
+-----------------
+
+If not yet installed, install pytest::
+
+    pip install pytest
+
+Run tests::
+
+    ./setup.py tests
+
+Generating and uploading
+------------------------
+
 Generating distribution archives::
 
-    python setup.py sdist bdist_wheel
+    ./setup.py sdist bdist_wheel
 
+Uploading to test.pypi::
+
+    twine upload --repository-url https://test.pypi.org/legacy/ dist/*
 
 To test, install from test.pypi (until ready for PyPI)::
 
