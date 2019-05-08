@@ -2,10 +2,8 @@
 Client_API_VN
 =============
 
-
 Python application that transfers data from Biolovision/VisoNature
 web sites and stores them to a Postgresql database.
-
 
 Description
 ===========
