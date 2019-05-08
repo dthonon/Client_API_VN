@@ -7,7 +7,8 @@ Note: install Debian development environment first::
     sudo apt install build-essential
     sudo apt install python3.5-dev
 
-Create a python virtual environment, activate it and install or update basic tools::
+Create a python virtual environment, activate it and install or 
+update basic tools::
 
     python3 -m venv VN_env
     source VN_env/bin/activate
