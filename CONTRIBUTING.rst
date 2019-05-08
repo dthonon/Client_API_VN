@@ -51,4 +51,4 @@ Uploading to test.pypi::
 
 To test, install from test.pypi (until ready for PyPI)::
 
-    pip install -i https://test.pypi.org/simple/ --extra https://pypi.org/simple export-vn
+    pip install -i https://test.pypi.org/simple/ --extra https://pypi.org/simple Client-API-VN
