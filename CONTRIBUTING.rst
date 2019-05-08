@@ -18,6 +18,15 @@ update basic tools::
     python -m pip install --upgrade pip
     pip install --upgrade setuptools wheel twine
 
+Downloading source
+------------------
+
+Clone framagit repository::
+
+    git clone https://framagit.org/lpo/Client_API_VN.git
+    cd Client_API_VN
+    git checkout develop
+    
 Running the tests
 -----------------
 
