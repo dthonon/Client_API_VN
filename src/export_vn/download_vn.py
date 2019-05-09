@@ -23,11 +23,6 @@ from export_vn.biolovision_api import (EntitiesAPI, HTTPError,
                                        TerritorialUnitsAPI)
 from export_vn.regulator import PID
 
-try:
-    __version__ = get_distribution('export_vn').version
-except DistributionNotFound:
-    __version__ = '0.0.0'
-
 
 logger = logging.getLogger('transfer_vn.download_vn')
 

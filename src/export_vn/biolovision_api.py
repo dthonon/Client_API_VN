@@ -48,10 +48,6 @@ from pkg_resources import DistributionNotFound, get_distribution
 
 from requests_oauthlib import OAuth1
 
-try:
-    __version__ = get_distribution('export_vn').version
-except DistributionNotFound:
-    __version__ = '0.0.0'
 
 logger = logging.getLogger('transfer_vn.biolovision_api')
 

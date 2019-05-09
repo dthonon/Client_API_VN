@@ -12,11 +12,6 @@ import logging
 
 from pkg_resources import DistributionNotFound, get_distribution
 
-try:
-    __version__ = get_distribution('export_vn').version
-except DistributionNotFound:
-    __version__ = '0.0.0'
-
 
 logger = logging.getLogger('transfer_vn.regulator')
 

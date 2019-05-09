@@ -28,10 +28,6 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.engine.url import URL
 from sqlalchemy.sql import and_
 
-try:
-    __version__ = get_distribution('export_vn').version
-except DistributionNotFound:
-    __version__ = '0.0.0'
 
 logger = logging.getLogger('transfer_vn.store_postgresql')
 

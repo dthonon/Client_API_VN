@@ -24,10 +24,7 @@ from export_vn.download_vn import (Entities, LocalAdminUnits, Observations,
 from export_vn.evnconf import EvnConf
 from export_vn.store_postgresql import PostgresqlUtils, StorePostgresql
 
-try:
-    __version__ = get_distribution('export_vn').version
-except DistributionNotFound:
-     __version__ = '0.0.0'
+from export_vn import __version__
 
 
 def db_config(cfg):
