@@ -1,0 +1,6 @@
+[tool.towncrier]
+    package = "export_vn"
+    package_dir = "src"
+    filename = "CHANGELOG.rst"
+    issue_format = "`#{issue} < https://framagit.org/lpo/Client_API_VN/issues{issue}>`_"
+

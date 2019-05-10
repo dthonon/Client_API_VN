@@ -1,13 +1,10 @@
-=========
-Changelog
-=========
+Client-API-VN 2.2.1 (2019-05-09)
+================================
 
-Version 2.2.1
-=============
+Features
+--------
 
-- Packaged for PyPI
+- Starting with this version, the applicationin packaged and disributed in PyPI. 
+  See https://pypi.org/project/Client-API-VN/ for more information.
 
-Version 2.2.2
-=============
-
-- Corrected project name in README and CONTRIBUTING
+  transfer_vn is now available as a shell script. (`#29 < https://framagit.org/lpo/Client_API_VN/issues29>`_)
