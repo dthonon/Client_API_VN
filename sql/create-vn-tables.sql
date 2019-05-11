@@ -896,3 +896,6 @@ UPDATE $(db_schema_import).taxo_groups_json SET site=site;
 UPDATE $(db_schema_import).species_json SET site=site;
 UPDATE $(db_schema_import).observers_json SET site=site;
 UPDATE $(db_schema_import).observations_json SET site=site;
+
+-- Final cleanup
+VACUUM FULL ANALYZE;
