@@ -44,12 +44,13 @@ import urllib
 from functools import lru_cache
 
 import requests
-from pkg_resources import DistributionNotFound, get_distribution
 
 from requests_oauthlib import OAuth1
 
+from . import __version__
 
 logger = logging.getLogger('transfer_vn.biolovision_api')
+
 
 class HashableDict(dict):
     """Provide hashable dict type, to enable @lru_cache."""

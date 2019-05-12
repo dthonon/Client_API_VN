@@ -16,8 +16,7 @@ import logging
 import os
 from pathlib import Path
 
-from pkg_resources import DistributionNotFound, get_distribution
-
+from . import __version__
 
 logger = logging.getLogger('transfer_vn.store_file')
 

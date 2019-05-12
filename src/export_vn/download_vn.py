@@ -14,8 +14,6 @@ import logging
 import sys
 from datetime import datetime, timedelta
 
-from pkg_resources import DistributionNotFound, get_distribution
-
 from export_vn.biolovision_api import (EntitiesAPI, HTTPError,
                                        LocalAdminUnitsAPI, MaxChunksError,
                                        ObservationsAPI, ObserversAPI,
@@ -23,6 +21,7 @@ from export_vn.biolovision_api import (EntitiesAPI, HTTPError,
                                        TerritorialUnitsAPI)
 from export_vn.regulator import PID
 
+from . import __version__
 
 logger = logging.getLogger('transfer_vn.download_vn')
 

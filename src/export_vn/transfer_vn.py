@@ -13,7 +13,6 @@ from pathlib import Path
 
 import requests
 from bs4 import BeautifulSoup
-from pkg_resources import DistributionNotFound, get_distribution
 from tabulate import tabulate
 
 import pyexpander.lib as pyexpander
@@ -24,7 +23,7 @@ from export_vn.download_vn import (Entities, LocalAdminUnits, Observations,
 from export_vn.evnconf import EvnConf
 from export_vn.store_postgresql import PostgresqlUtils, StorePostgresql
 
-from export_vn import __version__
+from . import __version__
 
 
 def db_config(cfg):
