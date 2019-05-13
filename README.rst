@@ -19,7 +19,7 @@ Create a python virtual environment, activate it and update basic tools::
 
 Install from PyPI::
 
-    pip install export-vn
+    pip install Client-API-VN
 
 Copy the sample YAML file to your HOME directory and edit with
 your local details::

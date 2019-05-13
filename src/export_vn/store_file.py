@@ -16,13 +16,7 @@ import logging
 import os
 from pathlib import Path
 
-from pkg_resources import DistributionNotFound, get_distribution
-
-try:
-    __version__ = get_distribution('export_vn').version
-except DistributionNotFound:
-    __version__ = '0.0.0'
-
+from . import __version__
 
 logger = logging.getLogger('transfer_vn.store_file')
 
@@ -73,19 +67,25 @@ class StoreFile:
                 try:
                     os.makedirs(json_path)
                 except OSError:
-                    logger.error(_('Creation of the directory %s failed'), json_path)
+                    logger.error(_('Creation of the directory %s failed'),
+                                 json_path)
                     raise
                 else:
-                    logger.info(_('Successfully created the directory %s'), json_path)
+                    logger.info(_('Successfully created the directory %s'),
+                                json_path)
 
             nb_obs = len(items_dict['data'])
             if nb_obs > 0:
                 # Convert to json
                 logger.debug(_('Converting to json %d items'),
-                              len(items_dict['data']))
-                items_json = json.dumps(items_dict, sort_keys=True, indent=4, separators=(',', ': '))
+                             len(items_dict['data']))
+                items_json = json.dumps(items_dict,
+                                        sort_keys=True,
+                                        indent=4,
+                                        separators=(',', ': '))
                 file_json_gz = json_path + controler + '_' + seq + '.json.gz'
-                logger.debug(_('Received data, storing json to %s'), file_json_gz)
+                logger.debug(_('Received data, storing json to %s'),
+                             file_json_gz)
                 with gzip.open(file_json_gz, 'wb', 9) as g:
                     g.write(items_json.encode())
             return nb_obs
@@ -108,8 +108,7 @@ class StoreFile:
         # Not implemented
         return None
 
-    def log(self, site, controler,
-            error_count=0, http_status=0, comment=''):
+    def log(self, site, controler, error_count=0, http_status=0, comment=''):
         """Write download log entries to database.
 
         Parameters
@@ -129,8 +128,7 @@ class StoreFile:
         # Not implemented
         return None
 
-    def increment_log(self, site, taxo_group,
-                      last_ts):
+    def increment_log(self, site, taxo_group, last_ts):
         """Write last increment timestamp to database.
 
         Parameters
@@ -145,7 +143,11 @@ class StoreFile:
         # Not implemented
         return None
 
-    def increment_get(self, site, taxo_group,):
+    def increment_get(
+            self,
+            site,
+            taxo_group,
+    ):
         """Get last increment timestamp from database.
 
         Parameters

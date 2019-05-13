@@ -13,7 +13,6 @@ from pathlib import Path
 
 import requests
 from bs4 import BeautifulSoup
-from pkg_resources import DistributionNotFound, get_distribution
 from tabulate import tabulate
 
 import pyexpander.lib as pyexpander
@@ -24,10 +23,7 @@ from export_vn.download_vn import (Entities, LocalAdminUnits, Observations,
 from export_vn.evnconf import EvnConf
 from export_vn.store_postgresql import PostgresqlUtils, StorePostgresql
 
-try:
-    __version__ = get_distribution('export_vn').version
-except DistributionNotFound:
-     __version__ = '0.0.0'
+from . import __version__
 
 
 def db_config(cfg):
@@ -55,17 +51,20 @@ def arguments(args):
     """
     # Get options
     parser = argparse.ArgumentParser(
-        description='Script that transfers data from Biolovision and stores it to a Postgresql database.'
+        description=
+        'Script that transfers data from Biolovision and stores it to a Postgresql database.'
     )
-    parser.add_argument('--version',
-                        help=_('Print version number'),
-                        action='version',
-                        version='%(prog)s {version}'.
-                        format(version=__version__))
-    parser.add_argument('-v', '--verbose',
+    parser.add_argument(
+        '--version',
+        help=_('Print version number'),
+        action='version',
+        version='%(prog)s {version}'.format(version=__version__))
+    parser.add_argument('-v',
+                        '--verbose',
                         help=_('Increase output verbosity'),
                         action='store_true')
-    parser.add_argument('-q', '--quiet',
+    parser.add_argument('-q',
+                        '--quiet',
                         help=_('Reduce output verbosity'),
                         action='store_true')
     parser.add_argument('--db_drop',
@@ -89,8 +88,7 @@ def arguments(args):
     parser.add_argument('--count',
                         help=_('Count observations by site and taxo_group'),
                         action='store_true')
-    parser.add_argument('file',
-                        help=_('Configuration file name'))
+    parser.add_argument('file', help=_('Configuration file name'))
 
     return parser.parse_args(args)
 
@@ -110,15 +108,15 @@ def full_download(cfg_ctrl):
 
                 ctrl = 'taxo_group'
                 if cfg_crtl_list[ctrl].enabled:
-                    logger.info(_('Using controler %s on site %s'),
-                                ctrl, cfg.site)
+                    logger.info(_('Using controler %s on site %s'), ctrl,
+                                cfg.site)
                     taxo_group = TaxoGroup(cfg, store_pg)
                     taxo_group.store()
 
                 ctrl = 'observations'
                 if cfg_crtl_list[ctrl].enabled:
-                    logger.info(_('Using controler %s on site %s'),
-                                ctrl, cfg.site)
+                    logger.info(_('Using controler %s on site %s'), ctrl,
+                                cfg.site)
                     observations = Observations(cfg, store_pg)
                     taxo_groups = TaxoGroupsAPI(cfg).api_list()['data']
                     taxo_groups_ex = cfg_crtl_list[ctrl].taxo_exclude
@@ -128,50 +126,51 @@ def full_download(cfg_ctrl):
                         if (not taxo['name_constant'] in taxo_groups_ex) \
                                 and (taxo['access_mode'] != 'none'):
                             taxo_groups_filt.append(taxo['id'])
-                    logger.info(
-                        _('Downloading from taxo_groups: %s'), taxo_groups_filt)
-                    observations.store(
-                        taxo_groups_filt, method='search', by_specie=False)
+                    logger.info(_('Downloading from taxo_groups: %s'),
+                                taxo_groups_filt)
+                    observations.store(taxo_groups_filt,
+                                       method='search',
+                                       by_specie=False)
 
                 ctrl = 'entities'
                 if cfg_crtl_list[ctrl].enabled:
-                    logger.info(_('Using controler %s on site %s'),
-                                ctrl, cfg.site)
+                    logger.info(_('Using controler %s on site %s'), ctrl,
+                                cfg.site)
                     entities = Entities(cfg, store_pg)
                     entities.store()
 
                 ctrl = 'territorial_unit'
                 if cfg_crtl_list[ctrl].enabled:
-                    logger.info(_('Using controler %s on site %s'),
-                                ctrl, cfg.site)
+                    logger.info(_('Using controler %s on site %s'), ctrl,
+                                cfg.site)
                     territorial_unit = TerritorialUnits(cfg, store_pg)
                     territorial_unit.store()
 
                 ctrl = 'local_admin_units'
                 if cfg_crtl_list[ctrl].enabled:
-                    logger.info(_('Using controler %s on site %s'),
-                                ctrl, cfg.site)
+                    logger.info(_('Using controler %s on site %s'), ctrl,
+                                cfg.site)
                     local_admin_units = LocalAdminUnits(cfg, store_pg)
                     local_admin_units.store()
 
                 ctrl = 'places'
                 if cfg_crtl_list[ctrl].enabled:
-                    logger.info(_('Using controler %s on site %s'),
-                                ctrl, cfg.site)
+                    logger.info(_('Using controler %s on site %s'), ctrl,
+                                cfg.site)
                     places = Places(cfg, store_pg)
                     places.store()
 
                 ctrl = 'species'
                 if cfg_crtl_list[ctrl].enabled:
-                    logger.info(_('Using controler %s on site %s'),
-                                ctrl, cfg.site)
+                    logger.info(_('Using controler %s on site %s'), ctrl,
+                                cfg.site)
                     species = Species(cfg, store_pg)
                     species.store()
 
                 ctrl = 'observers'
                 if cfg_crtl_list[ctrl].enabled:
-                    logger.info(_('Using controler %s on site %s'),
-                                ctrl, cfg.site)
+                    logger.info(_('Using controler %s on site %s'), ctrl,
+                                cfg.site)
                     places = Observers(cfg, store_pg)
                     places.store()
 
@@ -242,7 +241,8 @@ def count_observations(cfg_ctrl):
                     soup = BeautifulSoup(page.text, 'html.parser')
 
                     counts = soup.find_all('table')[2].contents[1].contents[3]
-                    rows = counts.contents[5].contents[0].contents[0].contents[1:-1]
+                    rows = counts.contents[5].contents[0].contents[0].contents[
+                        1:-1]
                     for i in range(0, len(rows)):
                         if i % 5 == 0:
                             taxo = rows[i].contents[0]['title']
@@ -251,15 +251,20 @@ def count_observations(cfg_ctrl):
                             for r in col_counts:
                                 if r[0] == site and r[2] == taxo:
                                     col_c = r[3]
-                            site_counts.append([cfg.site,
-                                                taxo,
-                                                int(rows[i].contents[0].contents[0].
-                                                    replace(' ', '')),
-                                                col_c])
-                print(tabulate(site_counts,
-                               headers=[_('Site'), _('TaxoName'),
-                                        _('Remote count'), _('Local count')],
-                               tablefmt='psql'))
+                            site_counts.append([
+                                cfg.site, taxo,
+                                int(rows[i].contents[0].contents[0].replace(
+                                    ' ', '')), col_c
+                            ])
+                print(
+                    tabulate(site_counts,
+                             headers=[
+                                 _('Site'),
+                                 _('TaxoName'),
+                                 _('Remote count'),
+                                 _('Local count')
+                             ],
+                             tablefmt='psql'))
         except:
             logger.error(_('Can not retrieve informations from %s'), cfg.site)
 
@@ -339,18 +344,18 @@ def main(args):
         filename = str(Path.home()) + '/Client_API_VN/sql/create-vn-tables.sql'
         with open(filename, 'r') as myfile:
             template = myfile.read()
-        (cmd, exp_globals) = pyexpander.expandToStr(template,
-                                                    external_definitions=db_cfg)
+        (cmd,
+         exp_globals) = pyexpander.expandToStr(template,
+                                               external_definitions=db_cfg)
         filename = str(Path.home()) + '/tmp/create-vn-tables.sql'
         with open(filename, 'w') as myfile:
             myfile.write(cmd)
         try:
             subprocess.run('env PGOPTIONS="-c client-min-messages=' +
-                           client_min_message +
-                           '" psql ' + sql_quiet + ' --dbname=' +
-                           cfg.db_name +
-                           ' --file=' + filename,
-                           check=True, shell=True)
+                           client_min_message + '" psql ' + sql_quiet +
+                           ' --dbname=' + cfg.db_name + ' --file=' + filename,
+                           check=True,
+                           shell=True)
         except subprocess.CalledProcessError as err:
             logger.error(err)
 
@@ -367,6 +372,7 @@ def main(args):
         count_observations(cfg_ctrl)
 
     return None
+
 
 def run():
     """Entry point for console_scripts
