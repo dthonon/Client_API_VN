@@ -26,6 +26,7 @@ class IncorrectParameter(EvnConfException):
 class EvnCtrlConf:
     """Expose controler configuration as properties
     """
+
     def __init__(self, ctrl, config):
         self._ctrl = ctrl
 
@@ -58,6 +59,7 @@ class EvnCtrlConf:
 class EvnSiteConf:
     """Expose site configuration as properties
     """
+
     def __init__(self, site, config):
         self._site = site
         # Import parameters in properties
@@ -76,7 +78,8 @@ class EvnSiteConf:
             else:
                 self._file_enabled = False
             if 'file_store' in config['file']:
-                self._file_store = config['file']['file_store'] + '/' + site + '/'
+                self._file_store = config['file'][
+                    'file_store'] + '/' + site + '/'
             else:
                 if self._file_enabled:
                     logger.error(_('file:file_store must be defined'))
@@ -216,52 +219,52 @@ class EvnConf:
     """
     Read config file and expose list of sites configuration
     """
+
     def __init__(self, file):
         # Define configuration schema
         schema = Map({
-            'main': Map({
-                'admin_mail': Email()
-            }),
-            'controler': Map({
-                'entities': Map({
-                    'enabled': Bool()
-                }),
-                'local_admin_units': Map({
-                    'enabled': Bool()
-                }),
-                'observations': Map({
+            'main':
+            Map({'admin_mail': Email()}),
+            'controler':
+            Map({
+                'entities':
+                Map({'enabled': Bool()}),
+                'local_admin_units':
+                Map({'enabled': Bool()}),
+                'observations':
+                Map({
                     'enabled': Bool(),
                     'taxo_exclude': Seq(Str())
                 }),
-                'observers': Map({
-                    'enabled': Bool()
-                }),
-                'places': Map({
-                    'enabled': Bool()
-                }),
-                'species': Map({
-                    'enabled': Bool()
-                }),
-                'taxo_group': Map({
-                    'enabled': Bool()
-                }),
-                'territorial_unit': Map({
-                    'enabled': Bool()
-                })
+                'observers':
+                Map({'enabled': Bool()}),
+                'places':
+                Map({'enabled': Bool()}),
+                'species':
+                Map({'enabled': Bool()}),
+                'taxo_group':
+                Map({'enabled': Bool()}),
+                'territorial_unit':
+                Map({'enabled': Bool()})
             }),
-            'site': MapPattern(Str(), Map({
-                        'enabled': Bool(),
-                        'site': Url(),
-                        'user_email': Email(),
-                        'user_pw': Str(),
-                        'client_key': Str(),
-                        'client_secret': Str()
-                        })),
-            'file': Map({
+            'site':
+            MapPattern(
+                Str(),
+                Map({
+                    'enabled': Bool(),
+                    'site': Url(),
+                    'user_email': Email(),
+                    'user_pw': Str(),
+                    'client_key': Str(),
+                    'client_secret': Str()
+                })),
+            'file':
+            Map({
                 'enabled': Bool(),
                 'file_store': Str()
             }),
-            'database': Map({
+            'database':
+            Map({
                 'db_host': Str(),
                 'db_port': Str(),
                 'db_name': Str(),
@@ -271,7 +274,8 @@ class EvnConf:
                 'db_user': Str(),
                 'db_pw': Str()
             }),
-            'local': Any()
+            'local':
+            Any()
         })
         # Read configuration parameters
         p = Path.home() / file
@@ -280,11 +284,11 @@ class EvnConf:
             logger.info(_('Loading YAML configuration %s'), file)
             self._config = load(yaml_text, schema).data
         except YAMLValidationError as error:
-            logger.exception(
-                _('Incorrect content in YAML configuration %s'), file)
+            logger.exception(_('Incorrect content in YAML configuration %s'),
+                             file)
         except YAMLError as error:
-            logger.exception(
-                _('Error while reading YAML configuration %s'), file)
+            logger.exception(_('Error while reading YAML configuration %s'),
+                             file)
 
         self._ctrl_list = {}
         for ctrl in self._config['controler']:

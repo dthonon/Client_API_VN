@@ -19,7 +19,13 @@ class PID(object):
     """
     A simple PID controller. No fuss.
     """
-    def __init__(self, kp=1.0, ki=0.0, kd=0.0, setpoint=0, output_limits=(None, None)):
+
+    def __init__(self,
+                 kp=1.0,
+                 ki=0.0,
+                 kd=0.0,
+                 setpoint=0,
+                 output_limits=(None, None)):
         """
         :param kp: The value for the proportional gain kp
         :param ki: The value for the integral gain ki
@@ -63,15 +69,16 @@ class PID(object):
         # compute error terms
         error = self.setpoint - input_
         self._error_sum += self.ki * error
-        d_input = input_ - (self._last_input if self._last_input is not None else input_)
+        d_input = input_ - (self._last_input
+                            if self._last_input is not None else input_)
 
         # compute the proportional term
         self._proportional = self.kp * error
 
         # compute final output
-#        print ('PID = ' + str (self._proportional) +
-#               ' + ', str(self._error_sum) +
-#               ' - ' +  str(self.kd * d_input))
+        #        print ('PID = ' + str (self._proportional) +
+        #               ' + ', str(self._error_sum) +
+        #               ' - ' +  str(self.kd * d_input))
         output = self._proportional + self._error_sum - self.kd * d_input
         output = self._clamp(output, self.output_limits)
 
