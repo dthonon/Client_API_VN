@@ -8,13 +8,16 @@ import pytest
 
 from export_vn.regulator import PID
 
+
 def test_version():
     """Check if version is defined."""
     logging.debug('package version: %s', PID().version)
 
+
 def test_zero():
     pid = PID(1, 1, 1, setpoint=0)
     assert pid(0) == 0
+
 
 def test_P():
     pid = PID(1, 0, 0, setpoint=10)
@@ -30,6 +33,7 @@ def test_P_negative_setpoint():
     assert pid(-5) == -5
     assert pid(-15) == 5
 
+
 def test_I():
     pid = PID(0, 10, 0, setpoint=10)
     assert round(pid(0)) == 100.0  # make sure we are close to expected value
@@ -40,6 +44,7 @@ def test_I_negative_setpoint():
     pid = PID(0, 10, 0, setpoint=-10)
     assert round(pid(0)) == -100.0
     assert round(pid(0)) == -200.0
+
 
 def test_D():
     pid = PID(0, 0, 1, setpoint=10)
@@ -62,6 +67,7 @@ def test_D_negative_setpoint():
     assert pid(5) == -5
     assert pid(-5) == 10
     assert pid(-30) == 25
+
 
 def test_desired_state():
     pid = PID(10, 5, 2, setpoint=10)

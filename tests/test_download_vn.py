@@ -63,7 +63,8 @@ def test_entities_store(capsys):
 # -----------------
 def test_local_admin_units_store(capsys):
     """Store local_admin_units to file."""
-    file_json = str(Path.home()) + '/' + CFG.file_store + 'local_admin_units_1.json.gz'
+    file_json = str(
+        Path.home()) + '/' + CFG.file_store + 'local_admin_units_1.json.gz'
     if Path(file_json).is_file():
         Path(file_json).unlink()
     LOCAL_ADMIN_UNITS.store()
@@ -81,7 +82,8 @@ def test_local_admin_units_store(capsys):
 # -------------
 def test_observations_store_list_l_18(capsys):
     """Store observations from taxo_group 18 in 1 call to file, using list."""
-    file_json = str(Path.home()) + '/' + CFG.file_store + 'observations_18_1.json.gz'
+    file_json = str(
+        Path.home()) + '/' + CFG.file_store + 'observations_18_1.json.gz'
     if Path(file_json).is_file():
         Path(file_json).unlink()
     OBSERVATIONS.store(18, method='list')
@@ -96,7 +98,8 @@ def test_observations_store_list_l_18(capsys):
 
 def test_observations_store_list_2_18(capsys):
     """Store observations from taxo_group 18 by specie to file, using list."""
-    file_json = str(Path.home()) + '/' + CFG.file_store + 'observations_18_19703.json.gz'
+    file_json = str(
+        Path.home()) + '/' + CFG.file_store + 'observations_18_19703.json.gz'
     if Path(file_json).is_file():
         Path(file_json).unlink()
     OBSERVATIONS.store(18, method='list', by_specie=True)
@@ -111,7 +114,8 @@ def test_observations_store_list_2_18(capsys):
 
 def test_observations_store_search_1_1(capsys):
     """Store observations from taxo_group 2 by specie to file, using search."""
-    file_json = str(Path.home()) + '/' + CFG.file_store + 'observations_2_1.json.gz'
+    file_json = str(
+        Path.home()) + '/' + CFG.file_store + 'observations_2_1.json.gz'
     if Path(file_json).is_file():
         Path(file_json).unlink()
     OBSERVATIONS.store(2, method='search')
@@ -120,7 +124,8 @@ def test_observations_store_search_1_1(capsys):
 
 def test_observations_store_search_1_2(capsys):
     """Store observations from taxo_group 2 by specie to file, using search."""
-    file_json = str(Path.home()) + '/' + CFG.file_store + 'observations_2_1.json.gz'
+    file_json = str(
+        Path.home()) + '/' + CFG.file_store + 'observations_2_1.json.gz'
     if Path(file_json).is_file():
         Path(file_json).unlink()
     OBSERVATIONS.store(2, method='search', short_version='1')
@@ -129,7 +134,8 @@ def test_observations_store_search_1_2(capsys):
 
 def test_observations_store_update_1_2(capsys):
     """Get updates for 0.5 day of observations from taxo_group 2 by specie to file."""
-    since = (datetime.now() - timedelta(days=0.5)).strftime('%H:%M:%S %d.%m.%Y')
+    since = (datetime.now() -
+             timedelta(days=0.5)).strftime('%H:%M:%S %d.%m.%Y')
     OBSERVATIONS.update(2, since)
     assert OBSERVATIONS.transfer_errors == 0
 
@@ -192,7 +198,8 @@ def test_species_store(capsys):
 # ------------
 def test_taxo_groups_store(capsys):
     """Store taxo groups to file."""
-    file_json = str(Path.home()) + '/' + CFG.file_store + 'taxo_groups_1.json.gz'
+    file_json = str(
+        Path.home()) + '/' + CFG.file_store + 'taxo_groups_1.json.gz'
     if Path(file_json).is_file():
         Path(file_json).unlink()
     TAXO_GROUP.store()
@@ -207,7 +214,8 @@ def test_taxo_groups_store(capsys):
 # ------------------
 def test_territorial_units_store(capsys):
     """Store territorial units to file."""
-    file_json = str(Path.home()) + '/' + CFG.file_store + 'territorial_units_1.json.gz'
+    file_json = str(
+        Path.home()) + '/' + CFG.file_store + 'territorial_units_1.json.gz'
     if Path(file_json).is_file():
         Path(file_json).unlink()
     TERRITORIAL_UNIT.store()
@@ -215,4 +223,3 @@ def test_territorial_units_store(capsys):
     with gzip.open(file_json, 'rb') as g:
         items_dict = json.loads(g.read().decode('utf-8'))
     assert len(items_dict['data']) == 1
-

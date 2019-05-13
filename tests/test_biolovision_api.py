@@ -32,7 +32,7 @@ OBSERVATIONS_API = ObservationsAPI(CFG)
 OBSERVERS_API = ObserversAPI(CFG)
 PLACES_API = PlacesAPI(CFG)
 SPECIES_API = SpeciesAPI(CFG)
-SPECIES_API_ERR = SpeciesAPI(CFG, max_retry=1, max_requests=1, max_chunks = 1)
+SPECIES_API_ERR = SpeciesAPI(CFG, max_retry=1, max_requests=1, max_chunks=1)
 TAXO_GROUPS_API = TaxoGroupsAPI(CFG)
 TERRITORIAL_UNITS_API = TerritorialUnitsAPI(CFG)
 
@@ -88,7 +88,9 @@ def test_local_admin_units_get(capsys):
                 'id_canton': '39',
                 'coord_lat': '45.3801954314357',
                 'id': '14693',
-                'insee': '38006'}]}
+                'insee': '38006'
+            }]
+        }
     elif SITE == 't07':
         assert local_admin_unit == {
             'data': [{
@@ -97,7 +99,9 @@ def test_local_admin_units_get(capsys):
                 'id': '2096',
                 'id_canton': '7',
                 'insee': '07001',
-                'name': 'Accons'}]}
+                'name': 'Accons'
+            }]
+        }
 
 
 def test_local_admin_units_list_all(capsys):
@@ -105,7 +109,8 @@ def test_local_admin_units_list_all(capsys):
     logging.debug('Getting all local admin unit')
     local_admin_units_list = LOCAL_ADMIN_UNITS_API.api_list()
     with capsys.disabled():
-        logging.debug('Received %d local admin units', len(local_admin_units_list['data']))
+        logging.debug('Received %d local admin units',
+                      len(local_admin_units_list['data']))
     assert LOCAL_ADMIN_UNITS_API.transfer_errors == 0
     if SITE == 't38':
         assert len(local_admin_units_list['data']) >= 534
@@ -117,12 +122,15 @@ def test_local_admin_units_list_1(capsys):
     """Get a list of local_admin_units from territorial unit 39 (Isère)."""
     if SITE == 't38':
         logging.debug('Getting local admin unit from {id_canton: 39}')
-        local_admin_units_list = LOCAL_ADMIN_UNITS_API.api_list(opt_params={'id_canton': '39'})
+        local_admin_units_list = LOCAL_ADMIN_UNITS_API.api_list(
+            opt_params={'id_canton': '39'})
     elif SITE == 't07':
         logging.debug('Getting local admin unit from {id_canton: 07}')
-        local_admin_units_list = LOCAL_ADMIN_UNITS_API.api_list(opt_params={'id_canton': '07'})
+        local_admin_units_list = LOCAL_ADMIN_UNITS_API.api_list(
+            opt_params={'id_canton': '07'})
     with capsys.disabled():
-        logging.debug('territorial unit ==> {} local admin unit '.format(len(local_admin_units_list['data'])))
+        logging.debug('territorial unit ==> {} local admin unit '.format(
+            len(local_admin_units_list['data'])))
     assert LOCAL_ADMIN_UNITS_API.transfer_errors == 0
     if SITE == 't38':
         assert len(local_admin_units_list['data']) >= 534
@@ -159,12 +167,17 @@ def test_observations_list_1(capsys):
 @pytest.mark.slow
 def test_observations_list_2_1(capsys):
     """Get the list of sightings, from taxo_group 1, specie 518."""
-    file_json = str(Path.home()) + '/' + CFG.file_store + 'test_observations_list_2_1.json.gz'
+    file_json = str(Path.home(
+    )) + '/' + CFG.file_store + 'test_observations_list_2_1.json.gz'
     if Path(file_json).is_file():
         Path(file_json).unlink()
     with capsys.disabled():
-        list = OBSERVATIONS_API.api_list('1', id_species='518', short_version='1')
-        logging.debug('local test_observations_list_3_0 unit {} sightings/forms '.format(len(list)))
+        list = OBSERVATIONS_API.api_list('1',
+                                         id_species='518',
+                                         short_version='1')
+        logging.debug(
+            'local test_observations_list_3_0 unit {} sightings/forms '.format(
+                len(list)))
     assert OBSERVATIONS_API.transfer_errors == 0
     assert len(list) > 0
     STORE_FILE.store('test_observations_list_2', str(1), list)
@@ -172,12 +185,15 @@ def test_observations_list_2_1(capsys):
 
 def test_observations_list_3_0(capsys):
     """Get the list of sightings, from taxo_group 1, specie 382."""
-    file_json = str(Path.home()) + '/' + CFG.file_store + 'test_observations_list_3_0.json.gz'
+    file_json = str(Path.home(
+    )) + '/' + CFG.file_store + 'test_observations_list_3_0.json.gz'
     if Path(file_json).is_file():
         Path(file_json).unlink()
     with capsys.disabled():
         list = OBSERVATIONS_API.api_list('1', id_species='382')
-        logging.debug('local test_observations_list_3_0 unit {} sightings/forms '.format(len(list)))
+        logging.debug(
+            'local test_observations_list_3_0 unit {} sightings/forms '.format(
+                len(list)))
     assert OBSERVATIONS_API.transfer_errors == 0
     assert len(list) > 0
     STORE_FILE.store('test_observations_list_3', str(0), list)
@@ -185,12 +201,17 @@ def test_observations_list_3_0(capsys):
 
 def test_observations_list_3_1(capsys):
     """Get the list of sightings, from taxo_group 1, specie 382."""
-    file_json = str(Path.home()) + '/' + CFG.file_store + 'test_observations_list_3_1.json.gz'
+    file_json = str(Path.home(
+    )) + '/' + CFG.file_store + 'test_observations_list_3_1.json.gz'
     if Path(file_json).is_file():
         Path(file_json).unlink()
     with capsys.disabled():
-        list = OBSERVATIONS_API.api_list('1', id_species='382', short_version='1')
-        logging.debug('local test_observations_list_3_0 unit {} sightings/forms '.format(len(list)))
+        list = OBSERVATIONS_API.api_list('1',
+                                         id_species='382',
+                                         short_version='1')
+        logging.debug(
+            'local test_observations_list_3_0 unit {} sightings/forms '.format(
+                len(list)))
     assert OBSERVATIONS_API.transfer_errors == 0
     assert len(list) > 0
     STORE_FILE.store('test_observations_list_3', str(1), list)
@@ -214,148 +235,178 @@ def test_observations_get(capsys):
                         'coord_lon': '5.735372035327',
                         '@id': '100197',
                         'loc_precision': '0',
-                        'place_type': 'precise'},
+                        'place_type': 'precise'
+                    },
                     'date': {
                         '@notime': '1',
                         '@offset': '7200',
                         '@ISO8601': '2018-09-15T00:00:00+02:00',
                         '@timestamp': '1536962400',
-                        '#text': 'samedi 15 septembre 2018'},
+                        '#text': 'samedi 15 septembre 2018'
+                    },
                     'species': {
                         'latin_name': 'Anas platyrhynchos',
                         'rarity': 'verycommon',
                         'sys_order': '262',
                         'name': 'Canard colvert',
                         '@id': '86',
-                        'taxonomy': '1'},
+                        'taxonomy': '1'
+                    },
                     'observers': [{
-                        'estimation_code': 'MINIMUM',
-                        'count': '15',
-                        'id_sighting': '2246086',
-                        'insert_date':  {
+                        'estimation_code':
+                        'MINIMUM',
+                        'count':
+                        '15',
+                        'id_sighting':
+                        '2246086',
+                        'insert_date': {
                             '#text': 'samedi 15 septembre 2018, 19:45:01',
                             '@ISO8601': '2018-09-15T19:45:01+02:00',
                             '@notime': '0',
                             '@offset': '7200',
-                            '@timestamp': '1537033501'},
-                        'atlas_grid_name': 'E091N645',
-                        'name': 'Daniel Thonon',
+                            '@timestamp': '1537033501'
+                        },
+                        'atlas_grid_name':
+                        'E091N645',
+                        'name':
+                        'Daniel Thonon',
                         'medias': [{
                             'media_is_hidden': '0',
                             'filename': '3_1537024802877-15194452-5272.jpg',
-                            'path': 'http://media.biolovision.net/data.biolovision.net/2018-09',
+                            'path':
+                            'http://media.biolovision.net/data.biolovision.net/2018-09',
                             'insert_date': {
                                 '@notime': '0',
                                 '@offset': '3600',
                                 '@ISO8601': '1970-01-01T01:33:38+01:00',
                                 '@timestamp': '2018',
-                                '#text': 'jeudi 1 janvier 1970, 01:33:38'},
+                                '#text': 'jeudi 1 janvier 1970, 01:33:38'
+                            },
                             'metadata': '',
                             'type': 'PHOTO',
-                            '@id': '49174'}],
-                        '@uid': '11675',
-                        'precision': 'precise',
-                        'id_universal': '65_71846872',
-                        'traid': '33',
+                            '@id': '49174'
+                        }],
+                        '@uid':
+                        '11675',
+                        'precision':
+                        'precise',
+                        'id_universal':
+                        '65_71846872',
+                        'traid':
+                        '33',
                         'timing': {
                             '@notime': '0',
                             '@offset': '7200',
                             '@ISO8601': '2018-09-15T17:19:16+02:00',
                             '@timestamp': '1537024756',
-                            '#text': 'samedi 15 septembre 2018, 17:19:16'},
-                        'altitude': '215',
-                        'source': 'WEB',
-                        'coord_lat': '45.18724',
-                        'flight_number': '1',
-                        'anonymous': '0',
-                        'coord_lon': '5.735458',
-                        '@id': '33'}]}]}}
+                            '#text': 'samedi 15 septembre 2018, 17:19:16'
+                        },
+                        'altitude':
+                        '215',
+                        'source':
+                        'WEB',
+                        'coord_lat':
+                        '45.18724',
+                        'flight_number':
+                        '1',
+                        'anonymous':
+                        '0',
+                        'coord_lon':
+                        '5.735458',
+                        '@id':
+                        '33'
+                    }]
+                }]
+            }
+        }
     if SITE == 't07':
         sighting = OBSERVATIONS_API.api_get('274830')
         assert sighting == {
             'data': {
-                'sightings': [
-                    {
-                        'date': {
+                'sightings': [{
+                    'date': {
+                        '#text': 'mercredi 29 avril 2015',
+                        '@ISO8601': '2015-04-29T00:00:00+02:00',
+                        '@notime': '1',
+                        '@offset': '7200',
+                        '@timestamp': '1430258400'
+                    },
+                    'observers': [{
+                        '@id': '104',
+                        '@uid': '4040',
+                        'altitude': '99',
+                        'anonymous': '0',
+                        'atlas_grid_name': 'E081N636',
+                        'comment': 'juv',
+                        'coord_lat': '44.373198',
+                        'coord_lon': '4.428607',
+                        'count': '1',
+                        'estimation_code': 'MINIMUM',
+                        'flight_number': '1',
+                        'hidden_comment': 'RNNGA',
+                        'id_sighting': '274830',
+                        'id_universal': '30_274830',
+                        'insert_date': {
+                            '#text': 'dimanche 1 novembre 2015, 22:30:37',
+                            '@ISO8601': '2015-11-01T22:30:37+01:00',
+                            '@notime': '0',
+                            '@offset': '3600',
+                            '@timestamp': '1446413437'
+                        },
+                        'name': 'Nicolas Bazin',
+                        'precision': 'precise',
+                        'source': 'WEB',
+                        'timing': {
                             '#text': 'mercredi 29 avril 2015',
                             '@ISO8601': '2015-04-29T00:00:00+02:00',
                             '@notime': '1',
                             '@offset': '7200',
                             '@timestamp': '1430258400'
                         },
-                        'observers': [
-                            {
-                                '@id': '104',
-                                '@uid': '4040',
-                                'altitude': '99',
-                                'anonymous': '0',
-                                'atlas_grid_name': 'E081N636',
-                                'comment': 'juv',
-                                'coord_lat': '44.373198',
-                                'coord_lon': '4.428607',
-                                'count': '1',
-                                'estimation_code': 'MINIMUM',
-                                'flight_number': '1',
-                                'hidden_comment': 'RNNGA',
-                                'id_sighting': '274830',
-                                'id_universal': '30_274830',
-                                'insert_date': {
-                                    '#text': 'dimanche 1 novembre 2015, 22:30:37',
-                                    '@ISO8601': '2015-11-01T22:30:37+01:00',
-                                    '@notime': '0',
-                                    '@offset': '3600',
-                                    '@timestamp': '1446413437'
-                                },
-                                'name': 'Nicolas Bazin',
-                                'precision': 'precise',
-                                'source': 'WEB',
-                                'timing': {
-                                    '#text': 'mercredi 29 avril 2015',
-                                    '@ISO8601': '2015-04-29T00:00:00+02:00',
-                                    '@notime': '1',
-                                    '@offset': '7200',
-                                    '@timestamp': '1430258400'
-                                },
-                                'traid': '104',
-                                'update_date': {
-                                    '#text': 'lundi 26 mars 2018, 18:01:23',
-                                    '@ISO8601': '2018-03-26T18:01:23+02:00',
-                                    '@notime': '0',
-                                    '@offset': '7200',
-                                    '@timestamp': '1522080083'
-                                }
-                            }
-                        ],
-                        'place': {
-                            '@id': '122870',
-                            'altitude': '99',
-                            'coord_lat': '44.371928319497',
-                            'coord_lon': '4.4273367833997',
-                            'country': '',
-                            'county': '07',
-                            'insee': '07330',
-                            'loc_precision': '0',
-                            'municipality': 'Vallon-Pont-d\'Arc',
-                            'name': 'Rapide des Trois Eaux',
-                            'place_type': 'precise'
-                        },
-                        'species': {
-                            '@id': '19703',
-                            'latin_name': 'Empusa pennata',
-                            'name': 'Empuse penn\u00e9e',
-                            'rarity': 'unusual',
-                            'sys_order': '80',
-                            'taxonomy': '18'
-                        }}]}}
+                        'traid': '104',
+                        'update_date': {
+                            '#text': 'lundi 26 mars 2018, 18:01:23',
+                            '@ISO8601': '2018-03-26T18:01:23+02:00',
+                            '@notime': '0',
+                            '@offset': '7200',
+                            '@timestamp': '1522080083'
+                        }
+                    }],
+                    'place': {
+                        '@id': '122870',
+                        'altitude': '99',
+                        'coord_lat': '44.371928319497',
+                        'coord_lon': '4.4273367833997',
+                        'country': '',
+                        'county': '07',
+                        'insee': '07330',
+                        'loc_precision': '0',
+                        'municipality': 'Vallon-Pont-d\'Arc',
+                        'name': 'Rapide des Trois Eaux',
+                        'place_type': 'precise'
+                    },
+                    'species': {
+                        '@id': '19703',
+                        'latin_name': 'Empusa pennata',
+                        'name': 'Empuse penn\u00e9e',
+                        'rarity': 'unusual',
+                        'sys_order': '80',
+                        'taxonomy': '18'
+                    }
+                }]
+            }
+        }
 
 
 def test_observations_search_1(capsys):
     """Query sightings, from taxo_group 18: Mantodea and date range."""
-    q_param = {'period_choice': 'range',
-               'date_from': '01.09.2017',
-               'date_to': '30.09.2017',
-               'species_choice':'all',
-               'taxonomic_group': '18'}
+    q_param = {
+        'period_choice': 'range',
+        'date_from': '01.09.2017',
+        'date_to': '30.09.2017',
+        'species_choice': 'all',
+        'taxonomic_group': '18'
+    }
     list = OBSERVATIONS_API.api_search(q_param)
     assert OBSERVATIONS_API.transfer_errors == 0
     if SITE == 't38':
@@ -368,11 +419,13 @@ def test_observations_search_1(capsys):
 
 def test_observations_search_2(capsys):
     """Query sightings, from taxo_group 18: Mantodea and date range."""
-    q_param = {'period_choice': 'range',
-               'date_from': '01.09.2017',
-               'date_to': '30.09.2017',
-               'species_choice':'all',
-               'taxonomic_group': '18'}
+    q_param = {
+        'period_choice': 'range',
+        'date_from': '01.09.2017',
+        'date_to': '30.09.2017',
+        'species_choice': 'all',
+        'taxonomic_group': '18'
+    }
     list = OBSERVATIONS_API.api_search(q_param, short_version='1')
     assert OBSERVATIONS_API.transfer_errors == 0
     if SITE == 't38':
@@ -541,29 +594,37 @@ def test_places_get(capsys):
     place = PLACES_API.api_get(p)
     assert PLACES_API.transfer_errors == 0
     if SITE == 't38':
-        assert place == {'data': [{'altitude': '1106',
-                                   'coord_lat': '44.805686318298',
-                                   'coord_lon': '5.8792190569144',
-                                   'id': '14693',
-                                   'id_commune': '14966',
-                                   'id_region': '63',
-                                   'is_private': '0',
-                                   'loc_precision': '750',
-                                   'name': 'Rochachon',
-                                   'place_type': 'place',
-                                   'visible': '1'}]}
+        assert place == {
+            'data': [{
+                'altitude': '1106',
+                'coord_lat': '44.805686318298',
+                'coord_lon': '5.8792190569144',
+                'id': '14693',
+                'id_commune': '14966',
+                'id_region': '63',
+                'is_private': '0',
+                'loc_precision': '750',
+                'name': 'Rochachon',
+                'place_type': 'place',
+                'visible': '1'
+            }]
+        }
     elif SITE == 't07':
-        assert place == {'data': [{'altitude': '285',
-                                    'coord_lat': '45.2594824523633',
-                                    'coord_lon': '4.7766923904419',
-                                    'id': '100694',
-                                    'id_commune': '2316',
-                                    'id_region': '16',
-                                    'is_private': '0',
-                                    'loc_precision': '750',
-                                    'name': 'Ruisseau de Lantizon (ravin)',
-                                    'place_type': 'place',
-                                    'visible': '1'}]}
+        assert place == {
+            'data': [{
+                'altitude': '285',
+                'coord_lat': '45.2594824523633',
+                'coord_lon': '4.7766923904419',
+                'id': '100694',
+                'id_commune': '2316',
+                'id_region': '16',
+                'is_private': '0',
+                'loc_precision': '750',
+                'name': 'Ruisseau de Lantizon (ravin)',
+                'place_type': 'place',
+                'visible': '1'
+            }]
+        }
 
 
 @pytest.mark.slow
@@ -577,7 +638,8 @@ def test_places_list_all(capsys):
         assert places_list['data'][0]['name'] == 'ESRF-synchrotron'
     elif SITE == 't07':
         assert len(places_list['data']) >= 23566
-        assert places_list['data'][0]['name'] == 'Accons - sans lieu-dit défini'
+        assert places_list['data'][0][
+            'name'] == 'Accons - sans lieu-dit défini'
 
 
 def test_places_list_1(capsys):
@@ -590,7 +652,8 @@ def test_places_list_1(capsys):
         fail
     with capsys.disabled():
         places_list = PLACES_API.api_list({'id_commune': l})
-        logging.debug('local admin unit {} ==> {} place '.format(l, len(places_list['data'])))
+        logging.debug('local admin unit {} ==> {} place '.format(
+            l, len(places_list['data'])))
     assert PLACES_API.transfer_errors == 0
     if SITE == 't38':
         assert len(places_list['data']) >= 164
@@ -599,7 +662,8 @@ def test_places_list_1(capsys):
     elif SITE == 't07':
         assert len(places_list['data']) >= 38
         assert len(places_list['data']) <= 50
-        assert places_list['data'][0]['name'] == 'Accons - sans lieu-dit défini'
+        assert places_list['data'][0][
+            'name'] == 'Accons - sans lieu-dit défini'
 
 
 # -------------------------
@@ -626,7 +690,8 @@ def test_species_list_1(capsys):
     """Get a list of species from taxo_group 1."""
     species_list = SPECIES_API.api_list({'id_taxo_group': '1'})
     with capsys.disabled():
-        logging.debug('Taxo_group 1 ==> {} species'.format(len(species_list['data'])))
+        logging.debug('Taxo_group 1 ==> {} species'.format(
+            len(species_list['data'])))
     assert SPECIES_API.transfer_errors == 0
     assert len(species_list['data']) >= 11150
     assert species_list['data'][0]['french_name'] == 'Plongeon catmarin'
@@ -636,7 +701,8 @@ def test_species_list_30(capsys):
     """Get a list of species from taxo_group 30."""
     species_list = SPECIES_API.api_list({'id_taxo_group': '30'})
     with capsys.disabled():
-        logging.debug('Taxo_group 30 ==> {} species'.format(len(species_list['data'])))
+        logging.debug('Taxo_group 30 ==> {} species'.format(
+            len(species_list['data'])))
     assert SPECIES_API.transfer_errors == 0
     assert species_list['data'][0]['french_name'] == 'Aucune espèce'
 
