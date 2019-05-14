@@ -2,39 +2,22 @@
 
 Thin Python binding to Biolovision API, returning dict instead of JSON.
 Currently, only a subset of API controlers are implemented, and only a subset
-of functions and parameters for implemented controlers. See details in each class.
+of functions and parameters for implemented controlers.
+See details in each class.
 
 Each API controler is mapped to a python class.
-Class name is derived from controler name by removing '_' and using CamelCase.
-Methods names are similar to the corresponding API call, prefixed by api_.
-For example, method api_list in class LocalAdminUnits will call local_admin_units.
+Class name is derived from controler name by removing '\_' and using CamelCase.
+Methods names are similar to the corresponding API call, prefixed by api\_.
+For example, method api_list in class LocalAdminUnits will
+call local_admin_units.
 
 Most notable difference is that API chunks are grouped under 'data', i.e.
 calling species_list('1') will return all birds in one array under 'data' key.
-This means that requests returning lots of chunks (all bird sightings !) must be
-avoided, as memory could be insufficient. max_chunks __init__ parameter controls
-the maximum number of chunks allowed and raises
+This means that requests returning lots of chunks (all bird sightings !)
+must be avoided, as memory could be insufficient.
+max_chunks __init__ parameter controls the maximum number of chunks
+allowed and raises an exception if it exceeds.
 
-Classes
-- BiolovisionAPI         - Top class, not for direct use
-- LocalAdminUnitsAPI     - Controls local_admin_units
-- ObservationsAPI        - Controls observations
-- ObserversAPI           - Controls observers
-- PlacesAPI              - Controls places
-- SpeciesAPI             - Controls species
-- TaxoGroupsAPI          - Controls taxo_groups
-- TerritorialUnitsAPI    - Controls territorial_units
-
-Methods, see each class
-
-Properties
-- transfer_errors            - Return number of HTTP errors
-
-Exceptions
-- BiolovisionApiException    - General exception
-- HTTPError                  - HTTP protocol error
-- MaxChunksError             - Too many chunks returned from API calls
-- IncorrectParameter         - Incorrect or missing parameter
 """
 import json
 import logging
