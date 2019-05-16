@@ -128,10 +128,6 @@ def store_1_observation(item):
                      elem['observers'][0]['coord_lat'])
     elem['observers'][0]['coord_x_l93'] = x
     elem['observers'][0]['coord_y_l93'] = y
-    # elem['place']['coord_x_l93'], elem['place']['coord_y_l93'] = \
-    #     transform(item.in_proj, item.out_proj,
-    #               elem['place']['coord_lon'],
-    #               elem['place']['coord_lat'])
 
     # Store in Postgresql
     items_json = json.dumps(elem)
@@ -735,9 +731,9 @@ class StorePostgresql:
         return len(items_dict['data'])
 
     def _store_geometry(self, controler, items_dict):
-        """Add Lambert 93 coordinates and pass to _store_simple.
+        """Add local coordinates and pass to _store_simple.
 
-        Add X, Y Lambert coordinates to each item and then
+        Add X, Y local coordinates to each item and then
         send to _store_simple for database storage
 
         Parameters

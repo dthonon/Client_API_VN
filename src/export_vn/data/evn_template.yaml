@@ -6,7 +6,9 @@ main:
     # Mail address for the execution report
     admin_mail: nom.prenom@example.net
 
-# API controlers parameters
+# Biolovision API controlers parameters
+# Enables or disables download from each Biolovision API
+# Also provides controler specific parameters, when applicable
 controler:
     entities:
         # Enable download from this controler
@@ -18,6 +20,7 @@ controler:
         # Enable download from this controler
         enabled: true
         # List of taxo_groups to exclude from download
+        # Uncommment taxo_groups to disable download
         taxo_exclude:
             #- TAXO_GROUP_BIRD
             #- TAXO_GROUP_BAT
@@ -67,7 +70,7 @@ controler:
         # Enable download from this controler
         enabled: true
 
-# VisioNature site parameters
+# VisioNature site access parameters
 site:
     tst1:
         # Enable download from this site
@@ -121,13 +124,28 @@ database:
     db_user: xferxx
     # Postgresql user password
     db_pw: db_pw
+    # Coordinates systems for local projection, see EPSG
+    db_out_proj: 2154
 
-# Local parameters, create as many sections as needed
-local:
-    tst1:
-        # External user1 name
-        external1_name: external1_name
-        # External user1 password
-        external1_pw: external1_pw
-        # Directory where SQL scripts are stored
-        sql_scripts: Client_API_VN/Examples/VN_sql
+# Tuning parameters, for expert use
+tuning:
+    # Max chunks in a request before aborting
+    max_chunks: 10
+    # Max retries of API calls before aborting
+    max_retry: 5
+    # Maximum number of API requests, for debugging only
+    # - 0 means unlimited
+    # - >0 limit number of API requests
+    max_requests: 0
+    # LRU cache size for common requests (taxo_groups...)
+    lru_maxsize: 32
+    # Earliest year in the archive. Queries will not ge before this date
+    min_year: 1901
+    # PID parameters, for throughput management
+    pid_kp: 0.0
+    pid_ki: 0.003
+    pid_kd: 0.0
+    pid_setpoint: 10000
+    pid_limit_min: 10
+    pid_limit_max: 2000
+    pid_delta_days: 15

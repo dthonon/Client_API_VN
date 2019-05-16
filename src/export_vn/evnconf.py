@@ -7,8 +7,8 @@ evnconf: expose local configuration parameters as properties of class EvnConf
 import logging
 from pathlib import Path
 
-from strictyaml import (Any, Bool, Email, Int, Map, MapPattern, Seq, Str, Url,
-                        YAMLError, YAMLValidationError, load)
+from strictyaml import (Any, Bool, Email, Int, Map, MapPattern, Optional, Seq,
+                        Str, Url, YAMLError, YAMLValidationError, load)
 
 from . import __version__
 
@@ -31,19 +31,12 @@ class EvnCtrlConf:
         self._ctrl = ctrl
 
         # Import parameters in properties
+        self._enabled = True
         if 'enabled' in config['controler'][ctrl]:
             self._enabled = config['controler'][ctrl]['enabled']
-        else:
-            self._enabled = True
+        self._taxo_exclude = []
         if 'taxo_exclude' in config['controler'][ctrl]:
             self._taxo_exclude = config['controler'][ctrl]['taxo_exclude']
-        else:
-            self._taxo_exclude = []
-
-    @property
-    def version(self):
-        """Return version."""
-        return __version__
 
     @property
     def enabled(self):
@@ -64,19 +57,18 @@ class EvnSiteConf:
         self._site = site
         # Import parameters in properties
         try:
+            self._enabled = True
             if 'enabled' in config['site'][site]:
                 self._enabled = config['site'][site]['enabled']
-            else:
-                self._enabled = True
             self._client_key = config['site'][site]['client_key']
             self._client_secret = config['site'][site]['client_secret']
             self._user_email = config['site'][site]['user_email']
             self._user_pw = config['site'][site]['user_pw']
             self._base_url = config['site'][site]['site']
+            self._file_enabled = False
             if 'enabled' in config['file']:
                 self._file_enabled = config['file']['enabled']
-            else:
-                self._file_enabled = False
+            self._file_store = None
             if 'file_store' in config['file']:
                 self._file_store = config['file'][
                     'file_store'] + '/' + site + '/'
@@ -84,8 +76,6 @@ class EvnSiteConf:
                 if self._file_enabled:
                     logger.error(_('file:file_store must be defined'))
                     raise IncorrectParameter
-                else:
-                    self._file_store = None
             self._db_host = config['database']['db_host']
             self._db_port = str(config['database']['db_port'])
             self._db_name = config['database']['db_name']
@@ -94,23 +84,10 @@ class EvnSiteConf:
             self._db_group = config['database']['db_group']
             self._db_user = config['database']['db_user']
             self._db_pw = config['database']['db_pw']
-            if site in config['local']:
-                self._external1_name = config['local'][site]['external1_name']
-                self._external1_pw = config['local'][site]['external1_pw']
-                self._sql_scripts = config['local'][site]['sql_scripts']
-            else:
-                self._external1_name = ''
-                self._external1_pw = ''
-                self._sql_scripts = ''
         except Exception as e:
             logger.error(e, exc_info=True)
             raise
         return None
-
-    @property
-    def version(self):
-        """Return version."""
-        return __version__
 
     @property
     def site(self):
@@ -199,21 +176,6 @@ class EvnSiteConf:
         """Return db_user PASSWORD."""
         return self._db_pw
 
-    @property
-    def sql_scripts(self):
-        """Return directory, under $HOME, where SQL scipts are stored."""
-        return self._sql_scripts
-
-    @property
-    def external1_name(self):
-        """Return user 1 for external access to database. Site specific."""
-        return self._external1_name
-
-    @property
-    def external1_pw(self):
-        """Return user 1 password."""
-        return self._external1_pw
-
 
 class EvnConf:
     """
@@ -265,16 +227,17 @@ class EvnConf:
             }),
             'database':
             Map({
-                'db_host': Str(),
-                'db_port': Str(),
+                Optional('db_host', default='localhost'): Str(),
+                Optional('db_port', default=5432): Int(),
                 'db_name': Str(),
                 'db_schema_import': Str(),
                 'db_schema_vn': Str(),
                 'db_group': Str(),
                 'db_user': Str(),
-                'db_pw': Str()
+                'db_pw': Str(),
+                Optional('db_out_proj', default='2154'): Str()
             }),
-            'local':
+            Optional('tuning'):
             Any()
         })
         # Read configuration parameters

@@ -75,10 +75,6 @@ class PID(object):
         # compute the proportional term
         self._proportional = self.kp * error
 
-        # compute final output
-        #        print ('PID = ' + str (self._proportional) +
-        #               ' + ', str(self._error_sum) +
-        #               ' - ' +  str(self.kd * d_input))
         output = self._proportional + self._error_sum - self.kd * d_input
         output = self._clamp(output, self.output_limits)
 

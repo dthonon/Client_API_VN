@@ -86,7 +86,7 @@ class DownloadVn:
         logger.debug(_('Getting items from controler %s'),
                      self._api_instance.controler)
         i = 0
-        if opt_params_iter == None:
+        if opt_params_iter is None:
             opt_params_iter = iter([None])
         for opt_params in opt_params_iter:
             i += 1
@@ -182,7 +182,7 @@ class Observations(DownloadVn):
         logger.debug(
             _('Getting observations from controler %s, using API list'),
             self._api_instance.controler)
-        if id_taxo_group == None:
+        if id_taxo_group is None:
             taxo_groups = TaxoGroupsAPI(self._config).api_list()['data']
         else:
             taxo_groups = [{'id': id_taxo_group, 'access_mode': 'full'}]
@@ -253,7 +253,7 @@ class Observations(DownloadVn):
         logger.debug(
             _('Getting observations from controler %s, using API search'),
             self._api_instance.controler)
-        if id_taxo_group == None:
+        if id_taxo_group is None:
             taxo_groups = TaxoGroupsAPI(self._config).api_list()['data']
         else:
             taxo_groups = [{'id': id_taxo_group, 'access_mode': 'full'}]
