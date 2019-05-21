@@ -3,3 +3,4 @@ Database tables can now be created from any user, provided it is defined in .yam
     db_user: *any_user*
     # Postgresql user password
     db_pw: *password*
+>

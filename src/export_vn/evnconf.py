@@ -1,7 +1,10 @@
-#!/usr/bin/env python3
 # pylint: disable=too-many-instance-attributes
-"""
-evnconf: expose local configuration parameters as properties of class EvnConf
+"""Expose local configuration parameters as properties.
+
+Parameters are defined in a YAML file located in $HOME directory.
+This file is created using --init option, and then customized by the user.
+Each time the application is run, this parameter file is read and the
+parameters are then available as properties of EvnCtrlConf and EvnSiteConf classes.
 
 """
 import logging
@@ -39,8 +42,8 @@ class EvnCtrlConf:
             self._taxo_exclude = config['controler'][ctrl]['taxo_exclude']
 
     @property
-    def enabled(self):
-        """Return enabled flag, defining is site is to be downloaded."""
+    def enabled(self) -> Bool:
+        """Return enabled flag, defining if controler should be used."""
         return self._enabled
 
     @property
