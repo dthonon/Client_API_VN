@@ -351,9 +351,15 @@ def main(args):
         with open(filename, 'w') as myfile:
             myfile.write(cmd)
         try:
-            subprocess.run('env PGOPTIONS="-c client-min-messages=' +
-                           client_min_message + '" psql ' + sql_quiet +
-                           ' --dbname=' + cfg.db_name + ' --file=' + filename,
+            subprocess.run(' PGPASSWORD="' + cfg.db_pw + '" '
+                           'env PGOPTIONS="-c client-min-messages=' +
+                           client_min_message +
+                           '" psql ' + sql_quiet +
+                           ' --host=' + cfg.db_host +
+                           ' --port=' + cfg.db_port +
+                           ' --dbname=' + cfg.db_name +
+                           ' --user=' + cfg.db_user +
+                           ' --file=' + filename,
                            check=True,
                            shell=True)
         except subprocess.CalledProcessError as err:

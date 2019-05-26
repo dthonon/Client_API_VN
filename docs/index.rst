@@ -17,6 +17,7 @@ Contents
    Authors <authors>
    Changelog <changelog>
    Module Reference <api/modules>
+   Server Installation Guide <server_install>
 
 
 Indices and tables

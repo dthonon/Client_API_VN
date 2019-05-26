@@ -8,7 +8,7 @@ Installing the environment
 Note: install Debian development environment first::
 
     sudo apt install build-essential
-    sudo apt install python3.5-dev
+    sudo apt install python3-dev
 
 Create a python virtual environment, activate it and install or
 update basic tools::
@@ -27,12 +27,22 @@ Clone framagit repository::
     cd Client_API_VN
     git checkout develop
 
+Installing the application
+-----------------
+
+Run::
+
+    ./setup.py install
+
+Note: maybe ./setup.py develop is sufficient.
+
 Running the tests
 -----------------
 
-Run tests::
+Run tests (try one or the other, as I haven't found which one is best)::
 
     ./setup.py tests
+    pytest
 
 Updating translations
 ---------------------
