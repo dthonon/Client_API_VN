@@ -5,21 +5,20 @@ Test each method of download_vn module, using file store.
 import gzip
 import json
 import logging
-import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
 import pytest
-from export_vn.download_vn import (DownloadVn, DownloadVnException, Entities,
-                                   LocalAdminUnits, Observations, Observers,
-                                   Places, Species, TaxoGroup,
+
+from export_vn.download_vn import (Entities, LocalAdminUnits, Observations,
+                                   Observers, Places, Species, TaxoGroup,
                                    TerritorialUnits)
 from export_vn.evnconf import EvnConf
 from export_vn.store_file import StoreFile
 
 # Using faune-ardeche or faune-isere site, that needs to be created first
 SITE = 't07'
-#SITE = 't38'
+# SITE = 't38'
 FILE = '.evn_test.yaml'
 
 # Get configuration for test site
@@ -133,7 +132,8 @@ def test_observations_store_search_1_2(capsys):
 
 
 def test_observations_store_update_1_2(capsys):
-    """Get updates for 0.5 day of observations from taxo_group 2 by specie to file."""
+    """Get updates for 0.5 day of observations from taxo_group 2 
+    by specie to file."""
     since = (datetime.now() -
              timedelta(days=0.5)).strftime('%H:%M:%S %d.%m.%Y')
     OBSERVATIONS.update(2, since)

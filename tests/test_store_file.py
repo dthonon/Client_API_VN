@@ -2,17 +2,18 @@
 """
 Test each method of store_file module.
 """
-from pathlib import Path
-import logging
-import json
 import gzip
+import json
+import logging
+from pathlib import Path
 
-from export_vn.store_file import StoreFile
 from export_vn.evnconf import EvnConf
+from export_vn.store_file import StoreFile
+
 
 # Using faune-ardeche or faune-isere site, that needs to be created first
 SITE = 't07'
-#SITE = 't38'
+# SITE = 't38'
 FILE = '.evn_test.yaml'
 
 # Get configuration for test site

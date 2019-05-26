@@ -2,9 +2,8 @@
 """
 Test download size regulator.
 """
-import sys
 import logging
-import pytest
+
 
 from export_vn.regulator import PID
 
@@ -48,7 +47,8 @@ def test_I_negative_setpoint():
 
 def test_D():
     pid = PID(0, 0, 1, setpoint=10)
-    # should not compute derivate when there is no previous input (don't assume 0 as first input)
+    # should not compute derivate when there is no previous input
+    # (don't assume 0 as first input)
     assert pid(0) == 0
     # derivate is 0 when input is the same
     assert pid(0) == 0
@@ -59,7 +59,8 @@ def test_D():
 
 def test_D_negative_setpoint():
     pid = PID(0, 0, 1, setpoint=-10)
-    # should not compute derivate when there is no previous input (don't assume 0 as first input)
+    # should not compute derivate when there is no previous input
+    # (don't assume 0 as first input)
     assert pid(0) == 0
     # derivate is 0 when input is the same
     assert pid(0) == 0

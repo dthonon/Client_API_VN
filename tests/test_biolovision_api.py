@@ -7,11 +7,10 @@ import time
 from datetime import datetime, timedelta
 from pathlib import Path
 
+import pytest
 import requests
 
-import pytest
-from export_vn.biolovision_api import (BiolovisionApiException, EntitiesAPI,
-                                       HTTPError, LocalAdminUnitsAPI,
+from export_vn.biolovision_api import (EntitiesAPI, LocalAdminUnitsAPI,
                                        MaxChunksError, ObservationsAPI,
                                        ObserversAPI, PlacesAPI, SpeciesAPI,
                                        TaxoGroupsAPI, TerritorialUnitsAPI)
@@ -20,7 +19,7 @@ from export_vn.store_file import StoreFile
 
 # Using faune-ardeche or faune-isere site, that needs to be created first
 SITE = 't07'
-#SITE = 't38'
+# SITE = 't38'
 FILE = '.evn_test.yaml'
 
 # Get configuration for test site
@@ -76,7 +75,7 @@ def test_local_admin_units_get(capsys):
     elif SITE == 't07':
         a = '2096'
     else:
-        fail
+        assert False
     logging.debug('Getting local admin unit #s', a)
     local_admin_unit = LOCAL_ADMIN_UNITS_API.api_get(a)
     assert LOCAL_ADMIN_UNITS_API.transfer_errors == 0
@@ -414,7 +413,7 @@ def test_observations_search_1(capsys):
     elif SITE == 't07':
         assert len(list['data']['sightings']) >= 3
     else:
-        fail
+        assert False
 
 
 def test_observations_search_2(capsys):
@@ -433,7 +432,7 @@ def test_observations_search_2(capsys):
     elif SITE == 't07':
         assert len(list['data']['sightings']) >= 3
     else:
-        fail
+        assert False
 
 
 # ----------------------------
@@ -446,7 +445,7 @@ def test_observers_get(capsys):
     elif SITE == 't07':
         o = '1084'
     else:
-        fail
+        assert False
     logging.debug('Getting observer #s', o)
     observer = OBSERVERS_API.api_get(o)
     assert OBSERVERS_API.transfer_errors == 0
@@ -589,7 +588,7 @@ def test_places_get(capsys):
     elif SITE == 't07':
         p = '100694'
     else:
-        fail
+        assert False
     logging.debug('Getting place #s', p)
     place = PLACES_API.api_get(p)
     assert PLACES_API.transfer_errors == 0
@@ -649,7 +648,7 @@ def test_places_list_1(capsys):
     elif SITE == 't07':
         l = '2096'
     else:
-        fail
+        assert False
     with capsys.disabled():
         places_list = PLACES_API.api_list({'id_commune': l})
         logging.debug('local admin unit {} ==> {} place '.format(
