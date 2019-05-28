@@ -127,21 +127,21 @@ database:
     # Coordinates systems for local projection, see EPSG
     db_out_proj: 2154
 
-# Tuning parameters, for expert use
+# Tuning parameters, for expert use.
 tuning:
-    # Max chunks in a request before aborting
+    # Max chunks in a request before aborting.
     max_chunks: 10
-    # Max retries of API calls before aborting
+    # Max retries of API calls before aborting.
     max_retry: 5
-    # Maximum number of API requests, for debugging only
+    # Maximum number of API requests, for debugging only.
     # - 0 means unlimited
     # - >0 limit number of API requests
     max_requests: 0
     # LRU cache size for common requests (taxo_groups...)
     lru_maxsize: 32
-    # Earliest year in the archive. Queries will not ge before this date
+    # Earliest year in the archive. Queries will not ge before this date.
     min_year: 1901
-    # PID parameters, for throughput management
+    # PID parameters, for throughput management.
     pid_kp: 0.0
     pid_ki: 0.003
     pid_kd: 0.0

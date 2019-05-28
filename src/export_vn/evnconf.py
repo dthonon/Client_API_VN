@@ -10,8 +10,9 @@ parameters are then available as properties of EvnCtrlConf and EvnSiteConf class
 import logging
 from pathlib import Path
 
-from strictyaml import (Any, Bool, Email, Int, Map, MapPattern, Optional, Seq,
-                        Str, Url, YAMLError, YAMLValidationError, load)
+from strictyaml import (Any, Bool, Email, Float, Int, Map, MapPattern,
+                        Optional, Seq, Str, Url, YAMLError,
+                        YAMLValidationError, load)
 
 from . import __version__
 
@@ -26,8 +27,89 @@ class IncorrectParameter(EvnConfException):
     """Incorrect or missing parameter."""
 
 
+class Conf:
+    """Define YAML and typed schemas.
+    """
+
+    def __init__(self):
+        self._schema = Map({
+            'main':
+            Map({'admin_mail': Email()}),
+            'controler':
+            Map({
+                'entities':
+                Map({'enabled': Bool()}),
+                'local_admin_units':
+                Map({'enabled': Bool()}),
+                'observations':
+                Map({
+                    'enabled': Bool(),
+                    'taxo_exclude': Seq(Str())
+                }),
+                'observers':
+                Map({'enabled': Bool()}),
+                'places':
+                Map({'enabled': Bool()}),
+                'species':
+                Map({'enabled': Bool()}),
+                'taxo_group':
+                Map({'enabled': Bool()}),
+                'territorial_unit':
+                Map({'enabled': Bool()})
+            }),
+            'site':
+            MapPattern(
+                Str(),
+                Map({
+                    'enabled': Bool(),
+                    'site': Url(),
+                    'user_email': Email(),
+                    'user_pw': Str(),
+                    'client_key': Str(),
+                    'client_secret': Str()
+                })),
+            'file':
+            Map({
+                'enabled': Bool(),
+                'file_store': Str()
+            }),
+            'database':
+            Map({
+                Optional('db_host', default='localhost'): Str(),
+                Optional('db_port', default=5432): Int(),
+                'db_name': Str(),
+                'db_schema_import': Str(),
+                'db_schema_vn': Str(),
+                'db_group': Str(),
+                'db_user': Str(),
+                'db_pw': Str(),
+                Optional('db_out_proj', default='2154'): Str()
+            }),
+            Optional('tuning'):
+            Map({
+                'max_chunks': Int(),
+                'max_retry': Int(),
+                'max_requests': Int(),
+                'lru_maxsize': Int(),
+                'min_year': Int(),
+                'pid_kp': Float(),
+                'pid_ki': Float(),
+                'pid_kd': Float(),
+                'pid_setpoint': Float(),
+                'pid_limit_min': Float(),
+                'pid_limit_max': Float(),
+                'pid_delta_days': Float()
+            })
+        })
+
+    @property
+    def schema(self):
+        """Return strictYAML schema."""
+        return self._schema
+
+
 class EvnCtrlConf:
-    """Expose controler configuration as properties
+    """Expose controler configuration as properties.
     """
 
     def __init__(self, ctrl, config):
@@ -53,7 +135,7 @@ class EvnCtrlConf:
 
 
 class EvnSiteConf:
-    """Expose site configuration as properties
+    """Expose site configuration as properties.
     """
 
     def __init__(self, site, config):
@@ -68,6 +150,7 @@ class EvnSiteConf:
             self._user_email = config['site'][site]['user_email']
             self._user_pw = config['site'][site]['user_pw']
             self._base_url = config['site'][site]['site']
+
             self._file_enabled = False
             if 'enabled' in config['file']:
                 self._file_enabled = config['file']['enabled']
@@ -79,6 +162,7 @@ class EvnSiteConf:
                 if self._file_enabled:
                     logger.error(_('file:file_store must be defined'))
                     raise IncorrectParameter
+
             self._db_host = config['database']['db_host']
             self._db_port = str(config['database']['db_port'])
             self._db_name = config['database']['db_name']
@@ -87,6 +171,21 @@ class EvnSiteConf:
             self._db_group = config['database']['db_group']
             self._db_user = config['database']['db_user']
             self._db_pw = config['database']['db_pw']
+
+            if 'tuning' in config:
+                self._max_chunks = config['tuning']['max_chunks']
+                self._max_retry = config['tuning']['max_retry']
+                self._max_requests = config['tuning']['max_requests']
+                self._lru_maxsize = config['tuning']['lru_maxsize']
+                self._min_year = config['tuning']['min_year']
+                self._pid_kp = config['tuning']['pid_kp']
+                self._pid_ki = config['tuning']['pid_ki']
+                self._pid_kd = config['tuning']['pid_kd']
+                self._pid_setpoint = config['tuning']['pid_setpoint']
+                self._pid_limit_min = config['tuning']['pid_limit_min']
+                self._pid_limit_max = config['tuning']['pid_limit_max']
+                self._pid_delta_days = config['tuning']['pid_delta_days']
+
         except Exception as e:
             logger.error(e, exc_info=True)
             raise
@@ -179,6 +278,66 @@ class EvnSiteConf:
         """Return db_user PASSWORD."""
         return self._db_pw
 
+    @property
+    def tuning_max_chunks(self):
+        """Return tuning parameter."""
+        return self._max_chunks
+
+    @property
+    def tuning_max_retry(self):
+        """Return tuning parameter."""
+        return self._max_retry
+
+    @property
+    def tuning_max_requests(self):
+        """Return tuning parameter."""
+        return self._max_requests
+
+    @property
+    def tuning_lru_maxsize(self):
+        """Return tuning parameter."""
+        return self._lru_maxsize
+
+    @property
+    def tuning_min_year(self):
+        """Return tuning parameter."""
+        return self._min_year
+
+    @property
+    def tuning_pid_kp(self):
+        """Return tuning parameter."""
+        return self._pid_kp
+
+    @property
+    def tuning_pid_ki(self):
+        """Return tuning parameter."""
+        return self._pid_ki
+
+    @property
+    def tuning_pid_kd(self):
+        """Return tuning parameter."""
+        return self._pid_kd
+
+    @property
+    def tuning_pid_setpoint(self):
+        """Return tuning parameter."""
+        return self._pid_setpoint
+
+    @property
+    def tuning_pid_limit_min(self):
+        """Return tuning parameter."""
+        return self._pid_limit_min
+
+    @property
+    def tuning_pid_limit_max(self):
+        """Return tuning parameter."""
+        return self._pid_limit_max
+
+    @property
+    def tuning_pid_delta_days(self):
+        """Return tuning parameter."""
+        return self._pid_delta_days
+
 
 class EvnConf:
     """
@@ -187,68 +346,12 @@ class EvnConf:
 
     def __init__(self, file):
         # Define configuration schema
-        schema = Map({
-            'main':
-            Map({'admin_mail': Email()}),
-            'controler':
-            Map({
-                'entities':
-                Map({'enabled': Bool()}),
-                'local_admin_units':
-                Map({'enabled': Bool()}),
-                'observations':
-                Map({
-                    'enabled': Bool(),
-                    'taxo_exclude': Seq(Str())
-                }),
-                'observers':
-                Map({'enabled': Bool()}),
-                'places':
-                Map({'enabled': Bool()}),
-                'species':
-                Map({'enabled': Bool()}),
-                'taxo_group':
-                Map({'enabled': Bool()}),
-                'territorial_unit':
-                Map({'enabled': Bool()})
-            }),
-            'site':
-            MapPattern(
-                Str(),
-                Map({
-                    'enabled': Bool(),
-                    'site': Url(),
-                    'user_email': Email(),
-                    'user_pw': Str(),
-                    'client_key': Str(),
-                    'client_secret': Str()
-                })),
-            'file':
-            Map({
-                'enabled': Bool(),
-                'file_store': Str()
-            }),
-            'database':
-            Map({
-                Optional('db_host', default='localhost'): Str(),
-                Optional('db_port', default=5432): Int(),
-                'db_name': Str(),
-                'db_schema_import': Str(),
-                'db_schema_vn': Str(),
-                'db_group': Str(),
-                'db_user': Str(),
-                'db_pw': Str(),
-                Optional('db_out_proj', default='2154'): Str()
-            }),
-            Optional('tuning'):
-            Any()
-        })
         # Read configuration parameters
         p = Path.home() / file
         yaml_text = p.read_text()
         try:
             logger.info(_('Loading YAML configuration %s'), file)
-            self._config = load(yaml_text, schema).data
+            self._config = load(yaml_text, Conf().schema).data
         except YAMLValidationError as error:
             logger.exception(_('Incorrect content in YAML configuration %s'),
                              file)
