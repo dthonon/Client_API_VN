@@ -10,7 +10,9 @@ parameters are then available as properties of EvnCtrlConf and EvnSiteConf class
 import logging
 from pathlib import Path
 
-from strictyaml import (Any, Bool, Email, Float, Int, Map, MapPattern,
+from typing import Any
+
+from strictyaml import (Bool, Email, Float, Int, Map, MapPattern,
                         Optional, Seq, Str, Url, YAMLError,
                         YAMLValidationError, load)
 
@@ -27,11 +29,17 @@ class IncorrectParameter(EvnConfException):
     """Incorrect or missing parameter."""
 
 
+ConfType = Any
+
 class Conf:
     """Define YAML and typed schemas.
     """
 
     def __init__(self):
+        # Define Python type
+        self._ConfType = Any
+
+        # Define strictyaml schema
         self._schema = Map({
             'main':
             Map({'admin_mail': Email()}),
@@ -103,9 +111,14 @@ class Conf:
         })
 
     @property
-    def schema(self):
+    def schema(self) -> Any:
         """Return strictYAML schema."""
         return self._schema
+
+    @property
+    def type(self) -> ConfType:
+        """Return strictYAML schema."""
+        return self._conf_type
 
 
 class EvnCtrlConf:
