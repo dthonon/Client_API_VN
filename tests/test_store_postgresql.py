@@ -1,20 +1,21 @@
-#!/usr/bin/env python3
 """
 Test each method of store_postgresql module.
 Also test them as backend to download_vn.
 """
 import logging
-import pytest
 from datetime import datetime
 
-from export_vn.download_vn import Entities, LocalAdminUnits, Observations, Places
-from export_vn.download_vn import Species, TaxoGroup, TerritorialUnits
-from export_vn.store_postgresql import StorePostgresql, PostgresqlUtils
+import pytest
+
+from export_vn.download_vn import (Entities, LocalAdminUnits, Observations,
+                                   Places, Species, TaxoGroup,
+                                   TerritorialUnits)
 from export_vn.evnconf import EvnConf
+from export_vn.store_postgresql import PostgresqlUtils, StorePostgresql
 
 # Using faune-ardeche or faune-isere site, that needs to be created first
 SITE = 't07'
-#SITE = 't38'
+# SITE = 't38'
 FILE = '.evn_test.yaml'
 
 # Get configuration for test site
@@ -31,8 +32,8 @@ try:
     SPECIES = Species(CFG, STORE_PG)
     TAXO_GROUP = TaxoGroup(CFG, STORE_PG)
     TERRITORIAL_UNIT = TerritorialUnits(CFG, STORE_PG)
-except:
-    pass
+except Exception:
+    raise
 
 
 def test_version():
@@ -78,6 +79,7 @@ def test_entities_api_pg_store():
 # -----------------
 # Local_admin_units
 # -----------------
+@pytest.mark.slow
 def test_local_adm_u_api_pg_store():
     """Store local_admin_units to database."""
     LOCAL_ADMIN_UNITS.store()
@@ -86,12 +88,14 @@ def test_local_adm_u_api_pg_store():
 # -------------
 #  Observations
 # -------------
+@pytest.mark.slow
 def test_observations_api_pg_store(capsys):
     """Store observations of a taxo_group to database."""
     with capsys.disabled():
         OBSERVATIONS.store(18, method='search')
 
 
+@pytest.mark.slow
 def test_observations_api_pg_delete(capsys):
     """Delete some observations of a taxo_group to database."""
     nb_delete = STORE_PG.delete_obs([274830, 289120])

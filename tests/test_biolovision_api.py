@@ -7,11 +7,10 @@ import time
 from datetime import datetime, timedelta
 from pathlib import Path
 
+import pytest
 import requests
 
-import pytest
-from export_vn.biolovision_api import (BiolovisionApiException, EntitiesAPI,
-                                       HTTPError, LocalAdminUnitsAPI,
+from export_vn.biolovision_api import (EntitiesAPI, LocalAdminUnitsAPI,
                                        MaxChunksError, ObservationsAPI,
                                        ObserversAPI, PlacesAPI, SpeciesAPI,
                                        TaxoGroupsAPI, TerritorialUnitsAPI)
@@ -20,7 +19,7 @@ from export_vn.store_file import StoreFile
 
 # Using faune-ardeche or faune-isere site, that needs to be created first
 SITE = 't07'
-#SITE = 't38'
+# SITE = 't38'
 FILE = '.evn_test.yaml'
 
 # Get configuration for test site
@@ -76,7 +75,7 @@ def test_local_admin_units_get(capsys):
     elif SITE == 't07':
         a = '2096'
     else:
-        fail
+        assert False
     logging.debug('Getting local admin unit #s', a)
     local_admin_unit = LOCAL_ADMIN_UNITS_API.api_get(a)
     assert LOCAL_ADMIN_UNITS_API.transfer_errors == 0
@@ -274,7 +273,7 @@ def test_observations_get(capsys):
                             'media_is_hidden': '0',
                             'filename': '3_1537024802877-15194452-5272.jpg',
                             'path':
-                            'http://media.biolovision.net/data.biolovision.net/2018-09',
+                            'http://media.biolovision.net/data.biolovision.net/2018-09',  # noqa: E501
                             'insert_date': {
                                 '@notime': '0',
                                 '@offset': '3600',
@@ -414,7 +413,7 @@ def test_observations_search_1(capsys):
     elif SITE == 't07':
         assert len(list['data']['sightings']) >= 3
     else:
-        fail
+        assert False
 
 
 def test_observations_search_2(capsys):
@@ -433,7 +432,7 @@ def test_observations_search_2(capsys):
     elif SITE == 't07':
         assert len(list['data']['sightings']) >= 3
     else:
-        fail
+        assert False
 
 
 # ----------------------------
@@ -446,124 +445,142 @@ def test_observers_get(capsys):
     elif SITE == 't07':
         o = '1084'
     else:
-        fail
+        assert False
     logging.debug('Getting observer #s', o)
     observer = OBSERVERS_API.api_get(o)
     assert OBSERVERS_API.transfer_errors == 0
     if SITE == 't38':
-        assert observer == \
-        {'data': [{'anonymous': '0',
-                   'archive_account': '0',
-                   'atlas_list': '16',
-                   'birth_year': '1959',
-                   'bypass_purchase': '0',
-                   'collectif': '0',
-                   'debug_file_upload': '0',
-                   'default_hidden': '0',
-                   'display_order': 'DATE_PLACE_SPECIES',
-                   'email': 'd.thonon9@gmail.com',
-                   'external_id': '0',
-                   'has_search_access': '0',
-                   'hide_email': '0',
-                   'id': '1084',
-                   'id_entity': '1',
-                   'id_universal': '11675',
-                   'item_per_page_gallery': '12',
-                   'item_per_page_obs': '20',
-                   'langu': 'fr',
-                   'last_inserted_data': {'#text': 'mardi 1 novembre 2016, 17:03:06',
-                                          '@ISO8601': '2016-11-01T17:03:06+01:00',
-                                          '@notime': '0',
-                                          '@offset': '3600',
-                                          '@timestamp': '1478016186'},
-                   'last_login': {'#text': 'dimanche 6 janvier 2019, 21:32:23',
-                                  '@ISO8601': '2019-01-06T21:32:23+01:00',
-                                  '@notime': '0',
-                                  '@offset': '3600',
-                                  '@timestamp': '1546806743'},
-                   'lat': '44.7221149943671',
-                   'lon': '4.59373711385036',
-                   'mobile_phone': '0675291894',
-                   'mobile_use_form': '0',
-                   'mobile_use_mortality': '0',
-                   'mobile_use_protocol': '0',
-                   'mobile_use_trace': '0',
-                   'municipality': 'Meylan',
-                   'name': 'Thonon',
-                   'number': '',
-                   'photo': '',
-                   'postcode': '38240',
-                   'presentation': '',
-                   'private_phone': '09 53 74 56 59',
-                   'private_website': '',
-                   'registration_date': {'#text': 'vendredi 1 mai 2015',
-                                         '@ISO8601': '2015-05-01T19:11:31+02:00',
-                                         '@notime': '1',
-                                         '@offset': '7200',
-                                         '@timestamp': '1430500291'},
-                   'show_precise': '0',
-                   'species_order': 'ALPHA',
-                   'street': '13, Av. du Vercors',
-                   'surname': 'Daniel',
-                   'use_latin_search': 'N',
-                   'work_phone': ''}]}
+        assert observer == {
+            'data': [{
+                'anonymous': '0',
+                'archive_account': '0',
+                'atlas_list': '16',
+                'birth_year': '1959',
+                'bypass_purchase': '0',
+                'collectif': '0',
+                'debug_file_upload': '0',
+                'default_hidden': '0',
+                'display_order': 'DATE_PLACE_SPECIES',
+                'email': 'd.thonon9@gmail.com',
+                'external_id': '0',
+                'has_search_access': '0',
+                'hide_email': '0',
+                'id': '1084',
+                'id_entity': '1',
+                'id_universal': '11675',
+                'item_per_page_gallery': '12',
+                'item_per_page_obs': '20',
+                'langu': 'fr',
+                'last_inserted_data': {
+                    '#text': 'mardi 1 novembre 2016, 17:03:06',
+                    '@ISO8601': '2016-11-01T17:03:06+01:00',
+                    '@notime': '0',
+                    '@offset': '3600',
+                    '@timestamp': '1478016186'
+                },
+                'last_login': {
+                    '#text': 'dimanche 6 janvier 2019, 21:32:23',
+                    '@ISO8601': '2019-01-06T21:32:23+01:00',
+                    '@notime': '0',
+                    '@offset': '3600',
+                    '@timestamp': '1546806743'
+                },
+                'lat': '44.7221149943671',
+                'lon': '4.59373711385036',
+                'mobile_phone': '0675291894',
+                'mobile_use_form': '0',
+                'mobile_use_mortality': '0',
+                'mobile_use_protocol': '0',
+                'mobile_use_trace': '0',
+                'municipality': 'Meylan',
+                'name': 'Thonon',
+                'number': '',
+                'photo': '',
+                'postcode': '38240',
+                'presentation': '',
+                'private_phone': '09 53 74 56 59',
+                'private_website': '',
+                'registration_date': {
+                    '#text': 'vendredi 1 mai 2015',
+                    '@ISO8601': '2015-05-01T19:11:31+02:00',
+                    '@notime': '1',
+                    '@offset': '7200',
+                    '@timestamp': '1430500291'
+                },
+                'show_precise': '0',
+                'species_order': 'ALPHA',
+                'street': '13, Av. du Vercors',
+                'surname': 'Daniel',
+                'use_latin_search': 'N',
+                'work_phone': ''
+            }]
+        }
     elif SITE == 't07':
-        assert observer == \
-        {'data': [{'anonymous': '0',
-                   'archive_account': '0',
-                   'atlas_list': '16',
-                   'birth_year': '1959',
-                   'bypass_purchase': '0',
-                   'collectif': '0',
-                   'debug_file_upload': '0',
-                   'default_hidden': '0',
-                   'display_order': 'DATE_PLACE_SPECIES',
-                   'email': 'd.thonon9@gmail.com',
-                   'external_id': '0',
-                   'has_search_access': '0',
-                   'hide_email': '0',
-                   'id': '1084',
-                   'id_entity': '1',
-                   'id_universal': '11675',
-                   'item_per_page_gallery': '12',
-                   'item_per_page_obs': '20',
-                   'langu': 'fr',
-                   'last_inserted_data': {'#text': 'mardi 1 novembre 2016, 17:03:06',
-                                          '@ISO8601': '2016-11-01T17:03:06+01:00',
-                                          '@notime': '0',
-                                          '@offset': '3600',
-                                          '@timestamp': '1478016186'},
-                   'last_login': {'#text': 'dimanche 6 janvier 2019, 21:32:23',
-                                  '@ISO8601': '2019-01-06T21:32:23+01:00',
-                                  '@notime': '0',
-                                  '@offset': '3600',
-                                  '@timestamp': '1546806743'},
-                   'lat': '44.7221149943671',
-                   'lon': '4.59373711385036',
-                   'mobile_phone': '0675291894',
-                   'mobile_use_form': '0',
-                   'mobile_use_mortality': '0',
-                   'mobile_use_protocol': '0',
-                   'mobile_use_trace': '0',
-                   'municipality': 'Meylan',
-                   'name': 'Thonon',
-                   'number': '',
-                   'photo': '',
-                   'postcode': '38240',
-                   'presentation': '',
-                   'private_phone': '09 53 74 56 59',
-                   'private_website': '',
-                   'registration_date': {'#text': 'vendredi 1 mai 2015',
-                                         '@ISO8601': '2015-05-01T19:11:31+02:00',
-                                         '@notime': '1',
-                                         '@offset': '7200',
-                                         '@timestamp': '1430500291'},
-                   'show_precise': '0',
-                   'species_order': 'ALPHA',
-                   'street': '13, Av. du Vercors',
-                   'surname': 'Daniel',
-                   'use_latin_search': 'N',
-                   'work_phone': ''}]}
+        assert observer == {
+            'data': [{
+                'anonymous': '0',
+                'archive_account': '0',
+                'atlas_list': '16',
+                'birth_year': '1959',
+                'bypass_purchase': '0',
+                'collectif': '0',
+                'debug_file_upload': '0',
+                'default_hidden': '0',
+                'display_order': 'DATE_PLACE_SPECIES',
+                'email': 'd.thonon9@gmail.com',
+                'external_id': '0',
+                'has_search_access': '0',
+                'hide_email': '0',
+                'id': '1084',
+                'id_entity': '1',
+                'id_universal': '11675',
+                'item_per_page_gallery': '12',
+                'item_per_page_obs': '20',
+                'langu': 'fr',
+                'last_inserted_data': {
+                    '#text': 'mardi 1 novembre 2016, 17:03:06',
+                    '@ISO8601': '2016-11-01T17:03:06+01:00',
+                    '@notime': '0',
+                    '@offset': '3600',
+                    '@timestamp': '1478016186'
+                },
+                'last_login': {
+                    '#text': 'dimanche 6 janvier 2019, 21:32:23',
+                    '@ISO8601': '2019-01-06T21:32:23+01:00',
+                    '@notime': '0',
+                    '@offset': '3600',
+                    '@timestamp': '1546806743'
+                },
+                'lat': '44.7221149943671',
+                'lon': '4.59373711385036',
+                'mobile_phone': '0675291894',
+                'mobile_use_form': '0',
+                'mobile_use_mortality': '0',
+                'mobile_use_protocol': '0',
+                'mobile_use_trace': '0',
+                'municipality': 'Meylan',
+                'name': 'Thonon',
+                'number': '',
+                'photo': '',
+                'postcode': '38240',
+                'presentation': '',
+                'private_phone': '09 53 74 56 59',
+                'private_website': '',
+                'registration_date': {
+                    '#text': 'vendredi 1 mai 2015',
+                    '@ISO8601': '2015-05-01T19:11:31+02:00',
+                    '@notime': '1',
+                    '@offset': '7200',
+                    '@timestamp': '1430500291'
+                },
+                'show_precise': '0',
+                'species_order': 'ALPHA',
+                'street': '13, Av. du Vercors',
+                'surname': 'Daniel',
+                'use_latin_search': 'N',
+                'work_phone': ''
+            }]
+        }
 
 
 def test_observers_list_all(capsys):
@@ -589,7 +606,7 @@ def test_places_get(capsys):
     elif SITE == 't07':
         p = '100694'
     else:
-        fail
+        assert False
     logging.debug('Getting place #s', p)
     place = PLACES_API.api_get(p)
     assert PLACES_API.transfer_errors == 0
@@ -645,15 +662,15 @@ def test_places_list_all(capsys):
 def test_places_list_1(capsys):
     """Get a list of places from a single local admin unit."""
     if SITE == 't38':
-        l = '14693'
+        place = '14693'
     elif SITE == 't07':
-        l = '2096'
+        place = '2096'
     else:
-        fail
+        assert False
     with capsys.disabled():
-        places_list = PLACES_API.api_list({'id_commune': l})
+        places_list = PLACES_API.api_list({'id_commune': place})
         logging.debug('local admin unit {} ==> {} place '.format(
-            l, len(places_list['data'])))
+            place, len(places_list['data'])))
     assert PLACES_API.transfer_errors == 0
     if SITE == 't38':
         assert len(places_list['data']) >= 164
@@ -709,8 +726,9 @@ def test_species_list_30(capsys):
 
 def test_species_list_error(capsys):
     """Get a list of species from taxo_group 1, limited to 1 chunk."""
-    with pytest.raises(MaxChunksError) as excinfo:
-        species_list = SPECIES_API_ERR.api_list({'id_taxo_group': '1'})
+    with pytest.raises(MaxChunksError) as excinfo:  # noqa: F841
+        species_list = SPECIES_API_ERR.api_list(    # noqa: F841
+            {'id_taxo_group': '1'})
 
 
 # ----------------------------
@@ -726,21 +744,21 @@ def test_taxo_groups_get():
 def test_taxo_groups_list():
     """Get list of taxo_groups."""
     # First call, should return from API call if not called before
-    start = time.clock()
+    start = time.perf_counter()
     taxo_groups = TAXO_GROUPS_API.api_list()
-    took = (time.clock() - start) * 1000.0
+    took = (time.perf_counter() - start) * 1000.0
     logging.debug('taxo_groups_list, call 1 took: ' + str(took) + ' ms')
     assert TAXO_GROUPS_API.transfer_errors == 0
     assert len(taxo_groups['data']) >= 30
     assert taxo_groups['data'][0]['name'] == 'Oiseaux'
     # Second call, must return from cache
-    start = time.clock()
+    start = time.perf_counter()
     taxo_groups = TAXO_GROUPS_API.api_list()
-    took = (time.clock() - start) * 1000.0
+    took = (time.perf_counter() - start) * 1000.0
     logging.debug('taxo_groups_list, call 2 took: ' + str(took) + ' ms')
-    start = time.clock()
+    start = time.perf_counter()
     taxo_groups = TAXO_GROUPS_API.api_list()
-    took = (time.clock() - start) * 1000.0
+    took = (time.perf_counter() - start) * 1000.0
     logging.debug('taxo_groups_list, call 3 took: ' + str(took) + ' ms')
     assert TAXO_GROUPS_API.transfer_errors == 0
     assert len(taxo_groups['data']) >= 30
@@ -766,9 +784,9 @@ def test_territorial_units_get():
 def test_territorial_units_list():
     """Get list of territorial_units."""
     # First call, should return from API call if not called before
-    start = time.clock()
+    start = time.perf_counter()
     territorial_units = TERRITORIAL_UNITS_API.api_list()
-    took = (time.clock() - start) * 1000.0
+    took = (time.perf_counter() - start) * 1000.0
     logging.debug('territorial_units_list, call 1 took: ' + str(took) + ' ms')
     assert TERRITORIAL_UNITS_API.transfer_errors == 0
     assert len(territorial_units['data']) == 1
@@ -777,9 +795,9 @@ def test_territorial_units_list():
         assert territorial_units['data'][0]['name'] == 'Isère'
     elif SITE == 't07':
         assert territorial_units['data'][0]['name'] == 'Ardèche'
-    start = time.clock()
+    start = time.perf_counter()
     territorial_units = TERRITORIAL_UNITS_API.api_list()
-    took = (time.clock() - start) * 1000.0
+    took = (time.perf_counter() - start) * 1000.0
     logging.debug('territorial_units_list, call 2 took: ' + str(took) + ' ms')
     assert TERRITORIAL_UNITS_API.transfer_errors == 0
 
@@ -790,7 +808,7 @@ def test_territorial_units_list():
 @pytest.mark.skip
 def test_wrong_api():
     """Raise an exception."""
-    with pytest.raises(requests.HTTPError) as excinfo:
-        error = PLACES_API.wrong_api()
+    with pytest.raises(requests.HTTPError) as excinfo:  # noqa: F841
+        error = PLACES_API.wrong_api()  # noqa: F841
     assert PLACES_API.transfer_errors != 0
     logging.debug('HTTPError code %s', excinfo)

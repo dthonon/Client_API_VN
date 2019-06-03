@@ -127,3 +127,63 @@ def test_db_user():
 def test_db_pw():
     """ Test property."""
     assert SCFG.db_pw == 'db_pw'
+
+
+def test_tuning_max_chunks():
+    """ Test property."""
+    assert SCFG.tuning_max_chunks == 10
+
+
+def test_tuning_max_retry():
+    """ Test property."""
+    assert SCFG.tuning_max_retry == 5
+
+
+def test_tuning_max_requests():
+    """ Test property."""
+    assert SCFG.tuning_max_requests == 0
+
+
+def test_tuning_lru_maxsize():
+    """ Test property."""
+    assert SCFG.tuning_lru_maxsize == 32
+
+
+def test_tuning_min_year():
+    """ Test property."""
+    assert SCFG.tuning_min_year == 1901
+
+
+def test_tuning_pid_kp():
+    """ Test property."""
+    assert SCFG.tuning_pid_kp == 0.0
+
+
+def test_tuning_pid_ki():
+    """ Test property."""
+    assert SCFG.tuning_pid_ki == 0.003
+
+
+def test_tuning_pid_kd():
+    """ Test property."""
+    assert SCFG.tuning_pid_kd == 0.0
+
+
+def test_tuning_pid_setpoint():
+    """ Test property."""
+    assert SCFG.tuning_pid_setpoint == 10000
+
+
+def test_tuning_pid_limit_min():
+    """ Test property."""
+    assert SCFG.tuning_pid_limit_min == 10
+
+
+def test_tuning_pid_limit_max():
+    """ Test property."""
+    assert SCFG.tuning_pid_limit_max == 2000
+
+
+def test_tuning_pid_delta_days():
+    """ Test property."""
+    assert SCFG.tuning_pid_delta_days == 15
