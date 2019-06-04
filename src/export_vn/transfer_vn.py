@@ -170,8 +170,8 @@ def full_download(cfg_ctrl):
                 if cfg_crtl_list[ctrl].enabled:
                     logger.info(_('Using controler %s on site %s'), ctrl,
                                 cfg.site)
-                    places = Observers(cfg, store_pg)
-                    places.store()
+                    observers = Observers(cfg, store_pg)
+                    observers.store()
 
             else:
                 logger.info(_('Skipping site %s'), site)
