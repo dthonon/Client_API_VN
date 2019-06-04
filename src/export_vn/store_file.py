@@ -16,7 +16,7 @@ import logging
 import os
 from pathlib import Path
 
-from . import __version__
+from . import (__version__, _)
 
 logger = logging.getLogger('transfer_vn.store_file')
 

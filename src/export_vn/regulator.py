@@ -10,7 +10,7 @@ Derived from https://github.com/m-lundberg/simple-pid
 
 import logging
 
-from . import __version__
+from . import (__version__, _)
 
 logger = logging.getLogger('transfer_vn.regulator')
 

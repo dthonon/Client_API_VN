@@ -21,7 +21,7 @@ from export_vn.biolovision_api import (EntitiesAPI, HTTPError,
                                        TerritorialUnitsAPI)
 from export_vn.regulator import PID
 
-from . import __version__
+from . import (__version__, _)
 
 logger = logging.getLogger('transfer_vn.download_vn')
 

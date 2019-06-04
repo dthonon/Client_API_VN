@@ -4,7 +4,6 @@ Program managing VisioNature export to Postgresql database
 
 """
 import argparse
-import gettext
 import logging
 import subprocess
 import sys
@@ -23,7 +22,7 @@ from export_vn.download_vn import (Entities, LocalAdminUnits, Observations,
 from export_vn.evnconf import EvnConf
 from export_vn.store_postgresql import PostgresqlUtils, StorePostgresql
 
-from . import __version__
+from . import (__version__, _)
 
 
 def db_config(cfg):

@@ -13,4 +13,9 @@ finally:
 
 # Install gettext for any file in the application
 localedir = Path(__file__).resolve().parent / 'locale'
-gettext.install('transfer_vn', str(localedir))
+# gettext.install('export_vn', str(localedir))
+# t = gettext.translation('export_vn', localedir=str(localedir))
+# _ = t.gettext
+gettext.bindtextdomain('export_vn', str(localedir))
+gettext.textdomain('export_vn')
+_ = gettext.gettext

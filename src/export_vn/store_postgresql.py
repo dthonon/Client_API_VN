@@ -14,7 +14,6 @@ import json
 import logging
 import queue
 import threading
-from pathlib import Path
 
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from pyproj import Proj, transform
@@ -27,7 +26,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.engine.url import URL
 from sqlalchemy.sql import and_
 
-from . import __version__
+from . import (__version__, _)
 
 logger = logging.getLogger('transfer_vn.store_postgresql')
 

@@ -30,7 +30,7 @@ import requests
 
 from requests_oauthlib import OAuth1
 
-from . import __version__
+from . import (__version__, _)
 
 logger = logging.getLogger('transfer_vn.biolovision_api')
 

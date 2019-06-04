@@ -4,19 +4,18 @@
 Parameters are defined in a YAML file located in $HOME directory.
 This file is created using --init option, and then customized by the user.
 Each time the application is run, this parameter file is read and the
-parameters are then available as properties of EvnCtrlConf and EvnSiteConf classes.
+parameters are then available as properties of EvnCtrlConf and EvnSiteConf.
 
 """
 import logging
 from pathlib import Path
 
-from typing import Any
+from typing import (Any, List, Tuple, Dict)
 
-from strictyaml import (Bool, Email, Float, Int, Map, MapPattern,
-                        Optional, Seq, Str, Url, YAMLError,
-                        YAMLValidationError, load)
+from strictyaml import (Bool, Email, Float, Int, Map, MapPattern, Optional,
+                        Seq, Str, Url, YAMLError, YAMLValidationError, load)
 
-from . import __version__
+from . import (__version__, _)
 
 logger = logging.getLogger('transfer_vn.evn_conf')
 
@@ -29,120 +28,96 @@ class IncorrectParameter(EvnConfException):
     """Incorrect or missing parameter."""
 
 
-ConfType = Any
+# Define PEP 484 types, TODO: refine type
+_ConfType = Any
+_CtrlType = Dict[str, Dict[str, Tuple[Dict[str, bool], Dict[str, List[str]]]]]
 
-class Conf:
-    """Define YAML and typed schemas.
-    """
-
-    def __init__(self):
-        # Define Python type
-        self._ConfType = Any
-
-        # Define strictyaml schema
-        self._schema = Map({
-            'main':
-            Map({'admin_mail': Email()}),
-            'controler':
-            Map({
-                'entities':
-                Map({'enabled': Bool()}),
-                'local_admin_units':
-                Map({'enabled': Bool()}),
-                'observations':
-                Map({
-                    'enabled': Bool(),
-                    'taxo_exclude': Seq(Str())
-                }),
-                'observers':
-                Map({'enabled': Bool()}),
-                'places':
-                Map({'enabled': Bool()}),
-                'species':
-                Map({'enabled': Bool()}),
-                'taxo_group':
-                Map({'enabled': Bool()}),
-                'territorial_unit':
-                Map({'enabled': Bool()})
-            }),
-            'site':
-            MapPattern(
-                Str(),
-                Map({
-                    'enabled': Bool(),
-                    'site': Url(),
-                    'user_email': Email(),
-                    'user_pw': Str(),
-                    'client_key': Str(),
-                    'client_secret': Str()
-                })),
-            'file':
-            Map({
-                'enabled': Bool(),
-                'file_store': Str()
-            }),
-            'database':
-            Map({
-                Optional('db_host', default='localhost'): Str(),
-                Optional('db_port', default=5432): Int(),
-                'db_name': Str(),
-                'db_schema_import': Str(),
-                'db_schema_vn': Str(),
-                'db_group': Str(),
-                'db_user': Str(),
-                'db_pw': Str(),
-                Optional('db_out_proj', default='2154'): Str()
-            }),
-            Optional('tuning'):
-            Map({
-                'max_chunks': Int(),
-                'max_retry': Int(),
-                'max_requests': Int(),
-                'lru_maxsize': Int(),
-                'min_year': Int(),
-                'pid_kp': Float(),
-                'pid_ki': Float(),
-                'pid_kd': Float(),
-                'pid_setpoint': Float(),
-                'pid_limit_min': Float(),
-                'pid_limit_max': Float(),
-                'pid_delta_days': Float()
-            })
-        })
-
-    @property
-    def schema(self) -> Any:
-        """Return strictYAML schema."""
-        return self._schema
-
-    @property
-    def type(self) -> ConfType:
-        """Return strictYAML schema."""
-        return self._conf_type
+# Define strictyaml schema
+_ConfSchema = Map({
+    'main':
+    Map({'admin_mail': Email()}),
+    'controler':
+    Map({
+        'entities': Map({'enabled': Bool()}),
+        'local_admin_units': Map({'enabled': Bool()}),
+        'observations': Map({
+            'enabled': Bool(),
+            'taxo_exclude': Seq(Str())
+        }),
+        'observers': Map({'enabled': Bool()}),
+        'places': Map({'enabled': Bool()}),
+        'species': Map({'enabled': Bool()}),
+        'taxo_group': Map({'enabled': Bool()}),
+        'territorial_unit': Map({'enabled': Bool()})
+    }),
+    'site':
+    MapPattern(
+        Str(),
+        Map({
+            'enabled': Bool(),
+            'site': Url(),
+            'user_email': Email(),
+            'user_pw': Str(),
+            'client_key': Str(),
+            'client_secret': Str()
+        })),
+    'file':
+    Map({
+        'enabled': Bool(),
+        'file_store': Str()
+    }),
+    'database':
+    Map({
+        Optional('db_host', default='localhost'): Str(),
+        Optional('db_port', default=5432): Int(),
+        'db_name': Str(),
+        'db_schema_import': Str(),
+        'db_schema_vn': Str(),
+        'db_group': Str(),
+        'db_user': Str(),
+        'db_pw': Str(),
+        Optional('db_out_proj', default='2154'): Str()
+    }),
+    Optional('tuning'):
+    Map({
+        'max_chunks': Int(),
+        'max_retry': Int(),
+        'max_requests': Int(),
+        'lru_maxsize': Int(),
+        'min_year': Int(),
+        'pid_kp': Float(),
+        'pid_ki': Float(),
+        'pid_kd': Float(),
+        'pid_setpoint': Float(),
+        'pid_limit_min': Float(),
+        'pid_limit_max': Float(),
+        'pid_delta_days': Float()
+    })
+})
 
 
 class EvnCtrlConf:
     """Expose controler configuration as properties.
     """
 
-    def __init__(self, ctrl, config):
+    def __init__(self, ctrl: str, config: _CtrlType) -> None:
         self._ctrl = ctrl
 
         # Import parameters in properties
         self._enabled = True
         if 'enabled' in config['controler'][ctrl]:
             self._enabled = config['controler'][ctrl]['enabled']
-        self._taxo_exclude = []
+        self._taxo_exclude = []  # type: List[str]
         if 'taxo_exclude' in config['controler'][ctrl]:
             self._taxo_exclude = config['controler'][ctrl]['taxo_exclude']
 
     @property
-    def enabled(self) -> Bool:
+    def enabled(self) -> bool:
         """Return enabled flag, defining if controler should be used."""
         return self._enabled
 
     @property
-    def taxo_exclude(self):
+    def taxo_exclude(self) -> List[str]:
         """Return list of taxo_groups excluded from download."""
         return self._taxo_exclude
 
@@ -151,7 +126,7 @@ class EvnSiteConf:
     """Expose site configuration as properties.
     """
 
-    def __init__(self, site, config):
+    def __init__(self, site: str, config: _ConfType) -> None:
         self._site = site
         # Import parameters in properties
         try:
@@ -205,149 +180,149 @@ class EvnSiteConf:
         return None
 
     @property
-    def site(self):
+    def site(self) -> str:
         """Return site name, used to identify configuration file."""
         return self._site
 
     @property
-    def enabled(self):
+    def enabled(self) -> bool:
         """Return enabled flag, defining is site is to be downloaded."""
         return self._enabled
 
     @property
-    def client_key(self):
+    def client_key(self) -> str:
         """Return oauth1 client_key, used to connect to VisioNature site."""
         return self._client_key
 
     @property
-    def client_secret(self):
+    def client_secret(self) -> str:
         """Return oauth1 client_secret, used to connect to VisioNature site."""
         return self._client_secret
 
     @property
-    def user_email(self):
+    def user_email(self) -> str:
         """Return user email, used to connect to VisioNature site."""
         return self._user_email
 
     @property
-    def user_pw(self):
+    def user_pw(self) -> str:
         """Return user password, used to connect to VisioNature site."""
         return self._user_pw
 
     @property
-    def base_url(self):
+    def base_url(self) -> str:
         """Return base URL of VisioNature site,
         used as prefix for API calls."""
         return self._base_url
 
     @property
-    def file_enabled(self):
+    def file_enabled(self) -> bool:
         """Return flag to enable or not file storage
         on top of Postgresql storage."""
         return self._file_enabled
 
     @property
-    def file_store(self):
+    def file_store(self) -> str:
         """Return directory, under $HOME, where downloaded files are stored."""
         return self._file_store
 
     @property
-    def db_host(self):
+    def db_host(self) -> str:
         """Return hostname of Postgresql server."""
         return self._db_host
 
     @property
-    def db_port(self):
+    def db_port(self) -> str:
         """Return IP port of Postgresql server."""
         return self._db_port
 
     @property
-    def db_name(self):
+    def db_name(self) -> str:
         """Return database name."""
         return self._db_name
 
     @property
-    def db_schema_import(self):
+    def db_schema_import(self) -> str:
         """Return database schema where imported JSON data is stored."""
         return self._db_schema_import
 
     @property
-    def db_schema_vn(self):
+    def db_schema_vn(self) -> str:
         """Return database schema where column data is stored."""
         return self._db_schema_vn
 
     @property
-    def db_group(self):
+    def db_group(self) -> str:
         """Return group ROLE that gets access to tables."""
         return self._db_group
 
     @property
-    def db_user(self):
+    def db_user(self) -> str:
         """Return user ROLE that owns the tables."""
         return self._db_user
 
     @property
-    def db_pw(self):
+    def db_pw(self) -> str:
         """Return db_user PASSWORD."""
         return self._db_pw
 
     @property
-    def tuning_max_chunks(self):
+    def tuning_max_chunks(self) -> int:
         """Return tuning parameter."""
         return self._max_chunks
 
     @property
-    def tuning_max_retry(self):
+    def tuning_max_retry(self) -> int:
         """Return tuning parameter."""
         return self._max_retry
 
     @property
-    def tuning_max_requests(self):
+    def tuning_max_requests(self) -> int:
         """Return tuning parameter."""
         return self._max_requests
 
     @property
-    def tuning_lru_maxsize(self):
+    def tuning_lru_maxsize(self) -> int:
         """Return tuning parameter."""
         return self._lru_maxsize
 
     @property
-    def tuning_min_year(self):
+    def tuning_min_year(self) -> int:
         """Return tuning parameter."""
         return self._min_year
 
     @property
-    def tuning_pid_kp(self):
+    def tuning_pid_kp(self) -> float:
         """Return tuning parameter."""
         return self._pid_kp
 
     @property
-    def tuning_pid_ki(self):
+    def tuning_pid_ki(self) -> float:
         """Return tuning parameter."""
         return self._pid_ki
 
     @property
-    def tuning_pid_kd(self):
+    def tuning_pid_kd(self) -> float:
         """Return tuning parameter."""
         return self._pid_kd
 
     @property
-    def tuning_pid_setpoint(self):
+    def tuning_pid_setpoint(self) -> float:
         """Return tuning parameter."""
         return self._pid_setpoint
 
     @property
-    def tuning_pid_limit_min(self):
+    def tuning_pid_limit_min(self) -> float:
         """Return tuning parameter."""
         return self._pid_limit_min
 
     @property
-    def tuning_pid_limit_max(self):
+    def tuning_pid_limit_max(self) -> float:
         """Return tuning parameter."""
         return self._pid_limit_max
 
     @property
-    def tuning_pid_delta_days(self):
+    def tuning_pid_delta_days(self) -> float:
         """Return tuning parameter."""
         return self._pid_delta_days
 
@@ -357,14 +332,14 @@ class EvnConf:
     Read config file and expose list of sites configuration
     """
 
-    def __init__(self, file):
+    def __init__(self, file: str) -> None:
         # Define configuration schema
         # Read configuration parameters
         p = Path.home() / file
         yaml_text = p.read_text()
         try:
             logger.info(_('Loading YAML configuration %s'), file)
-            self._config = load(yaml_text, Conf().schema).data
+            self._config = load(yaml_text, _ConfSchema).data
         except YAMLValidationError as error:
             logger.exception(_('Incorrect content in YAML configuration %s'),
                              file)
@@ -372,25 +347,25 @@ class EvnConf:
             logger.exception(_('Error while reading YAML configuration %s'),
                              file)
 
-        self._ctrl_list = {}
+        self._ctrl_list = {}  # type: _CtrlType
         for ctrl in self._config['controler']:
             self._ctrl_list[ctrl] = EvnCtrlConf(ctrl, self._config)
 
-        self._site_list = {}
+        self._site_list = {}  # type: _ConfType
         for site in self._config['site']:
             self._site_list[site] = EvnSiteConf(site, self._config)
 
     @property
-    def version(self):
+    def version(self) -> str:
         """Return version."""
         return __version__
 
     @property
-    def ctrl_list(self):
+    def ctrl_list(self) -> List[_CtrlType]:
         """Return list of controler configurations."""
         return self._ctrl_list
 
     @property
-    def site_list(self):
+    def site_list(self) -> List[_ConfType]:
         """Return list of site configurations."""
         return self._site_list
