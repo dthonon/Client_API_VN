@@ -9,13 +9,14 @@ parameters are then available as properties of EvnCtrlConf and EvnSiteConf.
 """
 import logging
 from pathlib import Path
-
-from typing import (Any, List, Tuple, Dict)
+from typing import Any, Dict, List
+from typing import Optional as T_Optional
+from typing import Tuple, Union, cast
 
 from strictyaml import (Bool, Email, Float, Int, Map, MapPattern, Optional,
                         Seq, Str, Url, YAMLError, YAMLValidationError, load)
 
-from . import (__version__, _)
+from . import _, __version__
 
 logger = logging.getLogger('transfer_vn.evn_conf')
 
@@ -29,8 +30,8 @@ class IncorrectParameter(EvnConfException):
 
 
 # Define PEP 484 types, TODO: refine type
-_ConfType = Any
-_CtrlType = Dict[str, Dict[str, Tuple[Dict[str, bool], Dict[str, List[str]]]]]
+_CtrlType = Dict[str, Dict[str, Any]]
+_ConfType = Dict[str, Any]
 
 # Define strictyaml schema
 _ConfSchema = Map({
@@ -133,16 +134,17 @@ class EvnSiteConf:
             self._enabled = True
             if 'enabled' in config['site'][site]:
                 self._enabled = config['site'][site]['enabled']
-            self._client_key = config['site'][site]['client_key']
-            self._client_secret = config['site'][site]['client_secret']
-            self._user_email = config['site'][site]['user_email']
-            self._user_pw = config['site'][site]['user_pw']
-            self._base_url = config['site'][site]['site']
+            self._client_key = config['site'][site]['client_key']  # type: str
+            self._client_secret = config['site'][site][
+                'client_secret']  # type: str
+            self._user_email = config['site'][site]['user_email']  # type: str
+            self._user_pw = config['site'][site]['user_pw']  # type: str
+            self._base_url = config['site'][site]['site']  # type: str
 
             self._file_enabled = False
             if 'enabled' in config['file']:
                 self._file_enabled = config['file']['enabled']
-            self._file_store = None
+            self._file_store = ''
             if 'file_store' in config['file']:
                 self._file_store = config['file'][
                     'file_store'] + '/' + site + '/'
@@ -151,28 +153,36 @@ class EvnSiteConf:
                     logger.error(_('file:file_store must be defined'))
                     raise IncorrectParameter
 
-            self._db_host = config['database']['db_host']
-            self._db_port = str(config['database']['db_port'])
-            self._db_name = config['database']['db_name']
-            self._db_schema_import = config['database']['db_schema_import']
-            self._db_schema_vn = config['database']['db_schema_vn']
-            self._db_group = config['database']['db_group']
-            self._db_user = config['database']['db_user']
-            self._db_pw = config['database']['db_pw']
+            self._db_host = config['database']['db_host']  # type: str
+            self._db_port = str(config['database']['db_port'])  # type: str
+            self._db_name = config['database']['db_name']  # type: str
+            self._db_schema_import = config['database'][
+                'db_schema_import']  # type: str
+            self._db_schema_vn = config['database'][
+                'db_schema_vn']  # type: str
+            self._db_group = config['database']['db_group']  # type: str
+            self._db_user = config['database']['db_user']  # type: str
+            self._db_pw = config['database']['db_pw']  # type: str
 
             if 'tuning' in config:
-                self._max_chunks = config['tuning']['max_chunks']
-                self._max_retry = config['tuning']['max_retry']
-                self._max_requests = config['tuning']['max_requests']
-                self._lru_maxsize = config['tuning']['lru_maxsize']
-                self._min_year = config['tuning']['min_year']
-                self._pid_kp = config['tuning']['pid_kp']
-                self._pid_ki = config['tuning']['pid_ki']
-                self._pid_kd = config['tuning']['pid_kd']
-                self._pid_setpoint = config['tuning']['pid_setpoint']
-                self._pid_limit_min = config['tuning']['pid_limit_min']
-                self._pid_limit_max = config['tuning']['pid_limit_max']
-                self._pid_delta_days = config['tuning']['pid_delta_days']
+                self._max_chunks = config['tuning']['max_chunks']  # type: int
+                self._max_retry = config['tuning']['max_retry']  # type: int
+                self._max_requests = config['tuning'][
+                    'max_requests']  # type: int
+                self._lru_maxsize = config['tuning'][
+                    'lru_maxsize']  # type: int
+                self._min_year = config['tuning']['min_year']  # type: int
+                self._pid_kp = config['tuning']['pid_kp']  # type: float
+                self._pid_ki = config['tuning']['pid_ki']  # type: float
+                self._pid_kd = config['tuning']['pid_kd']  # type: float
+                self._pid_setpoint = config['tuning'][
+                    'pid_setpoint']  # type: float
+                self._pid_limit_min = config['tuning'][
+                    'pid_limit_min']  # type: float
+                self._pid_limit_max = config['tuning'][
+                    'pid_limit_max']  # type: float
+                self._pid_delta_days = config['tuning'][
+                    'pid_delta_days']  # type: float
 
         except Exception as e:
             logger.error(e, exc_info=True)
@@ -349,7 +359,8 @@ class EvnConf:
 
         self._ctrl_list = {}  # type: _CtrlType
         for ctrl in self._config['controler']:
-            self._ctrl_list[ctrl] = EvnCtrlConf(ctrl, self._config)
+            self._ctrl_list[ctrl] = cast(
+                _CtrlType, EvnCtrlConf(ctrl, self._config))
 
         self._site_list = {}  # type: _ConfType
         for site in self._config['site']:
@@ -361,11 +372,11 @@ class EvnConf:
         return __version__
 
     @property
-    def ctrl_list(self) -> List[_CtrlType]:
+    def ctrl_list(self) -> _CtrlType:
         """Return list of controler configurations."""
         return self._ctrl_list
 
     @property
-    def site_list(self) -> List[_ConfType]:
+    def site_list(self) -> _ConfType:
         """Return list of site configurations."""
         return self._site_list
