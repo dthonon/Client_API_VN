@@ -13,8 +13,9 @@ from typing import Any, Dict, List
 from typing import Optional as T_Optional
 from typing import Tuple, Union, cast
 
-from strictyaml import (Bool, Email, Float, Int, Map, MapPattern, Optional,
-                        Seq, Str, Url, YAMLError, YAMLValidationError, load)
+from strictyaml import (Bool, Email, Enum, Float, Int, Map, MapPattern,
+                        Optional, Seq, Str, Url, YAMLError,
+                        YAMLValidationError, load)
 
 from . import _, __version__
 
@@ -39,17 +40,26 @@ _ConfSchema = Map({
     Map({'admin_mail': Email()}),
     'controler':
     Map({
-        'entities': Map({'enabled': Bool()}),
-        'local_admin_units': Map({'enabled': Bool()}),
-        'observations': Map({
+        'entities':
+        Map({'enabled': Bool()}),
+        'local_admin_units':
+        Map({'enabled': Bool()}),
+        'observations':
+        Map({
             'enabled': Bool(),
-            'taxo_exclude': Seq(Str())
+            Optional('json_format', default='short'): Enum(['short', 'long']),
+            Optional('taxo_exclude', default=[]): Seq(Str())
         }),
-        'observers': Map({'enabled': Bool()}),
-        'places': Map({'enabled': Bool()}),
-        'species': Map({'enabled': Bool()}),
-        'taxo_group': Map({'enabled': Bool()}),
-        'territorial_unit': Map({'enabled': Bool()})
+        'observers':
+        Map({'enabled': Bool()}),
+        'places':
+        Map({'enabled': Bool()}),
+        'species':
+        Map({'enabled': Bool()}),
+        'taxo_group':
+        Map({'enabled': Bool()}),
+        'territorial_unit':
+        Map({'enabled': Bool()})
     }),
     'site':
     MapPattern(
@@ -62,7 +72,7 @@ _ConfSchema = Map({
             'client_key': Str(),
             'client_secret': Str()
         })),
-    'file':
+    Optional('file'):
     Map({
         'enabled': Bool(),
         'file_store': Str()
@@ -142,16 +152,17 @@ class EvnSiteConf:
             self._base_url = config['site'][site]['site']  # type: str
 
             self._file_enabled = False
-            if 'enabled' in config['file']:
-                self._file_enabled = config['file']['enabled']
             self._file_store = ''
-            if 'file_store' in config['file']:
-                self._file_store = config['file'][
-                    'file_store'] + '/' + site + '/'
-            else:
+            if 'file' in config:
+                if 'enabled' in config['file']:
+                    self._file_enabled = config['file']['enabled']
                 if self._file_enabled:
-                    logger.error(_('file:file_store must be defined'))
-                    raise IncorrectParameter
+                    if 'file_store' in config['file']:
+                        self._file_store = config['file'][
+                            'file_store'] + '/' + site + '/'
+                    else:
+                        logger.error(_('file:file_store must be defined'))
+                        raise IncorrectParameter
 
             self._db_host = config['database']['db_host']  # type: str
             self._db_port = str(config['database']['db_port'])  # type: str

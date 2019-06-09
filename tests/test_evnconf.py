@@ -2,188 +2,235 @@
 """
 Test each property of envconf module.
 """
+import logging
 import shutil
 from pathlib import Path
-import logging
-from export_vn.evnconf import EvnConf
+
+import pytest
 from export_vn import __version__
+from export_vn.evnconf import EvnConf
+
+# Testing constants
+CRTL = 'observations'
+FILE = '.evn_tst.yaml'
 
 # Create test site configuration file
-CRTL = 'observations'
-SITE = 'tst1'
-FILE = '.evn_tst.yaml'
-shutil.copy(
-    str(Path.home()) + '/Client_API_VN/src/export_vn/data/evn_template.yaml',
-    str(Path.home()) + '/' + FILE)
+@pytest.fixture(scope="session", params=['tst1', 'tst2'])
+def create_file(request):
+    site = request.param
+    # Copy test file to HOME
+    shutil.copy(
+        str(Path.home()) +
+        '/Client_API_VN/src/export_vn/data/evn_template.yaml',
+        str(Path.home()) + '/' + FILE)
+    # Instantiate configuration classes
+    cfg = EvnConf(FILE)
+    c_cfg = cfg.ctrl_list[CRTL]
+    s_cfg = cfg.site_list[site]
+    return (cfg, c_cfg, s_cfg, site)
 
-CFG = EvnConf(FILE)
-CCFG = CFG.ctrl_list[CRTL]
-SCFG = CFG.site_list[SITE]
 
-
-def test_version():
+def test_version(create_file):
     """Check if version is defined."""
-    pkg_version = CFG.version
+    cfg, c_cfg, s_cfg, site = create_file
+    pkg_version = cfg.version
     logging.debug('package version: %s', pkg_version)
     assert pkg_version == __version__
 
 
-def test_site():
+def test_site(create_file):
     """Check if configuration file exists."""
+    cfg, c_cfg, s_cfg, site = create_file
     cfg_file = Path(str(Path.home()) + '/' + FILE)
     assert cfg_file.is_file()
 
 
-def test_site_name():
+def test_site_name(create_file):
     """ Test property."""
-    assert SCFG.site == SITE
+    cfg, c_cfg, s_cfg, site = create_file
+    assert s_cfg.site == site
 
 
-def test_site_enabled():
+def test_site_enabled(create_file):
     """ Test property."""
-    assert SCFG.enabled
+    cfg, c_cfg, s_cfg, site = create_file
+    if site == 'tst1':
+        assert s_cfg.enabled
+    elif site == 'tst2':
+        assert not s_cfg.enabled
+    else:
+        assert False
 
 
-def test_ctrl_enabled():
+def test_ctrl_enabled(create_file):
     """ Test property."""
-    assert CCFG.enabled
+    cfg, c_cfg, s_cfg, site = create_file
+    assert c_cfg.enabled
 
 
-def test_ctrl_taxo_exclude():
+def test_ctrl_taxo_exclude(create_file):
     """ Test property."""
-    assert CCFG.taxo_exclude == ['TAXO_GROUP_ALIEN_PLANTS']
+    cfg, c_cfg, s_cfg, site = create_file
+    assert c_cfg.taxo_exclude == ['TAXO_GROUP_ALIEN_PLANTS']
 
 
-def test_base_url():
+def test_base_url(create_file):
     """ Test property."""
-    assert SCFG.base_url == 'https://www.faune-xxx.org/'
+    cfg, c_cfg, s_cfg, site = create_file
+    assert s_cfg.base_url == 'https://www.faune-xxx.org/'
 
 
-def test_user_email():
+def test_user_email(create_file):
     """ Test property."""
-    assert SCFG.user_email == 'nom.prenom@example.net'
+    cfg, c_cfg, s_cfg, site = create_file
+    assert s_cfg.user_email == 'nom.prenom@example.net'
 
 
-def test_user_pw():
+def test_user_pw(create_file):
     """ Test property."""
-    assert SCFG.user_pw == 'user_pw'
+    cfg, c_cfg, s_cfg, site = create_file
+    assert s_cfg.user_pw == 'user_pw'
 
 
-def test_client_key():
+def test_client_key(create_file):
     """ Test property."""
-    assert SCFG.client_key == 'client_key'
+    cfg, c_cfg, s_cfg, site = create_file
+    assert s_cfg.client_key == 'client_key'
 
 
-def test_client_secret():
+def test_client_secret(create_file):
     """ Test property."""
-    assert SCFG.client_secret == 'client_secret'
+    cfg, c_cfg, s_cfg, site = create_file
+    assert s_cfg.client_secret == 'client_secret'
 
 
-def test_file_enabled():
+def test_file_enabled(create_file):
     """ Test property."""
-    assert not SCFG.file_enabled
+    cfg, c_cfg, s_cfg, site = create_file
+    assert not s_cfg.file_enabled
 
 
-def test_file_store():
+def test_file_store(create_file):
     """ Test property."""
-    assert SCFG.file_store == 'VN_files' + '/' + SITE + '/'
+    cfg, c_cfg, s_cfg, site = create_file
+    assert s_cfg.file_store == 'VN_files' + '/' + site + '/'
 
 
-def test_db_host():
+def test_db_host(create_file):
     """ Test property."""
-    assert SCFG.db_host == 'localhost'
+    cfg, c_cfg, s_cfg, site = create_file
+    assert s_cfg.db_host == 'localhost'
 
 
-def test_db_port():
+def test_db_port(create_file):
     """ Test property."""
-    assert SCFG.db_port == '5432'
+    cfg, c_cfg, s_cfg, site = create_file
+    assert s_cfg.db_port == '5432'
 
 
-def test_db_name():
+def test_db_name(create_file):
     """ Test property."""
-    assert SCFG.db_name == 'faune_xxx'
+    cfg, c_cfg, s_cfg, site = create_file
+    assert s_cfg.db_name == 'faune_xxx'
 
 
-def test_db_schema_import():
+def test_db_schema_import(create_file):
     """ Test property."""
-    assert SCFG.db_schema_import == 'import'
+    cfg, c_cfg, s_cfg, site = create_file
+    assert s_cfg.db_schema_import == 'import'
 
 
-def test_db_schema_vn():
+def test_db_schema_vn(create_file):
     """ Test property."""
-    assert SCFG.db_schema_vn == 'src_vn'
+    cfg, c_cfg, s_cfg, site = create_file
+    assert s_cfg.db_schema_vn == 'src_vn'
 
 
-def test_db_group():
+def test_db_group(create_file):
     """ Test property."""
-    assert SCFG.db_group == 'lpo_xxx'
+    cfg, c_cfg, s_cfg, site = create_file
+    assert s_cfg.db_group == 'lpo_xxx'
 
 
-def test_db_user():
+def test_db_user(create_file):
     """ Test property."""
-    assert SCFG.db_user == 'xferxx'
+    cfg, c_cfg, s_cfg, site = create_file
+    assert s_cfg.db_user == 'xferxx'
 
 
-def test_db_pw():
+def test_db_pw(create_file):
     """ Test property."""
-    assert SCFG.db_pw == 'db_pw'
+    cfg, c_cfg, s_cfg, site = create_file
+    assert s_cfg.db_pw == 'db_pw'
 
 
-def test_tuning_max_chunks():
+def test_tuning_max_chunks(create_file):
     """ Test property."""
-    assert SCFG.tuning_max_chunks == 10
+    cfg, c_cfg, s_cfg, site = create_file
+    assert s_cfg.tuning_max_chunks == 10
 
 
-def test_tuning_max_retry():
+def test_tuning_max_retry(create_file):
     """ Test property."""
-    assert SCFG.tuning_max_retry == 5
+    cfg, c_cfg, s_cfg, site = create_file
+    assert s_cfg.tuning_max_retry == 5
 
 
-def test_tuning_max_requests():
+def test_tuning_max_requests(create_file):
     """ Test property."""
-    assert SCFG.tuning_max_requests == 0
+    cfg, c_cfg, s_cfg, site = create_file
+    assert s_cfg.tuning_max_requests == 0
 
 
-def test_tuning_lru_maxsize():
+def test_tuning_lru_maxsize(create_file):
     """ Test property."""
-    assert SCFG.tuning_lru_maxsize == 32
+    cfg, c_cfg, s_cfg, site = create_file
+    assert s_cfg.tuning_lru_maxsize == 32
 
 
-def test_tuning_min_year():
+def test_tuning_min_year(create_file):
     """ Test property."""
-    assert SCFG.tuning_min_year == 1901
+    cfg, c_cfg, s_cfg, site = create_file
+    assert s_cfg.tuning_min_year == 1901
 
 
-def test_tuning_pid_kp():
+def test_tuning_pid_kp(create_file):
     """ Test property."""
-    assert SCFG.tuning_pid_kp == 0.0
+    cfg, c_cfg, s_cfg, site = create_file
+    assert s_cfg.tuning_pid_kp == 0.0
 
 
-def test_tuning_pid_ki():
+def test_tuning_pid_ki(create_file):
     """ Test property."""
-    assert SCFG.tuning_pid_ki == 0.003
+    cfg, c_cfg, s_cfg, site = create_file
+    assert s_cfg.tuning_pid_ki == 0.003
 
 
-def test_tuning_pid_kd():
+def test_tuning_pid_kd(create_file):
     """ Test property."""
-    assert SCFG.tuning_pid_kd == 0.0
+    cfg, c_cfg, s_cfg, site = create_file
+    assert s_cfg.tuning_pid_kd == 0.0
 
 
-def test_tuning_pid_setpoint():
+def test_tuning_pid_setpoint(create_file):
     """ Test property."""
-    assert SCFG.tuning_pid_setpoint == 10000
+    cfg, c_cfg, s_cfg, site = create_file
+    assert s_cfg.tuning_pid_setpoint == 10000
 
 
-def test_tuning_pid_limit_min():
+def test_tuning_pid_limit_min(create_file):
     """ Test property."""
-    assert SCFG.tuning_pid_limit_min == 10
+    cfg, c_cfg, s_cfg, site = create_file
+    assert s_cfg.tuning_pid_limit_min == 10
 
 
-def test_tuning_pid_limit_max():
+def test_tuning_pid_limit_max(create_file):
     """ Test property."""
-    assert SCFG.tuning_pid_limit_max == 2000
+    cfg, c_cfg, s_cfg, site = create_file
+    assert s_cfg.tuning_pid_limit_max == 2000
 
 
-def test_tuning_pid_delta_days():
+def test_tuning_pid_delta_days(create_file):
     """ Test property."""
-    assert SCFG.tuning_pid_delta_days == 15
+    cfg, c_cfg, s_cfg, site = create_file
+    assert s_cfg.tuning_pid_delta_days == 15
