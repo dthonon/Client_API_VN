@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 import requests
 
-from export_vn.biolovision_api import (EntitiesAPI, LocalAdminUnitsAPI,
+from export_vn.biolovision_api import (EntitiesAPI, FieldsAPI, LocalAdminUnitsAPI,
                                        MaxChunksError, ObservationsAPI,
                                        ObserversAPI, PlacesAPI, SpeciesAPI,
                                        TaxoGroupsAPI, TerritorialUnitsAPI)
@@ -26,6 +26,7 @@ FILE = '.evn_test.yaml'
 CFG = EvnConf(FILE).site_list[SITE]
 STORE_FILE = StoreFile(CFG)
 ENTITIES_API = EntitiesAPI(CFG)
+FIELDS_API = FieldsAPI(CFG)
 LOCAL_ADMIN_UNITS_API = LocalAdminUnitsAPI(CFG)
 OBSERVATIONS_API = ObservationsAPI(CFG)
 OBSERVERS_API = ObserversAPI(CFG)
@@ -66,7 +67,7 @@ def test_fields_get():
     """Get a field."""
     field = FIELDS_API.api_get('2')
     assert FIELDS_API.transfer_errors == 0
-    assert entity['data'][0]['short_name'] == 'LPO 07'
+    assert field['data'] == ''
 
 
 def test_fields_list():
@@ -74,7 +75,7 @@ def test_fields_list():
     fields = FIELDS_API.api_list()
     assert FIELDS_API.transfer_errors == 0
     assert len(fields['data']) >= 8
-    assert fields['data'][0]['short_name'] == '-'
+    assert fields['data'][0]['id'] == '3'
 
 
 # ------------------------------------

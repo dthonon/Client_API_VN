@@ -48,7 +48,7 @@ _ConfSchema = Map({
         Map({
             'enabled': Bool(),
             Optional('json_format', default='short'): Enum(['short', 'long']),
-            Optional('taxo_exclude', default=[]): Seq(Str())
+            'taxo_exclude': Seq(Str())
         }),
         'observers':
         Map({'enabled': Bool()}),

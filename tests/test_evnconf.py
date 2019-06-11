@@ -113,7 +113,10 @@ def test_file_enabled(create_file):
 def test_file_store(create_file):
     """ Test property."""
     cfg, c_cfg, s_cfg, site = create_file
-    assert s_cfg.file_store == 'VN_files' + '/' + site + '/'
+    if s_cfg.file_enabled:
+        assert s_cfg.file_store == 'VN_files' + '/' + site + '/'
+    else:
+        assert s_cfg.file_store == ''
 
 
 def test_db_host(create_file):
