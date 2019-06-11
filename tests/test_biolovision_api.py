@@ -59,6 +59,24 @@ def test_entities_list():
     assert entities['data'][0]['short_name'] == '-'
 
 
+# --------------------------
+# Fields controler methods
+# --------------------------
+def test_fields_get():
+    """Get a field."""
+    field = FIELDS_API.api_get('2')
+    assert FIELDS_API.transfer_errors == 0
+    assert entity['data'][0]['short_name'] == 'LPO 07'
+
+
+def test_fields_list():
+    """Get list of fields."""
+    fields = FIELDS_API.api_list()
+    assert FIELDS_API.transfer_errors == 0
+    assert len(fields['data']) >= 8
+    assert fields['data'][0]['short_name'] == '-'
+
+
 # ------------------------------------
 #  Local admin units controler methods
 # ------------------------------------
