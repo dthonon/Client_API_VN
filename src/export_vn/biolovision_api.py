@@ -18,6 +18,44 @@ must be avoided, as memory could be insufficient.
 max_chunks __init__ parameter controls the maximum number of chunks
 allowed and raises an exception if it exceeds.
 
+Biolovision API to Classes mapping
+- BiolovisionAPI         - Top class, not for direct use
+
+API | Class
+----|------
+Taxo groups | TaxoGroupsAPI
+Families controller | NA
+Species Controller | SpeciesAPI
+Territorial Units Controller | TerritorialUnitsAPI
+Local admin units controller | LocalAdminUnitsAPI
+Places controller | PlacesAPI
+Observers | ObserversAPI
+Entities | EntitiesAPI
+Export organizations controller | NA
+Observations Controller | ObservationsAPI
+Fields controller | FieldsAPI
+Media Controller | NA
+Import files controller | NA
+Import files/Observations controller |
+Validations controller | NA
+Mortality informations controller | NA
+Bearded Vulture Birds controller | NA
+Bearded Vulture informations controller | NA
+Grids controller | NA
+Grid-Commune controller | NA
+Atlas documents | NA
+
+Methods, see each class
+
+Properties
+- transfer_errors            - Return number of HTTP errors
+
+Exceptions
+- BiolovisionApiException    - General exception
+- HTTPError                  - HTTP protocol error
+- MaxChunksError             - Too many chunks returned from API calls
+- IncorrectParameter         - Incorrect or missing parameter
+
 """
 import json
 import logging
@@ -388,6 +426,24 @@ class EntitiesAPI(BiolovisionAPI):
                  max_requests=sys.maxsize,
                  max_chunks=10):
         super().__init__(config, 'entities', max_retry, max_requests,
+                         max_chunks)
+
+
+class FieldsAPI(BiolovisionAPI):
+    """ Implement api calls to fields controler.
+
+    Methods
+    - api_get                - Return a single entity from the controler
+    - api_list               - Return a list of entity from the controler
+
+    """
+
+    def __init__(self,
+                 config,
+                 max_retry=5,
+                 max_requests=sys.maxsize,
+                 max_chunks=10):
+        super().__init__(config, 'fields', max_retry, max_requests,
                          max_chunks)
 
 
