@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from export_vn.download_vn import (Entities, LocalAdminUnits, Observations,
+from export_vn.download_vn import (Entities, Fields, LocalAdminUnits, Observations,
                                    Observers, Places, Species, TaxoGroup,
                                    TerritorialUnits)
 from export_vn.evnconf import EvnConf
@@ -25,6 +25,7 @@ FILE = '.evn_test.yaml'
 CFG = EvnConf(FILE).site_list[SITE]
 STORE_FILE = StoreFile(CFG)
 ENTITIES = Entities(CFG, STORE_FILE)
+FIELDS = Fields(CFG, STORE_FILE)
 LOCAL_ADMIN_UNITS = LocalAdminUnits(CFG, STORE_FILE)
 OBSERVATIONS = Observations(CFG, STORE_FILE)
 OBSERVERS = Observers(CFG, STORE_FILE)
@@ -48,6 +49,24 @@ def test_entities_store(capsys):
     if Path(file_json).is_file():
         Path(file_json).unlink()
     ENTITIES.store()
+    assert Path(file_json).is_file()
+    with gzip.open(file_json, 'rb') as g:
+        items_dict = json.loads(g.read().decode('utf-8'))
+    if SITE == 't38':
+        assert len(items_dict['data']) >= 20
+    elif SITE == 't07':
+        assert len(items_dict['data']) >= 8
+
+
+# ---------
+#  Fields
+# ---------
+def test_fields_store(capsys):
+    """Store fields to file."""
+    file_json = str(Path.home()) + '/' + CFG.file_store + 'fields_1.json.gz'
+    if Path(file_json).is_file():
+        Path(file_json).unlink()
+    FIELDS.store()
     assert Path(file_json).is_file()
     with gzip.open(file_json, 'rb') as g:
         items_dict = json.loads(g.read().decode('utf-8'))

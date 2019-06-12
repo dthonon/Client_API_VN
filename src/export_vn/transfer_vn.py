@@ -16,7 +16,7 @@ from tabulate import tabulate
 
 import pyexpander.lib as pyexpander
 from export_vn.biolovision_api import TaxoGroupsAPI
-from export_vn.download_vn import (Entities, LocalAdminUnits, Observations,
+from export_vn.download_vn import (Entities, Fields, LocalAdminUnits, Observations,
                                    Observers, Places, Species, TaxoGroup,
                                    TerritorialUnits)
 from export_vn.evnconf import EvnConf
@@ -105,7 +105,7 @@ def full_download(cfg_ctrl):
             if cfg.enabled:
                 logger.info(_('Working on site %s'), cfg.site)
 
-                ctrl = 'taxo_group'
+                ctrl = 'taxo_groups'
                 if cfg_crtl_list[ctrl].enabled:
                     logger.info(_('Using controler %s on site %s'), ctrl,
                                 cfg.site)
@@ -138,7 +138,14 @@ def full_download(cfg_ctrl):
                     entities = Entities(cfg, store_pg)
                     entities.store()
 
-                ctrl = 'territorial_unit'
+                ctrl = 'fields'
+                if cfg_crtl_list[ctrl].enabled:
+                    logger.info(_('Using controler %s on site %s'), ctrl,
+                                cfg.site)
+                    entities = Fields(cfg, store_pg)
+                    entities.store()
+
+                ctrl = 'territorial_units'
                 if cfg_crtl_list[ctrl].enabled:
                     logger.info(_('Using controler %s on site %s'), ctrl,
                                 cfg.site)

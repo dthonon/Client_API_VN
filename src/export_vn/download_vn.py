@@ -14,11 +14,11 @@ import logging
 import sys
 from datetime import datetime, timedelta
 
-from export_vn.biolovision_api import (EntitiesAPI, HTTPError,
+from export_vn.biolovision_api import (EntitiesAPI, FieldsAPI,
                                        LocalAdminUnitsAPI, MaxChunksError,
                                        ObservationsAPI, ObserversAPI,
                                        PlacesAPI, SpeciesAPI, TaxoGroupsAPI,
-                                       TerritorialUnitsAPI)
+                                       TerritorialUnitsAPI, HTTPError)
 from export_vn.regulator import PID
 
 from . import (__version__, _)
@@ -118,6 +118,25 @@ class Entities(DownloadVn):
                  max_requests=sys.maxsize,
                  max_chunks=10):
         super().__init__(config, EntitiesAPI(config), backend, max_retry,
+                         max_requests, max_chunks)
+        return None
+
+
+class Fields(DownloadVn):
+    """ Implement store from fields controler.
+
+    Methods
+    - store               - Download and store to json
+
+    """
+
+    def __init__(self,
+                 config,
+                 backend,
+                 max_retry=5,
+                 max_requests=sys.maxsize,
+                 max_chunks=10):
+        super().__init__(config, FieldsAPI(config), backend, max_retry,
                          max_requests, max_chunks)
         return None
 

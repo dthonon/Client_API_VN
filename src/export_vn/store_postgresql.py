@@ -235,6 +235,15 @@ class PostgresqlUtils:
             PrimaryKeyConstraint('id', 'site', name='entities_json_pk'))
         return None
 
+    def _create_fields_json(self):
+        """Create fields_json table if it does not exist."""
+        self._create_table(
+            'fields_json', Column('id', Integer, nullable=False),
+            Column('site', String, nullable=False),
+            Column('item', JSONB, nullable=False),
+            PrimaryKeyConstraint('id', 'site', name='fields_json_pk'))
+        return None
+
     def _create_forms_json(self):
         """Create forms_json table if it does not exist."""
         self._create_table(
@@ -462,6 +471,7 @@ class PostgresqlUtils:
         self._create_increment_log()
 
         self._create_entities_json()
+        self._create_fields_json()
         self._create_forms_json()
         self._create_local_admin_units_json()
         self._create_observations_json()
@@ -586,6 +596,10 @@ class StorePostgresql:
                 'type': 'simple',
                 'metadata': None
             },
+            'fields': {
+                'type': 'simple',
+                'metadata': None
+            },
             'forms': {
                 'type': 'simple',
                 'metadata': None
@@ -621,6 +635,8 @@ class StorePostgresql:
         }
         self._table_defs['entities']['metadata'] = self._metadata.tables[
             dbschema + '.entities_json']
+        self._table_defs['fields']['metadata'] = self._metadata.tables[
+            dbschema + '.fields_json']
         self._table_defs['forms']['metadata'] = self._metadata.tables[
             dbschema + '.forms_json']
         self._table_defs['local_admin_units'][

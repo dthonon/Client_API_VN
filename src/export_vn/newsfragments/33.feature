@@ -1,4 +1,6 @@
-Added parameter to YAML configuration file.
+Added parameters to YAML configuration file.
+See also Issue #43 and #44 for new or changed parameters.
+ 
 In ``database:`` section, the followng parameter defines the 
 geographic projection (EPGS code) used to create 
 ``coord_x_local`` and ``coord_y_local``.

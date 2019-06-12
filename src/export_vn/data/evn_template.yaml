@@ -13,6 +13,9 @@ controler:
     entities:
         # Enable download from this controler
         enabled: true
+    fields:
+        # Enable download from this controler
+        enabled: true
     local_admin_units:
         # Enable download from this controler
         enabled: true
@@ -63,10 +66,10 @@ controler:
     species:
         # Enable download from this controler
         enabled: true
-    taxo_group:
+    taxo_groups:
         # Enable download from this controler
         enabled: true
-    territorial_unit:
+    territorial_units:
         # Enable download from this controler
         enabled: true
 

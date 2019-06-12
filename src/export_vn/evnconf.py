@@ -42,6 +42,8 @@ _ConfSchema = Map({
     Map({
         'entities':
         Map({'enabled': Bool()}),
+        'fields':
+        Map({'enabled': Bool()}),
         'local_admin_units':
         Map({'enabled': Bool()}),
         'observations':
@@ -56,9 +58,9 @@ _ConfSchema = Map({
         Map({'enabled': Bool()}),
         'species':
         Map({'enabled': Bool()}),
-        'taxo_group':
+        'taxo_groups':
         Map({'enabled': Bool()}),
-        'territorial_unit':
+        'territorial_units':
         Map({'enabled': Bool()})
     }),
     'site':

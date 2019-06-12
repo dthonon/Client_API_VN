@@ -38,6 +38,15 @@ def test_version(create_file):
     assert pkg_version == __version__
 
 
+def test_ctrl_list(create_file):
+    """Check if list of controlers is complete"""
+    cfg, c_cfg, s_cfg, site = create_file
+    ctrl_list= cfg.ctrl_list
+    for ctrl in {'entities', 'fields', 'local_admin_units', 'observations',
+                 'observers', 'places', 'species', 'taxo_groups', 'territorial_units'}:
+        assert ctrl in ctrl_list
+
+
 def test_site(create_file):
     """Check if configuration file exists."""
     cfg, c_cfg, s_cfg, site = create_file

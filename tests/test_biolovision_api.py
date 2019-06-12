@@ -65,9 +65,9 @@ def test_entities_list():
 # --------------------------
 def test_fields_get():
     """Get a field."""
-    field = FIELDS_API.api_get('2')
+    field = FIELDS_API.api_get('0')
     assert FIELDS_API.transfer_errors == 0
-    assert field['data'] == ''
+    assert field['data'] == []
 
 
 def test_fields_list():
