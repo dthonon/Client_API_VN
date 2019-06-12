@@ -8,6 +8,7 @@ parameters are then available as properties of EvnCtrlConf and EvnSiteConf.
 
 """
 import logging
+import sys
 from pathlib import Path
 from typing import Any, Dict, List
 from typing import Optional as T_Optional
@@ -93,18 +94,19 @@ _ConfSchema = Map({
     }),
     Optional('tuning'):
     Map({
-        'max_chunks': Int(),
-        'max_retry': Int(),
-        'max_requests': Int(),
-        'lru_maxsize': Int(),
-        'min_year': Int(),
-        'pid_kp': Float(),
-        'pid_ki': Float(),
-        'pid_kd': Float(),
-        'pid_setpoint': Float(),
-        'pid_limit_min': Float(),
-        'pid_limit_max': Float(),
-        'pid_delta_days': Float()
+        Optional('max_chunks', default=10): Int(),
+        Optional('max_retry', default=5): Int(),
+        Optional('max_requests', default=sys.maxsize): Int(),
+        Optional('retry_delay', default=5): Int(),
+        Optional('lru_maxsize', default=32): Int(),
+        Optional('min_year', default=1901): Int(),
+        Optional('pid_kp', default=0.0): Float(),
+        Optional('pid_ki', default=0.003): Float(),
+        Optional('pid_kd', default=0.0): Float(),
+        Optional('pid_setpoint', default=10000): Float(),
+        Optional('pid_limit_min', default=10): Float(),
+        Optional('pid_limit_max', default=2000): Float(),
+        Optional('pid_delta_days', default=15): Float()
     })
 })
 
@@ -180,6 +182,8 @@ class EvnSiteConf:
             if 'tuning' in config:
                 self._max_chunks = config['tuning']['max_chunks']  # type: int
                 self._max_retry = config['tuning']['max_retry']  # type: int
+                self._retry_delay = config['tuning'][
+                    'retry_delay']  # type: int
                 self._max_requests = config['tuning'][
                     'max_requests']  # type: int
                 self._lru_maxsize = config['tuning'][
@@ -298,6 +302,11 @@ class EvnSiteConf:
     def tuning_max_retry(self) -> int:
         """Return tuning parameter."""
         return self._max_retry
+
+    @property
+    def tuning_retry_delay(self) -> int:
+        """Return tuning parameter."""
+        return self._retry_delay
 
     @property
     def tuning_max_requests(self) -> int:

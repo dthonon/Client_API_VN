@@ -11,7 +11,6 @@ Properties
 
 """
 import logging
-import sys
 from datetime import datetime, timedelta
 
 from export_vn.biolovision_api import (EntitiesAPI, FieldsAPI,
@@ -41,12 +40,18 @@ class DownloadVn:
                  config,
                  api_instance,
                  backend,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         self._config = config
         self._api_instance = api_instance
         self._backend = backend
+        if max_retry is None:
+            max_retry = config.tuning_max_retry
+        if max_requests is None:
+            max_requests = config.tuning_max_requests
+        if max_chunks is None:
+            max_chunks = config.tuning_max_chunks
         self._limits = {
             'max_retry': max_retry,
             'max_requests': max_requests,
@@ -114,9 +119,9 @@ class Entities(DownloadVn):
     def __init__(self,
                  config,
                  backend,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, EntitiesAPI(config), backend, max_retry,
                          max_requests, max_chunks)
         return None
@@ -133,9 +138,9 @@ class Fields(DownloadVn):
     def __init__(self,
                  config,
                  backend,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, FieldsAPI(config), backend, max_retry,
                          max_requests, max_chunks)
         return None
@@ -152,9 +157,9 @@ class LocalAdminUnits(DownloadVn):
     def __init__(self,
                  config,
                  backend,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, LocalAdminUnitsAPI(config), backend,
                          max_retry, max_requests, max_chunks)
         return None
@@ -172,9 +177,9 @@ class Observations(DownloadVn):
     def __init__(self,
                  config,
                  backend,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, ObservationsAPI(config), backend, max_retry,
                          max_requests, max_chunks)
         return None
@@ -283,14 +288,15 @@ class Observations(DownloadVn):
                                             datetime.now())
                 end_date = datetime.now()
                 start_date = end_date
-                min_date = datetime(1901, 1, 1)
+                min_date = datetime(self._config.tuning_min_year, 1, 1)
                 seq = 1
-                pid = PID(kp=0.0,
-                          ki=0.003,
-                          kd=0.0,
-                          setpoint=10000,
-                          output_limits=(10, 2000))
-                delta_days = 15
+                pid = PID(kp=self._config.tuning_pid_kp,
+                          ki=self._config.tuning_pid_ki,
+                          kd=self._config.tuning_pid_kd,
+                          setpoint=self._config.tuning_pid_setpoint,
+                          output_limits=(self._config.tuning_pid_limit_min,
+                                         self._config.tuning_pid_limit_max))
+                delta_days = self._config.tuning_pid_delta_days
                 while start_date > min_date:
                     start_date = end_date - timedelta(days=delta_days)
                     q_param = {
@@ -476,9 +482,9 @@ class Observers(DownloadVn):
     def __init__(self,
                  config,
                  backend,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, ObserversAPI(config), backend, max_retry,
                          max_requests, max_chunks)
         return None
@@ -495,9 +501,9 @@ class Places(DownloadVn):
     def __init__(self,
                  config,
                  backend,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, PlacesAPI(config), backend, max_retry,
                          max_requests, max_chunks)
         return None
@@ -514,9 +520,9 @@ class Species(DownloadVn):
     def __init__(self,
                  config,
                  backend,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, SpeciesAPI(config), backend, max_retry,
                          max_requests, max_chunks)
         return None
@@ -547,9 +553,9 @@ class TaxoGroup(DownloadVn):
     def __init__(self,
                  config,
                  backend,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, TaxoGroupsAPI(config), backend, max_retry,
                          max_requests, max_chunks)
         return None
@@ -566,9 +572,9 @@ class TerritorialUnits(DownloadVn):
     def __init__(self,
                  config,
                  backend,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, TerritorialUnitsAPI(config), backend,
                          max_retry, max_requests, max_chunks)
         return None

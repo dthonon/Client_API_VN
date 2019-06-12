@@ -10,10 +10,11 @@ from pathlib import Path
 import pytest
 import requests
 
-from export_vn.biolovision_api import (EntitiesAPI, FieldsAPI, LocalAdminUnitsAPI,
-                                       MaxChunksError, ObservationsAPI,
-                                       ObserversAPI, PlacesAPI, SpeciesAPI,
-                                       TaxoGroupsAPI, TerritorialUnitsAPI)
+from export_vn.biolovision_api import (EntitiesAPI, FieldsAPI,
+                                       LocalAdminUnitsAPI, MaxChunksError,
+                                       ObservationsAPI, ObserversAPI,
+                                       PlacesAPI, SpeciesAPI, TaxoGroupsAPI,
+                                       TerritorialUnitsAPI)
 from export_vn.evnconf import EvnConf
 from export_vn.store_file import StoreFile
 
@@ -746,7 +747,7 @@ def test_species_list_30(capsys):
 def test_species_list_error(capsys):
     """Get a list of species from taxo_group 1, limited to 1 chunk."""
     with pytest.raises(MaxChunksError) as excinfo:  # noqa: F841
-        species_list = SPECIES_API_ERR.api_list(    # noqa: F841
+        species_list = SPECIES_API_ERR.api_list(  # noqa: F841
             {'id_taxo_group': '1'})
 
 

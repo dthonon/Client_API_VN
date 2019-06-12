@@ -106,10 +106,16 @@ class BiolovisionAPI:
     def __init__(self,
                  config,
                  controler,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         self._config = config
+        if max_retry is None:
+            max_retry = config.tuning_max_retry
+        if max_requests is None:
+            max_requests = config.tuning_max_requests
+        if max_chunks is None:
+            max_chunks = config.tuning_max_chunks
         self._limits = {
             'max_retry': max_retry,
             'max_requests': max_requests,
@@ -216,7 +222,7 @@ class BiolovisionAPI:
                 logger.error(_('%s status code = %s, for URL %s'), method,
                              resp.status_code, protected_url)
                 self._transfer_errors += 1
-                time.sleep(5)
+                time.sleep(self._config.retry_delay)
                 if self._transfer_errors > self._limits['max_retry']:
                     # Too many retries. Raising exception
                     logger.critical(_('Too many error %s, raising exception'),
@@ -422,9 +428,9 @@ class EntitiesAPI(BiolovisionAPI):
 
     def __init__(self,
                  config,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, 'entities', max_retry, max_requests,
                          max_chunks)
 
@@ -440,11 +446,10 @@ class FieldsAPI(BiolovisionAPI):
 
     def __init__(self,
                  config,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
-        super().__init__(config, 'fields', max_retry, max_requests,
-                         max_chunks)
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
+        super().__init__(config, 'fields', max_retry, max_requests, max_chunks)
 
 
 class LocalAdminUnitsAPI(BiolovisionAPI):
@@ -458,9 +463,9 @@ class LocalAdminUnitsAPI(BiolovisionAPI):
 
     def __init__(self,
                  config,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, 'local_admin_units', max_retry, max_requests,
                          max_chunks)
 
@@ -477,9 +482,9 @@ class ObservationsAPI(BiolovisionAPI):
 
     def __init__(self,
                  config,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, 'observations', max_retry, max_requests,
                          max_chunks)
 
@@ -586,9 +591,9 @@ class ObserversAPI(BiolovisionAPI):
 
     def __init__(self,
                  config,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, 'observers', max_retry, max_requests,
                          max_chunks)
 
@@ -604,9 +609,9 @@ class PlacesAPI(BiolovisionAPI):
 
     def __init__(self,
                  config,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, 'places', max_retry, max_requests, max_chunks)
 
 
@@ -621,9 +626,9 @@ class SpeciesAPI(BiolovisionAPI):
 
     def __init__(self,
                  config,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, 'species', max_retry, max_requests,
                          max_chunks)
 
@@ -639,9 +644,9 @@ class TaxoGroupsAPI(BiolovisionAPI):
 
     def __init__(self,
                  config,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, 'taxo_groups', max_retry, max_requests,
                          max_chunks)
 
@@ -662,9 +667,9 @@ class TerritorialUnitsAPI(BiolovisionAPI):
 
     def __init__(self,
                  config,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, 'territorial_units', max_retry, max_requests,
                          max_chunks)
 

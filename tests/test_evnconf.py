@@ -14,6 +14,7 @@ from export_vn.evnconf import EvnConf
 CRTL = 'observations'
 FILE = '.evn_tst.yaml'
 
+
 # Create test site configuration file
 @pytest.fixture(scope="session", params=['tst1', 'tst2'])
 def create_file(request):
@@ -41,9 +42,12 @@ def test_version(create_file):
 def test_ctrl_list(create_file):
     """Check if list of controlers is complete"""
     cfg, c_cfg, s_cfg, site = create_file
-    ctrl_list= cfg.ctrl_list
-    for ctrl in {'entities', 'fields', 'local_admin_units', 'observations',
-                 'observers', 'places', 'species', 'taxo_groups', 'territorial_units'}:
+    ctrl_list = cfg.ctrl_list
+    for ctrl in {
+            'entities', 'fields', 'local_admin_units', 'observations',
+            'observers', 'places', 'species', 'taxo_groups',
+            'territorial_units'
+    }:
         assert ctrl in ctrl_list
 
 

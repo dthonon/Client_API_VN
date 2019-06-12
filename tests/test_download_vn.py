@@ -9,10 +9,9 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import pytest
-
-from export_vn.download_vn import (Entities, Fields, LocalAdminUnits, Observations,
-                                   Observers, Places, Species, TaxoGroup,
-                                   TerritorialUnits)
+from export_vn.download_vn import (Entities, Fields, LocalAdminUnits,
+                                   Observations, Observers, Places, Species,
+                                   TaxoGroup, TerritorialUnits)
 from export_vn.evnconf import EvnConf
 from export_vn.store_file import StoreFile
 
