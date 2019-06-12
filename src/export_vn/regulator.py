@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Regulator for interval download, aiming at maintaining a constant size of data.
 The setpoint is the number of sightings to be downloaded.
@@ -10,7 +9,7 @@ Derived from https://github.com/m-lundberg/simple-pid
 
 import logging
 
-from . import (__version__, _)
+from . import _, __version__
 
 logger = logging.getLogger('transfer_vn.regulator')
 
@@ -116,4 +115,4 @@ class PID(object):
         self._max_output = max_output
 
         self._error_sum = min(self._error_sum, self._max_output)
-        self._last_output = _clamp(self._last_output, self.output_limits)
+        self._last_output = self._clamp(self._last_output, self.output_limits)

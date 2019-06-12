@@ -1,9 +1,7 @@
-#!/usr/bin/env python3
 """
 Test download size regulator.
 """
 import logging
-
 
 from export_vn.regulator import PID
 
@@ -80,3 +78,6 @@ def test_output_limits():
     pid = PID(100, 20, 40, setpoint=10, output_limits=(0, 100))
     assert 0 <= pid(0) <= 100
     assert 0 <= pid(-100) <= 100
+    pid.output_limits = (0, 50)
+    assert 0 <= pid(0) <= 50
+    assert 0 <= pid(-100) <= 50
