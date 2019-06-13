@@ -24,7 +24,7 @@ SET search_path TO $(db_schema_vn),public;
 CREATE OR REPLACE FUNCTION update_geom_triggerfn()
 RETURNS trigger AS \$body\$
     BEGIN
-    NEW.geom := ST_SetSRID(ST_MakePoint(NEW.coord_x_l93, NEW.coord_y_l93), 2154);
+    NEW.geom := ST_SetSRID(ST_MakePoint(NEW.coord_x_local, NEW.coord_y_local), 2154);
     RETURN NEW;
     END;
 \$body\$
@@ -206,8 +206,8 @@ CREATE TABLE $(db_schema_vn).local_admin_units(
     insee               VARCHAR(50),
     coord_lat           FLOAT,
     coord_lon           FLOAT,
-    coord_x_l93         FLOAT,
-    coord_y_l93         FLOAT,
+    coord_x_local         FLOAT,
+    coord_y_local         FLOAT,
     PRIMARY KEY (uuid)
 );
 -- Add geometry column
@@ -247,13 +247,13 @@ CREATE OR REPLACE FUNCTION update_local_admin_units() RETURNS TRIGGER AS \$\$
             insee        = CAST(NEW.item->>0 AS JSON)->>'insee',
             coord_lat    = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lat' AS FLOAT),
             coord_lon    = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lon' AS FLOAT),
-            coord_x_l93  = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_l93' AS FLOAT),
-            coord_y_l93  = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_l93' AS FLOAT)
+            coord_x_local  = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_local' AS FLOAT),
+            coord_y_local  = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_local' AS FLOAT)
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
             INSERT INTO $(db_schema_vn).local_admin_units(site, id, id_canton, name, insee,
-                                                          coord_lat, coord_lon, coord_x_l93, coord_y_l93)
+                                                          coord_lat, coord_lon, coord_x_local, coord_y_local)
             VALUES (
                 NEW.site,
                 NEW.id,
@@ -262,8 +262,8 @@ CREATE OR REPLACE FUNCTION update_local_admin_units() RETURNS TRIGGER AS \$\$
                 CAST(NEW.item->>0 AS JSON)->>'insee',
                 CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lat' AS FLOAT),
                 CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lon' AS FLOAT),
-                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_l93' AS FLOAT),
-                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_l93' AS FLOAT)
+                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_local' AS FLOAT),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_local' AS FLOAT)
             );
             END IF;
         RETURN NEW;
@@ -271,7 +271,7 @@ CREATE OR REPLACE FUNCTION update_local_admin_units() RETURNS TRIGGER AS \$\$
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting row when raw data is inserted
         INSERT INTO $(db_schema_vn).local_admin_units(site, id, id_canton, name, insee,
-                                                      coord_lat, coord_lon, coord_x_l93, coord_y_l93)
+                                                      coord_lat, coord_lon, coord_x_local, coord_y_local)
         VALUES (
             NEW.site,
             NEW.id,
@@ -280,8 +280,8 @@ CREATE OR REPLACE FUNCTION update_local_admin_units() RETURNS TRIGGER AS \$\$
             CAST(NEW.item->>0 AS JSON)->>'insee',
             CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lat' AS FLOAT),
             CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lon' AS FLOAT),
-            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_l93' AS FLOAT),
-            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_l93' AS FLOAT)
+            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_local' AS FLOAT),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_local' AS FLOAT)
         );
         RETURN NEW;
     END IF;
@@ -313,8 +313,8 @@ CREATE TABLE $(db_schema_vn).observations (
     place               VARCHAR(150),
     coord_lat           FLOAT,
     coord_lon           FLOAT,
-    coord_x_l93         FLOAT,
-    coord_y_l93         FLOAT,
+    coord_x_local         FLOAT,
+    coord_y_local         FLOAT,
     precision           VARCHAR(100),
     estimation_code     VARCHAR(100),
     count               INTEGER,
@@ -380,8 +380,8 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             place           = CAST(NEW.item->>0 AS JSON) #>> '{place,name}',
             coord_lat       = CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_lat' AS FLOAT),
             coord_lon       = CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_lon' AS FLOAT),
-            coord_x_l93     = CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_x_l93' AS FLOAT),
-            coord_y_l93     = CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_y_l93' AS FLOAT),
+            coord_x_local     = CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_x_local' AS FLOAT),
+            coord_y_local     = CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_y_local' AS FLOAT),
             precision       = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'precision',
             estimation_code = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'estimation_code',
             count           = CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'count' AS INTEGER),
@@ -406,7 +406,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             -- Inserting data on src_vn.observations when raw data is inserted
             INSERT INTO $(db_schema_vn).observations (site, id_sighting, pseudo_id_sighting, id_universal, id_species, taxonomy,
                                              date, date_year, timing, id_place, place,
-                                             coord_lat, coord_lon, coord_x_l93, coord_y_l93, precision, estimation_code,
+                                             coord_lat, coord_lon, coord_x_local, coord_y_local, precision, estimation_code,
                                              count, atlas_code, altitude, project_code, hidden, admin_hidden, name, anonymous, entity, details,
                                              comment, hidden_comment, mortality, death_cause2, insert_date, update_date)
             VALUES (
@@ -424,8 +424,8 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
                 CAST(NEW.item->>0 AS JSON) #>> '{place,name}',
                 CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_lat' AS FLOAT),
                 CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_lon' AS FLOAT),
-                CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_x_l93' AS FLOAT),
-                CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_y_l93' AS FLOAT),
+                CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_x_local' AS FLOAT),
+                CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_y_local' AS FLOAT),
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'precision',
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'estimation_code',
                 CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'count' AS INTEGER),
@@ -451,7 +451,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
         -- Inserting data on src_vn.observations when raw data is inserted
         INSERT INTO $(db_schema_vn).observations (site, id_sighting, pseudo_id_sighting, id_universal, id_species, taxonomy,
                                          date, date_year, timing, id_place, place,
-                                         coord_lat, coord_lon, coord_x_l93, coord_y_l93, precision, estimation_code,
+                                         coord_lat, coord_lon, coord_x_local, coord_y_local, precision, estimation_code,
                                          count, atlas_code, altitude, project_code, hidden, admin_hidden, name, anonymous, entity, details,
                                          comment, hidden_comment, mortality, death_cause2, insert_date, update_date)
         VALUES (
@@ -469,8 +469,8 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             CAST(NEW.item->>0 AS JSON) #>> '{place,name}',
             CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_lat' AS FLOAT),
             CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_lon' AS FLOAT),
-            CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_x_l93' AS FLOAT),
-            CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_y_l93' AS FLOAT),
+            CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_x_local' AS FLOAT),
+            CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_y_local' AS FLOAT),
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'precision',
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'estimation_code',
             CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'count' AS INTEGER),
@@ -609,8 +609,8 @@ CREATE TABLE $(db_schema_vn).places(
     visible             INTEGER,
     coord_lat           FLOAT,
     coord_lon           FLOAT,
-    coord_x_l93         FLOAT,
-    coord_y_l93         FLOAT,
+    coord_x_local         FLOAT,
+    coord_y_local         FLOAT,
     PRIMARY KEY (uuid)
 );
 -- Add geometry column
@@ -655,14 +655,14 @@ CREATE OR REPLACE FUNCTION update_places() RETURNS TRIGGER AS \$\$
             visible       = CAST(CAST(NEW.item->>0 AS JSON)->>'visible' AS INTEGER),
             coord_lat     = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lat' AS FLOAT),
             coord_lon     = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lon' AS FLOAT),
-            coord_x_l93   = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_l93' AS FLOAT),
-            coord_y_l93   = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_l93' AS FLOAT)
+            coord_x_local   = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_local' AS FLOAT),
+            coord_y_local   = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_local' AS FLOAT)
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
             INSERT INTO $(db_schema_vn).places(site, id, id_commune, id_region, name, is_private,
                                                    loc_precision, altitude, place_type, visible,
-                                                   coord_lat, coord_lon, coord_x_l93, coord_y_l93)
+                                                   coord_lat, coord_lon, coord_x_local, coord_y_local)
             VALUES (
                 NEW.site,
                 NEW.id,
@@ -676,8 +676,8 @@ CREATE OR REPLACE FUNCTION update_places() RETURNS TRIGGER AS \$\$
                 CAST(CAST(NEW.item->>0 AS JSON)->>'visible' AS INTEGER),
                 CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lat' AS FLOAT),
                 CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lon' AS FLOAT),
-                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_l93' AS FLOAT),
-                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_l93' AS FLOAT)
+                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_local' AS FLOAT),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_local' AS FLOAT)
             );
             END IF;
         RETURN NEW;
@@ -686,7 +686,7 @@ CREATE OR REPLACE FUNCTION update_places() RETURNS TRIGGER AS \$\$
         -- Inserting data on src_vn.observations when raw data is inserted
         INSERT INTO $(db_schema_vn).places(site, id, id_commune, id_region, name, is_private,
                                                loc_precision, altitude, place_type, visible,
-                                               coord_lat, coord_lon, coord_x_l93, coord_y_l93)
+                                               coord_lat, coord_lon, coord_x_local, coord_y_local)
         VALUES (
             NEW.site,
             NEW.id,
@@ -700,8 +700,8 @@ CREATE OR REPLACE FUNCTION update_places() RETURNS TRIGGER AS \$\$
             CAST(CAST(NEW.item->>0 AS JSON)->>'visible' AS INTEGER),
             CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lat' AS FLOAT),
             CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lon' AS FLOAT),
-            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_l93' AS FLOAT),
-            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_l93' AS FLOAT)
+            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_local' AS FLOAT),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_local' AS FLOAT)
         );
         RETURN NEW;
     END IF;

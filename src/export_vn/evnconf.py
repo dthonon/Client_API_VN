@@ -178,6 +178,7 @@ class EvnSiteConf:
             self._db_group = config['database']['db_group']  # type: str
             self._db_user = config['database']['db_user']  # type: str
             self._db_pw = config['database']['db_pw']  # type: str
+            self._db_out_proj = config['database']['db_out_proj']  # type: str
 
             if 'tuning' in config:
                 self._max_chunks = config['tuning']['max_chunks']  # type: int
@@ -292,6 +293,11 @@ class EvnSiteConf:
     def db_pw(self) -> str:
         """Return db_user PASSWORD."""
         return self._db_pw
+
+    @property
+    def db_out_proj(self) -> str:
+        """Return local EPSG coordinate system."""
+        return self._db_out_proj
 
     @property
     def tuning_max_chunks(self) -> int:

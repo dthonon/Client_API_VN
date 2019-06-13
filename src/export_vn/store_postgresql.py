@@ -100,7 +100,7 @@ def store_1_observation(item):
 
     - find insert or update date
     - simplity data to remove redundant items: dates... (TBD)
-    - add Lambert 93 coordinates
+    - add x, y transform to local coordinates
     - store json in Postgresql
 
     Parameters
@@ -121,12 +121,12 @@ def store_1_observation(item):
         # update_date = elem['observers'][0]['insert_date']['@timestamp']
         update_date = elem['observers'][0]['insert_date']
 
-    # Add Lambert 93 coordinates
+    # Add Lambert x, y transform to local coordinates
     x, y = transform(item.in_proj, item.out_proj,
                      elem['observers'][0]['coord_lon'],
                      elem['observers'][0]['coord_lat'])
-    elem['observers'][0]['coord_x_l93'] = x
-    elem['observers'][0]['coord_y_l93'] = y
+    elem['observers'][0]['coord_x_local'] = x
+    elem['observers'][0]['coord_y_local'] = y
 
     # Store in Postgresql
     items_json = json.dumps(elem)
@@ -765,10 +765,10 @@ class StorePostgresql:
         """
 
         in_proj = Proj(init='epsg:4326')
-        out_proj = Proj(init='epsg:2154')
+        out_proj = Proj(init='epsg:' + self._config.db_out_proj)
         # Loop on data array to reproject
         for elem in items_dict['data']:
-            elem['coord_x_l93'], elem['coord_y_l93'] = transform(
+            elem['coord_x_local'], elem['coord_y_local'] = transform(
                 in_proj, out_proj, elem['coord_lon'], elem['coord_lat'])
         return self._store_simple(controler, items_dict)
 
@@ -778,7 +778,7 @@ class StorePostgresql:
         Checks if sightings or forms and iterate on each sighting
         - find insert or update date
         - simplity data to remove redundant items: dates... (TBD)
-        - add Lambert 93 coordinates
+        - add x, y transform to local coordinates
         - store json in Postgresql
 
         Parameters
@@ -795,7 +795,7 @@ class StorePostgresql:
         """
         # Insert simple sightings, each row contains id, update timestamp and full json body
         in_proj = Proj(init='epsg:4326')
-        out_proj = Proj(init='epsg:2154')
+        out_proj = Proj(init='epsg:' + self._config.db_out_proj)
         nb_obs = 0
         # trans = self._conn.begin()
         try:
