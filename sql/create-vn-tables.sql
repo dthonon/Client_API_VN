@@ -375,7 +375,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             taxonomy        = CAST(NEW.item->>0 AS JSON) #>> '{species,taxonomy}',
             "date"          = to_date(CAST(NEW.item->>0 AS JSON) #>> '{date,@ISO8601}', 'YYYY-MM-DD'),
             date_year       = CAST(extract(year from to_date(CAST(NEW.item->>0 AS JSON) #>> '{date,@ISO8601}', 'YYYY-MM-DD')) AS INTEGER),
-            timing          = to_timestamp(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{timing,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS'),
+            timing          = to_timestamp(CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{timing,@timestamp}' AS DOUBLE PRECISION)),
             id_place        = CAST(CAST(NEW.item->>0 AS JSON) #>> '{place,@id}' AS INTEGER),
             place           = CAST(NEW.item->>0 AS JSON) #>> '{place,name}',
             coord_lat       = CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_lat' AS FLOAT),
@@ -399,7 +399,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             mortality       = (((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info,mortality}'::text []) is not null,
             death_cause2    = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info, mortality, death_cause2}',
             insert_date     = to_timestamp(CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'insert_date' AS DOUBLE PRECISION)),
-            update_date     = to_timestamp(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{update_date,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS')
+            update_date     = to_timestamp(CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{update_date,@timestamp}' AS DOUBLE PRECISION))
         WHERE id_sighting = OLD.id AND site = OLD.site;
 
         IF NOT FOUND THEN
@@ -419,7 +419,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
                 to_date(CAST(NEW.item->>0 AS JSON) #>> '{date,@ISO8601}', 'YYYY-MM-DD'),
                 CAST(extract(year from to_date(CAST(NEW.item->>0 AS JSON) #>> '{date,@ISO8601}', 'YYYY-MM-DD')) AS INTEGER),
                 -- Missing time_start & time_stop
-                to_timestamp(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{timing,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS'),
+                to_timestamp(CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{timing,@timestamp}' AS DOUBLE PRECISION)),
                 CAST(CAST(NEW.item->>0 AS JSON) #>> '{place,@id}' AS INTEGER),
                 CAST(NEW.item->>0 AS JSON) #>> '{place,name}',
                 CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_lat' AS FLOAT),
@@ -443,7 +443,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
                 (((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info,mortality}' :: text []) is not null,
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info, mortality, death_cause2}',
                 to_timestamp(CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'insert_date' AS DOUBLE PRECISION)),
-                to_timestamp(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{update_date,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS'));
+                to_timestamp(CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{update_date,@timestamp}' AS DOUBLE PRECISION)));
             END IF;
         RETURN NEW;
 
@@ -464,7 +464,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             to_date(CAST(NEW.item->>0 AS JSON) #>> '{date,@ISO8601}', 'YYYY-MM-DD'),
             CAST(extract(year from to_date(CAST(NEW.item->>0 AS JSON) #>> '{date,@ISO8601}', 'YYYY-MM-DD')) AS INTEGER),
             -- Missing time_start & time_stop
-            to_timestamp(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{timing,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS'),
+            to_timestamp(CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{timing,@timestamp}' AS DOUBLE PRECISION)),
             CAST(CAST(NEW.item->>0 AS JSON) #>> '{place,@id}' AS INTEGER),
             CAST(NEW.item->>0 AS JSON) #>> '{place,name}',
             CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_lat' AS FLOAT),
@@ -488,7 +488,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             (((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info,mortality}' :: text []) is not null,
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info, mortality, death_cause2}',
             to_timestamp(CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'insert_date' AS DOUBLE PRECISION)),
-            to_timestamp(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{update_date,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS'));
+            to_timestamp(CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{update_date,@timestamp}' AS DOUBLE PRECISION)));
         RETURN NEW;
     END IF;
 END;
