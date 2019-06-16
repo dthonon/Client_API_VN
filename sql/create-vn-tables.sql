@@ -173,10 +173,10 @@ CREATE OR REPLACE FUNCTION update_fields() RETURNS TRIGGER AS \$\$
         VALUES (
             NEW.site,
             NEW.id,
-                CAST(NEW.item->>0 AS JSON)->>'default',
-                CAST(NEW.item->>0 AS JSON)->>'empty_choice',
-                CAST(NEW.item->>0 AS JSON)->>'mandatory',
-                CAST(NEW.item->>0 AS JSON)->>'name'
+            CAST(NEW.item->>0 AS JSON)->>'default',
+            CAST(NEW.item->>0 AS JSON)->>'empty_choice',
+            CAST(NEW.item->>0 AS JSON)->>'mandatory',
+            CAST(NEW.item->>0 AS JSON)->>'name'
         );
         RETURN NEW;
     END IF;
@@ -193,7 +193,122 @@ AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).fields_json
 --------
 -- Forms
 --------
+CREATE TABLE $(db_schema_vn).forms(
+    uuid                UUID DEFAULT uuid_generate_v4(),
+    site                VARCHAR(50),
+    id                  INTEGER,
+    id_form_universal   VARCHAR(500),
+    time_start          VARCHAR(500),
+    time_stop           VARCHAR(500),
+    full_form           VARCHAR(500),
+    version             VARCHAR(500),
+    coord_lat           FLOAT,
+    coord_lon           FLOAT,
+    coord_x_local       FLOAT,
+    coord_y_local       FLOAT,
+    comments            VARCHAR(100000),
+    protocol            VARCHAR(100000),
+    PRIMARY KEY (uuid)
+);
+-- Add geometry column
+\o /dev/null
+SELECT AddGeometryColumn('forms', 'geom', 2154, 'POINT', 2);
+\o
 
+DROP INDEX IF EXISTS forms_idx_site;
+CREATE INDEX forms_idx_site
+    ON $(db_schema_vn).forms USING btree(site);
+DROP INDEX IF EXISTS forms_idx_id;
+CREATE INDEX forms_idx_id
+    ON $(db_schema_vn).forms USING btree(id);
+
+-- Add trigger for postgis geometry update
+DROP TRIGGER IF EXISTS trg_geom ON $(db_schema_vn).forms;
+CREATE TRIGGER trg_geom BEFORE INSERT or UPDATE
+    ON $(db_schema_vn).forms FOR EACH ROW
+    EXECUTE PROCEDURE update_geom_triggerfn();
+
+CREATE OR REPLACE FUNCTION update_forms() RETURNS TRIGGER AS \$\$
+    BEGIN
+    IF (TG_OP = 'DELETE') THEN
+        -- Deleting data when JSON data is deleted
+        DELETE FROM $(db_schema_vn).forms
+            WHERE id = OLD.id AND site = OLD.site;
+        IF NOT FOUND THEN
+            RETURN NULL;
+        END IF;
+        RETURN OLD;
+
+    ELSIF (TG_OP = 'UPDATE') THEN
+        -- Updating or inserting data when JSON data is updated
+        UPDATE $(db_schema_vn).forms SET
+            id_form_universal = CAST(NEW.item->>0 AS JSON)->>'id_form_universal',
+            time_start        = CAST(NEW.item->>0 AS JSON)->>'time_start',
+            time_stop         = CAST(NEW.item->>0 AS JSON)->>'time_stop',
+            full_form         = CAST(NEW.item->>0 AS JSON)->>'full_form',
+            version           = CAST(NEW.item->>0 AS JSON)->>'version',
+            coord_lat         = CAST(CAST(NEW.item->>0 AS JSON)->>'lat' AS FLOAT),
+            coord_lon         = CAST(CAST(NEW.item->>0 AS JSON)->>'lon' AS FLOAT),
+            coord_x_local     = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_local' AS FLOAT),
+            coord_y_local     = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_local' AS FLOAT),
+            comments          = CAST(NEW.item->>0 AS JSON)->>'comments',
+            protocol          = CAST(NEW.item->>0 AS JSON)->>'protocol'
+        WHERE id = OLD.id AND site = OLD.site ;
+        IF NOT FOUND THEN
+            -- Inserting data in new row, usually after table re-creation
+            INSERT INTO $(db_schema_vn).forms(site, id, id_form_universal, time_start, time_stop,
+                                              full_form, version, coord_lat, coord_lon,
+                                              coord_x_local, coord_y_local, comments, protocol)
+            VALUES (
+                NEW.site,
+                NEW.id,
+                CAST(NEW.item->>0 AS JSON)->>'id_form_universal',
+                CAST(NEW.item->>0 AS JSON)->>'time_start',
+                CAST(NEW.item->>0 AS JSON)->>'time_stop',
+                CAST(NEW.item->>0 AS JSON)->>'full_form',
+                CAST(NEW.item->>0 AS JSON)->>'version',
+                CAST(CAST(NEW.item->>0 AS JSON)->>'lat' AS FLOAT),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'lon' AS FLOAT),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_local' AS FLOAT),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_local' AS FLOAT),
+                CAST(NEW.item->>0 AS JSON)->>'comments',
+                CAST(NEW.item->>0 AS JSON)->>'protocol'
+            );
+            END IF;
+        RETURN NEW;
+
+    ELSIF (TG_OP = 'INSERT') THEN
+        -- Inserting row when raw data is inserted
+        INSERT INTO $(db_schema_vn).forms(site, id, id_form_universal, time_start, time_stop,
+                                          full_form, version, coord_lat, coord_lon,
+                                          coord_x_local, coord_y_local, comments, protocol)
+        VALUES (
+            NEW.site,
+            NEW.id,
+            CAST(NEW.item->>0 AS JSON)->>'id_form_universal',
+            CAST(NEW.item->>0 AS JSON)->>'time_start',
+            CAST(NEW.item->>0 AS JSON)->>'time_stop',
+            CAST(NEW.item->>0 AS JSON)->>'full_form',
+            CAST(NEW.item->>0 AS JSON)->>'version',
+            CAST(CAST(NEW.item->>0 AS JSON)->>'lat' AS FLOAT),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'lon' AS FLOAT),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_local' AS FLOAT),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_local' AS FLOAT),
+            CAST(NEW.item->>0 AS JSON)->>'comments',
+            CAST(NEW.item->>0 AS JSON)->>'protocol'
+        );
+        RETURN NEW;
+    END IF;
+END;
+\$\$
+LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS forms_trigger ON $(db_schema_import).forms_json;
+CREATE TRIGGER forms_trigger
+AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).forms_json
+    FOR EACH ROW EXECUTE FUNCTION $(db_schema_vn).update_forms();
+
+ 
 --------------------
 -- local_admin_units
 --------------------
@@ -206,8 +321,8 @@ CREATE TABLE $(db_schema_vn).local_admin_units(
     insee               VARCHAR(50),
     coord_lat           FLOAT,
     coord_lon           FLOAT,
-    coord_x_local         FLOAT,
-    coord_y_local         FLOAT,
+    coord_x_local       FLOAT,
+    coord_y_local       FLOAT,
     PRIMARY KEY (uuid)
 );
 -- Add geometry column
@@ -967,6 +1082,7 @@ AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).territorial_units_json
 -- Dummy update of all rows to trigger new FUNCTION
 UPDATE $(db_schema_import).entities_json SET site=site;
 UPDATE $(db_schema_import).fields_json SET site=site;
+UPDATE $(db_schema_import).forms_json SET site=site;
 UPDATE $(db_schema_import).territorial_units_json SET site=site;
 UPDATE $(db_schema_import).local_admin_units_json SET site=site;
 UPDATE $(db_schema_import).places_json SET site=site;

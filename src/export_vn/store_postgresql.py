@@ -772,6 +772,66 @@ class StorePostgresql:
                 in_proj, out_proj, elem['coord_lon'], elem['coord_lat'])
         return self._store_simple(controler, items_dict)
 
+    def _store_form(self, items_dict):
+        """Write forms to database.
+
+        Check if forms is in database and either insert or update.
+
+        Parameters
+        ----------
+        items_dict : dict
+            Forms data to store.
+
+        Returns
+        -------
+        int
+            Count of items stored.
+        """
+
+        controler = 'forms'
+        logger.debug(_('Storing %d items from %s of site %s'), len(items_dict),
+                     controler, self._config.site)
+        try:
+            # Add local coordinates
+            if ('lon' in items_dict) and ('lat' in items_dict):
+                in_proj = Proj(init='epsg:4326')
+                out_proj = Proj(init='epsg:' + self._config.db_out_proj)
+                items_dict['coord_x_local'], items_dict[
+                    'coord_y_local'] = transform(in_proj, out_proj,
+                                                 items_dict['lon'],
+                                                 items_dict['lat'])
+
+            # Convert to json
+            items_json = json.dumps(items_dict)
+            logger.debug(_('Storing element %s'), items_json)
+            stmt = select([self._table_defs[controler]['metadata'].c.id,
+                           self._table_defs[controler]['metadata'].c.site]).\
+                where(and_(self._table_defs[controler]['metadata'].c.id == items_dict['@id'],
+                           self._table_defs[controler]['metadata'].c.site == self._config.site))
+            result = self._conn.execute(stmt)
+            row = result.fetchone()
+            if row is None:
+                logger.debug(
+                    _('Element not found in database, inserting new row'))
+                stmt = self._table_defs[controler]['metadata'].insert().\
+                    values(id=items_dict['@id'],
+                           site=self._config.site,
+                           item=items_json)
+            else:
+                logger.debug(_('Element %s found in database, updating row'),
+                             row[0])
+                stmt = self._table_defs[controler]['metadata'].update().\
+                    where(and_(self._table_defs[controler]['metadata'].c.id == items_dict['@id'],
+                               self._table_defs[controler]['metadata'].c.site == self._config.site)).\
+                    values(id=items_dict['@id'],
+                           site=self._config.site,
+                           item=items_json)
+            result = self._conn.execute(stmt)
+        except:
+            raise
+
+        return len(items_dict)
+
     def _store_observation(self, controler, items_dict):
         """Iterate through observations or forms and store.
 
@@ -812,20 +872,23 @@ class StorePostgresql:
 
             if ('forms' in items_dict['data']):
                 for f in range(0, len(items_dict['data']['forms'])):
-                    logger.debug(
-                        'Storing %d observations in form %d',
-                        len(items_dict['data']['forms'][f]['sightings']), f)
-                    for i in range(
-                            0,
-                            len(items_dict['data']['forms'][f]['sightings'])):
-                        obs = ObservationItem(
-                            self._config.site,
-                            self._table_defs[controler]['metadata'],
-                            self._conn,
-                            items_dict['data']['forms'][f]['sightings'][i],
-                            in_proj, out_proj)
-                        self._observations_queue.put(obs)
-                        nb_obs += 1
+                    forms_data = {}
+                    for (k, v) in items_dict['data']['forms'][f].items():
+                        if k == 'sightings':
+                            nb_s = len(v)
+                            logger.debug('Storing %d observations in form %d',
+                                         nb_s, f)
+                            for i in range(0, nb_s):
+                                obs = ObservationItem(
+                                    self._config.site,
+                                    self._table_defs[controler]['metadata'],
+                                    self._conn, v[i], in_proj, out_proj)
+                                self._observations_queue.put(obs)
+                                nb_obs += 1
+                        else:
+                            # Put anything except sightings in forms data
+                            forms_data[k] = v
+                    self._store_form(forms_data)
 
             # Wait for threads to finish before commit
             # self._observations_queue.join()

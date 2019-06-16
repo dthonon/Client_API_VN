@@ -353,9 +353,11 @@ class Observations(DownloadVn):
               by_specie=False,
               method='search',
               short_version='1'):
-        """Download from VN by API, looping on taxo_group if None and store json to file.
+        """Download from VN by API and store json to backend.
 
-        Calls  biolovision_api, convert to json and store to file.
+        Calls  biolovision_api
+        convert to json
+        and store using backend.store (database, file...).
         Downloads all database if id_taxo_group is None.
         If id_taxo_group is defined, downloads only this taxo_group
 

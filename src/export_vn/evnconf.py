@@ -106,7 +106,7 @@ _ConfSchema = Map({
         Optional('pid_setpoint', default=10000): Float(),
         Optional('pid_limit_min', default=10): Float(),
         Optional('pid_limit_max', default=2000): Float(),
-        Optional('pid_delta_days', default=15): Float()
+        Optional('pid_delta_days', default=15): Int()
     })
 })
 
@@ -200,7 +200,7 @@ class EvnSiteConf:
                 self._pid_limit_max = config['tuning'][
                     'pid_limit_max']  # type: float
                 self._pid_delta_days = config['tuning'][
-                    'pid_delta_days']  # type: float
+                    'pid_delta_days']  # type: int
 
         except Exception as e:
             logger.error(e, exc_info=True)
@@ -360,7 +360,7 @@ class EvnSiteConf:
         return self._pid_limit_max
 
     @property
-    def tuning_pid_delta_days(self) -> float:
+    def tuning_pid_delta_days(self) -> int:
         """Return tuning parameter."""
         return self._pid_delta_days
 

@@ -1,0 +1,1 @@
+Forms are now available in the forms_json and forms tables.
