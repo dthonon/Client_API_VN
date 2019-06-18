@@ -14,6 +14,7 @@ import json
 import logging
 import queue
 import threading
+from uuid import uuid4
 
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from pyproj import Proj, transform
@@ -151,9 +152,7 @@ def store_1_observation(item):
         stmt = metadata.update().\
             where(and_(metadata.c.id == elem['observers'][0]['id_sighting'],
                        metadata.c.site == site)).\
-            values(id=elem['observers'][0]['id_sighting'],
-                   site=site,
-                   update_ts=update_date,
+            values(update_ts=update_date,
                    item=items_json)
     result = item.conn.execute(stmt)
     return None
@@ -262,6 +261,17 @@ class PostgresqlUtils:
             PrimaryKeyConstraint('id',
                                  'site',
                                  name='local_admin_units_json_pk'))
+        return None
+
+    def _create_uuid_xref(self):
+        """Create uuid_xref table if it does not exist."""
+        self._create_table(
+            'uuid_xref', Column('id', Integer, nullable=False),
+            Column('site', String, nullable=False),
+            Column('uuid', String, nullable=False),
+            Column('alias', JSONB, nullable=False),
+            Column('update_ts', Integer, nullable=False),
+            PrimaryKeyConstraint('id', 'site', name='observations_json_pk'))
         return None
 
     def _create_observations_json(self):
@@ -474,6 +484,7 @@ class PostgresqlUtils:
         self._create_fields_json()
         self._create_forms_json()
         self._create_local_admin_units_json()
+        self._create_uuid_xref()
         self._create_observations_json()
         self._create_observers_json()
         self._create_places_json()
@@ -601,11 +612,15 @@ class StorePostgresql:
                 'metadata': None
             },
             'forms': {
-                'type': 'simple',
+                'type': 'others',
                 'metadata': None
             },
             'local_admin_units': {
                 'type': 'geometry',
+                'metadata': None
+            },
+            'uuid_xfer': {
+                'type': 'others',
                 'metadata': None
             },
             'observations': {
@@ -642,6 +657,8 @@ class StorePostgresql:
         self._table_defs['local_admin_units'][
             'metadata'] = self._metadata.tables[dbschema +
                                                 '.local_admin_units_json']
+        self._table_defs['uuid_xfer']['metadata'] = self._metadata.tables[
+            dbschema + '.uuid_xfer']
         self._table_defs['observations']['metadata'] = self._metadata.tables[
             dbschema + '.observations_json']
         self._table_defs['observers']['metadata'] = self._metadata.tables[
@@ -832,6 +849,52 @@ class StorePostgresql:
 
         return len(items_dict)
 
+    def _store_uuid(self, obs_id, universal_id=None):
+        """Creates UUID and store along id and site.
+
+        If (id, site) does not exist: 
+        - creates an UID
+        - store it, along with id, site, universal_id to table.
+
+        Parameters
+        ----------
+        obs_id : str
+            Observations id.
+        universal_id : str
+            Observations universal id.
+
+        Returns
+        -------
+        int
+            Count of items stored.
+        """
+
+        controler = 'uuid_xref'
+        try:
+            stmt = select([self._table_defs[controler]['metadata'].c.id,
+                           self._table_defs[controler]['metadata'].c.site]).\
+                where(and_(self._table_defs[controler]['metadata'].c.id == obs_id,
+                           self._table_defs[controler]['metadata'].c.site ==
+                           self._config.site))
+            result = self._conn.execute(stmt)
+            row = result.fetchone()
+            if row is None:
+                logger.debug(_('Creating UUID for observation %s site %s'), obs_id,
+                     self._config.site)
+                stmt = self._table_defs[controler]['metadata'].insert().\
+                    values(id=obs_id,
+                           site=self._config.site,
+                           universal_id=universal_id,
+                           uuid=uuid4())
+                result = self._conn.execute(stmt)
+            else:
+                logger.debug(_('UUID found for observation %s site %s'), obs_id,
+                             self._config.site)
+        except:
+            raise
+
+        return len(items_dict)
+
     def _store_observation(self, controler, items_dict):
         """Iterate through observations or forms and store.
 
@@ -862,6 +925,11 @@ class StorePostgresql:
             logger.debug(_('Storing %d single observations'),
                          len(items_dict['data']['sightings']))
             for i in range(0, len(items_dict['data']['sightings'])):
+                # Create UUID
+
+
+                self._store_simple(uuid_data)
+                # Senf observation to queue
                 obs = ObservationItem(self._config.site,
                                       self._table_defs[controler]['metadata'],
                                       self._conn,
