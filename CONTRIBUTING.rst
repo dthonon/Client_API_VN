@@ -9,6 +9,7 @@ Note: install Debian development environment first::
 
     sudo apt install build-essential
     sudo apt install python3-dev
+    sudo apt install python3-venv
 
 Create a python virtual environment, activate it and install or
 update basic tools::
