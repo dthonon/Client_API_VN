@@ -208,12 +208,10 @@ CREATE TABLE $(db_schema_vn).forms(
     coord_y_local       FLOAT,
     comments            VARCHAR(100000),
     protocol            VARCHAR(100000),
+    geom                GEOMETRY(Point, 2154),c
     PRIMARY KEY (uuid)
 );
--- Add geometry column
-\o /dev/null
-SELECT AddGeometryColumn('forms', 'geom', 2154, 'POINT', 2);
-\o
+
 
 DROP INDEX IF EXISTS forms_idx_site;
 CREATE INDEX forms_idx_site
@@ -221,6 +219,10 @@ CREATE INDEX forms_idx_site
 DROP INDEX IF EXISTS forms_idx_id;
 CREATE INDEX forms_idx_id
     ON $(db_schema_vn).forms USING btree(id);
+DROP INDEX IF EXISTS forms_gidx_geom;
+CREATE INDEX forms_gidx_geom
+    ON $(db_schema_vn).forms USING gist(geom);
+
 
 -- Add trigger for postgis geometry update
 DROP TRIGGER IF EXISTS trg_geom ON $(db_schema_vn).forms;
