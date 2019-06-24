@@ -15,6 +15,7 @@ __pycache__/*
 *$py.class
 
 # Project files
+.vscode
 .ropeproject
 .project
 .pydevproject
