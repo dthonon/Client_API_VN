@@ -35,7 +35,8 @@ def db_config(cfg):
         'db_schema_vn': cfg.db_schema_vn,
         'db_group': cfg.db_group,
         'db_user': cfg.db_user,
-        'db_pw': cfg.db_pw
+        'db_pw': cfg.db_pw,
+        'proj': cfg.db_out_proj
     }
 
 

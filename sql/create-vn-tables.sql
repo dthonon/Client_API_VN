@@ -24,7 +24,7 @@ SET search_path TO $(db_schema_vn),public;
 CREATE OR REPLACE FUNCTION update_geom_triggerfn()
 RETURNS trigger AS \$body\$
     BEGIN
-    NEW.geom := ST_SetSRID(ST_MakePoint(NEW.coord_x_local, NEW.coord_y_local), 2154);
+    NEW.geom := ST_SetSRID(ST_MakePoint(NEW.coord_x_local, NEW.coord_y_local), $(proj));
     RETURN NEW;
     END;
 \$body\$
@@ -208,7 +208,7 @@ CREATE TABLE $(db_schema_vn).forms(
     coord_y_local       FLOAT,
     comments            VARCHAR(100000),
     protocol            VARCHAR(100000),
-    geom                GEOMETRY(Point, 2154),c
+    geom                GEOMETRY(Point, $(proj)),
     PRIMARY KEY (uuid)
 );
 
@@ -325,7 +325,7 @@ CREATE TABLE $(db_schema_vn).local_admin_units(
     coord_lon           FLOAT,
     coord_x_local       FLOAT,
     coord_y_local       FLOAT,
-    geom                GEOMETRY(Point, 2154),
+    geom                GEOMETRY(Point, $(proj)),
     PRIMARY KEY (uuid)
 );
 
@@ -448,7 +448,7 @@ CREATE TABLE $(db_schema_vn).observations (
     death_cause2        VARCHAR(100),
     insert_date         TIMESTAMP,
     update_date         TIMESTAMP,
-    geom                GEOMETRY(Point, 2154),
+    geom                GEOMETRY(Point, $(proj)),
     PRIMARY KEY (uuid)
 );
 
@@ -720,7 +720,7 @@ CREATE TABLE $(db_schema_vn).places(
     coord_lon           FLOAT,
     coord_x_local       FLOAT,
     coord_y_local       FLOAT,
-    geom                GEOMETRY(Point, 2154),
+    geom                GEOMETRY(Point, $(proj)),
     PRIMARY KEY (uuid)
 );
 
