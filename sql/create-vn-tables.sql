@@ -771,19 +771,19 @@ CREATE OR REPLACE FUNCTION update_places() RETURNS TRIGGER AS \$\$
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
             INSERT INTO $(db_schema_vn).places(site, id, id_commune, id_region, name, is_private,
-                                                   loc_precision, altitude, place_type, visible,
-                                                   coord_lat, coord_lon, coord_x_local, coord_y_local)
+                                               loc_precision, altitude, place_type, visible,
+                                               coord_lat, coord_lon, coord_x_local, coord_y_local)
             VALUES (
                 NEW.site,
                 NEW.id,
                 CAST(CAST(NEW.item->>0 AS JSON)->>'id_commune' AS INTEGER),
                 CAST(CAST(NEW.item->>0 AS JSON)->>'id_region' AS INTEGER),
                 CAST(NEW.item->>0 AS JSON)->>'name',
-                CAST(CAST(NEW.item->>0 AS JSON)->>'is_private' AS INTEGER),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'is_private' AS BOOLEAN),
                 CAST(CAST(NEW.item->>0 AS JSON)->>'loc_precision' AS INTEGER),
                 CAST(CAST(NEW.item->>0 AS JSON)->>'altitude' AS INTEGER),
                 CAST(NEW.item->>0 AS JSON)->>'place_type',
-                CAST(CAST(NEW.item->>0 AS JSON)->>'visible' AS INTEGER),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'visible' AS BOOLEAN),
                 CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lat' AS FLOAT),
                 CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lon' AS FLOAT),
                 CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_local' AS FLOAT),
@@ -795,19 +795,19 @@ CREATE OR REPLACE FUNCTION update_places() RETURNS TRIGGER AS \$\$
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting data on src_vn.observations when raw data is inserted
         INSERT INTO $(db_schema_vn).places(site, id, id_commune, id_region, name, is_private,
-                                               loc_precision, altitude, place_type, visible,
-                                               coord_lat, coord_lon, coord_x_local, coord_y_local)
+                                           loc_precision, altitude, place_type, visible,
+                                           coord_lat, coord_lon, coord_x_local, coord_y_local)
         VALUES (
             NEW.site,
             NEW.id,
             CAST(CAST(NEW.item->>0 AS JSON)->>'id_commune' AS INTEGER),
             CAST(CAST(NEW.item->>0 AS JSON)->>'id_region' AS INTEGER),
             CAST(NEW.item->>0 AS JSON)->>'name',
-            CAST(CAST(NEW.item->>0 AS JSON)->>'is_private' AS INTEGER),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'is_private' AS BOOLEAN),
             CAST(CAST(NEW.item->>0 AS JSON)->>'loc_precision' AS INTEGER),
             CAST(CAST(NEW.item->>0 AS JSON)->>'altitude' AS INTEGER),
             CAST(NEW.item->>0 AS JSON)->>'place_type',
-            CAST(CAST(NEW.item->>0 AS JSON)->>'visible' AS INTEGER),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'visible' AS BOOLEAN),
             CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lat' AS FLOAT),
             CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lon' AS FLOAT),
             CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_local' AS FLOAT),
