@@ -34,7 +34,6 @@ LANGUAGE plpgsql;
 -- Entities
 -----------
 CREATE TABLE $(db_schema_vn).entities(
-    uuid                UUID DEFAULT uuid_generate_v4(),
     site                VARCHAR(50),
     id                  INTEGER,
     short_name          VARCHAR(500),
@@ -42,7 +41,7 @@ CREATE TABLE $(db_schema_vn).entities(
     description_french  VARCHAR(100000),
     url                 VARCHAR(1000),
     address             VARCHAR(1000),
-    PRIMARY KEY (uuid)
+    PRIMARY KEY (site, id)
 );
 
 DROP INDEX IF EXISTS entities_idx_site;
@@ -117,14 +116,13 @@ AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).entities_json
 -- Fields
 ---------
 CREATE TABLE $(db_schema_vn).fields(
-    uuid                UUID DEFAULT uuid_generate_v4(),
     site                VARCHAR(50),
     id                  INTEGER,
     default_v           VARCHAR(500),
     empty_choice        VARCHAR(500),
     mandatory           VARCHAR(500),
     name                VARCHAR(1000),
-    PRIMARY KEY (uuid)
+    PRIMARY KEY (site, id)
 );
 
 DROP INDEX IF EXISTS fields_idx_site;
@@ -194,7 +192,6 @@ AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).fields_json
 -- Forms
 --------
 CREATE TABLE $(db_schema_vn).forms(
-    uuid                UUID DEFAULT uuid_generate_v4(),
     site                VARCHAR(50),
     id                  INTEGER,
     id_form_universal   VARCHAR(500),
@@ -209,7 +206,7 @@ CREATE TABLE $(db_schema_vn).forms(
     comments            VARCHAR(100000),
     protocol            VARCHAR(100000),
     geom                GEOMETRY(Point, $(proj)),
-    PRIMARY KEY (uuid)
+    PRIMARY KEY (site, id)
 );
 
 
@@ -315,7 +312,6 @@ AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).forms_json
 -- local_admin_units
 --------------------
 CREATE TABLE $(db_schema_vn).local_admin_units(
-    uuid                UUID DEFAULT uuid_generate_v4(),
     site                VARCHAR(50),
     id                  INTEGER,
     id_canton           INTEGER,
@@ -326,7 +322,7 @@ CREATE TABLE $(db_schema_vn).local_admin_units(
     coord_x_local       FLOAT,
     coord_y_local       FLOAT,
     geom                GEOMETRY(Point, $(proj)),
-    PRIMARY KEY (uuid)
+    PRIMARY KEY (site, id)
 );
 
 DROP INDEX IF EXISTS local_admin_units_idx_site;
@@ -416,7 +412,6 @@ AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).local_admin_units_json
 -- Observations
 ---------------
 CREATE TABLE $(db_schema_vn).observations (
-    uuid                UUID DEFAULT uuid_generate_v4(),
     site                VARCHAR(50),
     id_sighting         INTEGER,
     pseudo_id_sighting  VARCHAR(200),
@@ -450,7 +445,7 @@ CREATE TABLE $(db_schema_vn).observations (
     insert_date         TIMESTAMP,
     update_date         TIMESTAMP,
     geom                GEOMETRY(Point, $(proj)),
-    PRIMARY KEY (uuid)
+    PRIMARY KEY (site, id_sighting)
 );
 
 DROP INDEX IF EXISTS observations_idx_site;
@@ -618,7 +613,6 @@ AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).observations_json
 -- Observers
 ------------
 CREATE TABLE $(db_schema_vn).observers(
-    uuid                UUID DEFAULT uuid_generate_v4(),
     site                VARCHAR(50),
     id                  INTEGER,
     id_universal        INTEGER,
@@ -628,7 +622,7 @@ CREATE TABLE $(db_schema_vn).observers(
     default_hidden      BOOLEAN,
     name                VARCHAR(100),
     surname             VARCHAR(100),
-    PRIMARY KEY (uuid)
+    PRIMARY KEY (site, id)
 );
 
 DROP INDEX IF EXISTS observers_idx_site;
@@ -709,7 +703,6 @@ AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).observers_json
 -- Places
 ---------
 CREATE TABLE $(db_schema_vn).places(
-    uuid                UUID DEFAULT uuid_generate_v4(),
     site                VARCHAR(50),
     id                  INTEGER,
     id_commune          INTEGER,
@@ -725,7 +718,7 @@ CREATE TABLE $(db_schema_vn).places(
     coord_x_local       FLOAT,
     coord_y_local       FLOAT,
     geom                GEOMETRY(Point, $(proj)),
-    PRIMARY KEY (uuid)
+    PRIMARY KEY (site, id)
 );
 
 
@@ -833,7 +826,6 @@ AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).places_json
 -- Species
 ----------
 CREATE TABLE $(db_schema_vn).species(
-    uuid                UUID DEFAULT uuid_generate_v4(),
     site                VARCHAR(50),
     id                  INTEGER,
     id_taxo_group       INTEGER,
@@ -845,7 +837,7 @@ CREATE TABLE $(db_schema_vn).species(
     sys_order           INTEGER,
     atlas_start         INTEGER,
     atlas_end           INTEGER,
-    PRIMARY KEY (uuid)
+    PRIMARY KEY (site, id)
 );
 
 DROP INDEX IF EXISTS species_idx_site;
@@ -932,14 +924,13 @@ AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).species_json
 -- Taxo_groups
 --------------
 CREATE TABLE $(db_schema_vn).taxo_groups(
-    uuid                UUID DEFAULT uuid_generate_v4(),
     site                VARCHAR(50),
     id                  INTEGER,
     name                VARCHAR(150),
     latin_name          VARCHAR(150),
     name_constant       VARCHAR(150),
     access_mode         VARCHAR(50),
-    PRIMARY KEY (uuid)
+    PRIMARY KEY (site, id)
 );
 
 DROP INDEX IF EXISTS taxo_groups_idx_site;
@@ -1010,13 +1001,12 @@ AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).taxo_groups_json
 -- Territorial_units
 --------------------
 CREATE TABLE $(db_schema_vn).territorial_units(
-    uuid                UUID DEFAULT uuid_generate_v4(),
     site                VARCHAR(50),
     id                  INTEGER,
     id_country          INTEGER,
     name                VARCHAR(150),
     short_name          VARCHAR(150),
-    PRIMARY KEY (uuid)
+    PRIMARY KEY (site, id)
 );
 
 DROP INDEX IF EXISTS territorial_units_idx_site;
