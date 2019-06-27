@@ -1,3 +1,7 @@
+The following columns are added:
+
+    * observations.behaviours
+
 The following columns are now boolean:
 
     * species.is_used

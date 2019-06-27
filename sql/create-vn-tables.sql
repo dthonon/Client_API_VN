@@ -442,6 +442,7 @@ CREATE TABLE $(db_schema_vn).observations (
     admin_hidden        BOOLEAN,
     observer_uid        VARCHAR(100),
     details             VARCHAR(10000),
+    behaviours          VARCHAR(10000),
     comment             VARCHAR(10000),
     hidden_comment      VARCHAR(10000),
     mortality           BOOLEAN,
@@ -507,6 +508,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             admin_hidden    = CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'admin_hidden' AS BOOLEAN),
             observer_uid    = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> '@uid',
             details         = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'details',
+            behaviours      = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'behaviours',
             comment         = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'comment',
             hidden_comment  = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'hidden_comment',
             mortality       = CAST(((((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info,mortality}'::text []) is not null) as BOOLEAN),
@@ -521,7 +523,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
                                              date, date_year, timing, id_place, place,
                                              coord_lat, coord_lon, coord_x_local, coord_y_local, precision, estimation_code,
                                              count, atlas_code, altitude, project_code, hidden, admin_hidden, observer_uid, details,
-                                             comment, hidden_comment, mortality, death_cause2, insert_date, update_date)
+                                             behaviours, comment, hidden_comment, mortality, death_cause2, insert_date, update_date)
             VALUES (
                 NEW.site,
                 NEW.id,
@@ -549,6 +551,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
                 CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'admin_hidden' AS BOOLEAN),
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> '@uid',
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'details',
+                ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'behaviours',
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'comment',
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'hidden_comment',
                 CAST(((((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info,mortality}'::text []) is not null) as BOOLEAN),
@@ -564,7 +567,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
                                          date, date_year, timing, id_place, place,
                                          coord_lat, coord_lon, coord_x_local, coord_y_local, precision, estimation_code,
                                          count, atlas_code, altitude, project_code, hidden, admin_hidden, observer_uid, details,
-                                         comment, hidden_comment, mortality, death_cause2, insert_date, update_date)
+                                         behaviours, comment, hidden_comment, mortality, death_cause2, insert_date, update_date)
         VALUES (
             NEW.site,
             NEW.id,
@@ -592,6 +595,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'admin_hidden' AS BOOLEAN),
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> '@uid',
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'details',
+            ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'behaviours',
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'comment',
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'hidden_comment',
             CAST(((((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info,mortality}'::text []) is not null) as BOOLEAN),
