@@ -109,7 +109,7 @@ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS entities_trigger ON $(db_schema_import).entities_json;
 CREATE TRIGGER entities_trigger
 AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).entities_json
-    FOR EACH ROW EXECUTE FUNCTION $(db_schema_vn).update_entities();
+    FOR EACH ROW EXECUTE PROCEDURE $(db_schema_vn).update_entities();
 
 
 ---------
@@ -185,7 +185,7 @@ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS fields_trigger ON $(db_schema_import).fields_json;
 CREATE TRIGGER fields_trigger
 AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).fields_json
-    FOR EACH ROW EXECUTE FUNCTION $(db_schema_vn).update_fields();
+    FOR EACH ROW EXECUTE PROCEDURE $(db_schema_vn).update_fields();
 
 
 --------
@@ -305,7 +305,7 @@ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS forms_trigger ON $(db_schema_import).forms_json;
 CREATE TRIGGER forms_trigger
 AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).forms_json
-    FOR EACH ROW EXECUTE FUNCTION $(db_schema_vn).update_forms();
+    FOR EACH ROW EXECUTE PROCEDURE $(db_schema_vn).update_forms();
 
  
 --------------------
@@ -405,7 +405,7 @@ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS local_admin_units_trigger ON $(db_schema_import).local_admin_units_json;
 CREATE TRIGGER local_admin_units_trigger
 AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).local_admin_units_json
-    FOR EACH ROW EXECUTE FUNCTION $(db_schema_vn).update_local_admin_units();
+    FOR EACH ROW EXECUTE PROCEDURE $(db_schema_vn).update_local_admin_units();
 
 
 ---------------
@@ -606,7 +606,7 @@ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS observations_trigger ON $(db_schema_import).observations_json;
 CREATE TRIGGER observations_trigger
 AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).observations_json
-    FOR EACH ROW EXECUTE FUNCTION update_observations();
+    FOR EACH ROW EXECUTE PROCEDURE update_observations();
 
 
 ------------
@@ -696,7 +696,7 @@ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS observers_trigger ON $(db_schema_import).observers_json;
 CREATE TRIGGER observers_trigger
 AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).observers_json
-    FOR EACH ROW EXECUTE FUNCTION $(db_schema_vn).update_observers();
+    FOR EACH ROW EXECUTE PROCEDURE $(db_schema_vn).update_observers();
 
 
 ---------
@@ -819,7 +819,7 @@ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS places_trigger ON $(db_schema_import).places_json;
 CREATE TRIGGER places_trigger
 AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).places_json
-    FOR EACH ROW EXECUTE FUNCTION $(db_schema_vn).update_places();
+    FOR EACH ROW EXECUTE PROCEDURE $(db_schema_vn).update_places();
 
 
 ----------
@@ -917,7 +917,7 @@ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS species_trigger ON $(db_schema_import).species_json;
 CREATE TRIGGER species_trigger
 AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).species_json
-    FOR EACH ROW EXECUTE FUNCTION $(db_schema_vn).update_species();
+    FOR EACH ROW EXECUTE PROCEDURE $(db_schema_vn).update_species();
 
 
 --------------
@@ -995,7 +995,7 @@ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS taxo_groups_trigger ON $(db_schema_import).taxo_groups_json;
 CREATE TRIGGER taxo_groups_trigger
 AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).taxo_groups_json
-    FOR EACH ROW EXECUTE FUNCTION $(db_schema_vn).update_taxo_groups();
+    FOR EACH ROW EXECUTE PROCEDURE $(db_schema_vn).update_taxo_groups();
 
 --------------------
 -- Territorial_units
@@ -1066,7 +1066,7 @@ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS territorial_units_trigger ON $(db_schema_import).territorial_units_json;
 CREATE TRIGGER territorial_units_trigger
 AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).territorial_units_json
-    FOR EACH ROW EXECUTE FUNCTION $(db_schema_vn).update_territorial_units();
+    FOR EACH ROW EXECUTE PROCEDURE $(db_schema_vn).update_territorial_units();
 
 -- Dummy update of all rows to trigger new FUNCTION
 UPDATE $(db_schema_import).entities_json SET site=site;
