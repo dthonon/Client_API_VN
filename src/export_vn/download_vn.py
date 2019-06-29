@@ -34,7 +34,8 @@ class NotImplementedException(DownloadVnException):
 
 
 class DownloadVn:
-    """Top class, not for direct use. Provides internal and template methods."""
+    """Top class, not for direct use.
+    Provides internal and template methods."""
 
     def __init__(self,
                  config,
@@ -328,7 +329,7 @@ class Observations(DownloadVn):
 
     def _list_taxo_groups(self, id_taxo_group):
         """Return the list of enabled taxo_groups."""
-        if id_taxo_group == None:
+        if id_taxo_group is None:
             # Get all active taxo_groups
             taxo_groups = TaxoGroupsAPI(self._config).api_list()
             taxo_list = []

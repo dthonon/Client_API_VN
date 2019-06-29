@@ -10,9 +10,7 @@ parameters are then available as properties of EvnCtrlConf and EvnSiteConf.
 import logging
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
-from typing import Optional as T_Optional
-from typing import Tuple, Union, cast
+from typing import Any, Dict, List, cast
 
 from strictyaml import (Bool, Email, Enum, Float, Int, Map, MapPattern,
                         Optional, Seq, Str, Url, YAMLError,

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
     Setup file for export_vn.
     Use setup.cfg to configure your project.

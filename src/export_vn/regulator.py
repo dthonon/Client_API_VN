@@ -15,9 +15,7 @@ logger = logging.getLogger('transfer_vn.regulator')
 
 
 class PID(object):
-    """
-    A simple PID controller. No fuss.
-    """
+    """A simple PID controller. No fuss."""
 
     def __init__(self,
                  kp=1.0,
@@ -25,12 +23,25 @@ class PID(object):
                  kd=0.0,
                  setpoint=0,
                  output_limits=(None, None)):
-        """
-        :param kp: The value for the proportional gain kp
-        :param ki: The value for the integral gain ki
-        :param kd: The value for the derivative gain kd
-        :param setpoint: The initial setpoint that the PID will try to achieve
-        :param output_limits: The initial output limits to use, given as an iterable with 2 elements, for example: (lower, upper). The output will never go below the lower limit or above the upper limit. Either of the limits can also be set to None to have no limit in that direction. Setting output limits also avoids integral windup, since the integral term will never be allowed to grow outside of the limits.
+        """Simple PID creation.
+
+        Parameters
+        ----------
+        kp : float
+            The value for the proportional gain kp.
+        ki : float
+            The value for the integral gain ki.
+        kd : float
+            The value for the derivative gain kd.
+        setpoint : float
+            The initial setpoint that the PID will try to achieve.
+        output_limits : tuple(float, float)
+            The initial output limits to use, given as an iterable with 2
+            elements, for example: (lower, upper). The output will never go
+            below the lower limit or above the upper limit. Either of the
+            limits can also be set to None to have no limit in that direction.
+            Setting output limits also avoids integral windup, since the
+            integral term will never be allowed to grow outside of the limits.
         """
         self.kp, self.ki, self.kd = kp, ki, kd
         self.setpoint = setpoint
@@ -60,9 +71,10 @@ class PID(object):
 
     def __call__(self, input_):
         """
-        Call the PID controller with *input_* and calculate and return a control output
-        since the last update. If no new output is calculated, return the previous output instead (or None if no value
-        has been calculated yet).
+        Call the PID controller with *input_* and calculate and return a
+        control output since the last update. If no new output is calculated,
+        return the previous output instead (or None if no value has been
+        calculated yet).
         """
 
         # compute error terms
@@ -95,7 +107,8 @@ class PID(object):
 
     @property
     def output_limits(self):
-        """The current output limits as a 2-tuple: (lower, upper). See also the *output_limts* parameter in :meth:`PID.__init__`."""
+        """The current output limits as a 2-tuple: (lower, upper).
+        See also the *output_limts* parameter in :meth:`PID.__init__`."""
         return (self._min_output, self._max_output)
 
     @output_limits.setter

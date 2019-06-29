@@ -59,16 +59,14 @@ Exceptions
 """
 import json
 import logging
-import sys
 import time
 import urllib
 from functools import lru_cache
 
 import requests
-
 from requests_oauthlib import OAuth1
 
-from . import (__version__, _)
+from . import _, __version__
 
 logger = logging.getLogger('transfer_vn.biolovision_api')
 
@@ -474,10 +472,10 @@ class ObservationsAPI(BiolovisionAPI):
     """ Implement api calls to observations controler.
 
     Methods
-    - api_get                - Return a single observations from the controler
-    - api_list               - Return a list of observations from the controler
-    - api_diff               - Return all changes in observations since a given date
-    - api_search             - Search for observations based on parameter value
+    - api_get      - Return a single observations from the controler
+    - api_list     - Return a list of observations from the controler
+    - api_diff     - Return all changes in observations since a given date
+    - api_search   - Search for observations based on parameter value
     """
 
     def __init__(self,
@@ -515,8 +513,8 @@ class ObservationsAPI(BiolovisionAPI):
     def api_diff(self, id_taxo_group, delta_time, modification_type='all'):
         """Query for a list of updates or deletions since a given date.
 
-        Calls /observations/diff to get list of created/updated or deleted observations
-        since a given date (max 10 weeks backward).
+        Calls /observations/diff to get list of created/updated or deleted
+        observations since a given date (max 10 weeks backward).
 
         Parameters
         ----------
@@ -525,7 +523,8 @@ class ObservationsAPI(BiolovisionAPI):
         delta_time : str
             Start of time interval to query.
         modification_type : str
-            Type of diff queried : can be only_modified, only_deleted or all (default).
+            Type of diff queried : can be only_modified, only_deleted or
+            all (default).
 
         Returns
         -------

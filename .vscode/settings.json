@@ -1,8 +1,0 @@
-{
-    "restructuredtext.confPath": "${workspaceFolder}/docs",
-    "python.pythonPath": "/home/daniel/VN_env/bin/python",
-    "python.linting.pylintEnabled": false,
-    "python.linting.pylamaEnabled": true,
-    "python.linting.enabled": true,
-    "python.formatting.provider": "yapf"
-}
