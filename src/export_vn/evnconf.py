@@ -94,7 +94,7 @@ _ConfSchema = Map({
     Map({
         Optional('max_chunks', default=10): Int(),
         Optional('max_retry', default=5): Int(),
-        Optional('max_requests', default=sys.maxsize): Int(),
+        Optional('max_requests', default=0): Int(),
         Optional('retry_delay', default=5): Int(),
         Optional('lru_maxsize', default=32): Int(),
         Optional('min_year', default=1901): Int(),
@@ -181,10 +181,10 @@ class EvnSiteConf:
             if 'tuning' in config:
                 self._max_chunks = config['tuning']['max_chunks']  # type: int
                 self._max_retry = config['tuning']['max_retry']  # type: int
-                self._retry_delay = config['tuning'][
-                    'retry_delay']  # type: int
                 self._max_requests = config['tuning'][
                     'max_requests']  # type: int
+                self._retry_delay = config['tuning'][
+                    'retry_delay']  # type: int
                 self._lru_maxsize = config['tuning'][
                     'lru_maxsize']  # type: int
                 self._min_year = config['tuning']['min_year']  # type: int
@@ -199,6 +199,21 @@ class EvnSiteConf:
                     'pid_limit_max']  # type: float
                 self._pid_delta_days = config['tuning'][
                     'pid_delta_days']  # type: int
+            else:
+                # Provide default values
+                self._max_chunks = 10  # type: int
+                self._max_retry = 5  # type: int
+                self._max_requests = 0  # type: int
+                self._retry_delay = 5  # type: int
+                self._lru_maxsize = 32  # type: int
+                self._min_year = 1901  # type: int
+                self._pid_kp = 0.0  # type: float
+                self._pid_ki = 0.003  # type: float
+                self._pid_kd = 0.0  # type: float
+                self._pid_setpoint = 10000  # type: float
+                self._pid_limit_min = 10  # type: float
+                self._pid_limit_max = 2000  # type: float
+                self._pid_delta_days = 15  # type: int
 
         except Exception as e:
             logger.error(e, exc_info=True)
