@@ -5,7 +5,7 @@ Currently, only a subset of API controlers are implemented, and only a subset
 of functions and parameters for implemented controlers.
 See details in each class.
 
-Each API controler is mapped to a python class.
+Each Biolovision controler is mapped to a python class.
 Class name is derived from controler name by removing '_' and using CamelCase.
 Methods names are similar to the corresponding API call, prefixed by 'api_'.
 For example, method 'api_list' in class 'LocalAdminUnits' will
@@ -21,8 +21,8 @@ allowed and raises an exception if it exceeds.
 Biolovision API to Classes mapping
 - BiolovisionAPI         - Top class, not for direct use
 
-API | Class
-----|------
+Controler | Class
+----------|------
 Taxo groups | TaxoGroupsAPI
 Families controller | NA
 Species Controller | SpeciesAPI
