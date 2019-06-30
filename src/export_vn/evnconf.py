@@ -8,7 +8,6 @@ parameters are then available as properties of EvnCtrlConf and EvnSiteConf.
 
 """
 import logging
-import sys
 from pathlib import Path
 from typing import Any, Dict, List, cast
 

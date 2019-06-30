@@ -1,3 +1,5 @@
-Application is now tested with python version 3.5, 3.6 and 3.7.
-It also work with Ubuntu 18.10.
->
+Application is now tested with
+
+* Python version 3.5, 3.6 and 3.7
+* Debian 9, Ubuntu 18.10
+* Postgresql 10, 11

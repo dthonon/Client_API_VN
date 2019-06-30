@@ -42,7 +42,7 @@ def db_config(cfg):
 
 def arguments(args):
     """Define and parse command arguments.
-        
+
     Args:
         args ([str]): command line parameters as list of strings
 
@@ -51,8 +51,7 @@ def arguments(args):
     """
     # Get options
     parser = argparse.ArgumentParser(
-        description=
-        'Script that transfers data from Biolovision and stores it to a Postgresql database.'
+        description='Script that transfers data from Biolovision and stores it to a Postgresql database.'
     )
     parser.add_argument(
         '--version',

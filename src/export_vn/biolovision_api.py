@@ -6,10 +6,10 @@ of functions and parameters for implemented controlers.
 See details in each class.
 
 Each API controler is mapped to a python class.
-Class name is derived from controler name by removing '\_' and using CamelCase.
-Methods names are similar to the corresponding API call, prefixed by api\_.
-For example, method api_list in class LocalAdminUnits will
-call local_admin_units.
+Class name is derived from controler name by removing '_' and using CamelCase.
+Methods names are similar to the corresponding API call, prefixed by 'api_'.
+For example, method 'api_list' in class 'LocalAdminUnits' will
+call 'local_admin_units'.
 
 Most notable difference is that API chunks are grouped under 'data', i.e.
 calling species_list('1') will return all birds in one array under 'data' key.
@@ -220,7 +220,7 @@ class BiolovisionAPI:
                 logger.error(_('%s status code = %s, for URL %s'), method,
                              resp.status_code, protected_url)
                 self._transfer_errors += 1
-                time.sleep(self._config.retry_delay)
+                time.sleep(self._config.tuning_retry_delay)
                 if self._transfer_errors > self._limits['max_retry']:
                     # Too many retries. Raising exception
                     logger.critical(_('Too many error %s, raising exception'),

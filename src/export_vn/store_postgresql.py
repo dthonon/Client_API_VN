@@ -116,8 +116,8 @@ def store_1_observation(item):
                  elem['observers'][0]['id_sighting'])
     # Find last update timestamp
     if ('update_date' in elem['observers'][0]):
-        update_date = elem['observers'][0]['update_date']['@timestamp']
-        # update_date = elem['observers'][0]['update_date']
+        # update_date = elem['observers'][0]['update_date']['@timestamp']
+        update_date = elem['observers'][0]['update_date']
     else:
         # update_date = elem['observers'][0]['insert_date']['@timestamp']
         update_date = elem['observers'][0]['insert_date']

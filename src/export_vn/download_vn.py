@@ -14,13 +14,12 @@ import logging
 from datetime import datetime, timedelta
 
 from export_vn.biolovision_api import (EntitiesAPI, FieldsAPI,
-                                       LocalAdminUnitsAPI, MaxChunksError,
-                                       ObservationsAPI, ObserversAPI,
-                                       PlacesAPI, SpeciesAPI, TaxoGroupsAPI,
-                                       TerritorialUnitsAPI, HTTPError)
+                                       LocalAdminUnitsAPI, ObservationsAPI,
+                                       ObserversAPI, PlacesAPI, SpeciesAPI,
+                                       TaxoGroupsAPI, TerritorialUnitsAPI)
 from export_vn.regulator import PID
 
-from . import (__version__, _)
+from . import _, __version__
 
 logger = logging.getLogger('transfer_vn.download_vn')
 
