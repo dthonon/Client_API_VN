@@ -14,12 +14,12 @@ import json
 import logging
 import queue
 import threading
-from pathlib import Path
-
-from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-from pyproj import Proj, transform
+from datetime import datetime
+from uuid import uuid4
 
 from export_vn.store_file import StoreFile
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+from pyproj import Proj, transform
 from sqlalchemy import (Column, DateTime, Integer, MetaData,
                         PrimaryKeyConstraint, String, Table, create_engine,
                         func, select)
@@ -27,7 +27,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.engine.url import URL
 from sqlalchemy.sql import and_
 
-from . import __version__
+from . import _, __version__
 
 logger = logging.getLogger('transfer_vn.store_postgresql')
 
@@ -101,7 +101,7 @@ def store_1_observation(item):
 
     - find insert or update date
     - simplity data to remove redundant items: dates... (TBD)
-    - add Lambert 93 coordinates
+    - add x, y transform to local coordinates
     - store json in Postgresql
 
     Parameters
@@ -116,22 +116,18 @@ def store_1_observation(item):
                  elem['observers'][0]['id_sighting'])
     # Find last update timestamp
     if ('update_date' in elem['observers'][0]):
-        update_date = elem['observers'][0]['update_date']['@timestamp']
-        # update_date = elem['observers'][0]['update_date']
+        # update_date = elem['observers'][0]['update_date']['@timestamp']
+        update_date = elem['observers'][0]['update_date']
     else:
         # update_date = elem['observers'][0]['insert_date']['@timestamp']
         update_date = elem['observers'][0]['insert_date']
 
-    # Add Lambert 93 coordinates
+    # Add Lambert x, y transform to local coordinates
     x, y = transform(item.in_proj, item.out_proj,
                      elem['observers'][0]['coord_lon'],
                      elem['observers'][0]['coord_lat'])
-    elem['observers'][0]['coord_x_l93'] = x
-    elem['observers'][0]['coord_y_l93'] = y
-    # elem['place']['coord_x_l93'], elem['place']['coord_y_l93'] = \
-    #     transform(item.in_proj, item.out_proj,
-    #               elem['place']['coord_lon'],
-    #               elem['place']['coord_lat'])
+    elem['observers'][0]['coord_x_local'] = x
+    elem['observers'][0]['coord_y_local'] = y
 
     # Store in Postgresql
     items_json = json.dumps(elem)
@@ -156,9 +152,7 @@ def store_1_observation(item):
         stmt = metadata.update().\
             where(and_(metadata.c.id == elem['observers'][0]['id_sighting'],
                        metadata.c.site == site)).\
-            values(id=elem['observers'][0]['id_sighting'],
-                   site=site,
-                   update_ts=update_date,
+            values(update_ts=update_date,
                    item=items_json)
     result = item.conn.execute(stmt)
     return None
@@ -240,6 +234,15 @@ class PostgresqlUtils:
             PrimaryKeyConstraint('id', 'site', name='entities_json_pk'))
         return None
 
+    def _create_fields_json(self):
+        """Create fields_json table if it does not exist."""
+        self._create_table(
+            'fields_json', Column('id', Integer, nullable=False),
+            Column('site', String, nullable=False),
+            Column('item', JSONB, nullable=False),
+            PrimaryKeyConstraint('id', 'site', name='fields_json_pk'))
+        return None
+
     def _create_forms_json(self):
         """Create forms_json table if it does not exist."""
         self._create_table(
@@ -258,6 +261,20 @@ class PostgresqlUtils:
             PrimaryKeyConstraint('id',
                                  'site',
                                  name='local_admin_units_json_pk'))
+        return None
+
+    def _create_uuid_xref(self):
+        """Create uuid_xref table if it does not exist."""
+        self._create_table(
+            'uuid_xref', Column('id', Integer, nullable=False),
+            Column('site', String, nullable=False),
+            Column('universal_id', String, nullable=False),
+            Column('uuid', String, nullable=False),
+            Column('alias', JSONB, nullable=True),
+            Column('update_ts', DateTime,
+                   server_default=func.now(),
+                   nullable=False),
+            PrimaryKeyConstraint('id', 'site', name='uuid_xref_json_pk'))
         return None
 
     def _create_observations_json(self):
@@ -467,8 +484,10 @@ class PostgresqlUtils:
         self._create_increment_log()
 
         self._create_entities_json()
+        self._create_fields_json()
         self._create_forms_json()
         self._create_local_admin_units_json()
+        self._create_uuid_xref()
         self._create_observations_json()
         self._create_observers_json()
         self._create_places_json()
@@ -591,12 +610,20 @@ class StorePostgresql:
                 'type': 'simple',
                 'metadata': None
             },
-            'forms': {
+            'fields': {
                 'type': 'simple',
+                'metadata': None
+            },
+            'forms': {
+                'type': 'others',
                 'metadata': None
             },
             'local_admin_units': {
                 'type': 'geometry',
+                'metadata': None
+            },
+            'uuid_xref': {
+                'type': 'others',
                 'metadata': None
             },
             'observations': {
@@ -626,11 +653,15 @@ class StorePostgresql:
         }
         self._table_defs['entities']['metadata'] = self._metadata.tables[
             dbschema + '.entities_json']
+        self._table_defs['fields']['metadata'] = self._metadata.tables[
+            dbschema + '.fields_json']
         self._table_defs['forms']['metadata'] = self._metadata.tables[
             dbschema + '.forms_json']
         self._table_defs['local_admin_units'][
             'metadata'] = self._metadata.tables[dbschema +
                                                 '.local_admin_units_json']
+        self._table_defs['uuid_xref']['metadata'] = self._metadata.tables[
+            dbschema + '.uuid_xref']
         self._table_defs['observations']['metadata'] = self._metadata.tables[
             dbschema + '.observations_json']
         self._table_defs['observers']['metadata'] = self._metadata.tables[
@@ -735,9 +766,9 @@ class StorePostgresql:
         return len(items_dict['data'])
 
     def _store_geometry(self, controler, items_dict):
-        """Add Lambert 93 coordinates and pass to _store_simple.
+        """Add local coordinates and pass to _store_simple.
 
-        Add X, Y Lambert coordinates to each item and then
+        Add X, Y local coordinates to each item and then
         send to _store_simple for database storage
 
         Parameters
@@ -754,12 +785,119 @@ class StorePostgresql:
         """
 
         in_proj = Proj(init='epsg:4326')
-        out_proj = Proj(init='epsg:2154')
+        out_proj = Proj(init='epsg:' + self._config.db_out_proj)
         # Loop on data array to reproject
         for elem in items_dict['data']:
-            elem['coord_x_l93'], elem['coord_y_l93'] = transform(
+            elem['coord_x_local'], elem['coord_y_local'] = transform(
                 in_proj, out_proj, elem['coord_lon'], elem['coord_lat'])
         return self._store_simple(controler, items_dict)
+
+    def _store_form(self, items_dict):
+        """Write forms to database.
+
+        Check if forms is in database and either insert or update.
+
+        Parameters
+        ----------
+        items_dict : dict
+            Forms data to store.
+
+        Returns
+        -------
+        int
+            Count of items stored.
+        """
+
+        controler = 'forms'
+        logger.debug(_('Storing %d items from %s of site %s'), len(items_dict),
+                     controler, self._config.site)
+        try:
+            # Add local coordinates
+            if ('lon' in items_dict) and ('lat' in items_dict):
+                in_proj = Proj(init='epsg:4326')
+                out_proj = Proj(init='epsg:' + self._config.db_out_proj)
+                items_dict['coord_x_local'], items_dict[
+                    'coord_y_local'] = transform(in_proj, out_proj,
+                                                 items_dict['lon'],
+                                                 items_dict['lat'])
+
+            # Convert to json
+            items_json = json.dumps(items_dict)
+            logger.debug(_('Storing element %s'), items_json)
+            stmt = select([self._table_defs[controler]['metadata'].c.id,
+                           self._table_defs[controler]['metadata'].c.site]).\
+                where(and_(self._table_defs[controler]['metadata'].c.id == items_dict['@id'],
+                           self._table_defs[controler]['metadata'].c.site == self._config.site))
+            result = self._conn.execute(stmt)
+            row = result.fetchone()
+            if row is None:
+                logger.debug(
+                    _('Element not found in database, inserting new row'))
+                stmt = self._table_defs[controler]['metadata'].insert().\
+                    values(id=items_dict['@id'],
+                           site=self._config.site,
+                           item=items_json)
+            else:
+                logger.debug(_('Element %s found in database, updating row'),
+                             row[0])
+                stmt = self._table_defs[controler]['metadata'].update().\
+                    where(and_(self._table_defs[controler]['metadata'].c.id == items_dict['@id'],
+                               self._table_defs[controler]['metadata'].c.site == self._config.site)).\
+                    values(id=items_dict['@id'],
+                           site=self._config.site,
+                           item=items_json)
+            result = self._conn.execute(stmt)
+        except:
+            raise
+
+        return len(items_dict)
+
+    def _store_uuid(self, obs_id, universal_id=''):
+        """Creates UUID and store along id and site.
+
+        If (id, site) does not exist:
+        - creates an UID
+        - store it, along with id, site, universal_id to table.
+
+        Parameters
+        ----------
+        obs_id : str
+            Observations id.
+        universal_id : str
+            Observations universal id.
+
+        Returns
+        -------
+        int
+            Count of items stored.
+        """
+
+        controler = 'uuid_xref'
+        try:
+            stmt = select([self._table_defs[controler]['metadata'].c.id,
+                           self._table_defs[controler]['metadata'].c.site]).\
+                where(and_(self._table_defs[controler]['metadata'].c.id == obs_id,
+                           self._table_defs[controler]['metadata'].c.site ==
+                           self._config.site))
+            result = self._conn.execute(stmt)
+            row = result.fetchone()
+            if row is None:
+                logger.debug(_('Creating UUID for observation %s site %s'),
+                             obs_id, self._config.site)
+                stmt = self._table_defs[controler]['metadata'].insert().\
+                    values(id=obs_id,
+                           site=self._config.site,
+                           universal_id=universal_id,
+                           uuid=uuid4(),
+                           update_ts=datetime.now())
+                result = self._conn.execute(stmt)
+            else:
+                logger.debug(_('UUID found for observation %s site %s'),
+                             obs_id, self._config.site)
+        except:
+            raise
+
+        return 1
 
     def _store_observation(self, controler, items_dict):
         """Iterate through observations or forms and store.
@@ -767,7 +905,7 @@ class StorePostgresql:
         Checks if sightings or forms and iterate on each sighting
         - find insert or update date
         - simplity data to remove redundant items: dates... (TBD)
-        - add Lambert 93 coordinates
+        - add x, y transform to local coordinates
         - store json in Postgresql
 
         Parameters
@@ -784,37 +922,43 @@ class StorePostgresql:
         """
         # Insert simple sightings, each row contains id, update timestamp and full json body
         in_proj = Proj(init='epsg:4326')
-        out_proj = Proj(init='epsg:2154')
+        out_proj = Proj(init='epsg:' + self._config.db_out_proj)
         nb_obs = 0
         # trans = self._conn.begin()
         try:
             logger.debug(_('Storing %d single observations'),
                          len(items_dict['data']['sightings']))
             for i in range(0, len(items_dict['data']['sightings'])):
+                elem = items_dict['data']['sightings'][i]
+                # Create UUID
+                self._store_uuid(elem['observers'][0]['id_sighting'],
+                                 elem['observers'][0]['id_universal'])
+                # Senf observation to queue
                 obs = ObservationItem(self._config.site,
                                       self._table_defs[controler]['metadata'],
-                                      self._conn,
-                                      items_dict['data']['sightings'][i],
-                                      in_proj, out_proj)
+                                      self._conn, elem, in_proj, out_proj)
                 self._observations_queue.put(obs)
                 nb_obs += 1
 
             if ('forms' in items_dict['data']):
                 for f in range(0, len(items_dict['data']['forms'])):
-                    logger.debug(
-                        'Storing %d observations in form %d',
-                        len(items_dict['data']['forms'][f]['sightings']), f)
-                    for i in range(
-                            0,
-                            len(items_dict['data']['forms'][f]['sightings'])):
-                        obs = ObservationItem(
-                            self._config.site,
-                            self._table_defs[controler]['metadata'],
-                            self._conn,
-                            items_dict['data']['forms'][f]['sightings'][i],
-                            in_proj, out_proj)
-                        self._observations_queue.put(obs)
-                        nb_obs += 1
+                    forms_data = {}
+                    for (k, v) in items_dict['data']['forms'][f].items():
+                        if k == 'sightings':
+                            nb_s = len(v)
+                            logger.debug('Storing %d observations in form %d',
+                                         nb_s, f)
+                            for i in range(0, nb_s):
+                                obs = ObservationItem(
+                                    self._config.site,
+                                    self._table_defs[controler]['metadata'],
+                                    self._conn, v[i], in_proj, out_proj)
+                                self._observations_queue.put(obs)
+                                nb_obs += 1
+                        else:
+                            # Put anything except sightings in forms data
+                            forms_data[k] = v
+                    self._store_form(forms_data)
 
             # Wait for threads to finish before commit
             # self._observations_queue.join()

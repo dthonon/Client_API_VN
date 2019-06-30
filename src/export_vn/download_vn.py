@@ -11,17 +11,15 @@ Properties
 
 """
 import logging
-import sys
 from datetime import datetime, timedelta
 
-from export_vn.biolovision_api import (EntitiesAPI, HTTPError,
-                                       LocalAdminUnitsAPI, MaxChunksError,
-                                       ObservationsAPI, ObserversAPI,
-                                       PlacesAPI, SpeciesAPI, TaxoGroupsAPI,
-                                       TerritorialUnitsAPI)
+from export_vn.biolovision_api import (EntitiesAPI, FieldsAPI,
+                                       LocalAdminUnitsAPI, ObservationsAPI,
+                                       ObserversAPI, PlacesAPI, SpeciesAPI,
+                                       TaxoGroupsAPI, TerritorialUnitsAPI)
 from export_vn.regulator import PID
 
-from . import __version__
+from . import _, __version__
 
 logger = logging.getLogger('transfer_vn.download_vn')
 
@@ -35,18 +33,25 @@ class NotImplementedException(DownloadVnException):
 
 
 class DownloadVn:
-    """Top class, not for direct use. Provides internal and template methods."""
+    """Top class, not for direct use.
+    Provides internal and template methods."""
 
     def __init__(self,
                  config,
                  api_instance,
                  backend,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         self._config = config
         self._api_instance = api_instance
         self._backend = backend
+        if max_retry is None:
+            max_retry = config.tuning_max_retry
+        if max_requests is None:
+            max_requests = config.tuning_max_requests
+        if max_chunks is None:
+            max_chunks = config.tuning_max_chunks
         self._limits = {
             'max_retry': max_retry,
             'max_requests': max_requests,
@@ -86,7 +91,7 @@ class DownloadVn:
         logger.debug(_('Getting items from controler %s'),
                      self._api_instance.controler)
         i = 0
-        if opt_params_iter == None:
+        if opt_params_iter is None:
             opt_params_iter = iter([None])
         for opt_params in opt_params_iter:
             i += 1
@@ -114,10 +119,29 @@ class Entities(DownloadVn):
     def __init__(self,
                  config,
                  backend,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, EntitiesAPI(config), backend, max_retry,
+                         max_requests, max_chunks)
+        return None
+
+
+class Fields(DownloadVn):
+    """ Implement store from fields controler.
+
+    Methods
+    - store               - Download and store to json
+
+    """
+
+    def __init__(self,
+                 config,
+                 backend,
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
+        super().__init__(config, FieldsAPI(config), backend, max_retry,
                          max_requests, max_chunks)
         return None
 
@@ -133,9 +157,9 @@ class LocalAdminUnits(DownloadVn):
     def __init__(self,
                  config,
                  backend,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, LocalAdminUnitsAPI(config), backend,
                          max_retry, max_requests, max_chunks)
         return None
@@ -153,9 +177,9 @@ class Observations(DownloadVn):
     def __init__(self,
                  config,
                  backend,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, ObservationsAPI(config), backend, max_retry,
                          max_requests, max_chunks)
         return None
@@ -182,7 +206,7 @@ class Observations(DownloadVn):
         logger.debug(
             _('Getting observations from controler %s, using API list'),
             self._api_instance.controler)
-        if id_taxo_group == None:
+        if id_taxo_group is None:
             taxo_groups = TaxoGroupsAPI(self._config).api_list()['data']
         else:
             taxo_groups = [{'id': id_taxo_group, 'access_mode': 'full'}]
@@ -253,7 +277,7 @@ class Observations(DownloadVn):
         logger.debug(
             _('Getting observations from controler %s, using API search'),
             self._api_instance.controler)
-        if id_taxo_group == None:
+        if id_taxo_group is None:
             taxo_groups = TaxoGroupsAPI(self._config).api_list()['data']
         else:
             taxo_groups = [{'id': id_taxo_group, 'access_mode': 'full'}]
@@ -264,14 +288,15 @@ class Observations(DownloadVn):
                                             datetime.now())
                 end_date = datetime.now()
                 start_date = end_date
-                min_date = datetime(1901, 1, 1)
+                min_date = datetime(self._config.tuning_min_year, 1, 1)
                 seq = 1
-                pid = PID(kp=0.0,
-                          ki=0.003,
-                          kd=0.0,
-                          setpoint=10000,
-                          output_limits=(10, 2000))
-                delta_days = 15
+                pid = PID(kp=self._config.tuning_pid_kp,
+                          ki=self._config.tuning_pid_ki,
+                          kd=self._config.tuning_pid_kd,
+                          setpoint=self._config.tuning_pid_setpoint,
+                          output_limits=(self._config.tuning_pid_limit_min,
+                                         self._config.tuning_pid_limit_max))
+                delta_days = self._config.tuning_pid_delta_days
                 while start_date > min_date:
                     start_date = end_date - timedelta(days=delta_days)
                     q_param = {
@@ -303,7 +328,7 @@ class Observations(DownloadVn):
 
     def _list_taxo_groups(self, id_taxo_group):
         """Return the list of enabled taxo_groups."""
-        if id_taxo_group == None:
+        if id_taxo_group is None:
             # Get all active taxo_groups
             taxo_groups = TaxoGroupsAPI(self._config).api_list()
             taxo_list = []
@@ -328,9 +353,11 @@ class Observations(DownloadVn):
               by_specie=False,
               method='search',
               short_version='1'):
-        """Download from VN by API, looping on taxo_group if None and store json to file.
+        """Download from VN by API and store json to backend.
 
-        Calls  biolovision_api, convert to json and store to file.
+        Calls  biolovision_api
+        convert to json
+        and store using backend.store (database, file...).
         Downloads all database if id_taxo_group is None.
         If id_taxo_group is defined, downloads only this taxo_group
 
@@ -457,9 +484,9 @@ class Observers(DownloadVn):
     def __init__(self,
                  config,
                  backend,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, ObserversAPI(config), backend, max_retry,
                          max_requests, max_chunks)
         return None
@@ -476,9 +503,9 @@ class Places(DownloadVn):
     def __init__(self,
                  config,
                  backend,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, PlacesAPI(config), backend, max_retry,
                          max_requests, max_chunks)
         return None
@@ -495,9 +522,9 @@ class Species(DownloadVn):
     def __init__(self,
                  config,
                  backend,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, SpeciesAPI(config), backend, max_retry,
                          max_requests, max_chunks)
         return None
@@ -528,9 +555,9 @@ class TaxoGroup(DownloadVn):
     def __init__(self,
                  config,
                  backend,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, TaxoGroupsAPI(config), backend, max_retry,
                          max_requests, max_chunks)
         return None
@@ -547,9 +574,9 @@ class TerritorialUnits(DownloadVn):
     def __init__(self,
                  config,
                  backend,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, TerritorialUnitsAPI(config), backend,
                          max_retry, max_requests, max_chunks)
         return None

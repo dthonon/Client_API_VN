@@ -2,28 +2,48 @@
 
 Thin Python binding to Biolovision API, returning dict instead of JSON.
 Currently, only a subset of API controlers are implemented, and only a subset
-of functions and parameters for implemented controlers. See details in each class.
+of functions and parameters for implemented controlers.
+See details in each class.
 
-Each API controler is mapped to a python class.
+Each Biolovision controler is mapped to a python class.
 Class name is derived from controler name by removing '_' and using CamelCase.
-Methods names are similar to the corresponding API call, prefixed by api_.
-For example, method api_list in class LocalAdminUnits will call local_admin_units.
+Methods names are similar to the corresponding API call, prefixed by 'api_'.
+For example, method 'api_list' in class 'LocalAdminUnits' will
+call 'local_admin_units'.
 
 Most notable difference is that API chunks are grouped under 'data', i.e.
 calling species_list('1') will return all birds in one array under 'data' key.
-This means that requests returning lots of chunks (all bird sightings !) must be
-avoided, as memory could be insufficient. max_chunks __init__ parameter controls
-the maximum number of chunks allowed and raises
+This means that requests returning lots of chunks (all bird sightings !)
+must be avoided, as memory could be insufficient.
+max_chunks __init__ parameter controls the maximum number of chunks
+allowed and raises an exception if it exceeds.
 
-Classes
+Biolovision API to Classes mapping
 - BiolovisionAPI         - Top class, not for direct use
-- LocalAdminUnitsAPI     - Controls local_admin_units
-- ObservationsAPI        - Controls observations
-- ObserversAPI           - Controls observers
-- PlacesAPI              - Controls places
-- SpeciesAPI             - Controls species
-- TaxoGroupsAPI          - Controls taxo_groups
-- TerritorialUnitsAPI    - Controls territorial_units
+
+Controler | Class
+----------|------
+Taxo groups | TaxoGroupsAPI
+Families controller | NA
+Species Controller | SpeciesAPI
+Territorial Units Controller | TerritorialUnitsAPI
+Local admin units controller | LocalAdminUnitsAPI
+Places controller | PlacesAPI
+Observers | ObserversAPI
+Entities | EntitiesAPI
+Export organizations controller | NA
+Observations Controller | ObservationsAPI
+Fields controller | FieldsAPI
+Media Controller | NA
+Import files controller | NA
+Import files/Observations controller |
+Validations controller | NA
+Mortality informations controller | NA
+Bearded Vulture Birds controller | NA
+Bearded Vulture informations controller | NA
+Grids controller | NA
+Grid-Commune controller | NA
+Atlas documents | NA
 
 Methods, see each class
 
@@ -35,19 +55,18 @@ Exceptions
 - HTTPError                  - HTTP protocol error
 - MaxChunksError             - Too many chunks returned from API calls
 - IncorrectParameter         - Incorrect or missing parameter
+
 """
 import json
 import logging
-import sys
 import time
 import urllib
 from functools import lru_cache
 
 import requests
-
 from requests_oauthlib import OAuth1
 
-from . import __version__
+from . import _, __version__
 
 logger = logging.getLogger('transfer_vn.biolovision_api')
 
@@ -85,10 +104,16 @@ class BiolovisionAPI:
     def __init__(self,
                  config,
                  controler,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         self._config = config
+        if max_retry is None:
+            max_retry = config.tuning_max_retry
+        if max_requests is None:
+            max_requests = config.tuning_max_requests
+        if max_chunks is None:
+            max_chunks = config.tuning_max_chunks
         self._limits = {
             'max_retry': max_retry,
             'max_requests': max_requests,
@@ -195,7 +220,7 @@ class BiolovisionAPI:
                 logger.error(_('%s status code = %s, for URL %s'), method,
                              resp.status_code, protected_url)
                 self._transfer_errors += 1
-                time.sleep(5)
+                time.sleep(self._config.tuning_retry_delay)
                 if self._transfer_errors > self._limits['max_retry']:
                     # Too many retries. Raising exception
                     logger.critical(_('Too many error %s, raising exception'),
@@ -401,11 +426,28 @@ class EntitiesAPI(BiolovisionAPI):
 
     def __init__(self,
                  config,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, 'entities', max_retry, max_requests,
                          max_chunks)
+
+
+class FieldsAPI(BiolovisionAPI):
+    """ Implement api calls to fields controler.
+
+    Methods
+    - api_get                - Return a single entity from the controler
+    - api_list               - Return a list of entity from the controler
+
+    """
+
+    def __init__(self,
+                 config,
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
+        super().__init__(config, 'fields', max_retry, max_requests, max_chunks)
 
 
 class LocalAdminUnitsAPI(BiolovisionAPI):
@@ -419,9 +461,9 @@ class LocalAdminUnitsAPI(BiolovisionAPI):
 
     def __init__(self,
                  config,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, 'local_admin_units', max_retry, max_requests,
                          max_chunks)
 
@@ -430,17 +472,17 @@ class ObservationsAPI(BiolovisionAPI):
     """ Implement api calls to observations controler.
 
     Methods
-    - api_get                - Return a single observations from the controler
-    - api_list               - Return a list of observations from the controler
-    - api_diff               - Return all changes in observations since a given date
-    - api_search             - Search for observations based on parameter value
+    - api_get      - Return a single observations from the controler
+    - api_list     - Return a list of observations from the controler
+    - api_diff     - Return all changes in observations since a given date
+    - api_search   - Search for observations based on parameter value
     """
 
     def __init__(self,
                  config,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, 'observations', max_retry, max_requests,
                          max_chunks)
 
@@ -471,8 +513,8 @@ class ObservationsAPI(BiolovisionAPI):
     def api_diff(self, id_taxo_group, delta_time, modification_type='all'):
         """Query for a list of updates or deletions since a given date.
 
-        Calls /observations/diff to get list of created/updated or deleted observations
-        since a given date (max 10 weeks backward).
+        Calls /observations/diff to get list of created/updated or deleted
+        observations since a given date (max 10 weeks backward).
 
         Parameters
         ----------
@@ -481,7 +523,8 @@ class ObservationsAPI(BiolovisionAPI):
         delta_time : str
             Start of time interval to query.
         modification_type : str
-            Type of diff queried : can be only_modified, only_deleted or all (default).
+            Type of diff queried : can be only_modified, only_deleted or
+            all (default).
 
         Returns
         -------
@@ -547,9 +590,9 @@ class ObserversAPI(BiolovisionAPI):
 
     def __init__(self,
                  config,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, 'observers', max_retry, max_requests,
                          max_chunks)
 
@@ -565,9 +608,9 @@ class PlacesAPI(BiolovisionAPI):
 
     def __init__(self,
                  config,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, 'places', max_retry, max_requests, max_chunks)
 
 
@@ -582,9 +625,9 @@ class SpeciesAPI(BiolovisionAPI):
 
     def __init__(self,
                  config,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, 'species', max_retry, max_requests,
                          max_chunks)
 
@@ -600,9 +643,9 @@ class TaxoGroupsAPI(BiolovisionAPI):
 
     def __init__(self,
                  config,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, 'taxo_groups', max_retry, max_requests,
                          max_chunks)
 
@@ -623,9 +666,9 @@ class TerritorialUnitsAPI(BiolovisionAPI):
 
     def __init__(self,
                  config,
-                 max_retry=5,
-                 max_requests=sys.maxsize,
-                 max_chunks=10):
+                 max_retry=None,
+                 max_requests=None,
+                 max_chunks=None):
         super().__init__(config, 'territorial_units', max_retry, max_requests,
                          max_chunks)
 

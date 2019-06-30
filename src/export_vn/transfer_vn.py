@@ -4,7 +4,6 @@ Program managing VisioNature export to Postgresql database
 
 """
 import argparse
-import gettext
 import logging
 import subprocess
 import sys
@@ -17,13 +16,13 @@ from tabulate import tabulate
 
 import pyexpander.lib as pyexpander
 from export_vn.biolovision_api import TaxoGroupsAPI
-from export_vn.download_vn import (Entities, LocalAdminUnits, Observations,
+from export_vn.download_vn import (Entities, Fields, LocalAdminUnits, Observations,
                                    Observers, Places, Species, TaxoGroup,
                                    TerritorialUnits)
 from export_vn.evnconf import EvnConf
 from export_vn.store_postgresql import PostgresqlUtils, StorePostgresql
 
-from . import __version__
+from . import (__version__, _)
 
 
 def db_config(cfg):
@@ -36,13 +35,14 @@ def db_config(cfg):
         'db_schema_vn': cfg.db_schema_vn,
         'db_group': cfg.db_group,
         'db_user': cfg.db_user,
-        'db_pw': cfg.db_pw
+        'db_pw': cfg.db_pw,
+        'proj': cfg.db_out_proj
     }
 
 
 def arguments(args):
     """Define and parse command arguments.
-        
+
     Args:
         args ([str]): command line parameters as list of strings
 
@@ -51,8 +51,7 @@ def arguments(args):
     """
     # Get options
     parser = argparse.ArgumentParser(
-        description=
-        'Script that transfers data from Biolovision and stores it to a Postgresql database.'
+        description='Script that transfers data from Biolovision and stores it to a Postgresql database.'
     )
     parser.add_argument(
         '--version',
@@ -106,7 +105,7 @@ def full_download(cfg_ctrl):
             if cfg.enabled:
                 logger.info(_('Working on site %s'), cfg.site)
 
-                ctrl = 'taxo_group'
+                ctrl = 'taxo_groups'
                 if cfg_crtl_list[ctrl].enabled:
                     logger.info(_('Using controler %s on site %s'), ctrl,
                                 cfg.site)
@@ -139,7 +138,14 @@ def full_download(cfg_ctrl):
                     entities = Entities(cfg, store_pg)
                     entities.store()
 
-                ctrl = 'territorial_unit'
+                ctrl = 'fields'
+                if cfg_crtl_list[ctrl].enabled:
+                    logger.info(_('Using controler %s on site %s'), ctrl,
+                                cfg.site)
+                    entities = Fields(cfg, store_pg)
+                    entities.store()
+
+                ctrl = 'territorial_units'
                 if cfg_crtl_list[ctrl].enabled:
                     logger.info(_('Using controler %s on site %s'), ctrl,
                                 cfg.site)
@@ -171,8 +177,8 @@ def full_download(cfg_ctrl):
                 if cfg_crtl_list[ctrl].enabled:
                     logger.info(_('Using controler %s on site %s'), ctrl,
                                 cfg.site)
-                    places = Observers(cfg, store_pg)
-                    places.store()
+                    observers = Observers(cfg, store_pg)
+                    observers.store()
 
             else:
                 logger.info(_('Skipping site %s'), site)
@@ -351,9 +357,15 @@ def main(args):
         with open(filename, 'w') as myfile:
             myfile.write(cmd)
         try:
-            subprocess.run('env PGOPTIONS="-c client-min-messages=' +
-                           client_min_message + '" psql ' + sql_quiet +
-                           ' --dbname=' + cfg.db_name + ' --file=' + filename,
+            subprocess.run(' PGPASSWORD="' + cfg.db_pw + '" '
+                           'env PGOPTIONS="-c client-min-messages=' +
+                           client_min_message +
+                           '" psql ' + sql_quiet +
+                           ' --host=' + cfg.db_host +
+                           ' --port=' + cfg.db_port +
+                           ' --dbname=' + cfg.db_name +
+                           ' --user=' + cfg.db_user +
+                           ' --file=' + filename,
                            check=True,
                            shell=True)
         except subprocess.CalledProcessError as err:

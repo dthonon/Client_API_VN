@@ -1,0 +1,11 @@
+Some columns were not filled correctly. This is corrected as described below:
+
+Column | Comment
+-------|-----------------------------------
+timing | Available in observations table
+update_date | Available in observations table
+project_code | Available in observations table
+details | Available in observations table
+
+The following parameters are not available in observations table and
+need to be fetched from observers table.

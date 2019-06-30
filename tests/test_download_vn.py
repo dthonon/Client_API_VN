@@ -5,27 +5,26 @@ Test each method of download_vn module, using file store.
 import gzip
 import json
 import logging
-import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
 import pytest
-from export_vn.download_vn import (DownloadVn, DownloadVnException, Entities,
-                                   LocalAdminUnits, Observations, Observers,
-                                   Places, Species, TaxoGroup,
-                                   TerritorialUnits)
+from export_vn.download_vn import (Entities, Fields, LocalAdminUnits,
+                                   Observations, Observers, Places, Species,
+                                   TaxoGroup, TerritorialUnits)
 from export_vn.evnconf import EvnConf
 from export_vn.store_file import StoreFile
 
 # Using faune-ardeche or faune-isere site, that needs to be created first
 SITE = 't07'
-#SITE = 't38'
+# SITE = 't38'
 FILE = '.evn_test.yaml'
 
 # Get configuration for test site
 CFG = EvnConf(FILE).site_list[SITE]
 STORE_FILE = StoreFile(CFG)
 ENTITIES = Entities(CFG, STORE_FILE)
+FIELDS = Fields(CFG, STORE_FILE)
 LOCAL_ADMIN_UNITS = LocalAdminUnits(CFG, STORE_FILE)
 OBSERVATIONS = Observations(CFG, STORE_FILE)
 OBSERVERS = Observers(CFG, STORE_FILE)
@@ -49,6 +48,24 @@ def test_entities_store(capsys):
     if Path(file_json).is_file():
         Path(file_json).unlink()
     ENTITIES.store()
+    assert Path(file_json).is_file()
+    with gzip.open(file_json, 'rb') as g:
+        items_dict = json.loads(g.read().decode('utf-8'))
+    if SITE == 't38':
+        assert len(items_dict['data']) >= 20
+    elif SITE == 't07':
+        assert len(items_dict['data']) >= 8
+
+
+# ---------
+#  Fields
+# ---------
+def test_fields_store(capsys):
+    """Store fields to file."""
+    file_json = str(Path.home()) + '/' + CFG.file_store + 'fields_1.json.gz'
+    if Path(file_json).is_file():
+        Path(file_json).unlink()
+    FIELDS.store()
     assert Path(file_json).is_file()
     with gzip.open(file_json, 'rb') as g:
         items_dict = json.loads(g.read().decode('utf-8'))
@@ -112,6 +129,7 @@ def test_observations_store_list_2_18(capsys):
         assert len(items_dict['data']['sightings']) >= 18
 
 
+@pytest.mark.slow
 def test_observations_store_search_1_1(capsys):
     """Store observations from taxo_group 2 by specie to file, using search."""
     file_json = str(
@@ -122,6 +140,7 @@ def test_observations_store_search_1_1(capsys):
     assert Path(file_json).is_file()
 
 
+@pytest.mark.slow
 def test_observations_store_search_1_2(capsys):
     """Store observations from taxo_group 2 by specie to file, using search."""
     file_json = str(
@@ -132,8 +151,10 @@ def test_observations_store_search_1_2(capsys):
     assert Path(file_json).is_file()
 
 
+@pytest.mark.slow
 def test_observations_store_update_1_2(capsys):
-    """Get updates for 0.5 day of observations from taxo_group 2 by specie to file."""
+    """Get updates for 0.5 day of observations from taxo_group 2
+    by specie to file."""
     since = (datetime.now() -
              timedelta(days=0.5)).strftime('%H:%M:%S %d.%m.%Y')
     OBSERVATIONS.update(2, since)

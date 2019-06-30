@@ -24,7 +24,7 @@ SET search_path TO $(db_schema_vn),public;
 CREATE OR REPLACE FUNCTION update_geom_triggerfn()
 RETURNS trigger AS \$body\$
     BEGIN
-    NEW.geom := ST_SetSRID(ST_MakePoint(NEW.coord_x_l93, NEW.coord_y_l93), 2154);
+    NEW.geom := ST_SetSRID(ST_MakePoint(NEW.coord_x_local, NEW.coord_y_local), $(proj));
     RETURN NEW;
     END;
 \$body\$
@@ -34,7 +34,6 @@ LANGUAGE plpgsql;
 -- Entities
 -----------
 CREATE TABLE $(db_schema_vn).entities(
-    uuid                UUID DEFAULT uuid_generate_v4(),
     site                VARCHAR(50),
     id                  INTEGER,
     short_name          VARCHAR(500),
@@ -42,7 +41,7 @@ CREATE TABLE $(db_schema_vn).entities(
     description_french  VARCHAR(100000),
     url                 VARCHAR(1000),
     address             VARCHAR(1000),
-    PRIMARY KEY (uuid)
+    PRIMARY KEY (site, id)
 );
 
 DROP INDEX IF EXISTS entities_idx_site;
@@ -110,18 +109,209 @@ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS entities_trigger ON $(db_schema_import).entities_json;
 CREATE TRIGGER entities_trigger
 AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).entities_json
-    FOR EACH ROW EXECUTE FUNCTION $(db_schema_vn).update_entities();
+    FOR EACH ROW EXECUTE PROCEDURE $(db_schema_vn).update_entities();
+
+
+---------
+-- Fields
+---------
+CREATE TABLE $(db_schema_vn).fields(
+    site                VARCHAR(50),
+    id                  INTEGER,
+    default_v           VARCHAR(500),
+    empty_choice        VARCHAR(500),
+    mandatory           VARCHAR(500),
+    name                VARCHAR(1000),
+    PRIMARY KEY (site, id)
+);
+
+DROP INDEX IF EXISTS fields_idx_site;
+CREATE INDEX fields_idx_site
+    ON $(db_schema_vn).fields USING btree(site);
+DROP INDEX IF EXISTS fields_idx_id;
+CREATE INDEX fields_idx_id
+    ON $(db_schema_vn).fields USING btree(id);
+
+CREATE OR REPLACE FUNCTION update_fields() RETURNS TRIGGER AS \$\$
+    BEGIN
+    IF (TG_OP = 'DELETE') THEN
+        -- Deleting data when JSON data is deleted
+        DELETE FROM $(db_schema_vn).fields
+            WHERE id = OLD.id AND site = OLD.site;
+        IF NOT FOUND THEN
+            RETURN NULL;
+        END IF;
+        RETURN OLD;
+
+    ELSIF (TG_OP = 'UPDATE') THEN
+        -- Updating or inserting data when JSON data is updated
+        UPDATE $(db_schema_vn).fields SET
+            default_v    = CAST(NEW.item->>0 AS JSON)->>'default',
+            empty_choice = CAST(NEW.item->>0 AS JSON)->>'empty_choice',
+            mandatory    = CAST(NEW.item->>0 AS JSON)->>'mandatory',
+            name         = CAST(NEW.item->>0 AS JSON)->>'name'
+        WHERE id = OLD.id AND site = OLD.site ;
+        IF NOT FOUND THEN
+            -- Inserting data in new row, usually after table re-creation
+            INSERT INTO $(db_schema_vn).fields(site, id, default_v, empty_choice, mandatory, name)
+            VALUES (
+                NEW.site,
+                NEW.id,
+                CAST(NEW.item->>0 AS JSON)->>'default',
+                CAST(NEW.item->>0 AS JSON)->>'empty_choice',
+                CAST(NEW.item->>0 AS JSON)->>'mandatory',
+                CAST(NEW.item->>0 AS JSON)->>'name'
+            );
+            END IF;
+        RETURN NEW;
+
+    ELSIF (TG_OP = 'INSERT') THEN
+        -- Inserting row when raw data is inserted
+        INSERT INTO $(db_schema_vn).fields(site, id, default_v, empty_choice, mandatory, name)
+        VALUES (
+            NEW.site,
+            NEW.id,
+            CAST(NEW.item->>0 AS JSON)->>'default',
+            CAST(NEW.item->>0 AS JSON)->>'empty_choice',
+            CAST(NEW.item->>0 AS JSON)->>'mandatory',
+            CAST(NEW.item->>0 AS JSON)->>'name'
+        );
+        RETURN NEW;
+    END IF;
+END;
+\$\$
+LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS fields_trigger ON $(db_schema_import).fields_json;
+CREATE TRIGGER fields_trigger
+AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).fields_json
+    FOR EACH ROW EXECUTE PROCEDURE $(db_schema_vn).update_fields();
 
 
 --------
 -- Forms
 --------
+CREATE TABLE $(db_schema_vn).forms(
+    site                VARCHAR(50),
+    id                  INTEGER,
+    id_form_universal   VARCHAR(500),
+    time_start          VARCHAR(500),
+    time_stop           VARCHAR(500),
+    full_form           VARCHAR(500),
+    version             VARCHAR(500),
+    coord_lat           FLOAT,
+    coord_lon           FLOAT,
+    coord_x_local       FLOAT,
+    coord_y_local       FLOAT,
+    comments            VARCHAR(100000),
+    protocol            VARCHAR(100000),
+    geom                GEOMETRY(Point, $(proj)),
+    PRIMARY KEY (site, id)
+);
 
+
+DROP INDEX IF EXISTS forms_idx_site;
+CREATE INDEX forms_idx_site
+    ON $(db_schema_vn).forms USING btree(site);
+DROP INDEX IF EXISTS forms_idx_id;
+CREATE INDEX forms_idx_id
+    ON $(db_schema_vn).forms USING btree(id);
+DROP INDEX IF EXISTS forms_gidx_geom;
+CREATE INDEX forms_gidx_geom
+    ON $(db_schema_vn).forms USING gist(geom);
+
+
+-- Add trigger for postgis geometry update
+DROP TRIGGER IF EXISTS trg_geom ON $(db_schema_vn).forms;
+CREATE TRIGGER trg_geom BEFORE INSERT or UPDATE
+    ON $(db_schema_vn).forms FOR EACH ROW
+    EXECUTE PROCEDURE update_geom_triggerfn();
+
+CREATE OR REPLACE FUNCTION update_forms() RETURNS TRIGGER AS \$\$
+    BEGIN
+    IF (TG_OP = 'DELETE') THEN
+        -- Deleting data when JSON data is deleted
+        DELETE FROM $(db_schema_vn).forms
+            WHERE id = OLD.id AND site = OLD.site;
+        IF NOT FOUND THEN
+            RETURN NULL;
+        END IF;
+        RETURN OLD;
+
+    ELSIF (TG_OP = 'UPDATE') THEN
+        -- Updating or inserting data when JSON data is updated
+        UPDATE $(db_schema_vn).forms SET
+            id_form_universal = CAST(NEW.item->>0 AS JSON)->>'id_form_universal',
+            time_start        = CAST(NEW.item->>0 AS JSON)->>'time_start',
+            time_stop         = CAST(NEW.item->>0 AS JSON)->>'time_stop',
+            full_form         = CAST(NEW.item->>0 AS JSON)->>'full_form',
+            version           = CAST(NEW.item->>0 AS JSON)->>'version',
+            coord_lat         = CAST(CAST(NEW.item->>0 AS JSON)->>'lat' AS FLOAT),
+            coord_lon         = CAST(CAST(NEW.item->>0 AS JSON)->>'lon' AS FLOAT),
+            coord_x_local     = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_local' AS FLOAT),
+            coord_y_local     = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_local' AS FLOAT),
+            comments          = CAST(NEW.item->>0 AS JSON)->>'comments',
+            protocol          = CAST(NEW.item->>0 AS JSON)->>'protocol'
+        WHERE id = OLD.id AND site = OLD.site ;
+        IF NOT FOUND THEN
+            -- Inserting data in new row, usually after table re-creation
+            INSERT INTO $(db_schema_vn).forms(site, id, id_form_universal, time_start, time_stop,
+                                              full_form, version, coord_lat, coord_lon,
+                                              coord_x_local, coord_y_local, comments, protocol)
+            VALUES (
+                NEW.site,
+                NEW.id,
+                CAST(NEW.item->>0 AS JSON)->>'id_form_universal',
+                CAST(NEW.item->>0 AS JSON)->>'time_start',
+                CAST(NEW.item->>0 AS JSON)->>'time_stop',
+                CAST(NEW.item->>0 AS JSON)->>'full_form',
+                CAST(NEW.item->>0 AS JSON)->>'version',
+                CAST(CAST(NEW.item->>0 AS JSON)->>'lat' AS FLOAT),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'lon' AS FLOAT),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_local' AS FLOAT),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_local' AS FLOAT),
+                CAST(NEW.item->>0 AS JSON)->>'comments',
+                CAST(NEW.item->>0 AS JSON)->>'protocol'
+            );
+            END IF;
+        RETURN NEW;
+
+    ELSIF (TG_OP = 'INSERT') THEN
+        -- Inserting row when raw data is inserted
+        INSERT INTO $(db_schema_vn).forms(site, id, id_form_universal, time_start, time_stop,
+                                          full_form, version, coord_lat, coord_lon,
+                                          coord_x_local, coord_y_local, comments, protocol)
+        VALUES (
+            NEW.site,
+            NEW.id,
+            CAST(NEW.item->>0 AS JSON)->>'id_form_universal',
+            CAST(NEW.item->>0 AS JSON)->>'time_start',
+            CAST(NEW.item->>0 AS JSON)->>'time_stop',
+            CAST(NEW.item->>0 AS JSON)->>'full_form',
+            CAST(NEW.item->>0 AS JSON)->>'version',
+            CAST(CAST(NEW.item->>0 AS JSON)->>'lat' AS FLOAT),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'lon' AS FLOAT),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_local' AS FLOAT),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_local' AS FLOAT),
+            CAST(NEW.item->>0 AS JSON)->>'comments',
+            CAST(NEW.item->>0 AS JSON)->>'protocol'
+        );
+        RETURN NEW;
+    END IF;
+END;
+\$\$
+LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS forms_trigger ON $(db_schema_import).forms_json;
+CREATE TRIGGER forms_trigger
+AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).forms_json
+    FOR EACH ROW EXECUTE PROCEDURE $(db_schema_vn).update_forms();
+
+ 
 --------------------
 -- local_admin_units
 --------------------
 CREATE TABLE $(db_schema_vn).local_admin_units(
-    uuid                UUID DEFAULT uuid_generate_v4(),
     site                VARCHAR(50),
     id                  INTEGER,
     id_canton           INTEGER,
@@ -129,14 +319,11 @@ CREATE TABLE $(db_schema_vn).local_admin_units(
     insee               VARCHAR(50),
     coord_lat           FLOAT,
     coord_lon           FLOAT,
-    coord_x_l93         FLOAT,
-    coord_y_l93         FLOAT,
-    PRIMARY KEY (uuid)
+    coord_x_local       FLOAT,
+    coord_y_local       FLOAT,
+    geom                GEOMETRY(Point, $(proj)),
+    PRIMARY KEY (site, id)
 );
--- Add geometry column
-\o /dev/null
-SELECT AddGeometryColumn('local_admin_units', 'geom', 2154, 'POINT', 2);
-\o
 
 DROP INDEX IF EXISTS local_admin_units_idx_site;
 CREATE INDEX local_admin_units_idx_site
@@ -144,6 +331,9 @@ CREATE INDEX local_admin_units_idx_site
 DROP INDEX IF EXISTS local_admin_units_idx_id;
 CREATE INDEX local_admin_units_idx_id
     ON $(db_schema_vn).local_admin_units USING btree(id);
+DROP INDEX IF EXISTS local_admin_units_gidx_geom;
+CREATE INDEX local_admin_units_gidx_geom
+    ON $(db_schema_vn).local_admin_units USING gist(geom);
 
 -- Add trigger for postgis geometry update
 DROP TRIGGER IF EXISTS trg_geom ON $(db_schema_vn).local_admin_units;
@@ -170,13 +360,13 @@ CREATE OR REPLACE FUNCTION update_local_admin_units() RETURNS TRIGGER AS \$\$
             insee        = CAST(NEW.item->>0 AS JSON)->>'insee',
             coord_lat    = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lat' AS FLOAT),
             coord_lon    = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lon' AS FLOAT),
-            coord_x_l93  = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_l93' AS FLOAT),
-            coord_y_l93  = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_l93' AS FLOAT)
+            coord_x_local  = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_local' AS FLOAT),
+            coord_y_local  = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_local' AS FLOAT)
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
             INSERT INTO $(db_schema_vn).local_admin_units(site, id, id_canton, name, insee,
-                                                          coord_lat, coord_lon, coord_x_l93, coord_y_l93)
+                                                          coord_lat, coord_lon, coord_x_local, coord_y_local)
             VALUES (
                 NEW.site,
                 NEW.id,
@@ -185,8 +375,8 @@ CREATE OR REPLACE FUNCTION update_local_admin_units() RETURNS TRIGGER AS \$\$
                 CAST(NEW.item->>0 AS JSON)->>'insee',
                 CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lat' AS FLOAT),
                 CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lon' AS FLOAT),
-                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_l93' AS FLOAT),
-                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_l93' AS FLOAT)
+                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_local' AS FLOAT),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_local' AS FLOAT)
             );
             END IF;
         RETURN NEW;
@@ -194,7 +384,7 @@ CREATE OR REPLACE FUNCTION update_local_admin_units() RETURNS TRIGGER AS \$\$
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting row when raw data is inserted
         INSERT INTO $(db_schema_vn).local_admin_units(site, id, id_canton, name, insee,
-                                                      coord_lat, coord_lon, coord_x_l93, coord_y_l93)
+                                                      coord_lat, coord_lon, coord_x_local, coord_y_local)
         VALUES (
             NEW.site,
             NEW.id,
@@ -203,8 +393,8 @@ CREATE OR REPLACE FUNCTION update_local_admin_units() RETURNS TRIGGER AS \$\$
             CAST(NEW.item->>0 AS JSON)->>'insee',
             CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lat' AS FLOAT),
             CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lon' AS FLOAT),
-            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_l93' AS FLOAT),
-            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_l93' AS FLOAT)
+            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_local' AS FLOAT),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_local' AS FLOAT)
         );
         RETURN NEW;
     END IF;
@@ -215,14 +405,13 @@ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS local_admin_units_trigger ON $(db_schema_import).local_admin_units_json;
 CREATE TRIGGER local_admin_units_trigger
 AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).local_admin_units_json
-    FOR EACH ROW EXECUTE FUNCTION $(db_schema_vn).update_local_admin_units();
+    FOR EACH ROW EXECUTE PROCEDURE $(db_schema_vn).update_local_admin_units();
 
 
 ---------------
 -- Observations
 ---------------
 CREATE TABLE $(db_schema_vn).observations (
-    uuid                UUID DEFAULT uuid_generate_v4(),
     site                VARCHAR(50),
     id_sighting         INTEGER,
     pseudo_id_sighting  VARCHAR(200),
@@ -236,30 +425,28 @@ CREATE TABLE $(db_schema_vn).observations (
     place               VARCHAR(150),
     coord_lat           FLOAT,
     coord_lon           FLOAT,
-    coord_x_l93         FLOAT,
-    coord_y_l93         FLOAT,
+    coord_x_local       FLOAT,
+    coord_y_local       FLOAT,
     precision           VARCHAR(100),
     estimation_code     VARCHAR(100),
     count               INTEGER,
     atlas_code          INTEGER,
     altitude            INTEGER,
     project_code        VARCHAR(50),
-    hidden              VARCHAR(50),
-    admin_hidden        VARCHAR(50),
+    hidden              BOOLEAN,
+    admin_hidden        BOOLEAN,
     observer_uid        VARCHAR(100),
     details             VARCHAR(10000),
+    behaviours          VARCHAR(10000),
     comment             VARCHAR(10000),
     hidden_comment      VARCHAR(10000),
-    mortality           VARCHAR(10000),
+    mortality           BOOLEAN,
     death_cause2        VARCHAR(100),
     insert_date         TIMESTAMP,
     update_date         TIMESTAMP,
-    PRIMARY KEY (uuid)
+    geom                GEOMETRY(Point, $(proj)),
+    PRIMARY KEY (site, id_sighting)
 );
--- Add geometry column
-\o /dev/null
-SELECT AddGeometryColumn('observations', 'geom', 2154, 'POINT', 2);
-\o
 
 DROP INDEX IF EXISTS observations_idx_site;
 CREATE INDEX observations_idx_site
@@ -270,6 +457,9 @@ CREATE INDEX observations_idx_id_sighting
 DROP INDEX IF EXISTS observations_idx_id_universal;
 CREATE INDEX observations_idx_id_universal
     ON $(db_schema_vn).observations USING btree(id_universal);
+DROP INDEX IF EXISTS observations_gidx_geom;
+CREATE INDEX observations_gidx_geom
+    ON $(db_schema_vn).observations USING gist(geom);
 
 -- Add trigger for postgis geometry update
 DROP TRIGGER IF EXISTS trg_geom ON $(db_schema_vn).observations;
@@ -296,38 +486,39 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             taxonomy        = CAST(NEW.item->>0 AS JSON) #>> '{species,taxonomy}',
             "date"          = to_date(CAST(NEW.item->>0 AS JSON) #>> '{date,@ISO8601}', 'YYYY-MM-DD'),
             date_year       = CAST(extract(year from to_date(CAST(NEW.item->>0 AS JSON) #>> '{date,@ISO8601}', 'YYYY-MM-DD')) AS INTEGER),
-            timing          = to_timestamp(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{timing,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS'),
+            timing          = to_timestamp(CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{timing,@timestamp}' AS DOUBLE PRECISION)),
             id_place        = CAST(CAST(NEW.item->>0 AS JSON) #>> '{place,@id}' AS INTEGER),
             place           = CAST(NEW.item->>0 AS JSON) #>> '{place,name}',
             coord_lat       = CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_lat' AS FLOAT),
             coord_lon       = CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_lon' AS FLOAT),
-            coord_x_l93     = CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_x_l93' AS FLOAT),
-            coord_y_l93     = CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_y_l93' AS FLOAT),
+            coord_x_local   = CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_x_local' AS FLOAT),
+            coord_y_local   = CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_y_local' AS FLOAT),
             precision       = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'precision',
             estimation_code = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'estimation_code',
             count           = CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'count' AS INTEGER),
             atlas_code      = CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'atlas_code' AS INTEGER),
             altitude        = CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'altitude' AS INTEGER),
             project_code    = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'project_code',
-            hidden          = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'hidden',
-            admin_hidden    = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'admin_hidden',
+            hidden          = CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'hidden' AS BOOLEAN),
+            admin_hidden    = CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'admin_hidden' AS BOOLEAN),
             observer_uid    = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> '@uid',
             details         = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'details',
+            behaviours      = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'behaviours',
             comment         = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'comment',
             hidden_comment  = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'hidden_comment',
-            mortality       = (((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info,mortality}'::text []) is not null,
+            mortality       = CAST(((((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info,mortality}'::text []) is not null) as BOOLEAN),
             death_cause2    = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info, mortality, death_cause2}',
             insert_date     = to_timestamp(CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'insert_date' AS DOUBLE PRECISION)),
-            update_date     = to_timestamp(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{update_date,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS')
+            update_date     = to_timestamp(CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{update_date,@timestamp}' AS DOUBLE PRECISION))
         WHERE id_sighting = OLD.id AND site = OLD.site;
 
         IF NOT FOUND THEN
             -- Inserting data on src_vn.observations when raw data is inserted
             INSERT INTO $(db_schema_vn).observations (site, id_sighting, pseudo_id_sighting, id_universal, id_species, taxonomy,
                                              date, date_year, timing, id_place, place,
-                                             coord_lat, coord_lon, coord_x_l93, coord_y_l93, precision, estimation_code,
+                                             coord_lat, coord_lon, coord_x_local, coord_y_local, precision, estimation_code,
                                              count, atlas_code, altitude, project_code, hidden, admin_hidden, observer_uid, details,
-                                             comment, hidden_comment, mortality, death_cause2, insert_date, update_date)
+                                             behaviours, comment, hidden_comment, mortality, death_cause2, insert_date, update_date)
             VALUES (
                 NEW.site,
                 NEW.id,
@@ -338,29 +529,30 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
                 to_date(CAST(NEW.item->>0 AS JSON) #>> '{date,@ISO8601}', 'YYYY-MM-DD'),
                 CAST(extract(year from to_date(CAST(NEW.item->>0 AS JSON) #>> '{date,@ISO8601}', 'YYYY-MM-DD')) AS INTEGER),
                 -- Missing time_start & time_stop
-                to_timestamp(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{timing,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS'),
+                to_timestamp(CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{timing,@timestamp}' AS DOUBLE PRECISION)),
                 CAST(CAST(NEW.item->>0 AS JSON) #>> '{place,@id}' AS INTEGER),
                 CAST(NEW.item->>0 AS JSON) #>> '{place,name}',
                 CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_lat' AS FLOAT),
                 CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_lon' AS FLOAT),
-                CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_x_l93' AS FLOAT),
-                CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_y_l93' AS FLOAT),
+                CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_x_local' AS FLOAT),
+                CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_y_local' AS FLOAT),
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'precision',
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'estimation_code',
                 CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'count' AS INTEGER),
                 CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'atlas_code' AS INTEGER),
                 CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'altitude' AS INTEGER),
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'project_code',
-                ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'hidden',
-                ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'admin_hidden',
+                CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'hidden' AS BOOLEAN),
+                CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'admin_hidden' AS BOOLEAN),
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> '@uid',
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'details',
+                ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'behaviours',
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'comment',
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'hidden_comment',
-                (((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info,mortality}' :: text []) is not null,
+                CAST(((((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info,mortality}'::text []) is not null) as BOOLEAN),
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info, mortality, death_cause2}',
                 to_timestamp(CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'insert_date' AS DOUBLE PRECISION)),
-                to_timestamp(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{update_date,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS'));
+                to_timestamp(CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{update_date,@timestamp}' AS DOUBLE PRECISION)));
             END IF;
         RETURN NEW;
 
@@ -368,9 +560,9 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
         -- Inserting data on src_vn.observations when raw data is inserted
         INSERT INTO $(db_schema_vn).observations (site, id_sighting, pseudo_id_sighting, id_universal, id_species, taxonomy,
                                          date, date_year, timing, id_place, place,
-                                         coord_lat, coord_lon, coord_x_l93, coord_y_l93, precision, estimation_code,
+                                         coord_lat, coord_lon, coord_x_local, coord_y_local, precision, estimation_code,
                                          count, atlas_code, altitude, project_code, hidden, admin_hidden, observer_uid, details,
-                                         comment, hidden_comment, mortality, death_cause2, insert_date, update_date)
+                                         behaviours, comment, hidden_comment, mortality, death_cause2, insert_date, update_date)
         VALUES (
             NEW.site,
             NEW.id,
@@ -381,29 +573,30 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             to_date(CAST(NEW.item->>0 AS JSON) #>> '{date,@ISO8601}', 'YYYY-MM-DD'),
             CAST(extract(year from to_date(CAST(NEW.item->>0 AS JSON) #>> '{date,@ISO8601}', 'YYYY-MM-DD')) AS INTEGER),
             -- Missing time_start & time_stop
-            to_timestamp(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{timing,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS'),
+            to_timestamp(CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{timing,@timestamp}' AS DOUBLE PRECISION)),
             CAST(CAST(NEW.item->>0 AS JSON) #>> '{place,@id}' AS INTEGER),
             CAST(NEW.item->>0 AS JSON) #>> '{place,name}',
             CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_lat' AS FLOAT),
             CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_lon' AS FLOAT),
-            CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_x_l93' AS FLOAT),
-            CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_y_l93' AS FLOAT),
+            CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_x_local' AS FLOAT),
+            CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'coord_y_local' AS FLOAT),
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'precision',
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'estimation_code',
             CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'count' AS INTEGER),
             CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'atlas_code' AS INTEGER),
             CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'altitude' AS INTEGER),
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'project_code',
-            ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'hidden',
-            ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'admin_hidden',
+            CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'hidden' AS BOOLEAN),
+            CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'admin_hidden' AS BOOLEAN),
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> '@uid',
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'details',
+            ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'behaviours',
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'comment',
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'hidden_comment',
-            (((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info,mortality}' :: text []) is not null,
+            CAST(((((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info,mortality}'::text []) is not null) as BOOLEAN),
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info, mortality, death_cause2}',
             to_timestamp(CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'insert_date' AS DOUBLE PRECISION)),
-            to_timestamp(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{update_date,@ISO8601}', 'YYYY-MM-DD"T"HH24:MI:SS'));
+            to_timestamp(CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{update_date,@timestamp}' AS DOUBLE PRECISION)));
         RETURN NEW;
     END IF;
 END;
@@ -413,24 +606,23 @@ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS observations_trigger ON $(db_schema_import).observations_json;
 CREATE TRIGGER observations_trigger
 AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).observations_json
-    FOR EACH ROW EXECUTE FUNCTION update_observations();
+    FOR EACH ROW EXECUTE PROCEDURE update_observations();
 
 
 ------------
 -- Observers
 ------------
 CREATE TABLE $(db_schema_vn).observers(
-    uuid                UUID DEFAULT uuid_generate_v4(),
     site                VARCHAR(50),
     id                  INTEGER,
     id_universal        INTEGER,
     id_entity           INTEGER,
-    anonymous           INTEGER,
-    collectif           VARCHAR(100),
-    default_hidden      INTEGER,
+    anonymous           BOOLEAN,
+    collectif           BOOLEAN,
+    default_hidden      BOOLEAN,
     name                VARCHAR(100),
     surname             VARCHAR(100),
-    PRIMARY KEY (uuid)
+    PRIMARY KEY (site, id)
 );
 
 DROP INDEX IF EXISTS observers_idx_site;
@@ -456,9 +648,9 @@ CREATE OR REPLACE FUNCTION update_observers() RETURNS TRIGGER AS \$\$
         UPDATE $(db_schema_vn).observers SET
             id_universal   = CAST(CAST(NEW.item->>0 AS JSON)->>'id_universal' AS INTEGER),
             id_entity      = CAST(CAST(NEW.item->>0 AS JSON)->>'id_entity' AS INTEGER),
-            anonymous      = CAST(CAST(NEW.item->>0 AS JSON)->>'anonymous' AS INTEGER),
-            collectif      = CAST(NEW.item->>0 AS JSON)->>'collectif',
-            default_hidden = CAST(CAST(NEW.item->>0 AS JSON)->>'default_hidden' AS INTEGER),
+            anonymous      = CAST(CAST(NEW.item->>0 AS JSON)->>'anonymous' AS BOOLEAN),
+            collectif      = CAST(CAST(NEW.item->>0 AS JSON)->>'collectif' AS BOOLEAN),
+            default_hidden = CAST(CAST(NEW.item->>0 AS JSON)->>'default_hidden' AS BOOLEAN),
             name           = CAST(NEW.item->>0 AS JSON)->>'name',
             surname        = CAST(NEW.item->>0 AS JSON)->>'surname'
         WHERE id = OLD.id AND site = OLD.site ;
@@ -471,9 +663,9 @@ CREATE OR REPLACE FUNCTION update_observers() RETURNS TRIGGER AS \$\$
                 NEW.id,
                 CAST(CAST(NEW.item->>0 AS JSON)->>'id_universal' AS INTEGER),
                 CAST(CAST(NEW.item->>0 AS JSON)->>'id_entity' AS INTEGER),
-                CAST(CAST(NEW.item->>0 AS JSON)->>'anonymous' AS INTEGER),
-                CAST(NEW.item->>0 AS JSON)->>'collectif',
-                CAST(CAST(NEW.item->>0 AS JSON)->>'default_hidden' AS INTEGER),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'anonymous' AS BOOLEAN),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'collectif' AS BOOLEAN),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'default_hidden' AS BOOLEAN),
                 CAST(NEW.item->>0 AS JSON)->>'name',
                 CAST(NEW.item->>0 AS JSON)->>'surname'
             );
@@ -489,9 +681,9 @@ CREATE OR REPLACE FUNCTION update_observers() RETURNS TRIGGER AS \$\$
             NEW.id,
             CAST(CAST(NEW.item->>0 AS JSON)->>'id_universal' AS INTEGER),
             CAST(CAST(NEW.item->>0 AS JSON)->>'id_entity' AS INTEGER),
-            CAST(CAST(NEW.item->>0 AS JSON)->>'anonymous' AS INTEGER),
-            CAST(NEW.item->>0 AS JSON)->>'collectif',
-            CAST(CAST(NEW.item->>0 AS JSON)->>'default_hidden' AS INTEGER),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'anonymous' AS BOOLEAN),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'collectif' AS BOOLEAN),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'default_hidden' AS BOOLEAN),
             CAST(NEW.item->>0 AS JSON)->>'name',
             CAST(NEW.item->>0 AS JSON)->>'surname'
         );
@@ -504,34 +696,31 @@ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS observers_trigger ON $(db_schema_import).observers_json;
 CREATE TRIGGER observers_trigger
 AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).observers_json
-    FOR EACH ROW EXECUTE FUNCTION $(db_schema_vn).update_observers();
+    FOR EACH ROW EXECUTE PROCEDURE $(db_schema_vn).update_observers();
 
 
 ---------
 -- Places
 ---------
 CREATE TABLE $(db_schema_vn).places(
-    uuid                UUID DEFAULT uuid_generate_v4(),
     site                VARCHAR(50),
     id                  INTEGER,
     id_commune          INTEGER,
     id_region           INTEGER,
     name                VARCHAR(150),
-    is_private          INTEGER,
+    is_private          BOOLEAN,
     loc_precision       INTEGER,
     altitude            INTEGER,
     place_type          VARCHAR(150),
-    visible             INTEGER,
+    visible             BOOLEAN,
     coord_lat           FLOAT,
     coord_lon           FLOAT,
-    coord_x_l93         FLOAT,
-    coord_y_l93         FLOAT,
-    PRIMARY KEY (uuid)
+    coord_x_local       FLOAT,
+    coord_y_local       FLOAT,
+    geom                GEOMETRY(Point, $(proj)),
+    PRIMARY KEY (site, id)
 );
--- Add geometry column
-\o /dev/null
-SELECT AddGeometryColumn('places', 'geom', 2154, 'POINT', 2);
-\o
+
 
 DROP INDEX IF EXISTS places_idx_site;
 CREATE INDEX places_idx_site
@@ -539,6 +728,9 @@ CREATE INDEX places_idx_site
 DROP INDEX IF EXISTS places_idx_id;
 CREATE INDEX places_idx_id
     ON $(db_schema_vn).places USING btree(id);
+DROP INDEX IF EXISTS places_gidx_geom;
+CREATE INDEX places_gidx_geom
+    ON $(db_schema_vn).places USING gist(geom);
 
 -- Add trigger for postgis geometry update
 DROP TRIGGER IF EXISTS trg_geom ON $(db_schema_vn).places;
@@ -563,36 +755,36 @@ CREATE OR REPLACE FUNCTION update_places() RETURNS TRIGGER AS \$\$
             id_commune    = CAST(CAST(NEW.item->>0 AS JSON)->>'id_commune' AS INTEGER),
             id_region     = CAST(CAST(NEW.item->>0 AS JSON)->>'id_region' AS INTEGER),
             name          = CAST(NEW.item->>0 AS JSON)->>'name',
-            is_private    = CAST(CAST(NEW.item->>0 AS JSON)->>'is_private' AS INTEGER),
+            is_private    = CAST(CAST(NEW.item->>0 AS JSON)->>'is_private' AS BOOLEAN),
             loc_precision = CAST(CAST(NEW.item->>0 AS JSON)->>'loc_precision' AS INTEGER),
             altitude      = CAST(CAST(NEW.item->>0 AS JSON)->>'altitude' AS INTEGER),
             place_type    = CAST(NEW.item->>0 AS JSON)->>'place_type',
-            visible       = CAST(CAST(NEW.item->>0 AS JSON)->>'visible' AS INTEGER),
+            visible       = CAST(CAST(NEW.item->>0 AS JSON)->>'visible' AS BOOLEAN),
             coord_lat     = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lat' AS FLOAT),
             coord_lon     = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lon' AS FLOAT),
-            coord_x_l93   = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_l93' AS FLOAT),
-            coord_y_l93   = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_l93' AS FLOAT)
+            coord_x_local   = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_local' AS FLOAT),
+            coord_y_local   = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_local' AS FLOAT)
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
             INSERT INTO $(db_schema_vn).places(site, id, id_commune, id_region, name, is_private,
-                                                   loc_precision, altitude, place_type, visible,
-                                                   coord_lat, coord_lon, coord_x_l93, coord_y_l93)
+                                               loc_precision, altitude, place_type, visible,
+                                               coord_lat, coord_lon, coord_x_local, coord_y_local)
             VALUES (
                 NEW.site,
                 NEW.id,
                 CAST(CAST(NEW.item->>0 AS JSON)->>'id_commune' AS INTEGER),
                 CAST(CAST(NEW.item->>0 AS JSON)->>'id_region' AS INTEGER),
                 CAST(NEW.item->>0 AS JSON)->>'name',
-                CAST(CAST(NEW.item->>0 AS JSON)->>'is_private' AS INTEGER),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'is_private' AS BOOLEAN),
                 CAST(CAST(NEW.item->>0 AS JSON)->>'loc_precision' AS INTEGER),
                 CAST(CAST(NEW.item->>0 AS JSON)->>'altitude' AS INTEGER),
                 CAST(NEW.item->>0 AS JSON)->>'place_type',
-                CAST(CAST(NEW.item->>0 AS JSON)->>'visible' AS INTEGER),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'visible' AS BOOLEAN),
                 CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lat' AS FLOAT),
                 CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lon' AS FLOAT),
-                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_l93' AS FLOAT),
-                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_l93' AS FLOAT)
+                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_local' AS FLOAT),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_local' AS FLOAT)
             );
             END IF;
         RETURN NEW;
@@ -600,23 +792,23 @@ CREATE OR REPLACE FUNCTION update_places() RETURNS TRIGGER AS \$\$
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting data on src_vn.observations when raw data is inserted
         INSERT INTO $(db_schema_vn).places(site, id, id_commune, id_region, name, is_private,
-                                               loc_precision, altitude, place_type, visible,
-                                               coord_lat, coord_lon, coord_x_l93, coord_y_l93)
+                                           loc_precision, altitude, place_type, visible,
+                                           coord_lat, coord_lon, coord_x_local, coord_y_local)
         VALUES (
             NEW.site,
             NEW.id,
             CAST(CAST(NEW.item->>0 AS JSON)->>'id_commune' AS INTEGER),
             CAST(CAST(NEW.item->>0 AS JSON)->>'id_region' AS INTEGER),
             CAST(NEW.item->>0 AS JSON)->>'name',
-            CAST(CAST(NEW.item->>0 AS JSON)->>'is_private' AS INTEGER),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'is_private' AS BOOLEAN),
             CAST(CAST(NEW.item->>0 AS JSON)->>'loc_precision' AS INTEGER),
             CAST(CAST(NEW.item->>0 AS JSON)->>'altitude' AS INTEGER),
             CAST(NEW.item->>0 AS JSON)->>'place_type',
-            CAST(CAST(NEW.item->>0 AS JSON)->>'visible' AS INTEGER),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'visible' AS BOOLEAN),
             CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lat' AS FLOAT),
             CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lon' AS FLOAT),
-            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_l93' AS FLOAT),
-            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_l93' AS FLOAT)
+            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_local' AS FLOAT),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_local' AS FLOAT)
         );
         RETURN NEW;
     END IF;
@@ -627,18 +819,17 @@ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS places_trigger ON $(db_schema_import).places_json;
 CREATE TRIGGER places_trigger
 AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).places_json
-    FOR EACH ROW EXECUTE FUNCTION $(db_schema_vn).update_places();
+    FOR EACH ROW EXECUTE PROCEDURE $(db_schema_vn).update_places();
 
 
 ----------
 -- Species
 ----------
 CREATE TABLE $(db_schema_vn).species(
-    uuid                UUID DEFAULT uuid_generate_v4(),
     site                VARCHAR(50),
     id                  INTEGER,
     id_taxo_group       INTEGER,
-    is_used             INTEGER,
+    is_used             BOOLEAN,
     french_name         VARCHAR(150),
     latin_name          VARCHAR(150),
     rarity              VARCHAR(50),
@@ -646,7 +837,7 @@ CREATE TABLE $(db_schema_vn).species(
     sys_order           INTEGER,
     atlas_start         INTEGER,
     atlas_end           INTEGER,
-    PRIMARY KEY (uuid)
+    PRIMARY KEY (site, id)
 );
 
 DROP INDEX IF EXISTS species_idx_site;
@@ -671,7 +862,7 @@ CREATE OR REPLACE FUNCTION update_species() RETURNS TRIGGER AS \$\$
         -- Updating or inserting data when JSON data is updated
         UPDATE $(db_schema_vn).species SET
             id_taxo_group = CAST(CAST(NEW.item->>0 AS JSON)->>'id_taxo_group' AS INTEGER),
-            is_used       = CAST(CAST(NEW.item->>0 AS JSON)->>'is_used' AS INTEGER),
+            is_used       = CAST(CAST(NEW.item->>0 AS JSON)->>'is_used' AS BOOLEAN),
             french_name   = CAST(NEW.item->>0 AS JSON)->>'french_name',
             latin_name    = CAST(NEW.item->>0 AS JSON)->>'latin_name',
             rarity        = CAST(NEW.item->>0 AS JSON)->>'rarity',
@@ -688,7 +879,7 @@ CREATE OR REPLACE FUNCTION update_species() RETURNS TRIGGER AS \$\$
                 NEW.site,
                 NEW.id,
                 CAST(CAST(NEW.item->>0 AS JSON)->>'id_taxo_group' AS INTEGER),
-                CAST(CAST(NEW.item->>0 AS JSON)->>'is_used' AS INTEGER),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'is_used' AS BOOLEAN),
                 CAST(NEW.item->>0 AS JSON)->>'french_name',
                 CAST(NEW.item->>0 AS JSON)->>'latin_name',
                 CAST(NEW.item->>0 AS JSON)->>'rarity',
@@ -708,7 +899,7 @@ CREATE OR REPLACE FUNCTION update_species() RETURNS TRIGGER AS \$\$
             NEW.site,
             NEW.id,
             CAST(CAST(NEW.item->>0 AS JSON)->>'id_taxo_group' AS INTEGER),
-            CAST(CAST(NEW.item->>0 AS JSON)->>'is_used' AS INTEGER),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'is_used' AS BOOLEAN),
             CAST(NEW.item->>0 AS JSON)->>'french_name',
             CAST(NEW.item->>0 AS JSON)->>'latin_name',
             CAST(NEW.item->>0 AS JSON)->>'rarity',
@@ -726,21 +917,20 @@ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS species_trigger ON $(db_schema_import).species_json;
 CREATE TRIGGER species_trigger
 AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).species_json
-    FOR EACH ROW EXECUTE FUNCTION $(db_schema_vn).update_species();
+    FOR EACH ROW EXECUTE PROCEDURE $(db_schema_vn).update_species();
 
 
 --------------
 -- Taxo_groups
 --------------
 CREATE TABLE $(db_schema_vn).taxo_groups(
-    uuid                UUID DEFAULT uuid_generate_v4(),
     site                VARCHAR(50),
     id                  INTEGER,
     name                VARCHAR(150),
     latin_name          VARCHAR(150),
     name_constant       VARCHAR(150),
     access_mode         VARCHAR(50),
-    PRIMARY KEY (uuid)
+    PRIMARY KEY (site, id)
 );
 
 DROP INDEX IF EXISTS taxo_groups_idx_site;
@@ -805,19 +995,18 @@ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS taxo_groups_trigger ON $(db_schema_import).taxo_groups_json;
 CREATE TRIGGER taxo_groups_trigger
 AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).taxo_groups_json
-    FOR EACH ROW EXECUTE FUNCTION $(db_schema_vn).update_taxo_groups();
+    FOR EACH ROW EXECUTE PROCEDURE $(db_schema_vn).update_taxo_groups();
 
 --------------------
 -- Territorial_units
 --------------------
 CREATE TABLE $(db_schema_vn).territorial_units(
-    uuid                UUID DEFAULT uuid_generate_v4(),
     site                VARCHAR(50),
     id                  INTEGER,
     id_country          INTEGER,
     name                VARCHAR(150),
     short_name          VARCHAR(150),
-    PRIMARY KEY (uuid)
+    PRIMARY KEY (site, id)
 );
 
 DROP INDEX IF EXISTS territorial_units_idx_site;
@@ -877,10 +1066,12 @@ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS territorial_units_trigger ON $(db_schema_import).territorial_units_json;
 CREATE TRIGGER territorial_units_trigger
 AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).territorial_units_json
-    FOR EACH ROW EXECUTE FUNCTION $(db_schema_vn).update_territorial_units();
+    FOR EACH ROW EXECUTE PROCEDURE $(db_schema_vn).update_territorial_units();
 
 -- Dummy update of all rows to trigger new FUNCTION
 UPDATE $(db_schema_import).entities_json SET site=site;
+UPDATE $(db_schema_import).fields_json SET site=site;
+UPDATE $(db_schema_import).forms_json SET site=site;
 UPDATE $(db_schema_import).territorial_units_json SET site=site;
 UPDATE $(db_schema_import).local_admin_units_json SET site=site;
 UPDATE $(db_schema_import).places_json SET site=site;
