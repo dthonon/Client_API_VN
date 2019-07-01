@@ -1,0 +1,1 @@
+update_date is extracted correctly and does raise an exception.

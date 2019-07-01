@@ -1,0 +1,24 @@
+# Required
+version: 2
+
+# Optionally set the version of Python and requirements required to build your docs
+python:
+   version: 3.7
+   install:
+      - method: pip
+        path: .
+        extra_requirements:
+            - docs
+            - docutils
+            - beautifulsoup4
+            - psycopg2-binary
+            - pyexpander
+            - pyproj
+            - strictyaml
+            - requests
+            - requests-oauthlib
+            - setuptools_scm
+            - SQLAlchemy
+            - tabulate
+            - xmltodict
+

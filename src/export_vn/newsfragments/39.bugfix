@@ -1,0 +1,6 @@
+Database tables can now be created from any user, provided it is defined in .yaml file::
+    # Postgresql user used to import data
+    db_user: *any_user*
+    # Postgresql user password
+    db_pw: *password*
+>

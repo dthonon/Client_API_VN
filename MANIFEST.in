@@ -1,6 +1,0 @@
-include *.md
-include LICENSE
-recursive-include data *.yaml
-recursive-include locale *.po
-recursive-include locale *.pot
-recursive-include sql *.sql

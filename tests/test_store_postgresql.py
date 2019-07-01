@@ -1,20 +1,21 @@
-#!/usr/bin/env python3
 """
 Test each method of store_postgresql module.
 Also test them as backend to download_vn.
 """
 import logging
-import pytest
 from datetime import datetime
 
-from export_vn.download_vn import Entities, LocalAdminUnits, Observations, Places
-from export_vn.download_vn import Species, TaxoGroup, TerritorialUnits
-from export_vn.store_postgresql import StorePostgresql, PostgresqlUtils
+import pytest
+
+from export_vn.download_vn import (Entities, LocalAdminUnits, Observations,
+                                   Places, Species, TaxoGroup,
+                                   TerritorialUnits)
 from export_vn.evnconf import EvnConf
+from export_vn.store_postgresql import PostgresqlUtils, StorePostgresql
 
 # Using faune-ardeche or faune-isere site, that needs to be created first
 SITE = 't07'
-#SITE = 't38'
+# SITE = 't38'
 FILE = '.evn_test.yaml'
 
 # Get configuration for test site
@@ -31,12 +32,14 @@ try:
     SPECIES = Species(CFG, STORE_PG)
     TAXO_GROUP = TaxoGroup(CFG, STORE_PG)
     TERRITORIAL_UNIT = TerritorialUnits(CFG, STORE_PG)
-except:
-    pass
+except Exception:
+    raise
+
 
 def test_version():
     """Check if version is defined."""
     logging.debug('package version: %s', STORE_PG.version)
+
 
 # --------
 # Database
@@ -45,6 +48,7 @@ def test_create_json_tables():
     """Create the tables, if not exists."""
     MANAGE_PG.create_json_tables()
 
+
 # ----
 # Logs
 # ----
@@ -52,14 +56,17 @@ def test_log_pg_store():
     """Create a log entry."""
     STORE_PG.log(SITE, 'Test', 0, 0, comment='Test')
 
+
 def test_increment_log_pg_store():
     """Create an increment entry."""
     STORE_PG.increment_log(SITE, 1, datetime.now())
+
 
 def test_increment_get_pg_store():
     """Get an increment entry."""
     last_ts = STORE_PG.increment_get(SITE, 1)
     assert last_ts < datetime.now()
+
 
 # --------
 # Entities
@@ -68,25 +75,32 @@ def test_entities_api_pg_store():
     """Store entities to database."""
     ENTITIES.store()
 
+
 # -----------------
 # Local_admin_units
 # -----------------
+@pytest.mark.slow
 def test_local_adm_u_api_pg_store():
     """Store local_admin_units to database."""
     LOCAL_ADMIN_UNITS.store()
 
+
 # -------------
 #  Observations
 # -------------
+@pytest.mark.slow
 def test_observations_api_pg_store(capsys):
     """Store observations of a taxo_group to database."""
     with capsys.disabled():
         OBSERVATIONS.store(18, method='search')
 
+
+@pytest.mark.slow
 def test_observations_api_pg_delete(capsys):
     """Delete some observations of a taxo_group to database."""
     nb_delete = STORE_PG.delete_obs([274830, 289120])
     assert nb_delete == 2
+
 
 # -------
 #  Places
@@ -96,6 +110,7 @@ def test_places_api_pg_store():
     """Store places to database."""
     PLACES.store()
 
+
 # --------
 #  Species
 # --------
@@ -104,6 +119,7 @@ def test_species_api_pg_store():
     """Store species to database."""
     SPECIES.store()
 
+
 # ------------
 #  Taxo_groups
 # ------------
@@ -111,12 +127,14 @@ def test_taxo_groups_api_pg_store():
     """Store taxonomic groups to database."""
     TAXO_GROUP.store()
 
+
 # ------------------
 #  Territorial units
 # ------------------
 def test_terr_u_api_pg_store():
     """Store territorial units to database."""
     TERRITORIAL_UNIT.store()
+
 
 # -------------
 #  Finalization

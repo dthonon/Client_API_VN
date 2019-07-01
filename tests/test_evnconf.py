@@ -2,107 +2,254 @@
 """
 Test each property of envconf module.
 """
+import logging
 import shutil
 from pathlib import Path
-import logging
+
+import pytest
+from export_vn import __version__
 from export_vn.evnconf import EvnConf
 
-# Create test site configuration file
+# Testing constants
 CRTL = 'observations'
-SITE = 'tst1'
-FILE = '.evn_tst.yaml'
-shutil.copy(str(Path.home()) + '/Client_API_VN/data/evn_template.yaml',
-            str(Path.home()) + '/' + FILE)
 
-CFG = EvnConf(FILE)
-CCFG = CFG.ctrl_list[CRTL]
-SCFG = CFG.site_list[SITE]
 
-def test_version():
+# Create test site configuration file
+@pytest.fixture(scope="session", params=[{'file': 'evn_tst1.yaml', 'site': 'tst1'},
+                                         {'file': 'evn_tst1.yaml', 'site': 'tst2'},
+                                         {'file': 'evn_tst2.yaml', 'site': 'tst1'}])
+def create_file(request):
+    mdl_file = request.param['file']
+    cfg_file = '.' + mdl_file
+    site = request.param['site']
+    # Copy test file to HOME
+    shutil.copy(
+        str(Path.home()) +
+        '/Client_API_VN/tests/data/' + mdl_file,
+        str(Path.home()) + '/' + cfg_file)
+    # Instantiate configuration classes
+    cfg = EvnConf(cfg_file)
+    c_cfg = cfg.ctrl_list[CRTL]
+    s_cfg = cfg.site_list[site]
+    return (cfg, c_cfg, s_cfg, site, cfg_file)
+
+
+def test_version(create_file):
     """Check if version is defined."""
-    logging.debug('package version: %s', CFG.version)
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    pkg_version = cfg.version
+    logging.debug('package version: %s', pkg_version)
+    assert pkg_version == __version__
 
-def test_site():
+
+def test_ctrl_list(create_file):
+    """Check if list of controlers is complete."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    ctrl_list = cfg.ctrl_list
+    for ctrl in {
+            'entities', 'fields', 'local_admin_units', 'observations',
+            'observers', 'places', 'species', 'taxo_groups',
+            'territorial_units'
+    }:
+        assert ctrl in ctrl_list
+
+
+def test_site(create_file):
     """Check if configuration file exists."""
-    cfg_file = Path(str(Path.home()) + '/' + FILE)
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    cfg_file = Path(str(Path.home()) + '/' + cfg_file)
     assert cfg_file.is_file()
 
-def test_site_name():
-    """ Test property. """
-    assert SCFG.site == SITE
 
-def test_enabled():
-    """ Test property. """
-    assert SCFG.enabled == True
+def test_site_name(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    assert s_cfg.site == site
 
-def test_base_url():
-    """ Test property. """
-    assert SCFG.base_url == 'https://www.faune-xxx.org/'
 
-def test_user_email():
-    """ Test property. """
-    assert SCFG.user_email == 'nom.prenom@example.net'
+def test_site_enabled(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    if site == 'tst1':
+        assert s_cfg.enabled
+    elif site == 'tst2':
+        assert not s_cfg.enabled
+    else:
+        assert False
 
-def test_user_pw():
-    """ Test property. """
-    assert SCFG.user_pw == 'user_pw'
 
-def test_client_key():
-    """ Test property. """
-    assert SCFG.client_key == 'client_key'
+def test_ctrl_enabled(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    assert c_cfg.enabled
 
-def test_client_secret():
-    """ Test property. """
-    assert SCFG.client_secret == 'client_secret'
 
-def test_file_enabled():
-    """ Test property. """
-    assert SCFG.file_enabled == False
+def test_ctrl_taxo_exclude(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    assert c_cfg.taxo_exclude == ['TAXO_GROUP_ALIEN_PLANTS']
 
-def test_file_store():
-    """ Test property. """
-    assert SCFG.file_store == 'VN_files' + '/' + SITE + '/'
 
-def test_db_host():
-    """ Test property. """
-    assert SCFG.db_host == 'localhost'
+def test_base_url(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    assert s_cfg.base_url == 'https://www.faune-xxx.org/'
 
-def test_db_port():
-    """ Test property. """
-    assert SCFG.db_port == '5432'
 
-def test_db_name():
-    """ Test property. """
-    assert SCFG.db_name == 'faune_xxx'
+def test_user_email(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    assert s_cfg.user_email == 'nom.prenom@example.net'
 
-def test_db_schema_import():
-    """ Test property. """
-    assert SCFG.db_schema_import == 'import'
 
-def test_db_schema_vn():
-    """ Test property. """
-    assert SCFG.db_schema_vn == 'src_vn'
+def test_user_pw(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    assert s_cfg.user_pw == 'user_pw'
 
-def test_db_group():
-    """ Test property. """
-    assert SCFG.db_group == 'lpo_xxx'
 
-def test_db_user():
-    """ Test property. """
-    assert SCFG.db_user == 'xferxx'
+def test_client_key(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    assert s_cfg.client_key == 'client_key'
 
-def test_db_pw():
-    """ Test property. """
-    assert SCFG.db_pw == 'db_pw'
 
-def test_sql_scripts():
-    """ Test property. """
-    assert SCFG.sql_scripts == 'Client_API_VN/Examples/VN_sql'
+def test_client_secret(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    assert s_cfg.client_secret == 'client_secret'
 
-def test_external1_name():
-    """ Test property. """
-    assert SCFG.external1_name == 'external1_name'
 
-def test_external1_pw():
-    """ Test property. """
-    assert SCFG.external1_pw == 'external1_pw'
+def test_file_enabled(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    assert not s_cfg.file_enabled
+
+
+def test_file_store(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    if s_cfg.file_enabled:
+        assert s_cfg.file_store == 'VN_files' + '/' + site + '/'
+    else:
+        assert s_cfg.file_store == ''
+
+
+def test_db_host(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    assert s_cfg.db_host == 'localhost'
+
+
+def test_db_port(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    assert s_cfg.db_port == '5432'
+
+
+def test_db_name(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    assert s_cfg.db_name == 'faune_xxx'
+
+
+def test_db_schema_import(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    assert s_cfg.db_schema_import == 'import'
+
+
+def test_db_schema_vn(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    assert s_cfg.db_schema_vn == 'src_vn'
+
+
+def test_db_group(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    assert s_cfg.db_group == 'lpo_xxx'
+
+
+def test_db_user(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    assert s_cfg.db_user == 'xferxx'
+
+
+def test_db_pw(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    assert s_cfg.db_pw == 'db_pw'
+
+
+def test_tuning_max_chunks(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    assert s_cfg.tuning_max_chunks == 10
+
+
+def test_tuning_max_retry(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    assert s_cfg.tuning_max_retry == 5
+
+
+def test_tuning_max_requests(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    assert s_cfg.tuning_max_requests == 0
+
+
+def test_tuning_lru_maxsize(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    assert s_cfg.tuning_lru_maxsize == 32
+
+
+def test_tuning_min_year(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    assert s_cfg.tuning_min_year == 1901
+
+
+def test_tuning_pid_kp(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    assert s_cfg.tuning_pid_kp == 0.0
+
+
+def test_tuning_pid_ki(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    assert s_cfg.tuning_pid_ki == 0.003
+
+
+def test_tuning_pid_kd(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    assert s_cfg.tuning_pid_kd == 0.0
+
+
+def test_tuning_pid_setpoint(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    assert s_cfg.tuning_pid_setpoint == 10000
+
+
+def test_tuning_pid_limit_min(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    assert s_cfg.tuning_pid_limit_min == 10
+
+
+def test_tuning_pid_limit_max(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    assert s_cfg.tuning_pid_limit_max == 2000
+
+
+def test_tuning_pid_delta_days(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    assert s_cfg.tuning_pid_delta_days == 15
