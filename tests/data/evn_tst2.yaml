@@ -114,5 +114,7 @@ database:
     db_user: xferxx
     # Postgresql user password
     db_pw: db_pw
+    # PostgreSQL SecretKey for pseudonymization
+    db_secret_key: 'mySecretKey'
     # Coordinates systems for local projection, see EPSG
     db_out_proj: 2154

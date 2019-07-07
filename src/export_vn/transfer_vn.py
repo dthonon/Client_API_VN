@@ -36,6 +36,7 @@ def db_config(cfg):
         'db_group': cfg.db_group,
         'db_user': cfg.db_user,
         'db_pw': cfg.db_pw,
+        'db_secret_key': cfg.db_secret_key,
         'proj': cfg.db_out_proj
     }
 

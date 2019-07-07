@@ -87,6 +87,7 @@ _ConfSchema = Map({
         'db_group': Str(),
         'db_user': Str(),
         'db_pw': Str(),
+        'db_secret_key': Str(),
         Optional('db_out_proj', default='2154'): Str()
     }),
     Optional('tuning'):
@@ -175,6 +176,7 @@ class EvnSiteConf:
             self._db_group = config['database']['db_group']  # type: str
             self._db_user = config['database']['db_user']  # type: str
             self._db_pw = config['database']['db_pw']  # type: str
+            self._db_secret_key = config['database']['db_secret_key']  # type: str
             self._db_out_proj = config['database']['db_out_proj']  # type: str
 
             if 'tuning' in config:
@@ -305,6 +307,11 @@ class EvnSiteConf:
     def db_pw(self) -> str:
         """Return db_user PASSWORD."""
         return self._db_pw
+
+    @property
+    def db_secret_key(self) -> str:
+        """Return db SECRET KEY for Pseudonymization."""
+        return self._db_secret_key
 
     @property
     def db_out_proj(self) -> str:
