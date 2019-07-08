@@ -307,7 +307,7 @@ CREATE TRIGGER forms_trigger
 AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).forms_json
     FOR EACH ROW EXECUTE PROCEDURE $(db_schema_vn).update_forms();
 
- 
+
 --------------------
 -- local_admin_units
 --------------------
@@ -522,7 +522,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             VALUES (
                 NEW.site,
                 NEW.id,
-                encode(hmac(NEW.id::text, '8Zz9C*%I*gY&eM*Ei', 'sha1'), 'hex'),
+                encode(hmac(NEW.id::text, $(db_secret_key), 'sha1'), 'hex'),
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'id_universal',
                 CAST(CAST(NEW.item->>0 AS JSON) #>> '{species,@id}' AS INTEGER),
                 CAST(NEW.item->>0 AS JSON) #>> '{species,taxonomy}',
@@ -566,7 +566,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
         VALUES (
             NEW.site,
             NEW.id,
-            encode(hmac(NEW.id::text, '8Zz9C*%I*gY&eM*Ei', 'sha1'), 'hex'),
+            encode(hmac(NEW.id::text, $(db_secret_key), 'sha1'), 'hex'),
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'id_universal',
             CAST(CAST(NEW.item->>0 AS JSON) #>> '{species,@id}' AS INTEGER),
             CAST(NEW.item->>0 AS JSON) #>> '{species,taxonomy}',
@@ -616,6 +616,7 @@ CREATE TABLE $(db_schema_vn).observers(
     site                VARCHAR(50),
     id                  INTEGER,
     id_universal        INTEGER,
+    pseudo_observer_uid VARCHAR(200),
     id_entity           INTEGER,
     anonymous           BOOLEAN,
     collectif           BOOLEAN,
@@ -656,12 +657,13 @@ CREATE OR REPLACE FUNCTION update_observers() RETURNS TRIGGER AS \$\$
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
-            INSERT INTO $(db_schema_vn).observers(site, id, id_universal, id_entity, anonymous,
+            INSERT INTO $(db_schema_vn).observers(site, id, id_universal, pseudo_observer_uid, id_entity, anonymous,
                                                   collectif, default_hidden, name, surname)
             VALUES (
                 NEW.site,
                 NEW.id,
                 CAST(CAST(NEW.item->>0 AS JSON)->>'id_universal' AS INTEGER),
+                encode(hmac(CAST(CAST(NEW.item ->> 0 as json) ->> 'id_universal' as integer)::text, $(db_secret_key), 'sha1'), 'hex'),
                 CAST(CAST(NEW.item->>0 AS JSON)->>'id_entity' AS INTEGER),
                 CAST(CAST(NEW.item->>0 AS JSON)->>'anonymous' AS BOOLEAN),
                 CAST(CAST(NEW.item->>0 AS JSON)->>'collectif' AS BOOLEAN),
@@ -674,12 +676,13 @@ CREATE OR REPLACE FUNCTION update_observers() RETURNS TRIGGER AS \$\$
 
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting data on src_vn.observations when raw data is inserted
-        INSERT INTO $(db_schema_vn).observers(site, id, id_universal, id_entity, anonymous,
+        INSERT INTO $(db_schema_vn).observers(site, id, id_universal, pseudo_observer_uid, id_entity, anonymous,
                                               collectif, default_hidden, name, surname)
         VALUES (
             NEW.site,
             NEW.id,
             CAST(CAST(NEW.item->>0 AS JSON)->>'id_universal' AS INTEGER),
+            encode(hmac(CAST(CAST(NEW.item ->> 0 as json) ->> 'id_universal' as integer)::text, $(db_secret_key), 'sha1'), 'hex'),
             CAST(CAST(NEW.item->>0 AS JSON)->>'id_entity' AS INTEGER),
             CAST(CAST(NEW.item->>0 AS JSON)->>'anonymous' AS BOOLEAN),
             CAST(CAST(NEW.item->>0 AS JSON)->>'collectif' AS BOOLEAN),
