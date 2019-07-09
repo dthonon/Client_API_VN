@@ -183,6 +183,12 @@ def test_db_pw(create_file):
     assert s_cfg.db_pw == 'db_pw'
 
 
+def test_db_secret_key(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, site, cfg_file = create_file
+    assert s_cfg.db_secret_key == 'mySecretKey'
+
+
 def test_tuning_max_chunks(create_file):
     """ Test property."""
     cfg, c_cfg, s_cfg, site, cfg_file = create_file
