@@ -68,7 +68,7 @@ from requests_oauthlib import OAuth1
 
 from . import _, __version__
 
-logger = logging.getLogger('transfer_vn.biolovision_api')
+logger = logging.getLogger("transfer_vn.biolovision_api")
 
 
 class HashableDict(dict):
@@ -101,12 +101,9 @@ class IncorrectParameter(BiolovisionApiException):
 class BiolovisionAPI:
     """Top class, not for direct use. Provides internal and template methods."""
 
-    def __init__(self,
-                 config,
-                 controler,
-                 max_retry=None,
-                 max_requests=None,
-                 max_chunks=None):
+    def __init__(
+        self, config, controler, max_retry=None, max_requests=None, max_chunks=None
+    ):
         self._config = config
         if max_retry is None:
             max_retry = config.tuning_max_retry
@@ -115,18 +112,17 @@ class BiolovisionAPI:
         if max_chunks is None:
             max_chunks = config.tuning_max_chunks
         self._limits = {
-            'max_retry': max_retry,
-            'max_requests': max_requests,
-            'max_chunks': max_chunks
+            "max_retry": max_retry,
+            "max_requests": max_requests,
+            "max_chunks": max_chunks,
         }
         self._transfer_errors = 0
         self._http_status = 0
         self._ctrl = controler
 
         # Using OAuth1 auth helper to get access
-        self._api_url = config.base_url + 'api/'  # URL of API
-        self._oauth = OAuth1(config.client_key,
-                             client_secret=config.client_secret)
+        self._api_url = config.base_url + "api/"  # URL of API
+        self._oauth = OAuth1(config.client_key, client_secret=config.client_secret)
 
     @property
     def version(self):
@@ -151,7 +147,7 @@ class BiolovisionAPI:
     # ----------------
     # Internal methods
     # ----------------
-    def _url_get(self, params, scope, method='GET', body=None):
+    def _url_get(self, params, scope, method="GET", body=None):
         """Internal function used to request from Biolovision API.
 
         Prepare the URL header, perform HTTP request and get json content.
@@ -184,47 +180,56 @@ class BiolovisionAPI:
         """
         # Loop on chunks
         nb_chunks = 0
-        while nb_chunks < self._limits['max_chunks']:
+        while nb_chunks < self._limits["max_chunks"]:
             # Remove DEBUG logging level to avoid too many details
             level = logging.getLogger().level
             logging.getLogger().setLevel(logging.INFO)
 
             # Prepare call to API
-            payload = urllib.parse.urlencode(params,
-                                             quote_via=urllib.parse.quote)
-            logger.debug(_('Params: %s'), payload)
-            headers = {'Content-Type': 'application/json;charset=UTF-8'}
+            payload = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
+            logger.debug(_("Params: %s"), payload)
+            headers = {"Content-Type": "application/json;charset=UTF-8"}
             protected_url = self._api_url + scope
-            if method == 'GET':
-                resp = requests.get(url=protected_url,
-                                    auth=self._oauth,
-                                    params=payload,
-                                    headers=headers)
-            elif method == 'POST':
-                resp = requests.post(url=protected_url,
-                                     auth=self._oauth,
-                                     params=payload,
-                                     headers=headers,
-                                     data=body)
+            if method == "GET":
+                resp = requests.get(
+                    url=protected_url, auth=self._oauth, params=payload, headers=headers
+                )
+            elif method == "POST":
+                resp = requests.post(
+                    url=protected_url,
+                    auth=self._oauth,
+                    params=payload,
+                    headers=headers,
+                    data=body,
+                )
             else:
                 raise NotImplementedException
 
             logger.debug(resp.headers)
             logging.getLogger().setLevel(level)
-            logger.debug(_('%s status code = %s, for URL %s'), method,
-                         resp.status_code, protected_url)
+            logger.debug(
+                _("%s status code = %s, for URL %s"),
+                method,
+                resp.status_code,
+                protected_url,
+            )
             self._http_status = resp.status_code
             if self._http_status != 200:
                 # Request returned an error.
                 # Logging and checking if not too many errors to continue
-                logger.error(_('%s status code = %s, for URL %s'), method,
-                             resp.status_code, protected_url)
+                logger.error(
+                    _("%s status code = %s, for URL %s"),
+                    method,
+                    resp.status_code,
+                    protected_url,
+                )
                 self._transfer_errors += 1
                 time.sleep(self._config.tuning_retry_delay)
-                if self._transfer_errors > self._limits['max_retry']:
+                if self._transfer_errors > self._limits["max_retry"]:
                     # Too many retries. Raising exception
-                    logger.critical(_('Too many error %s, raising exception'),
-                                    self._transfer_errors)
+                    logger.critical(
+                        _("Too many error %s, raising exception"), self._transfer_errors
+                    )
                     raise HTTPError(resp.status_code)
             else:
                 # No error from request: processing response
@@ -232,86 +237,96 @@ class BiolovisionAPI:
                     resp_chunk = resp.json()
                 except Exception:
                     # Error during JSON decoding => Logging error and no further processing of empty chunk
-                    resp_chunk = json.loads('{}')
-                    logger.error(_('Incorrect response content: %s'),
-                                 resp.text)
-                    logger.exception(
-                        _('Exception raised during JSON decoding'))
+                    resp_chunk = json.loads("{}")
+                    logger.error(_("Incorrect response content: %s"), resp.text)
+                    logger.exception(_("Exception raised during JSON decoding"))
                     self._transfer_errors += 1
-                    if self._transfer_errors > self._limits['max_retry']:
+                    if self._transfer_errors > self._limits["max_retry"]:
                         # Too many retries. Raising exception
                         logger.critical(
-                            _('Too many error %s, raising exception'),
-                            self._transfer_errors)
-                        raise HTTPError('resp.json exception')
+                            _("Too many error %s, raising exception"),
+                            self._transfer_errors,
+                        )
+                        raise HTTPError("resp.json exception")
 
                 # Initialize or append to response dict, depending on content
-                if 'data' in resp_chunk:
+                if "data" in resp_chunk:
                     observations = False
-                    if 'sightings' in resp_chunk['data']:
+                    if "sightings" in resp_chunk["data"]:
                         observations = True
-                        logger.debug(_('Received %d sightings in chunk %d'),
-                                     len(resp_chunk['data']['sightings']),
-                                     nb_chunks)
+                        logger.debug(
+                            _("Received %d sightings in chunk %d"),
+                            len(resp_chunk["data"]["sightings"]),
+                            nb_chunks,
+                        )
                         if nb_chunks == 0:
                             data_rec = resp_chunk
                         else:
-                            if 'sightings' in data_rec['data']:
-                                data_rec['data']['sightings'] += resp_chunk[
-                                    'data']['sightings']
+                            if "sightings" in data_rec["data"]:
+                                data_rec["data"]["sightings"] += resp_chunk["data"][
+                                    "sightings"
+                                ]
                             else:
-                                data_rec['data']['sightings'] = resp_chunk[
-                                    'data']['sightings']
-                    if 'forms' in resp_chunk['data']:
+                                data_rec["data"]["sightings"] = resp_chunk["data"][
+                                    "sightings"
+                                ]
+                    if "forms" in resp_chunk["data"]:
                         observations = True
-                        logger.debug(_('Received %d forms in chunk %d'),
-                                     len(resp_chunk['data']['forms']),
-                                     nb_chunks)
+                        logger.debug(
+                            _("Received %d forms in chunk %d"),
+                            len(resp_chunk["data"]["forms"]),
+                            nb_chunks,
+                        )
                         if nb_chunks == 0:
                             data_rec = resp_chunk
                         else:
-                            if 'forms' in data_rec['data']:
-                                data_rec['data']['forms'] += resp_chunk[
-                                    'data']['forms']
+                            if "forms" in data_rec["data"]:
+                                data_rec["data"]["forms"] += resp_chunk["data"]["forms"]
                             else:
-                                data_rec['data']['forms'] = resp_chunk['data'][
-                                    'forms']
+                                data_rec["data"]["forms"] = resp_chunk["data"]["forms"]
 
                     if not observations:
-                        logger.debug(_('Received %d data items in chunk %d'),
-                                     len(resp_chunk), nb_chunks)
+                        logger.debug(
+                            _("Received %d data items in chunk %d"),
+                            len(resp_chunk),
+                            nb_chunks,
+                        )
                         if nb_chunks == 0:
                             data_rec = resp_chunk
                         else:
-                            data_rec['data'] += resp_chunk['data']
+                            data_rec["data"] += resp_chunk["data"]
                 else:
                     logger.debug(
-                        _('Received %d items without data in chunk %d'),
-                        len(resp_chunk), nb_chunks)
+                        _("Received %d items without data in chunk %d"),
+                        len(resp_chunk),
+                        nb_chunks,
+                    )
                     if nb_chunks == 0:
                         data_rec = resp_chunk
                     else:
                         data_rec += resp_chunk
 
                 # Is there more data to come?
-                if (('transfer-encoding' in resp.headers)
-                        and (resp.headers['transfer-encoding'] == 'chunked')
-                        and ('pagination_key' in resp.headers)):
+                if (
+                    ("transfer-encoding" in resp.headers)
+                    and (resp.headers["transfer-encoding"] == "chunked")
+                    and ("pagination_key" in resp.headers)
+                ):
                     logger.debug(
-                        _('Chunked transfer => requesting for more, with key: %s'
-                          ), resp.headers['pagination_key'])
+                        _("Chunked transfer => requesting for more, with key: %s"),
+                        resp.headers["pagination_key"],
+                    )
                     # Update request parameters to get next chunk
-                    params['pagination_key'] = resp.headers['pagination_key']
+                    params["pagination_key"] = resp.headers["pagination_key"]
                     nb_chunks += 1
                 else:
-                    logger.debug(
-                        _('Non-chunked transfer => finished requests'))
-                    if 'pagination_key' in params:
-                        del params['pagination_key']
+                    logger.debug(_("Non-chunked transfer => finished requests"))
+                    if "pagination_key" in params:
+                        del params["pagination_key"]
                     break
 
-        logger.debug(_('Received %d chunks'), nb_chunks)
-        if nb_chunks >= self._limits['max_chunks']:
+        logger.debug(_("Received %d chunks"), nb_chunks)
+        if nb_chunks >= self._limits["max_chunks"]:
             raise MaxChunksError
 
         return data_rec
@@ -333,16 +348,16 @@ class BiolovisionAPI:
         """
         # Mandatory parameters.
         params = {
-            'user_email': self._config.user_email,
-            'user_pw': self._config.user_pw
+            "user_email": self._config.user_email,
+            "user_pw": self._config.user_pw,
         }
         if opt_params is not None:
             params.update(opt_params)
-        logger.debug(_('List from %s, with option %s'), self._ctrl, params)
+        logger.debug(_("List from %s, with option %s"), self._ctrl, params)
         # GET from API
-        entities = self._url_get(params, self._ctrl)['data']
-        logger.debug(_('Number of entities = %i'), len(entities))
-        return {'data': entities}
+        entities = self._url_get(params, self._ctrl)["data"]
+        logger.debug(_("Number of entities = %i"), len(entities))
+        return {"data": entities}
 
     # -----------------------------------------
     #  Generic methods, used by most subclasses
@@ -367,14 +382,14 @@ class BiolovisionAPI:
         """
         # Mandatory parameters.
         params = {
-            'user_email': self._config.user_email,
-            'user_pw': self._config.user_pw
+            "user_email": self._config.user_email,
+            "user_pw": self._config.user_pw,
         }
         for key, value in kwargs.items():
             params[key] = value
-        logger.debug(_('In api_get, with parameters %s'), params)
+        logger.debug(_("In api_get, with parameters %s"), params)
         # GET from API
-        return self._url_get(params, self._ctrl + '/' + str(id_entity))
+        return self._url_get(params, self._ctrl + "/" + str(id_entity))
 
     def api_list(self, opt_params=None):
         """Query for a list of entities of the given controler.
@@ -408,11 +423,11 @@ class BiolovisionAPI:
         """
         # Mandatory parameters.
         params = {
-            'user_email': self._config.user_email,
-            'user_pw': self._config.user_pw
+            "user_email": self._config.user_email,
+            "user_pw": self._config.user_pw,
         }
         # GET from API
-        return self._url_get(params, 'error/')
+        return self._url_get(params, "error/")
 
 
 class EntitiesAPI(BiolovisionAPI):
@@ -424,13 +439,8 @@ class EntitiesAPI(BiolovisionAPI):
 
     """
 
-    def __init__(self,
-                 config,
-                 max_retry=None,
-                 max_requests=None,
-                 max_chunks=None):
-        super().__init__(config, 'entities', max_retry, max_requests,
-                         max_chunks)
+    def __init__(self, config, max_retry=None, max_requests=None, max_chunks=None):
+        super().__init__(config, "entities", max_retry, max_requests, max_chunks)
 
 
 class FieldsAPI(BiolovisionAPI):
@@ -442,12 +452,8 @@ class FieldsAPI(BiolovisionAPI):
 
     """
 
-    def __init__(self,
-                 config,
-                 max_retry=None,
-                 max_requests=None,
-                 max_chunks=None):
-        super().__init__(config, 'fields', max_retry, max_requests, max_chunks)
+    def __init__(self, config, max_retry=None, max_requests=None, max_chunks=None):
+        super().__init__(config, "fields", max_retry, max_requests, max_chunks)
 
 
 class LocalAdminUnitsAPI(BiolovisionAPI):
@@ -459,13 +465,10 @@ class LocalAdminUnitsAPI(BiolovisionAPI):
 
     """
 
-    def __init__(self,
-                 config,
-                 max_retry=None,
-                 max_requests=None,
-                 max_chunks=None):
-        super().__init__(config, 'local_admin_units', max_retry, max_requests,
-                         max_chunks)
+    def __init__(self, config, max_retry=None, max_requests=None, max_chunks=None):
+        super().__init__(
+            config, "local_admin_units", max_retry, max_requests, max_chunks
+        )
 
 
 class ObservationsAPI(BiolovisionAPI):
@@ -478,13 +481,8 @@ class ObservationsAPI(BiolovisionAPI):
     - api_search   - Search for observations based on parameter value
     """
 
-    def __init__(self,
-                 config,
-                 max_retry=None,
-                 max_requests=None,
-                 max_chunks=None):
-        super().__init__(config, 'observations', max_retry, max_requests,
-                         max_chunks)
+    def __init__(self, config, max_retry=None, max_requests=None, max_chunks=None):
+        super().__init__(config, "observations", max_retry, max_requests, max_chunks)
 
     def api_list(self, id_taxo_group, **kwargs):
         """Query for list of observations by taxo_group from the controler.
@@ -504,13 +502,13 @@ class ObservationsAPI(BiolovisionAPI):
             dict decoded from json if status OK, else None
         """
         opt_params = dict()
-        opt_params['id_taxo_group'] = str(id_taxo_group)
+        opt_params["id_taxo_group"] = str(id_taxo_group)
         for key, value in kwargs.items():
             opt_params[key] = value
-        logger.debug(_('In api_list, with parameters %s'), opt_params)
+        logger.debug(_("In api_list, with parameters %s"), opt_params)
         return super().api_list(opt_params)
 
-    def api_diff(self, id_taxo_group, delta_time, modification_type='all'):
+    def api_diff(self, id_taxo_group, delta_time, modification_type="all"):
         """Query for a list of updates or deletions since a given date.
 
         Calls /observations/diff to get list of created/updated or deleted
@@ -533,15 +531,15 @@ class ObservationsAPI(BiolovisionAPI):
         """
         # Mandatory parameters.
         params = {
-            'user_email': self._config.user_email,
-            'user_pw': self._config.user_pw
+            "user_email": self._config.user_email,
+            "user_pw": self._config.user_pw,
         }
         # Specific parameters.
-        params['id_taxo_group'] = str(id_taxo_group)
-        params['modification_type'] = modification_type
-        params['date'] = delta_time
+        params["id_taxo_group"] = str(id_taxo_group)
+        params["modification_type"] = modification_type
+        params["date"] = delta_time
         # GET from API
-        return super()._url_get(params, 'observations/diff/')
+        return super()._url_get(params, "observations/diff/")
 
     def api_search(self, q_params, **kwargs):
         """Search for observations, based on parameter conditions.
@@ -563,8 +561,8 @@ class ObservationsAPI(BiolovisionAPI):
         """
         # Mandatory parameters.
         params = {
-            'user_email': self._config.user_email,
-            'user_pw': self._config.user_pw
+            "user_email": self._config.user_email,
+            "user_pw": self._config.user_pw,
         }
         for key, value in kwargs.items():
             params[key] = value
@@ -573,10 +571,11 @@ class ObservationsAPI(BiolovisionAPI):
             body = json.dumps(q_params)
         else:
             raise IncorrectParameter
-        logger.debug(_('Search from %s, with option %s and body %s'),
-                     self._ctrl, params, body)
+        logger.debug(
+            _("Search from %s, with option %s and body %s"), self._ctrl, params, body
+        )
         # GET from API
-        return super()._url_get(params, 'observations/search/', 'POST', body)
+        return super()._url_get(params, "observations/search/", "POST", body)
 
 
 class ObserversAPI(BiolovisionAPI):
@@ -588,13 +587,8 @@ class ObserversAPI(BiolovisionAPI):
 
     """
 
-    def __init__(self,
-                 config,
-                 max_retry=None,
-                 max_requests=None,
-                 max_chunks=None):
-        super().__init__(config, 'observers', max_retry, max_requests,
-                         max_chunks)
+    def __init__(self, config, max_retry=None, max_requests=None, max_chunks=None):
+        super().__init__(config, "observers", max_retry, max_requests, max_chunks)
 
 
 class PlacesAPI(BiolovisionAPI):
@@ -606,12 +600,8 @@ class PlacesAPI(BiolovisionAPI):
 
     """
 
-    def __init__(self,
-                 config,
-                 max_retry=None,
-                 max_requests=None,
-                 max_chunks=None):
-        super().__init__(config, 'places', max_retry, max_requests, max_chunks)
+    def __init__(self, config, max_retry=None, max_requests=None, max_chunks=None):
+        super().__init__(config, "places", max_retry, max_requests, max_chunks)
 
 
 class SpeciesAPI(BiolovisionAPI):
@@ -623,13 +613,8 @@ class SpeciesAPI(BiolovisionAPI):
 
     """
 
-    def __init__(self,
-                 config,
-                 max_retry=None,
-                 max_requests=None,
-                 max_chunks=None):
-        super().__init__(config, 'species', max_retry, max_requests,
-                         max_chunks)
+    def __init__(self, config, max_retry=None, max_requests=None, max_chunks=None):
+        super().__init__(config, "species", max_retry, max_requests, max_chunks)
 
 
 class TaxoGroupsAPI(BiolovisionAPI):
@@ -641,13 +626,8 @@ class TaxoGroupsAPI(BiolovisionAPI):
 
     """
 
-    def __init__(self,
-                 config,
-                 max_retry=None,
-                 max_requests=None,
-                 max_chunks=None):
-        super().__init__(config, 'taxo_groups', max_retry, max_requests,
-                         max_chunks)
+    def __init__(self, config, max_retry=None, max_requests=None, max_chunks=None):
+        super().__init__(config, "taxo_groups", max_retry, max_requests, max_chunks)
 
     @lru_cache(maxsize=32)
     def api_list(self, opt_params=None):
@@ -664,13 +644,10 @@ class TerritorialUnitsAPI(BiolovisionAPI):
 
     """
 
-    def __init__(self,
-                 config,
-                 max_retry=None,
-                 max_requests=None,
-                 max_chunks=None):
-        super().__init__(config, 'territorial_units', max_retry, max_requests,
-                         max_chunks)
+    def __init__(self, config, max_retry=None, max_requests=None, max_chunks=None):
+        super().__init__(
+            config, "territorial_units", max_retry, max_requests, max_chunks
+        )
 
     @lru_cache(maxsize=32)
     def api_list(self, opt_params=None):
