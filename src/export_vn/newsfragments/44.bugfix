@@ -1,4 +1,0 @@
-Incorrect parameters name in YAML configuration file.
-Replace:
-- taxo_group by taxo_groups
-- territorial_unit by territorial_units
