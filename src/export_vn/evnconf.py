@@ -11,13 +11,26 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List, cast
 
-from strictyaml import (Bool, Email, Enum, Float, Int, Map, MapPattern,
-                        Optional, Seq, Str, Url, YAMLError,
-                        YAMLValidationError, load)
+from strictyaml import (
+    Bool,
+    Email,
+    Enum,
+    Float,
+    Int,
+    Map,
+    MapPattern,
+    Optional,
+    Seq,
+    Str,
+    Url,
+    YAMLError,
+    YAMLValidationError,
+    load,
+)
 
 from . import _, __version__
 
-logger = logging.getLogger('transfer_vn.evn_conf')
+logger = logging.getLogger("transfer_vn.evn_conf")
 
 
 class EvnConfException(Exception):
@@ -33,79 +46,77 @@ _CtrlType = Dict[str, Dict[str, Any]]
 _ConfType = Dict[str, Any]
 
 # Define strictyaml schema
-_ConfSchema = Map({
-    'main':
-    Map({'admin_mail': Email()}),
-    'controler':
-    Map({
-        'entities':
-        Map({'enabled': Bool()}),
-        'fields':
-        Map({'enabled': Bool()}),
-        'local_admin_units':
-        Map({'enabled': Bool()}),
-        'observations':
-        Map({
-            'enabled': Bool(),
-            Optional('json_format', default='short'): Enum(['short', 'long']),
-            'taxo_exclude': Seq(Str())
-        }),
-        'observers':
-        Map({'enabled': Bool()}),
-        'places':
-        Map({'enabled': Bool()}),
-        'species':
-        Map({'enabled': Bool()}),
-        'taxo_groups':
-        Map({'enabled': Bool()}),
-        'territorial_units':
-        Map({'enabled': Bool()})
-    }),
-    'site':
-    MapPattern(
-        Str(),
-        Map({
-            'enabled': Bool(),
-            'site': Url(),
-            'user_email': Email(),
-            'user_pw': Str(),
-            'client_key': Str(),
-            'client_secret': Str()
-        })),
-    Optional('file'):
-    Map({
-        'enabled': Bool(),
-        'file_store': Str()
-    }),
-    'database':
-    Map({
-        Optional('db_host', default='localhost'): Str(),
-        Optional('db_port', default=5432): Int(),
-        'db_name': Str(),
-        'db_schema_import': Str(),
-        'db_schema_vn': Str(),
-        'db_group': Str(),
-        'db_user': Str(),
-        'db_pw': Str(),
-        Optional('db_out_proj', default='2154'): Str()
-    }),
-    Optional('tuning'):
-    Map({
-        Optional('max_chunks', default=10): Int(),
-        Optional('max_retry', default=5): Int(),
-        Optional('max_requests', default=0): Int(),
-        Optional('retry_delay', default=5): Int(),
-        Optional('lru_maxsize', default=32): Int(),
-        Optional('min_year', default=1901): Int(),
-        Optional('pid_kp', default=0.0): Float(),
-        Optional('pid_ki', default=0.003): Float(),
-        Optional('pid_kd', default=0.0): Float(),
-        Optional('pid_setpoint', default=10000): Float(),
-        Optional('pid_limit_min', default=10): Float(),
-        Optional('pid_limit_max', default=2000): Float(),
-        Optional('pid_delta_days', default=15): Int()
-    })
-})
+_ConfSchema = Map(
+    {
+        "main": Map({"admin_mail": Email()}),
+        "controler": Map(
+            {
+                "entities": Map({"enabled": Bool()}),
+                "fields": Map({"enabled": Bool()}),
+                "local_admin_units": Map({"enabled": Bool()}),
+                "observations": Map(
+                    {
+                        "enabled": Bool(),
+                        Optional("json_format", default="short"): Enum(
+                            ["short", "long"]
+                        ),
+                        "taxo_exclude": Seq(Str()),
+                    }
+                ),
+                "observers": Map({"enabled": Bool()}),
+                "places": Map({"enabled": Bool()}),
+                "species": Map({"enabled": Bool()}),
+                "taxo_groups": Map({"enabled": Bool()}),
+                "territorial_units": Map({"enabled": Bool()}),
+            }
+        ),
+        "site": MapPattern(
+            Str(),
+            Map(
+                {
+                    "enabled": Bool(),
+                    "site": Url(),
+                    "user_email": Email(),
+                    "user_pw": Str(),
+                    "client_key": Str(),
+                    "client_secret": Str(),
+                }
+            ),
+        ),
+        Optional("file"): Map({"enabled": Bool(), "file_store": Str()}),
+        "database": Map(
+            {
+                Optional("db_host", default="localhost"): Str(),
+                Optional("db_port", default=5432): Int(),
+                "db_name": Str(),
+                "db_schema_import": Str(),
+                "db_schema_vn": Str(),
+                "db_group": Str(),
+                "db_user": Str(),
+                "db_pw": Str(),
+                "db_secret_key": Str(),
+                Optional("db_out_proj", default="2154"): Str(),
+            }
+        ),
+        Optional("tuning"): Map(
+            {
+                Optional("max_chunks", default=10): Int(),
+                Optional("max_retry", default=5): Int(),
+                Optional("max_requests", default=0): Int(),
+                Optional("retry_delay", default=5): Int(),
+                Optional("lru_maxsize", default=32): Int(),
+                Optional("min_year", default=1901): Int(),
+                Optional("pid_kp", default=0.0): Float(),
+                Optional("pid_ki", default=0.003): Float(),
+                Optional("pid_kd", default=0.0): Float(),
+                Optional("pid_setpoint", default=10000): Float(),
+                Optional("pid_limit_min", default=10): Float(),
+                Optional("pid_limit_max", default=2000): Float(),
+                Optional("pid_delta_days", default=15): Int(),
+            }
+        ),
+    }
+)
 
 
 class EvnCtrlConf:
@@ -117,11 +128,11 @@ class EvnCtrlConf:
 
         # Import parameters in properties
         self._enabled = True
-        if 'enabled' in config['controler'][ctrl]:
-            self._enabled = config['controler'][ctrl]['enabled']
+        if "enabled" in config["controler"][ctrl]:
+            self._enabled = config["controler"][ctrl]["enabled"]
         self._taxo_exclude = []  # type: List[str]
-        if 'taxo_exclude' in config['controler'][ctrl]:
-            self._taxo_exclude = config['controler'][ctrl]['taxo_exclude']
+        if "taxo_exclude" in config["controler"][ctrl]:
+            self._taxo_exclude = config["controler"][ctrl]["taxo_exclude"]
 
     @property
     def enabled(self) -> bool:
@@ -143,61 +154,53 @@ class EvnSiteConf:
         # Import parameters in properties
         try:
             self._enabled = True
-            if 'enabled' in config['site'][site]:
-                self._enabled = config['site'][site]['enabled']
-            self._client_key = config['site'][site]['client_key']  # type: str
-            self._client_secret = config['site'][site][
-                'client_secret']  # type: str
-            self._user_email = config['site'][site]['user_email']  # type: str
-            self._user_pw = config['site'][site]['user_pw']  # type: str
-            self._base_url = config['site'][site]['site']  # type: str
+            if "enabled" in config["site"][site]:
+                self._enabled = config["site"][site]["enabled"]
+            self._client_key = config["site"][site]["client_key"]  # type: str
+            self._client_secret = config["site"][site]["client_secret"]  # type: str
+            self._user_email = config["site"][site]["user_email"]  # type: str
+            self._user_pw = config["site"][site]["user_pw"]  # type: str
+            self._base_url = config["site"][site]["site"]  # type: str
 
             self._file_enabled = False
-            self._file_store = ''
-            if 'file' in config:
-                if 'enabled' in config['file']:
-                    self._file_enabled = config['file']['enabled']
+            self._file_store = ""
+            if "file" in config:
+                if "enabled" in config["file"]:
+                    self._file_enabled = config["file"]["enabled"]
                 if self._file_enabled:
-                    if 'file_store' in config['file']:
-                        self._file_store = config['file'][
-                            'file_store'] + '/' + site + '/'
+                    if "file_store" in config["file"]:
+                        self._file_store = (
+                            config["file"]["file_store"] + "/" + site + "/"
+                        )
                     else:
-                        logger.error(_('file:file_store must be defined'))
+                        logger.error(_("file:file_store must be defined"))
                         raise IncorrectParameter
 
-            self._db_host = config['database']['db_host']  # type: str
-            self._db_port = str(config['database']['db_port'])  # type: str
-            self._db_name = config['database']['db_name']  # type: str
-            self._db_schema_import = config['database'][
-                'db_schema_import']  # type: str
-            self._db_schema_vn = config['database'][
-                'db_schema_vn']  # type: str
-            self._db_group = config['database']['db_group']  # type: str
-            self._db_user = config['database']['db_user']  # type: str
-            self._db_pw = config['database']['db_pw']  # type: str
-            self._db_out_proj = config['database']['db_out_proj']  # type: str
+            self._db_host = config["database"]["db_host"]  # type: str
+            self._db_port = str(config["database"]["db_port"])  # type: str
+            self._db_name = config["database"]["db_name"]  # type: str
+            self._db_schema_import = config["database"]["db_schema_import"]  # type: str
+            self._db_schema_vn = config["database"]["db_schema_vn"]  # type: str
+            self._db_group = config["database"]["db_group"]  # type: str
+            self._db_user = config["database"]["db_user"]  # type: str
+            self._db_pw = config["database"]["db_pw"]  # type: str
+            self._db_secret_key = config["database"]["db_secret_key"]  # type: str
+            self._db_out_proj = config["database"]["db_out_proj"]  # type: str
 
-            if 'tuning' in config:
-                self._max_chunks = config['tuning']['max_chunks']  # type: int
-                self._max_retry = config['tuning']['max_retry']  # type: int
-                self._max_requests = config['tuning'][
-                    'max_requests']  # type: int
-                self._retry_delay = config['tuning'][
-                    'retry_delay']  # type: int
-                self._lru_maxsize = config['tuning'][
-                    'lru_maxsize']  # type: int
-                self._min_year = config['tuning']['min_year']  # type: int
-                self._pid_kp = config['tuning']['pid_kp']  # type: float
-                self._pid_ki = config['tuning']['pid_ki']  # type: float
-                self._pid_kd = config['tuning']['pid_kd']  # type: float
-                self._pid_setpoint = config['tuning'][
-                    'pid_setpoint']  # type: float
-                self._pid_limit_min = config['tuning'][
-                    'pid_limit_min']  # type: float
-                self._pid_limit_max = config['tuning'][
-                    'pid_limit_max']  # type: float
-                self._pid_delta_days = config['tuning'][
-                    'pid_delta_days']  # type: int
+            if "tuning" in config:
+                self._max_chunks = config["tuning"]["max_chunks"]  # type: int
+                self._max_retry = config["tuning"]["max_retry"]  # type: int
+                self._max_requests = config["tuning"]["max_requests"]  # type: int
+                self._retry_delay = config["tuning"]["retry_delay"]  # type: int
+                self._lru_maxsize = config["tuning"]["lru_maxsize"]  # type: int
+                self._min_year = config["tuning"]["min_year"]  # type: int
+                self._pid_kp = config["tuning"]["pid_kp"]  # type: float
+                self._pid_ki = config["tuning"]["pid_ki"]  # type: float
+                self._pid_kd = config["tuning"]["pid_kd"]  # type: float
+                self._pid_setpoint = config["tuning"]["pid_setpoint"]  # type: float
+                self._pid_limit_min = config["tuning"]["pid_limit_min"]  # type: float
+                self._pid_limit_max = config["tuning"]["pid_limit_max"]  # type: float
+                self._pid_delta_days = config["tuning"]["pid_delta_days"]  # type: int
             else:
                 # Provide default values
                 self._max_chunks = 10  # type: int
@@ -307,6 +310,11 @@ class EvnSiteConf:
         return self._db_pw
 
     @property
+    def db_secret_key(self) -> str:
+        """Return db SECRET KEY for Pseudonymization."""
+        return self._db_secret_key
+
+    @property
     def db_out_proj(self) -> str:
         """Return local EPSG coordinate system."""
         return self._db_out_proj
@@ -388,22 +396,19 @@ class EvnConf:
         p = Path.home() / file
         yaml_text = p.read_text()
         try:
-            logger.info(_('Loading YAML configuration %s'), file)
+            logger.info(_("Loading YAML configuration %s"), file)
             self._config = load(yaml_text, _ConfSchema).data
         except YAMLValidationError as error:
-            logger.exception(_('Incorrect content in YAML configuration %s'),
-                             file)
+            logger.exception(_("Incorrect content in YAML configuration %s"), file)
         except YAMLError as error:
-            logger.exception(_('Error while reading YAML configuration %s'),
-                             file)
+            logger.exception(_("Error while reading YAML configuration %s"), file)
 
         self._ctrl_list = {}  # type: _CtrlType
-        for ctrl in self._config['controler']:
-            self._ctrl_list[ctrl] = cast(
-                _CtrlType, EvnCtrlConf(ctrl, self._config))
+        for ctrl in self._config["controler"]:
+            self._ctrl_list[ctrl] = cast(_CtrlType, EvnCtrlConf(ctrl, self._config))
 
         self._site_list = {}  # type: _ConfType
-        for site in self._config['site']:
+        for site in self._config["site"]:
             self._site_list[site] = EvnSiteConf(site, self._config)
 
     @property

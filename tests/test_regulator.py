@@ -8,7 +8,7 @@ from export_vn.regulator import PID
 
 def test_version():
     """Check if version is defined."""
-    logging.debug('package version: %s', PID().version)
+    logging.debug("package version: %s", PID().version)
 
 
 def test_zero():

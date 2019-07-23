@@ -11,18 +11,13 @@ import logging
 
 from . import _, __version__
 
-logger = logging.getLogger('transfer_vn.regulator')
+logger = logging.getLogger("transfer_vn.regulator")
 
 
 class PID(object):
     """A simple PID controller. No fuss."""
 
-    def __init__(self,
-                 kp=1.0,
-                 ki=0.0,
-                 kd=0.0,
-                 setpoint=0,
-                 output_limits=(None, None)):
+    def __init__(self, kp=1.0, ki=0.0, kd=0.0, setpoint=0, output_limits=(None, None)):
         """Simple PID creation.
 
         Parameters
@@ -80,8 +75,9 @@ class PID(object):
         # compute error terms
         error = self.setpoint - input_
         self._error_sum += self.ki * error
-        d_input = input_ - (self._last_input
-                            if self._last_input is not None else input_)
+        d_input = input_ - (
+            self._last_input if self._last_input is not None else input_
+        )
 
         # compute the proportional term
         self._proportional = self.kp * error
@@ -121,8 +117,8 @@ class PID(object):
         min_output, max_output = limits
 
         if None not in limits and max_output < min_output:
-            logger.error(_('lower limit must be less than upper limit'))
-            raise ValueError(_('lower limit must be less than upper limit'))
+            logger.error(_("lower limit must be less than upper limit"))
+            raise ValueError(_("lower limit must be less than upper limit"))
 
         self._min_output = min_output
         self._max_output = max_output

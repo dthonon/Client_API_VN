@@ -1,3 +1,21 @@
+Client-API-VN v2.3.1 (2019-07-23)
+=================================
+
+Features
+--------
+
+- HMAC encoding key is defined by YAML parameter db_secret_key (`#50 < https://framagit.org/lpo/Client_API_VN/issues/50>`_)
+- A new field is added to src_vn.observers to anonymize observers: 
+   pseudo_observer_uid. It should be used for data exchance to respect
+   user privacy. It is encoded by HMAC, using db_secret_key token. (`#51 < https://framagit.org/lpo/Client_API_VN/issues/51>`_)
+
+
+Misc
+----
+
+- `#52 < https://framagit.org/lpo/Client_API_VN/issues/52>`_
+
+
 Client-API-VN v2.3.0 (2019-06-30)
 =================================
 

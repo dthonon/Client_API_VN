@@ -7,16 +7,22 @@ from datetime import datetime
 
 import pytest
 
-from export_vn.download_vn import (Entities, LocalAdminUnits, Observations,
-                                   Places, Species, TaxoGroup,
-                                   TerritorialUnits)
+from export_vn.download_vn import (
+    Entities,
+    LocalAdminUnits,
+    Observations,
+    Places,
+    Species,
+    TaxoGroup,
+    TerritorialUnits,
+)
 from export_vn.evnconf import EvnConf
 from export_vn.store_postgresql import PostgresqlUtils, StorePostgresql
 
 # Using faune-ardeche or faune-isere site, that needs to be created first
-SITE = 't07'
+SITE = "t07"
 # SITE = 't38'
-FILE = '.evn_test.yaml'
+FILE = ".evn_test.yaml"
 
 # Get configuration for test site
 CFG = EvnConf(FILE).site_list[SITE]
@@ -38,7 +44,7 @@ except Exception:
 
 def test_version():
     """Check if version is defined."""
-    logging.debug('package version: %s', STORE_PG.version)
+    logging.debug("package version: %s", STORE_PG.version)
 
 
 # --------
@@ -54,7 +60,7 @@ def test_create_json_tables():
 # ----
 def test_log_pg_store():
     """Create a log entry."""
-    STORE_PG.log(SITE, 'Test', 0, 0, comment='Test')
+    STORE_PG.log(SITE, "Test", 0, 0, comment="Test")
 
 
 def test_increment_log_pg_store():
@@ -92,7 +98,7 @@ def test_local_adm_u_api_pg_store():
 def test_observations_api_pg_store(capsys):
     """Store observations of a taxo_group to database."""
     with capsys.disabled():
-        OBSERVATIONS.store(18, method='search')
+        OBSERVATIONS.store(18, method="search")
 
 
 @pytest.mark.slow
