@@ -9,12 +9,13 @@ import subprocess
 import sys
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
+import shutil
 
+import pkg_resources
 import requests
-from bs4 import BeautifulSoup
-from tabulate import tabulate
 
 import pyexpander.lib as pyexpander
+from bs4 import BeautifulSoup
 from export_vn.biolovision_api import TaxoGroupsAPI
 from export_vn.download_vn import (
     Entities,
@@ -29,8 +30,9 @@ from export_vn.download_vn import (
 )
 from export_vn.evnconf import EvnConf
 from export_vn.store_postgresql import PostgresqlUtils, StorePostgresql
+from tabulate import tabulate
 
-from . import __version__, _
+from . import _, __version__
 
 
 def db_config(cfg):
@@ -75,6 +77,9 @@ def arguments(args):
         "-q", "--quiet", help=_("Reduce output verbosity"), action="store_true"
     )
     parser.add_argument(
+        "--init", help=_("Initialize the YAML configuration file"), action="store_true"
+    )
+    parser.add_argument(
         "--db_drop", help=_("Delete if exists database and roles"), action="store_true"
     )
     parser.add_argument(
@@ -105,6 +110,19 @@ def arguments(args):
 
     return parser.parse_args(args)
 
+
+def init(file: str):
+    """Copy template YAML file to home directory."""
+    logger = logging.getLogger("transfer_vn")
+    yaml_src = pkg_resources.resource_filename(
+        __name__, "data/evn_template.yaml"
+    )
+    yaml_dst = str(Path.home()) + "/" + file
+    logger.info(
+        _("Creating YAML configuration file %s, from %s"), yaml_dst, yaml_src
+    )
+    shutil.copyfile(yaml_src, yaml_dst)
+    logger.info(_("Please edit %s before running the script"), yaml_dst)
 
 def full_download(cfg_ctrl):
     """Performs a full download of all sites and controlers,
@@ -335,6 +353,12 @@ def main(args):
     logger.info(_("%s, version %s"), sys.argv[0], __version__)
     logger.info(_("Arguments: %s"), sys.argv[1:])
 
+    # If required, first create YAML file
+    if args.init:
+        logger.info(_("Creating YAML configuration file"))
+        init(args.file)
+        return None
+
     # Get configuration from file
     if not Path(str(Path.home()) + "/" + args.file).is_file():
         logger.critical(_("File %s does not exist"), str(Path.home()) + "/" + args.file)
@@ -347,6 +371,7 @@ def main(args):
 
     manage_pg = PostgresqlUtils(cfg)
     db_cfg = db_config(cfg)
+
     if args.db_drop:
         logger.info(_("Delete if exists database and roles"))
         manage_pg.drop_database()
