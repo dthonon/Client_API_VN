@@ -103,7 +103,8 @@ class DownloadVn:
             opt_params_iter = iter([None])
         for opt_params in opt_params_iter:
             i += 1
-            logger.debug(_("Iteration %s, opt_params = %s"), i, opt_params)
+            log_msg = _("Iteration {}, opt_params = {}").format(i, opt_params)
+            logger.debug(log_msg)
             items_dict = self._api_instance.api_list(opt_params=opt_params)
             # Call backend to store generic log
             self._backend.log(
@@ -111,6 +112,7 @@ class DownloadVn:
                 self._api_instance.controler,
                 self._api_instance.transfer_errors,
                 self._api_instance.http_status,
+                log_msg,
             )
             # Call backend to store results
             self._backend.store(self._api_instance.controler, str(i), items_dict)
@@ -355,7 +357,7 @@ class Observations(DownloadVn):
                         items_dict,
                     )
                     log_msg = _(
-                        "Iter: %s, %s obs, taxo_group: %s, date: %s, interval: %s"
+                        "Iter: {}, {} obs, taxo_group: {}, date: {}, interval: {}"
                     ).format(
                         seq,
                         nb_obs,
@@ -638,4 +640,3 @@ class TerritorialUnits(DownloadVn):
             max_chunks,
         )
         return None
-
