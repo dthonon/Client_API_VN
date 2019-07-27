@@ -1,0 +1,1 @@
+Increments are correctly tracked. When using --update, only new or changed observations are downloaded.

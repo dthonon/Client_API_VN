@@ -211,10 +211,10 @@ class PostgresqlUtils:
         """Create increment_log table if it does not exist."""
         self._create_table(
             "increment_log",
-            Column("id", Integer, primary_key=True),
             Column("site", String, nullable=False),
             Column("taxo_group", Integer, nullable=False),
             Column("last_ts", DateTime, server_default=func.now(), nullable=False),
+            PrimaryKeyConstraint("site", "taxo_group", name="increment_log_pk"),
         )
         return None
 
