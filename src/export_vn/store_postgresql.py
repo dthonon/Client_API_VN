@@ -170,7 +170,6 @@ class PostgresqlUtils:
 
     def __init__(self, config):
         self._config = config
-        self._num_worker_threads = 4
 
     # ----------------
     # Internal methods
@@ -608,8 +607,6 @@ class StorePostgresql:
         self._config = config
         self._file_store = StoreFile(config)
 
-        self._num_worker_threads = 4
-
         # Initialize interface to Postgresql DB
         db_url = {
             "drivername": "postgresql+psycopg2",
@@ -680,9 +677,11 @@ class StorePostgresql:
         ]
 
         # Create parallel workers for database queries
-        self._observations_queue = queue.Queue(maxsize=100000)
+        logger.info(_("Creating %s worker threads, queue size: %s"),
+                    self._config.tuning_db_worker_threads, self._config.tuning_db_worker_queue)
+        self._observations_queue = queue.Queue(maxsize=self._config.tuning_db_worker_queue)
         self._observations_threads = []
-        for i in range(self._num_worker_threads):
+        for i in range(self._config.tuning_db_worker_threads):
             t = threading.Thread(
                 target=observation_worker, args=(i, self._observations_queue)
             )
@@ -696,7 +695,8 @@ class StorePostgresql:
 
     def __exit__(self, exc_type, exc_value, traceback):
         """Send finish signal to workers and wait for tasks to finish."""
-        for i in range(self._num_worker_threads):
+        logger.info(_("Stopping %s worker threads"), self._config.tuning_db_worker_threads)
+        for i in range(self._config.tuning_db_worker_threads):
             self._observations_queue.put(None)
         for t in self._observations_threads:
             t.join()

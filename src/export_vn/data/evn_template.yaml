@@ -146,7 +146,7 @@ tuning:
     retry_delay: 5
     # LRU cache size for common requests (taxo_groups...)
     lru_maxsize: 32
-    # Earliest year in the archive. Queries will not ge before this date.
+    # Earliest year in the archive. Queries will not go before that date.
     min_year: 1901
     # PID parameters, for throughput management.
     pid_kp: 0.0
@@ -156,3 +156,6 @@ tuning:
     pid_limit_min: 10
     pid_limit_max: 2000
     pid_delta_days: 15
+    # Postgresql DB tuning parameters
+    db_worker_threads: 4
+    db_worker_queue: 100000
