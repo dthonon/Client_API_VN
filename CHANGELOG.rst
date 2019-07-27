@@ -5,8 +5,8 @@ Features
 --------
 
 - Added --init option, that creates a draft YAML configuration file.
-  This file then needs to be edited before use. (`#37 < https://framagit.org/lpo/Client_API_VN/issues/37>`_)
-- The comment in download_log table is improved, displaying more information about observations download progress. (`#53 < https://framagit.org/lpo/Client_API_VN/issues/53>`_)
+  This file then needs to be edited before use. (`#37 <https://framagit.org/lpo/Client_API_VN/issues/37>`_)
+- The comment in download_log table is improved, displaying more information about observations download progress. (`#53 <https://framagit.org/lpo/Client_API_VN/issues/53>`_)
 - Number of concurrent database insert/update and queue size are parameters 
   in YAML file, ``[tuning]`` section:
 
@@ -14,14 +14,14 @@ Features
 
       # Postgresql DB tuning parameters
       db_worker_threads: 4
-      db_worker_queue: 100000 (`#54 < https://framagit.org/lpo/Client_API_VN/issues/54>`_)
+      db_worker_queue: 100000 (`#54 <https://framagit.org/lpo/Client_API_VN/issues/54>`_)
 
 
 Bugfixes
 --------
 
 - Tentative correction of duplicate key exception. As this is not reproductible, bug fix is not certain.
-  Insert or update of records in Postgresql DB is now atomic (insert + on conflict). (`#55 < https://framagit.org/lpo/Client_API_VN/issues/55>`_)
+  Insert or update of records in Postgresql DB is now atomic (insert + on conflict). (`#55 <https://framagit.org/lpo/Client_API_VN/issues/55>`_)
 
 
 Client-API-VN v2.3.1 (2019-07-23)
@@ -30,16 +30,16 @@ Client-API-VN v2.3.1 (2019-07-23)
 Features
 --------
 
-- HMAC encoding key is defined by YAML parameter db_secret_key (`#50 < https://framagit.org/lpo/Client_API_VN/issues/50>`_)
+- HMAC encoding key is defined by YAML parameter db_secret_key (`#50 <https://framagit.org/lpo/Client_API_VN/issues/50>`_)
 - A new field is added to src_vn.observers to anonymize observers: 
    pseudo_observer_uid. It should be used for data exchance to respect
-   user privacy. It is encoded by HMAC, using db_secret_key token. (`#51 < https://framagit.org/lpo/Client_API_VN/issues/51>`_)
+   user privacy. It is encoded by HMAC, using db_secret_key token. (`#51 <https://framagit.org/lpo/Client_API_VN/issues/51>`_)
 
 
 Misc
 ----
 
-- `#52 < https://framagit.org/lpo/Client_API_VN/issues/52>`_
+- `#52 <https://framagit.org/lpo/Client_API_VN/issues/52>`_
 
 
 Client-API-VN v2.3.0 (2019-06-30)
