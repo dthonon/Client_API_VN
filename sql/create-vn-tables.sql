@@ -509,7 +509,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             mortality       = CAST(((((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info,mortality}'::text []) is not null) as BOOLEAN),
             death_cause2    = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info, mortality, death_cause2}',
             insert_date     = to_timestamp(CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'insert_date' AS DOUBLE PRECISION)),
-            update_date     = to_timestamp(CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{update_date,@timestamp}' AS DOUBLE PRECISION))
+            update_date     = to_timestamp(NEW.update_ts)
         WHERE id_sighting = OLD.id AND site = OLD.site;
 
         IF NOT FOUND THEN
@@ -552,7 +552,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
                 CAST(((((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info,mortality}'::text []) is not null) as BOOLEAN),
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info, mortality, death_cause2}',
                 to_timestamp(CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'insert_date' AS DOUBLE PRECISION)),
-                to_timestamp(CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{update_date,@timestamp}' AS DOUBLE PRECISION)));
+                to_timestamp(NEW.update_ts));
             END IF;
         RETURN NEW;
 
@@ -596,7 +596,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             CAST(((((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info,mortality}'::text []) is not null) as BOOLEAN),
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info, mortality, death_cause2}',
             to_timestamp(CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'insert_date' AS DOUBLE PRECISION)),
-            to_timestamp(CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{update_date,@timestamp}' AS DOUBLE PRECISION)));
+            to_timestamp(NEW.update_ts));
         RETURN NEW;
     END IF;
 END;
