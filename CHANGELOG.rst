@@ -14,8 +14,9 @@ Features
 
       # Postgresql DB tuning parameters
       db_worker_threads: 4
-      db_worker_queue: 100000 (`#54 <https://framagit.org/lpo/Client_API_VN/issues/54>`_)
+      db_worker_queue: 100000
 
+(`#54 <https://framagit.org/lpo/Client_API_VN/issues/54>`_)
 
 Bugfixes
 --------
