@@ -103,14 +103,16 @@ class DownloadVn:
             opt_params_iter = iter([None])
         for opt_params in opt_params_iter:
             i += 1
-            logger.debug(_("Iteration %s, opt_params = %s"), i, opt_params)
+            log_msg = _("Iteration {}, opt_params = {}").format(i, opt_params)
+            logger.debug(log_msg)
             items_dict = self._api_instance.api_list(opt_params=opt_params)
-            # Call backend to store log
+            # Call backend to store generic log
             self._backend.log(
                 self._config.site,
                 self._api_instance.controler,
                 self._api_instance.transfer_errors,
                 self._api_instance.http_status,
+                log_msg,
             )
             # Call backend to store results
             self._backend.store(self._api_instance.controler, str(i), items_dict)
@@ -251,7 +253,7 @@ class Observations(DownloadVn):
                                 id_species=specie["id"],
                                 short_version=short_version,
                             )
-                            # Call backend to store log
+                            # Call backend to store list by taxo_group, species log
                             self._backend.log(
                                 self._config.site,
                                 self._api_instance.controler,
@@ -273,12 +275,13 @@ class Observations(DownloadVn):
                     items_dict = self._api_instance.api_list(
                         id_taxo_group, short_version=short_version
                     )
-                    # Call backend to store log
+                    # Call backend to store list by taxo_group log
                     self._backend.log(
                         self._config.site,
                         self._api_instance.controler,
                         self._api_instance.transfer_errors,
                         self._api_instance.http_status,
+                        (_("observations from taxo_group %s"), id_taxo_group),
                     )
                     # Call backend to store results
                     self._backend.store(
@@ -347,27 +350,30 @@ class Observations(DownloadVn):
                     items_dict = self._api_instance.api_search(
                         q_param, short_version=short_version
                     )
-                    # Call backend to store log
-                    self._backend.log(
-                        self._config.site,
-                        self._api_instance.controler,
-                        self._api_instance.transfer_errors,
-                        self._api_instance.http_status,
-                    )
                     # Call backend to store results
                     nb_obs = self._backend.store(
                         self._api_instance.controler,
                         str(id_taxo_group) + "_" + str(seq),
                         items_dict,
                     )
-                    logger.info(
-                        _("Iter: %s, %s obs, taxo_group: %s, date: %s, interval: %s"),
+                    log_msg = _(
+                        "Iter: {}, {} obs, taxo_group: {}, date: {}, interval: {}"
+                    ).format(
                         seq,
                         nb_obs,
                         id_taxo_group,
                         start_date.strftime("%d/%m/%Y"),
                         str(delta_days),
                     )
+                    # Call backend to store log
+                    self._backend.log(
+                        self._config.site,
+                        self._api_instance.controler,
+                        self._api_instance.transfer_errors,
+                        self._api_instance.http_status,
+                        log_msg,
+                    )
+                    logger.info(log_msg)
                     seq += 1
                     end_date = start_date
                     delta_days = int(pid(nb_obs))
@@ -508,7 +514,8 @@ class Observations(DownloadVn):
 
             # Process updates
             for obs in updated:
-                logger.debug(_("Getting observation %s"), obs)
+                log_msg = _("Updating observation %s").format(obs)
+                logger.debug(log_msg)
                 items_dict = self._api_instance.api_get(
                     obs, short_version=short_version
                 )
@@ -518,6 +525,7 @@ class Observations(DownloadVn):
                     self._api_instance.controler,
                     self._api_instance.transfer_errors,
                     self._api_instance.http_status,
+                    log_msg,
                 )
                 # Call backend to store results
                 self._backend.store(
@@ -632,4 +640,3 @@ class TerritorialUnits(DownloadVn):
             max_chunks,
         )
         return None
-

@@ -113,6 +113,8 @@ _ConfSchema = Map(
                 Optional("pid_limit_min", default=10): Float(),
                 Optional("pid_limit_max", default=2000): Float(),
                 Optional("pid_delta_days", default=15): Int(),
+                Optional("db_worker_threads", default=4): Int(),
+                Optional("db_worker_queue", default=100000): Int(),
             }
         ),
     }
@@ -201,6 +203,8 @@ class EvnSiteConf:
                 self._pid_limit_min = config["tuning"]["pid_limit_min"]  # type: float
                 self._pid_limit_max = config["tuning"]["pid_limit_max"]  # type: float
                 self._pid_delta_days = config["tuning"]["pid_delta_days"]  # type: int
+                self._db_worker_threads = config["tuning"]["db_worker_threads"]  # type: int
+                self._db_worker_queue = config["tuning"]["db_worker_queue"]  # type: int
             else:
                 # Provide default values
                 self._max_chunks = 10  # type: int
@@ -216,9 +220,11 @@ class EvnSiteConf:
                 self._pid_limit_min = 10  # type: float
                 self._pid_limit_max = 2000  # type: float
                 self._pid_delta_days = 15  # type: int
+                self._db_worker_threads = 4  # type:int
+                self._db_worker_queue = 100000  # type:int
 
         except Exception as e:
-            logger.error(e, exc_info=True)
+            logger.exception(_("Error creating %s configuration"), site)
             raise
         return None
 
@@ -383,6 +389,16 @@ class EvnSiteConf:
     def tuning_pid_delta_days(self) -> int:
         """Return tuning parameter."""
         return self._pid_delta_days
+
+    @property
+    def tuning_db_worker_threads(self) -> int:
+        """Return tuning parameter."""
+        return self._db_worker_threads
+
+    @property
+    def tuning_db_worker_queue(self) -> int:
+        """Return tuning parameter."""
+        return self._db_worker_queue
 
 
 class EvnConf:

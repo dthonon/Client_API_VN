@@ -17,24 +17,16 @@ import threading
 from datetime import datetime
 from uuid import uuid4
 
+from sqlalchemy import (Column, DateTime, Integer, MetaData,
+                        PrimaryKeyConstraint, String, Table, create_engine,
+                        func, select)
+from sqlalchemy.dialects.postgresql import JSONB, insert
+from sqlalchemy.engine.url import URL
+from sqlalchemy.sql import and_
+
 from export_vn.store_file import StoreFile
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from pyproj import Proj, transform
-from sqlalchemy import (
-    Column,
-    DateTime,
-    Integer,
-    MetaData,
-    PrimaryKeyConstraint,
-    String,
-    Table,
-    create_engine,
-    func,
-    select,
-)
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.engine.url import URL
-from sqlalchemy.sql import and_
 
 from . import _, __version__
 
@@ -146,35 +138,19 @@ def store_1_observation(item):
     items_json = json.dumps(elem)
     metadata = item.metadata
     site = item.site
-    stmt = select([metadata.c.id, metadata.c.site]).where(
-        and_(
-            metadata.c.id == elem["observers"][0]["id_sighting"],
-            metadata.c.site == site,
-        )
+    insert_stmt = insert(metadata).values(
+        id=elem["observers"][0]["id_sighting"],
+        site=site,
+        update_ts=update_date,
+        item=items_json,
     )
-    result = item.conn.execute(stmt)
-    row = result.fetchone()
-    if row is None:
-        logger.debug(_("Observation not found in database, inserting new row"))
-        stmt = metadata.insert().values(
-            id=elem["observers"][0]["id_sighting"],
-            site=site,
-            update_ts=update_date,
-            item=items_json,
-        )
-    else:
-        logger.debug(_("Observation %s found in database, updating row"), row[0])
-        stmt = (
-            metadata.update()
-            .where(
-                and_(
-                    metadata.c.id == elem["observers"][0]["id_sighting"],
-                    metadata.c.site == site,
-                )
-            )
-            .values(update_ts=update_date, item=items_json)
-        )
-    result = item.conn.execute(stmt)
+    do_update_stmt = insert_stmt.on_conflict_do_update(
+        constraint=metadata.primary_key,
+        set_=dict(update_ts=update_date, item=items_json),
+        where=(metadata.c.update_ts < update_date)
+    )
+
+    item.conn.execute(do_update_stmt)
     return None
 
 
@@ -194,7 +170,6 @@ class PostgresqlUtils:
 
     def __init__(self, config):
         self._config = config
-        self._num_worker_threads = 4
 
     # ----------------
     # Internal methods
@@ -632,8 +607,6 @@ class StorePostgresql:
         self._config = config
         self._file_store = StoreFile(config)
 
-        self._num_worker_threads = 4
-
         # Initialize interface to Postgresql DB
         db_url = {
             "drivername": "postgresql+psycopg2",
@@ -704,9 +677,11 @@ class StorePostgresql:
         ]
 
         # Create parallel workers for database queries
-        self._observations_queue = queue.Queue(maxsize=100000)
+        logger.info(_("Creating %s worker threads, queue size: %s"),
+                    self._config.tuning_db_worker_threads, self._config.tuning_db_worker_queue)
+        self._observations_queue = queue.Queue(maxsize=self._config.tuning_db_worker_queue)
         self._observations_threads = []
-        for i in range(self._num_worker_threads):
+        for i in range(self._config.tuning_db_worker_threads):
             t = threading.Thread(
                 target=observation_worker, args=(i, self._observations_queue)
             )
@@ -720,7 +695,8 @@ class StorePostgresql:
 
     def __exit__(self, exc_type, exc_value, traceback):
         """Send finish signal to workers and wait for tasks to finish."""
-        for i in range(self._num_worker_threads):
+        logger.info(_("Stopping %s worker threads"), self._config.tuning_db_worker_threads)
+        for i in range(self._config.tuning_db_worker_threads):
             self._observations_queue.put(None)
         for t in self._observations_threads:
             t.join()
@@ -760,55 +736,21 @@ class StorePostgresql:
             controler,
             self._config.site,
         )
-        # trans = self._conn.begin()
-        try:
-            for elem in items_dict["data"]:
-                # Convert to json
-                items_json = json.dumps(elem)
-                logger.debug(_("Storing element %s"), items_json)
-                stmt = select(
-                    [
-                        self._table_defs[controler]["metadata"].c.id,
-                        self._table_defs[controler]["metadata"].c.site,
-                    ]
-                ).where(
-                    and_(
-                        self._table_defs[controler]["metadata"].c.id == elem["id"],
-                        self._table_defs[controler]["metadata"].c.site
-                        == self._config.site,
-                    )
-                )
-                result = self._conn.execute(stmt)
-                row = result.fetchone()
-                if row is None:
-                    logger.debug(_("Element not found in database, inserting new row"))
-                    stmt = (
-                        self._table_defs[controler]["metadata"]
-                        .insert()
-                        .values(id=elem["id"], site=self._config.site, item=items_json)
-                    )
-                else:
-                    logger.debug(
-                        _("Element %s found in database, updating row"), row[0]
-                    )
-                    stmt = (
-                        self._table_defs[controler]["metadata"]
-                        .update()
-                        .where(
-                            and_(
-                                self._table_defs[controler]["metadata"].c.id
-                                == elem["id"],
-                                self._table_defs[controler]["metadata"].c.site
-                                == self._config.site,
-                            )
-                        )
-                        .values(id=elem["id"], site=self._config.site, item=items_json)
-                    )
-                result = self._conn.execute(stmt)
-            # trans.commit()
-        except:
-            # trans.rollback()
-            raise
+        metadata = self._table_defs[controler]["metadata"]
+        for elem in items_dict["data"]:
+            # Convert to json
+            items_json = json.dumps(elem)
+            logger.debug(_("Storing element %s"), items_json)
+            insert_stmt = insert(metadata).values(
+                id=elem["id"],
+                site=self._config.site,
+                item=items_json,
+            )
+            do_update_stmt = insert_stmt.on_conflict_do_update(
+                constraint=metadata.primary_key,
+                set_=dict(item=items_json)
+            )
+            self._conn.execute(do_update_stmt)
 
         return len(items_dict["data"])
 
@@ -863,60 +805,28 @@ class StorePostgresql:
             controler,
             self._config.site,
         )
-        try:
-            # Add local coordinates
-            if ("lon" in items_dict) and ("lat" in items_dict):
-                in_proj = Proj(init="epsg:4326")
-                out_proj = Proj(init="epsg:" + self._config.db_out_proj)
-                items_dict["coord_x_local"], items_dict["coord_y_local"] = transform(
-                    in_proj, out_proj, items_dict["lon"], items_dict["lat"]
-                )
-
-            # Convert to json
-            items_json = json.dumps(items_dict)
-            logger.debug(_("Storing element %s"), items_json)
-            stmt = select(
-                [
-                    self._table_defs[controler]["metadata"].c.id,
-                    self._table_defs[controler]["metadata"].c.site,
-                ]
-            ).where(
-                and_(
-                    self._table_defs[controler]["metadata"].c.id == items_dict["@id"],
-                    self._table_defs[controler]["metadata"].c.site == self._config.site,
-                )
+        # Add local coordinates
+        if ("lon" in items_dict) and ("lat" in items_dict):
+            in_proj = Proj(init="epsg:4326")
+            out_proj = Proj(init="epsg:" + self._config.db_out_proj)
+            items_dict["coord_x_local"], items_dict["coord_y_local"] = transform(
+                in_proj, out_proj, items_dict["lon"], items_dict["lat"]
             )
-            result = self._conn.execute(stmt)
-            row = result.fetchone()
-            if row is None:
-                logger.debug(_("Element not found in database, inserting new row"))
-                stmt = (
-                    self._table_defs[controler]["metadata"]
-                    .insert()
-                    .values(
-                        id=items_dict["@id"], site=self._config.site, item=items_json
-                    )
-                )
-            else:
-                logger.debug(_("Element %s found in database, updating row"), row[0])
-                stmt = (
-                    self._table_defs[controler]["metadata"]
-                    .update()
-                    .where(
-                        and_(
-                            self._table_defs[controler]["metadata"].c.id
-                            == items_dict["@id"],
-                            self._table_defs[controler]["metadata"].c.site
-                            == self._config.site,
-                        )
-                    )
-                    .values(
-                        id=items_dict["@id"], site=self._config.site, item=items_json
-                    )
-                )
-            result = self._conn.execute(stmt)
-        except:
-            raise
+
+        # Convert to json
+        items_json = json.dumps(items_dict)
+        logger.debug(_("Storing element %s"), items_json)
+        metadata = self._table_defs[controler]["metadata"]
+        insert_stmt = insert(metadata).values(
+            id=items_dict["@id"],
+            site=self._config.site,
+            item=items_json,
+        )
+        do_update_stmt = insert_stmt.on_conflict_do_update(
+            constraint=metadata.primary_key,
+            set_=dict(item=items_json)
+        )
+        self._conn.execute(do_update_stmt)
 
         return len(items_dict)
 
@@ -941,46 +851,18 @@ class StorePostgresql:
         """
 
         controler = "uuid_xref"
-        try:
-            stmt = select(
-                [
-                    self._table_defs[controler]["metadata"].c.id,
-                    self._table_defs[controler]["metadata"].c.site,
-                ]
-            ).where(
-                and_(
-                    self._table_defs[controler]["metadata"].c.id == obs_id,
-                    self._table_defs[controler]["metadata"].c.site == self._config.site,
-                )
-            )
-            result = self._conn.execute(stmt)
-            row = result.fetchone()
-            if row is None:
-                logger.debug(
-                    _("Creating UUID for observation %s site %s"),
-                    obs_id,
-                    self._config.site,
-                )
-                stmt = (
-                    self._table_defs[controler]["metadata"]
-                    .insert()
-                    .values(
-                        id=obs_id,
-                        site=self._config.site,
-                        universal_id=universal_id,
-                        uuid=uuid4(),
-                        update_ts=datetime.now(),
-                    )
-                )
-                result = self._conn.execute(stmt)
-            else:
-                logger.debug(
-                    _("UUID found for observation %s site %s"),
-                    obs_id,
-                    self._config.site,
-                )
-        except:
-            raise
+        metadata = self._table_defs[controler]["metadata"]
+        insert_stmt = insert(metadata).values(
+            id=obs_id,
+            site=self._config.site,
+            universal_id=universal_id,
+            uuid=uuid4(),
+            update_ts=datetime.now(),
+        )
+        do_nothing_stmt = insert_stmt.on_conflict_do_nothing(
+            constraint=metadata.primary_key,
+        )
+        self._conn.execute(do_nothing_stmt)
 
         return 1
 
@@ -1009,61 +891,54 @@ class StorePostgresql:
         in_proj = Proj(init="epsg:4326")
         out_proj = Proj(init="epsg:" + self._config.db_out_proj)
         nb_obs = 0
-        # trans = self._conn.begin()
-        try:
-            logger.debug(
-                _("Storing %d single observations"),
-                len(items_dict["data"]["sightings"]),
+        logger.debug(
+            _("Storing %d single observations"),
+            len(items_dict["data"]["sightings"]),
+        )
+        for i in range(0, len(items_dict["data"]["sightings"])):
+            elem = items_dict["data"]["sightings"][i]
+            # Create UUID
+            self._store_uuid(
+                elem["observers"][0]["id_sighting"],
+                elem["observers"][0]["id_universal"],
             )
-            for i in range(0, len(items_dict["data"]["sightings"])):
-                elem = items_dict["data"]["sightings"][i]
-                # Create UUID
-                self._store_uuid(
-                    elem["observers"][0]["id_sighting"],
-                    elem["observers"][0]["id_universal"],
-                )
-                # Senf observation to queue
-                obs = ObservationItem(
-                    self._config.site,
-                    self._table_defs[controler]["metadata"],
-                    self._conn,
-                    elem,
-                    in_proj,
-                    out_proj,
-                )
-                self._observations_queue.put(obs)
-                nb_obs += 1
+            # Senf observation to queue
+            obs = ObservationItem(
+                self._config.site,
+                self._table_defs[controler]["metadata"],
+                self._conn,
+                elem,
+                in_proj,
+                out_proj,
+            )
+            self._observations_queue.put(obs)
+            nb_obs += 1
 
-            if "forms" in items_dict["data"]:
-                for f in range(0, len(items_dict["data"]["forms"])):
-                    forms_data = {}
-                    for (k, v) in items_dict["data"]["forms"][f].items():
-                        if k == "sightings":
-                            nb_s = len(v)
-                            logger.debug("Storing %d observations in form %d", nb_s, f)
-                            for i in range(0, nb_s):
-                                obs = ObservationItem(
-                                    self._config.site,
-                                    self._table_defs[controler]["metadata"],
-                                    self._conn,
-                                    v[i],
-                                    in_proj,
-                                    out_proj,
-                                )
-                                self._observations_queue.put(obs)
-                                nb_obs += 1
-                        else:
-                            # Put anything except sightings in forms data
-                            forms_data[k] = v
-                    self._store_form(forms_data)
+        if "forms" in items_dict["data"]:
+            for f in range(0, len(items_dict["data"]["forms"])):
+                forms_data = {}
+                for (k, v) in items_dict["data"]["forms"][f].items():
+                    if k == "sightings":
+                        nb_s = len(v)
+                        logger.debug("Storing %d observations in form %d", nb_s, f)
+                        for i in range(0, nb_s):
+                            obs = ObservationItem(
+                                self._config.site,
+                                self._table_defs[controler]["metadata"],
+                                self._conn,
+                                v[i],
+                                in_proj,
+                                out_proj,
+                            )
+                            self._observations_queue.put(obs)
+                            nb_obs += 1
+                    else:
+                        # Put anything except sightings in forms data
+                        forms_data[k] = v
+                self._store_form(forms_data)
 
-            # Wait for threads to finish before commit
-            # self._observations_queue.join()
-
-            # trans.commit()
-        except:
-            # trans.rollback()
-            raise
+        # Wait for threads to finish before commit
+        # self._observations_queue.join()
 
         logger.debug(_("Stored %d observations or forms to database"), nb_obs)
         return nb_obs
@@ -1118,26 +993,20 @@ class StorePostgresql:
             Count of items deleted.
         """
         logger.info(_("Deleting %d observations from database"), len(obs_list))
-        # trans = conn.begin()
         nb_delete = 0
-        try:
-            for obs in obs_list:
-                nd = self._conn.execute(
-                    self._table_defs["observations"]["metadata"]
-                    .delete()
-                    .where(
-                        and_(
-                            self._table_defs["observations"]["metadata"].c.id == obs,
-                            self._table_defs["observations"]["metadata"].c.site
-                            == self._config.site,
-                        )
+        for obs in obs_list:
+            nd = self._conn.execute(
+                self._table_defs["observations"]["metadata"]
+                .delete()
+                .where(
+                    and_(
+                        self._table_defs["observations"]["metadata"].c.id == obs,
+                        self._table_defs["observations"]["metadata"].c.site
+                        == self._config.site,
                     )
                 )
-                nb_delete += nd.rowcount
-            # trans.commit()
-        except:
-            # trans.rollback()
-            raise
+            )
+            nb_delete += nd.rowcount
 
         return nb_delete
 
@@ -1186,24 +1055,17 @@ class StorePostgresql:
         metadata = self._metadata.tables[
             self._config.db_schema_import + "." + "increment_log"
         ]
-        stmt = select([metadata.c.taxo_group, metadata.c.site]).where(
-            and_(metadata.c.taxo_group == taxo_group, metadata.c.site == site)
+
+        insert_stmt = insert(metadata).values(
+            taxo_group=taxo_group,
+            site=site,
+            last_ts=last_ts,
         )
-        result = self._conn.execute(stmt)
-        row = result.fetchone()
-        if row is None:
-            stmt = metadata.insert().values(
-                taxo_group=taxo_group, site=site, last_ts=last_ts
-            )
-        else:
-            stmt = (
-                metadata.update()
-                .where(
-                    and_(metadata.c.taxo_group == taxo_group, metadata.c.site == site)
-                )
-                .values(taxo_group=taxo_group, site=site, last_ts=last_ts)
-            )
-        result = self._conn.execute(stmt)
+        do_update_stmt = insert_stmt.on_conflict_do_update(
+            constraint=metadata.primary_key,
+            set_=dict(last_ts=last_ts)
+        )
+        self._conn.execute(do_update_stmt)
 
         return None
 
