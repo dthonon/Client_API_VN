@@ -1,3 +1,29 @@
+Client-API-VN v2.3.2 (2019-07-27)
+=================================
+
+Features
+--------
+
+- Added --init option, that creates a draft YAML configuration file.
+  This file then needs to be edited before use. (`#37 < https://framagit.org/lpo/Client_API_VN/issues/37>`_)
+- The comment in download_log table is improved, displaying more information about observations download progress. (`#53 < https://framagit.org/lpo/Client_API_VN/issues/53>`_)
+- Number of concurrent database insert/update and queue size are parameters 
+  in YAML file, ``[tuning]`` section:
+
+  .. code-block:: yaml
+
+      # Postgresql DB tuning parameters
+      db_worker_threads: 4
+      db_worker_queue: 100000 (`#54 < https://framagit.org/lpo/Client_API_VN/issues/54>`_)
+
+
+Bugfixes
+--------
+
+- Tentative correction of duplicate key exception. As this is not reproductible, bug fix is not certain.
+  Insert or update of records in Postgresql DB is now atomic (insert + on conflict). (`#55 < https://framagit.org/lpo/Client_API_VN/issues/55>`_)
+
+
 Client-API-VN v2.3.1 (2019-07-23)
 =================================
 
