@@ -14,6 +14,7 @@ import shutil
 import pkg_resources
 import requests
 
+import yappi
 import pyexpander.lib as pyexpander
 from bs4 import BeautifulSoup
 from export_vn.biolovision_api import TaxoGroupsAPI
@@ -104,6 +105,11 @@ def arguments(args):
     parser.add_argument(
         "--count",
         help=_("Count observations by site and taxo_group"),
+        action="store_true",
+    )
+    parser.add_argument(
+        "--profile",
+        help=_("Gather and print profiling times"),
         action="store_true",
     )
     parser.add_argument("file", help=_("Configuration file name"))
@@ -340,6 +346,11 @@ def main(args):
     # Get command line arguments
     args = arguments(args)
 
+    # Start profiling if required
+    if args.profile:
+        yappi.start()
+        logger.info(_("Started yappi"))
+
     # Define verbosity
     if args.verbose:
         logger.setLevel(logging.DEBUG)
@@ -421,6 +432,7 @@ def main(args):
     if args.full:
         logger.info(_("Performing a full download"))
         full_download(cfg_ctrl)
+        logger.info(_("Printing yappi results"))
 
     if args.update:
         logger.info(_("Performing an incremental download of observations"))
@@ -429,6 +441,12 @@ def main(args):
     if args.count:
         logger.info(_("Counting observations"))
         count_observations(cfg_ctrl)
+
+    # Stop and output profiling if required
+    if args.profile:
+        yappi.stop()
+        yappi.get_func_stats().print_all()
+        yappi.get_thread_stats().print_all()
 
     return None
 
