@@ -432,7 +432,6 @@ def main(args):
     if args.full:
         logger.info(_("Performing a full download"))
         full_download(cfg_ctrl)
-        logger.info(_("Printing yappi results"))
 
     if args.update:
         logger.info(_("Performing an incremental download of observations"))
@@ -444,6 +443,7 @@ def main(args):
 
     # Stop and output profiling if required
     if args.profile:
+        logger.info(_("Printing yappi results"))
         yappi.stop()
         yappi.get_func_stats().print_all()
         yappi.get_thread_stats().print_all()

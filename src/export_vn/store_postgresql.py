@@ -673,7 +673,7 @@ class StorePostgresql:
         ]
 
         # Create parallel workers for database queries
-        logger.info(
+        logger.debug(
             _("Creating %s worker threads, queue size: %s"),
             self._config.tuning_db_worker_threads,
             self._config.tuning_db_worker_queue,
@@ -696,7 +696,7 @@ class StorePostgresql:
 
     def __exit__(self, exc_type, exc_value, traceback):
         """Send finish signal to workers and wait for tasks to finish."""
-        logger.info(
+        logger.debug(
             _("Stopping %s worker threads"), self._config.tuning_db_worker_threads
         )
         for i in range(self._config.tuning_db_worker_threads):
@@ -798,30 +798,40 @@ class StorePostgresql:
         """
 
         controler = "forms"
-        logger.debug(
-            _("Storing %d items from %s of site %s"),
-            len(items_dict),
-            controler,
-            self._config.site,
-        )
-        # Add local coordinates
-        transformer = Transformer.from_proj(4326, int(self._config.db_out_proj), always_xy=True)
-        if ("lon" in items_dict) and ("lat" in items_dict):
-            items_dict["coord_x_local"], items_dict["coord_y_local"] = transformer.transform(
-                items_dict["lon"], items_dict["lat"]
+        # Check if form already inserted
+        stmt = select([self._table_defs[controler]['metadata'].c.id,
+                       self._table_defs[controler]['metadata'].c.site]).\
+            where(and_(self._table_defs[controler]['metadata'].c.id == items_dict['@id'],
+                       self._table_defs[controler]['metadata'].c.site == self._config.site))
+        result = self._conn.execute(stmt)
+        row = result.fetchone()
+        if row is None:
+            # Forms no found, inserting
+            logger.debug(
+                _("Storing %d items from %s of site %s"),
+                len(items_dict),
+                controler,
+                self._config.site,
             )
 
-        # Convert to json
-        items_json = json.dumps(items_dict)
-        logger.debug(_("Storing element %s"), items_json)
-        metadata = self._table_defs[controler]["metadata"]
-        insert_stmt = insert(metadata).values(
-            id=items_dict["@id"], site=self._config.site, item=items_json
-        )
-        do_update_stmt = insert_stmt.on_conflict_do_update(
-            constraint=metadata.primary_key, set_=dict(item=items_json)
-        )
-        self._conn.execute(do_update_stmt)
+            # Add local coordinates
+            transformer = Transformer.from_proj(4326, int(self._config.db_out_proj), always_xy=True)
+            if ("lon" in items_dict) and ("lat" in items_dict):
+                items_dict["coord_x_local"], items_dict["coord_y_local"] = transformer.transform(
+                    items_dict["lon"], items_dict["lat"]
+                )
+
+            # Convert to json
+            items_json = json.dumps(items_dict)
+            logger.debug(_("Storing element %s"), items_json)
+            metadata = self._table_defs[controler]["metadata"]
+            insert_stmt = insert(metadata).values(
+                id=items_dict["@id"], site=self._config.site, item=items_json
+            )
+            do_update_stmt = insert_stmt.on_conflict_do_update(
+                constraint=metadata.primary_key, set_=dict(item=items_json)
+            )
+            self._conn.execute(do_update_stmt)
 
         return len(items_dict)
 
