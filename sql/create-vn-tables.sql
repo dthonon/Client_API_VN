@@ -112,32 +112,24 @@ AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).entities_json
     FOR EACH ROW EXECUTE PROCEDURE $(db_schema_vn).update_entities();
 
 
----------
--- Fields
----------
-CREATE TABLE $(db_schema_vn).fields(
-    site                VARCHAR(50),
+----------------
+-- Field_details
+----------------
+CREATE TABLE $(db_schema_vn).field_details(
     id                  INTEGER,
-    default_v           VARCHAR(500),
-    empty_choice        VARCHAR(500),
-    mandatory           VARCHAR(500),
+    group_d             INTEGER,
+    value_d             INTEGER,
+    order_id            INTEGER,
     name                VARCHAR(1000),
-    PRIMARY KEY (site, id)
+    PRIMARY KEY (id)
 );
 
-DROP INDEX IF EXISTS fields_idx_site;
-CREATE INDEX fields_idx_site
-    ON $(db_schema_vn).fields USING btree(site);
-DROP INDEX IF EXISTS fields_idx_id;
-CREATE INDEX fields_idx_id
-    ON $(db_schema_vn).fields USING btree(id);
-
-CREATE OR REPLACE FUNCTION update_fields() RETURNS TRIGGER AS \$\$
+CREATE OR REPLACE FUNCTION update_field_details() RETURNS TRIGGER AS \$\$
     BEGIN
     IF (TG_OP = 'DELETE') THEN
         -- Deleting data when JSON data is deleted
-        DELETE FROM $(db_schema_vn).fields
-            WHERE id = OLD.id AND site = OLD.site;
+        DELETE FROM $(db_schema_vn).field_details
+            WHERE id = OLD.id;
         IF NOT FOUND THEN
             RETURN NULL;
         END IF;
@@ -145,17 +137,82 @@ CREATE OR REPLACE FUNCTION update_fields() RETURNS TRIGGER AS \$\$
 
     ELSIF (TG_OP = 'UPDATE') THEN
         -- Updating or inserting data when JSON data is updated
-        UPDATE $(db_schema_vn).fields SET
+        UPDATE $(db_schema_vn).field_details SET
+            group_d  = CAST(CAST(NEW.item->>0 AS JSON)->>'group' AS INTEGER),
+            value_d  = CAST(CAST(NEW.item->>0 AS JSON)->>'value' AS INTEGER),
+            order_id = CAST(CAST(NEW.item->>0 AS JSON)->>'order_id' AS INTEGER),
+            name     = CAST(NEW.item->>0 AS JSON)->>'name'
+        WHERE id = OLD.id;
+        IF NOT FOUND THEN
+            -- Inserting data in new row, usually after table re-creation
+            INSERT INTO $(db_schema_vn).field_details(id, group_d, value_d, order_id, name)
+            VALUES (
+                NEW.id,
+                CAST(CAST(NEW.item->>0 AS JSON)->>'group' AS INTEGER),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'value' AS INTEGER),
+                CAST(CAST(NEW.item->>0 AS JSON)->>'order_id' AS INTEGER),
+                CAST(NEW.item->>0 AS JSON)->>'name'
+            );
+            END IF;
+        RETURN NEW;
+
+    ELSIF (TG_OP = 'INSERT') THEN
+        -- Inserting row when raw data is inserted
+        INSERT INTO $(db_schema_vn).field_details(id, group_d, value_d, order_id, name)
+        VALUES (
+            NEW.id,
+            CAST(CAST(NEW.item->>0 AS JSON)->>'group' AS INTEGER),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'value' AS INTEGER),
+            CAST(CAST(NEW.item->>0 AS JSON)->>'order_id' AS INTEGER),
+            CAST(NEW.item->>0 AS JSON)->>'name'
+        );
+        RETURN NEW;
+    END IF;
+END;
+\$\$
+LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS field_details_trigger ON $(db_schema_import).field_details_json;
+CREATE TRIGGER field_details_trigger
+AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).field_details_json
+    FOR EACH ROW EXECUTE PROCEDURE $(db_schema_vn).update_field_details();
+
+
+---------------
+-- Field_groups
+---------------
+CREATE TABLE $(db_schema_vn).field_groups(
+    id                  INTEGER,
+    default_v           VARCHAR(500),
+    empty_choice        VARCHAR(500),
+    mandatory           VARCHAR(500),
+    name                VARCHAR(1000),
+    PRIMARY KEY (id)
+);
+
+CREATE OR REPLACE FUNCTION update_field_groups() RETURNS TRIGGER AS \$\$
+    BEGIN
+    IF (TG_OP = 'DELETE') THEN
+        -- Deleting data when JSON data is deleted
+        DELETE FROM $(db_schema_vn).field_groups
+            WHERE id = OLD.id;
+        IF NOT FOUND THEN
+            RETURN NULL;
+        END IF;
+        RETURN OLD;
+
+    ELSIF (TG_OP = 'UPDATE') THEN
+        -- Updating or inserting data when JSON data is updated
+        UPDATE $(db_schema_vn).field_groups SET
             default_v    = CAST(NEW.item->>0 AS JSON)->>'default',
             empty_choice = CAST(NEW.item->>0 AS JSON)->>'empty_choice',
             mandatory    = CAST(NEW.item->>0 AS JSON)->>'mandatory',
             name         = CAST(NEW.item->>0 AS JSON)->>'name'
-        WHERE id = OLD.id AND site = OLD.site ;
+        WHERE id = OLD.id;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
-            INSERT INTO $(db_schema_vn).fields(site, id, default_v, empty_choice, mandatory, name)
+            INSERT INTO $(db_schema_vn).field_groups(id, default_v, empty_choice, mandatory, name)
             VALUES (
-                NEW.site,
                 NEW.id,
                 CAST(NEW.item->>0 AS JSON)->>'default',
                 CAST(NEW.item->>0 AS JSON)->>'empty_choice',
@@ -167,9 +224,8 @@ CREATE OR REPLACE FUNCTION update_fields() RETURNS TRIGGER AS \$\$
 
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting row when raw data is inserted
-        INSERT INTO $(db_schema_vn).fields(site, id, default_v, empty_choice, mandatory, name)
+        INSERT INTO $(db_schema_vn).field_groups(id, default_v, empty_choice, mandatory, name)
         VALUES (
-            NEW.site,
             NEW.id,
             CAST(NEW.item->>0 AS JSON)->>'default',
             CAST(NEW.item->>0 AS JSON)->>'empty_choice',
@@ -182,10 +238,10 @@ END;
 \$\$
 LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS fields_trigger ON $(db_schema_import).fields_json;
-CREATE TRIGGER fields_trigger
-AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).fields_json
-    FOR EACH ROW EXECUTE PROCEDURE $(db_schema_vn).update_fields();
+DROP TRIGGER IF EXISTS field_groups_trigger ON $(db_schema_import).field_groups_json;
+CREATE TRIGGER field_groups_trigger
+AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).field_groups_json
+    FOR EACH ROW EXECUTE PROCEDURE $(db_schema_vn).update_field_groups();
 
 
 --------
@@ -1073,7 +1129,8 @@ AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).territorial_units_json
 
 -- Dummy update of all rows to trigger new FUNCTION
 UPDATE $(db_schema_import).entities_json SET site=site;
-UPDATE $(db_schema_import).fields_json SET site=site;
+UPDATE $(db_schema_import).field_details_json SET id=id;
+UPDATE $(db_schema_import).field_groups_json SET id=id;
 UPDATE $(db_schema_import).forms_json SET site=site;
 UPDATE $(db_schema_import).territorial_units_json SET site=site;
 UPDATE $(db_schema_import).local_admin_units_json SET site=site;

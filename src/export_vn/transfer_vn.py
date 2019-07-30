@@ -137,6 +137,15 @@ def full_download(cfg_ctrl):
     cfg_crtl_list = cfg_ctrl.ctrl_list
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
+
+    # Donwload field only once
+    with StorePostgresql(cfg) as store_pg:
+        ctrl = "fields"
+        if cfg_crtl_list[ctrl].enabled:
+            logger.info(_("Using controler %s once"), ctrl)
+            fields = Fields(cfg, store_pg)
+            fields.store()
+
     # Looping on sites
     for site, cfg in cfg_site_list.items():
         with StorePostgresql(cfg) as store_pg:
@@ -171,12 +180,6 @@ def full_download(cfg_ctrl):
                 if cfg_crtl_list[ctrl].enabled:
                     logger.info(_("Using controler %s on site %s"), ctrl, cfg.site)
                     entities = Entities(cfg, store_pg)
-                    entities.store()
-
-                ctrl = "fields"
-                if cfg_crtl_list[ctrl].enabled:
-                    logger.info(_("Using controler %s on site %s"), ctrl, cfg.site)
-                    entities = Fields(cfg, store_pg)
                     entities.store()
 
                 ctrl = "territorial_units"

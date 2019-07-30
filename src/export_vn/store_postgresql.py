@@ -126,9 +126,11 @@ def store_1_observation(item):
         update_date = elem["observers"][0]["insert_date"]
 
     # Add Lambert x, y transform to local coordinates
-    elem["observers"][0]["coord_x_local"], elem["observers"][0]["coord_y_local"] = item.transformer(
-        elem["observers"][0]["coord_lon"],
-        elem["observers"][0]["coord_lat"])
+    elem["observers"][0]["coord_x_local"], elem["observers"][0][
+        "coord_y_local"
+    ] = item.transformer(
+        elem["observers"][0]["coord_lon"], elem["observers"][0]["coord_lat"]
+    )
 
     # Store in Postgresql
     items_json = json.dumps(elem)
@@ -225,14 +227,23 @@ class PostgresqlUtils:
         )
         return None
 
-    def _create_fields_json(self):
-        """Create fields_json table if it does not exist."""
+    def _create_field_groups_json(self):
+        """Create field_groups_json table if it does not exist."""
         self._create_table(
-            "fields_json",
+            "field_groups_json",
             Column("id", Integer, nullable=False),
-            Column("site", String, nullable=False),
             Column("item", JSONB, nullable=False),
-            PrimaryKeyConstraint("id", "site", name="fields_json_pk"),
+            PrimaryKeyConstraint("id", name="field_groups_json_pk"),
+        )
+        return None
+
+    def _create_field_details_json(self):
+        """Create field_details_json table if it does not exist."""
+        self._create_table(
+            "field_details_json",
+            Column("id", Integer, nullable=False),
+            Column("item", JSONB, nullable=False),
+            PrimaryKeyConstraint("id", name="field_detais_json_pk"),
         )
         return None
 
@@ -502,7 +513,8 @@ class PostgresqlUtils:
         self._create_increment_log()
 
         self._create_entities_json()
-        self._create_fields_json()
+        self._create_field_groups_json()
+        self._create_field_details_json()
         self._create_forms_json()
         self._create_local_admin_units_json()
         self._create_uuid_xref()
@@ -627,7 +639,8 @@ class StorePostgresql:
         # Map Biolovision tables in a single dict for easy reference
         self._table_defs = {
             "entities": {"type": "simple", "metadata": None},
-            "fields": {"type": "simple", "metadata": None},
+            "field_groups": {"type": "fields", "metadata": None},
+            "field_details": {"type": "fields", "metadata": None},
             "forms": {"type": "others", "metadata": None},
             "local_admin_units": {"type": "geometry", "metadata": None},
             "uuid_xref": {"type": "others", "metadata": None},
@@ -641,8 +654,11 @@ class StorePostgresql:
         self._table_defs["entities"]["metadata"] = self._metadata.tables[
             dbschema + ".entities_json"
         ]
-        self._table_defs["fields"]["metadata"] = self._metadata.tables[
-            dbschema + ".fields_json"
+        self._table_defs["field_groups"]["metadata"] = self._metadata.tables[
+            dbschema + ".field_groups_json"
+        ]
+        self._table_defs["field_details"]["metadata"] = self._metadata.tables[
+            dbschema + ".field_details_json"
         ]
         self._table_defs["forms"]["metadata"] = self._metadata.tables[
             dbschema + ".forms_json"
@@ -773,13 +789,49 @@ class StorePostgresql:
             Count of items stored (not exact for observations, due to forms).
         """
 
-        transformer = Transformer.from_proj(4326, int(self._config.db_out_proj), always_xy=True)
+        transformer = Transformer.from_proj(
+            4326, int(self._config.db_out_proj), always_xy=True
+        )
         # Loop on data array to reproject
         for elem in items_dict["data"]:
             elem["coord_x_local"], elem["coord_y_local"] = transformer.transform(
                 elem["coord_lon"], elem["coord_lat"]
             )
         return self._store_simple(controler, items_dict)
+
+    def _store_fields(self, controler, items_dict):
+        """Write items_dict to database, for field_groups and field_details.
+
+        Converts each element to JSON and store to database in a tables
+        named from controler.
+
+        Parameters
+        ----------
+        controler : str
+            Name of API controler.
+        items_dict : dict
+            Data returned from API call.
+
+        Returns
+        -------
+        int
+            Count of items stored (not exact for observations, due to forms).
+        """
+
+        # Loop on data array to store each element to database
+        logger.info(_("Storing %d items from %s"), len(items_dict["data"]), controler)
+        metadata = self._table_defs[controler]["metadata"]
+        for elem in items_dict["data"]:
+            # Convert to json
+            items_json = json.dumps(elem)
+            logger.debug(_("Storing element %s"), items_json)
+            insert_stmt = insert(metadata).values(id=elem["id"], item=items_json)
+            do_update_stmt = insert_stmt.on_conflict_do_update(
+                constraint=metadata.primary_key, set_=dict(item=items_json)
+            )
+            self._conn.execute(do_update_stmt)
+
+        return len(items_dict["data"])
 
     def _store_form(self, items_dict):
         """Write forms to database.
@@ -799,10 +851,17 @@ class StorePostgresql:
 
         controler = "forms"
         # Check if form already inserted
-        stmt = select([self._table_defs[controler]['metadata'].c.id,
-                       self._table_defs[controler]['metadata'].c.site]).\
-            where(and_(self._table_defs[controler]['metadata'].c.id == items_dict['@id'],
-                       self._table_defs[controler]['metadata'].c.site == self._config.site))
+        stmt = select(
+            [
+                self._table_defs[controler]["metadata"].c.id,
+                self._table_defs[controler]["metadata"].c.site,
+            ]
+        ).where(
+            and_(
+                self._table_defs[controler]["metadata"].c.id == items_dict["@id"],
+                self._table_defs[controler]["metadata"].c.site == self._config.site,
+            )
+        )
         result = self._conn.execute(stmt)
         row = result.fetchone()
         if row is None:
@@ -815,11 +874,13 @@ class StorePostgresql:
             )
 
             # Add local coordinates
-            transformer = Transformer.from_proj(4326, int(self._config.db_out_proj), always_xy=True)
+            transformer = Transformer.from_proj(
+                4326, int(self._config.db_out_proj), always_xy=True
+            )
             if ("lon" in items_dict) and ("lat" in items_dict):
-                items_dict["coord_x_local"], items_dict["coord_y_local"] = transformer.transform(
-                    items_dict["lon"], items_dict["lat"]
-                )
+                items_dict["coord_x_local"], items_dict[
+                    "coord_y_local"
+                ] = transformer.transform(items_dict["lon"], items_dict["lat"])
 
             # Convert to json
             items_json = json.dumps(items_dict)
@@ -897,7 +958,9 @@ class StorePostgresql:
         logger.debug(
             _("Storing %d single observations"), len(items_dict["data"]["sightings"])
         )
-        transformer = Transformer.from_proj(4326, int(self._config.db_out_proj), always_xy=True)
+        transformer = Transformer.from_proj(
+            4326, int(self._config.db_out_proj), always_xy=True
+        )
         for i in range(0, len(items_dict["data"]["sightings"])):
             elem = items_dict["data"]["sightings"][i]
             # Create UUID
@@ -969,12 +1032,15 @@ class StorePostgresql:
             Count of items stored (not exact for observations, due to forms).
         """
         self._file_store.store(controler, seq, items_dict)
-        if self._table_defs[controler]["type"] == "simple":
+        if self._table_defs[controler]["type"] == "observation":
+            nb_item = self._store_observation(controler, items_dict)
+        elif self._table_defs[controler]["type"] == "simple":
             nb_item = self._store_simple(controler, items_dict)
         elif self._table_defs[controler]["type"] == "geometry":
             nb_item = self._store_geometry(controler, items_dict)
-        elif self._table_defs[controler]["type"] == "observation":
-            nb_item = self._store_observation(controler, items_dict)
+        elif self._table_defs[controler]["type"] == "fields":
+            nb_item = self._store_fields(controler, items_dict)
+
         else:
             raise StorePostgresqlException(_("Not implemented"))
 

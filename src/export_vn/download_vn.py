@@ -153,6 +153,55 @@ class Fields(DownloadVn):
         )
         return None
 
+    def store(self, opt_params_iter=None):
+        """Download from VN by API and store json to file.
+
+        Calls  biolovision_api, convert to json and call backend to store.
+        Specific for fields :
+        1) list field groups
+        2) for each field, get details
+
+        Parameters
+        ----------
+        opt_params_iter : iterable or None
+            Provides opt_params values.
+
+        """
+        # GET from API
+        logger.debug(_("Getting items from controler %s"), self._api_instance.controler)
+        i = 0
+        if opt_params_iter is None:
+            opt_params_iter = iter([None])
+        for opt_params in opt_params_iter:
+            i += 1
+            log_msg = _("Iteration {}, opt_params = {}").format(i, opt_params)
+            logger.debug(log_msg)
+            items_dict = self._api_instance.api_list(opt_params=opt_params)
+            # Call backend to store generic log
+            self._backend.log(
+                self._config.site,
+                self._api_instance.controler,
+                self._api_instance.transfer_errors,
+                self._api_instance.http_status,
+                log_msg,
+            )
+            # Call backend to store groups of fields
+            self._backend.store("field_groups", str(i), items_dict)
+
+            # Loop on field groups to get details
+            for field in items_dict["data"]:
+                field_id = field["id"]
+                field_details = self._api_instance.api_get(field_id)
+                for detail in field_details["data"]:
+                    detail["group"] = field_id
+                logger.debug(
+                    _("Details for field group %s = %s"), field_id, field_details
+                )
+                # Call backend to store groups of fields
+                self._backend.store("field_details", str(i), field_details)
+
+        return None
+
 
 class LocalAdminUnits(DownloadVn):
     """ Implement store from local_admin_units controler.
