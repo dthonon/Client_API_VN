@@ -117,8 +117,9 @@ AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).entities_json
 ----------------
 CREATE TABLE $(db_schema_vn).field_details(
     id                  INTEGER,
-    group_d             INTEGER,
-    value_d             INTEGER,
+    group_id            INTEGER,
+    value_id            INTEGER,
+    link_id             VARCHAR(100),
     order_id            INTEGER,
     name                VARCHAR(1000),
     PRIMARY KEY (id)
@@ -138,18 +139,20 @@ CREATE OR REPLACE FUNCTION update_field_details() RETURNS TRIGGER AS \$\$
     ELSIF (TG_OP = 'UPDATE') THEN
         -- Updating or inserting data when JSON data is updated
         UPDATE $(db_schema_vn).field_details SET
-            group_d  = CAST(CAST(NEW.item->>0 AS JSON)->>'group' AS INTEGER),
-            value_d  = CAST(CAST(NEW.item->>0 AS JSON)->>'value' AS INTEGER),
+            group_id = CAST(CAST(NEW.item->>0 AS JSON)->>'group' AS INTEGER),
+            value_id = CAST(CAST(NEW.item->>0 AS JSON)->>'value' AS INTEGER),
+            link_id = (CAST(NEW.item->>0 AS JSON)->>'group') || '_' || (CAST(NEW.item->>0 AS JSON)->>'value'),
             order_id = CAST(CAST(NEW.item->>0 AS JSON)->>'order_id' AS INTEGER),
             name     = CAST(NEW.item->>0 AS JSON)->>'name'
         WHERE id = OLD.id;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
-            INSERT INTO $(db_schema_vn).field_details(id, group_d, value_d, order_id, name)
+            INSERT INTO $(db_schema_vn).field_details(id, group_id, value_id, link_id, order_id, name)
             VALUES (
                 NEW.id,
                 CAST(CAST(NEW.item->>0 AS JSON)->>'group' AS INTEGER),
                 CAST(CAST(NEW.item->>0 AS JSON)->>'value' AS INTEGER),
+                (CAST(NEW.item->>0 AS JSON)->>'group') || '_' || (CAST(NEW.item->>0 AS JSON)->>'value'),
                 CAST(CAST(NEW.item->>0 AS JSON)->>'order_id' AS INTEGER),
                 CAST(NEW.item->>0 AS JSON)->>'name'
             );
@@ -158,11 +161,12 @@ CREATE OR REPLACE FUNCTION update_field_details() RETURNS TRIGGER AS \$\$
 
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting row when raw data is inserted
-        INSERT INTO $(db_schema_vn).field_details(id, group_d, value_d, order_id, name)
+        INSERT INTO $(db_schema_vn).field_details(id, group_id, value_id, link_id, order_id, name)
         VALUES (
             NEW.id,
             CAST(CAST(NEW.item->>0 AS JSON)->>'group' AS INTEGER),
             CAST(CAST(NEW.item->>0 AS JSON)->>'value' AS INTEGER),
+            (CAST(NEW.item->>0 AS JSON)->>'group') || '_' || (CAST(NEW.item->>0 AS JSON)->>'value'),
             CAST(CAST(NEW.item->>0 AS JSON)->>'order_id' AS INTEGER),
             CAST(NEW.item->>0 AS JSON)->>'name'
         );
@@ -493,7 +497,7 @@ CREATE TABLE $(db_schema_vn).observations (
     admin_hidden        BOOLEAN,
     observer_uid        VARCHAR(100),
     details             VARCHAR(10000),
-    behaviours          VARCHAR(10000),
+    behaviours          TEXT[],
     comment             VARCHAR(10000),
     hidden_comment      VARCHAR(10000),
     mortality           BOOLEAN,
@@ -522,6 +526,23 @@ DROP TRIGGER IF EXISTS trg_geom ON $(db_schema_vn).observations;
 CREATE TRIGGER trg_geom BEFORE INSERT or UPDATE
     ON $(db_schema_vn).observations FOR EACH ROW
     EXECUTE PROCEDURE update_geom_triggerfn();
+
+-- Transform JSON array in PG ARRAY
+CREATE OR REPLACE FUNCTION behaviour_array(
+    p_input json
+    ) RETURNS TEXT[] AS \$v_output\$
+
+DECLARE v_output TEXT[];
+
+BEGIN
+    SELECT array_agg(u.x)::TEXT[]
+    INTO v_output
+    FROM (SELECT t.value->>'@id' AS x
+        FROM json_array_elements(p_input) AS t)  AS u;
+
+    RETURN v_output;
+END;
+\$v_output\$ LANGUAGE plpgsql IMMUTABLE;
 
 CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
     BEGIN
@@ -559,7 +580,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             admin_hidden    = CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'admin_hidden' AS BOOLEAN),
             observer_uid    = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> '@uid',
             details         = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'details',
-            behaviours      = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'behaviours',
+            behaviours      = behaviour_array(((CAST(NEW.item->0 AS JSON) -> 'observers') -> 0) -> 'behaviours'),
             comment         = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'comment',
             hidden_comment  = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'hidden_comment',
             mortality       = CAST(((((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info,mortality}'::text []) is not null) as BOOLEAN),
@@ -602,7 +623,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
                 CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'admin_hidden' AS BOOLEAN),
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> '@uid',
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'details',
-                ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'behaviours',
+                behaviour_array(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) -> 'behaviours'),
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'comment',
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'hidden_comment',
                 CAST(((((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info,mortality}'::text []) is not null) as BOOLEAN),
@@ -646,7 +667,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'admin_hidden' AS BOOLEAN),
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> '@uid',
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'details',
-            ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'behaviours',
+            behaviour_array(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) -> 'behaviours'),
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'comment',
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'hidden_comment',
             CAST(((((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info,mortality}'::text []) is not null) as BOOLEAN),
