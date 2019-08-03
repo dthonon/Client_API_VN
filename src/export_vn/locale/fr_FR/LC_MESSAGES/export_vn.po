@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: export_vn 2.0.0b3.dev8+g77a983a.d20190320\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-05-12 23:16+0200\n"
+"POT-Creation-Date: 2019-08-03 21:25+0200\n"
 "PO-Revision-Date: 2019-03-21 00:01+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -18,193 +18,206 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.6.0\n"
 
-#: src/export_vn/biolovision_api.py:165
+#: src/export_vn/biolovision_api.py:190
 #, python-format
 msgid "Params: %s"
 msgstr "Paramètres : %s"
 
-#: src/export_vn/biolovision_api.py:179 src/export_vn/biolovision_api.py:185
+#: src/export_vn/biolovision_api.py:211 src/export_vn/biolovision_api.py:221
 #, python-format
 msgid "%s status code = %s, for URL %s"
 msgstr "%s code statut = %s, pour l'URL %s"
 
-#: src/export_vn/biolovision_api.py:191 src/export_vn/biolovision_api.py:206
+#: src/export_vn/biolovision_api.py:231 src/export_vn/biolovision_api.py:247
 #, python-format
 msgid "Too many error %s, raising exception"
 msgstr "Trop d'erreur %s, exception levée"
 
-#: src/export_vn/biolovision_api.py:201
+#: src/export_vn/biolovision_api.py:241
 #, python-format
 msgid "Incorrect response content: %s"
 msgstr "Contenu de la réponse incorrect : %s"
 
-#: src/export_vn/biolovision_api.py:202
+#: src/export_vn/biolovision_api.py:242
 msgid "Exception raised during JSON decoding"
 msgstr "Exception levée durant le décodage JSON"
 
-#: src/export_vn/biolovision_api.py:215
+#: src/export_vn/biolovision_api.py:258
 #, python-format
 msgid "Received %d sightings in chunk %d"
 msgstr "Reçu %d observations dans le morceau %d"
 
-#: src/export_vn/biolovision_api.py:226
+#: src/export_vn/biolovision_api.py:276
 #, python-format
 msgid "Received %d forms in chunk %d"
 msgstr "Reçu %d formulaires dans le morceau %d"
 
-#: src/export_vn/biolovision_api.py:237
+#: src/export_vn/biolovision_api.py:290
 #, python-format
 msgid "Received %d data items in chunk %d"
 msgstr "Reçu %d éléments avec données dans le morceau %d"
 
-#: src/export_vn/biolovision_api.py:244
+#: src/export_vn/biolovision_api.py:300
 #, python-format
 msgid "Received %d items without data in chunk %d"
 msgstr "Reçu %d éléments sans données dans le morceau %d"
 
-#: src/export_vn/biolovision_api.py:255
+#: src/export_vn/biolovision_api.py:316
 #, python-format
 msgid "Chunked transfer => requesting for more, with key: %s"
 msgstr "Transfert par morceau => demande du suivant, avec la clé %s"
 
-#: src/export_vn/biolovision_api.py:261
+#: src/export_vn/biolovision_api.py:323
 msgid "Non-chunked transfer => finished requests"
 msgstr "Transfert sans morceau => fin de la requête"
 
-#: src/export_vn/biolovision_api.py:266
+#: src/export_vn/biolovision_api.py:328
 #, python-format
 msgid "Received %d chunks"
 msgstr "Reçu %d morceaux"
 
-#: src/export_vn/biolovision_api.py:292
+#: src/export_vn/biolovision_api.py:356
 #, python-format
 msgid "List from %s, with option %s"
 msgstr "Liste depuis %s, avec les options %s"
 
-#: src/export_vn/biolovision_api.py:296
+#: src/export_vn/biolovision_api.py:359
 #, python-format
 msgid "Number of entities = %i"
 msgstr "Nombre d'entités = %i"
 
-#: src/export_vn/biolovision_api.py:326
+#: src/export_vn/biolovision_api.py:390
 #, python-format
 msgid "In api_get, with parameters %s"
 msgstr "Dans api_get, avec les paramètres %s"
 
-#: src/export_vn/biolovision_api.py:432
+#: src/export_vn/biolovision_api.py:508
 #, python-format
 msgid "In api_list, with parameters %s"
 msgstr "Dans api_list, avec les paramètres %s"
 
-#: src/export_vn/biolovision_api.py:493
+#: src/export_vn/biolovision_api.py:575
 #, python-format
 msgid "Search from %s, with option %s and body %s"
 msgstr "Dans api_search depuis %s, avec les options %s et le corps %s"
 
-#: src/export_vn/download_vn.py:82
+#: src/export_vn/download_vn.py:100 src/export_vn/download_vn.py:171
 #, python-format
 msgid "Getting items from controler %s"
 msgstr "Réception d'éléments depuis le contrôleur %s"
 
-#: src/export_vn/download_vn.py:89
-#, python-format
-msgid "Iteration %s, opt_params = %s"
-msgstr "Itération %s, opt_param = %s"
+#: src/export_vn/download_vn.py:106 src/export_vn/download_vn.py:177
+msgid "Iteration {}, opt_params = {}"
+msgstr "Itération {}, opt_params = {}"
 
-#: src/export_vn/download_vn.py:165
+#: src/export_vn/download_vn.py:198
+#, python-format
+msgid "Details for field group %s = %s"
+msgstr "Détails pour le groupe de champs %s = %s"
+
+#: src/export_vn/download_vn.py:270
 #, python-format
 msgid "Getting observations from controler %s, using API list"
 msgstr "Réception d'observations depuis le contrôleur %s, par API list"
 
-#: src/export_vn/download_vn.py:175
+#: src/export_vn/download_vn.py:284
 #, python-format
 msgid "Getting observations from taxo_group %s, in _store_list"
 msgstr "Réception d'observations du taxo_group %s, dans _store_list"
 
-#: src/export_vn/download_vn.py:182
+#: src/export_vn/download_vn.py:294
 #, python-format
 msgid "Getting observations from taxo_group %s, species %s"
 msgstr "Réception d'observations du taxo_group %s, espèce %s"
 
-#: src/export_vn/download_vn.py:192
+#: src/export_vn/download_vn.py:312
 #, fuzzy, python-format
 msgid "observations from taxo_group %s, species %s"
 msgstr "Réception d'observations du taxo_group %s, espèce %s"
 
-#: src/export_vn/download_vn.py:229
+#: src/export_vn/download_vn.py:333
+#, python-format
+msgid "observations from taxo_group %s"
+msgstr "Réception d'observations du taxo_group %s"
+
+#: src/export_vn/download_vn.py:362
 #, fuzzy, python-format
 msgid "Getting observations from controler %s, using API search"
 msgstr "Réception d'observations depuis le contrôleur %s, par API list"
 
-#: src/export_vn/download_vn.py:264
-#, python-format
-msgid "Iter: %s, %s obs, taxo_group: %s, date: %s, interval: %s"
-msgstr "Itération %s, %s obs, taxo_group %s, date %s, interval %s"
+#: src/export_vn/download_vn.py:408
+msgid "Iter: {}, {} obs, taxo_group: {}, date: {}, interval: {}"
+msgstr "Iter: {}, {} obs, taxo_group: {}, date: {}, intervalle: {}"
 
-#: src/export_vn/download_vn.py:280
+#: src/export_vn/download_vn.py:440
 #, python-format
 msgid "Starting to download observations from taxo_group %s: %s"
 msgstr "Début du téléchargement des observations du taxo_group %s : %s"
 
-#: src/export_vn/download_vn.py:344
+#: src/export_vn/download_vn.py:511
 #, python-format
 msgid "Getting updated observations from controler %s"
 msgstr "Réception des observations mises à jour depuis le contrôleur %s"
 
-#: src/export_vn/download_vn.py:363
+#: src/export_vn/download_vn.py:532
 #, fuzzy, python-format
 msgid "Getting updates for taxo_group %s since %s"
 msgstr "Réception de mises à jour du taxo_group %s depuis %s"
 
-#: src/export_vn/download_vn.py:368
+#: src/export_vn/download_vn.py:539
 #, python-format
 msgid "Observation %s was %s"
 msgstr "L'observation %s était %s"
 
-#: src/export_vn/download_vn.py:375
+#: src/export_vn/download_vn.py:549
 #, python-format
 msgid "Observation %s has unknown processing %s"
 msgstr "L'observation %s a un type de traitement inconnu : %s"
 
-#: src/export_vn/download_vn.py:378
+#: src/export_vn/download_vn.py:555
 #, python-format
 msgid "Received %d updated and %d deleted items"
 msgstr "Reçu %d mises à jour et %d suppressions"
 
-#: src/export_vn/download_vn.py:381
+#: src/export_vn/download_vn.py:561
 msgid "No date found for last download, increment not performed"
 msgstr "Pas de date de dernier téléchargement, incrémentale abandonnée"
 
-#: src/export_vn/download_vn.py:385
-#, fuzzy, python-format
-msgid "Getting observation %s"
-msgstr "Réception de l'observation %s"
+#: src/export_vn/download_vn.py:566
+#, python-format
+msgid "Updating observation %s"
+msgstr "Mise à jour de l'observation %s"
 
-#: src/export_vn/download_vn.py:456
+#: src/export_vn/download_vn.py:648
 #, python-format
 msgid "Storing species from taxo_group %s"
 msgstr "Stockage des espèdes du taxo_group %s"
 
-#: src/export_vn/evnconf.py:82
+#: src/export_vn/evnconf.py:178
 msgid "file:file_store must be defined"
 msgstr "file:file_store doit être défini"
 
-#: src/export_vn/evnconf.py:280
+#: src/export_vn/evnconf.py:227
+#, python-format
+msgid "Error creating %s configuration"
+msgstr "Erreur lors de création de la configuration %s"
+
+#: src/export_vn/evnconf.py:415
 #, python-format
 msgid "Loading YAML configuration %s"
 msgstr "Chargement de la configuration YAML %s"
 
-#: src/export_vn/evnconf.py:284
+#: src/export_vn/evnconf.py:418
 #, python-format
 msgid "Incorrect content in YAML configuration %s"
 msgstr "Contenu incorrect de la configuration YAML %s"
 
-#: src/export_vn/evnconf.py:287
+#: src/export_vn/evnconf.py:420
 #, python-format
 msgid "Error while reading YAML configuration %s"
 msgstr "Erreur en lisant la configuration YAML %s"
 
-#: src/export_vn/regulator.py:109 src/export_vn/regulator.py:110
+#: src/export_vn/regulator.py:120 src/export_vn/regulator.py:121
 msgid "lower limit must be less than upper limit"
 msgstr "La limite basse doit être inférieure à la limite haute"
 
@@ -223,238 +236,292 @@ msgstr "La création du répertoire %s a réussi"
 msgid "Converting to json %d items"
 msgstr "Conversion en JSON de %d items"
 
-#: src/export_vn/store_file.py:82
+#: src/export_vn/store_file.py:83
 #, fuzzy, python-format
 msgid "Received data, storing json to %s"
 msgstr "Reçu des données, stockage JSON dans %s"
 
-#: src/export_vn/store_postgresql.py:115
+#: src/export_vn/store_postgresql.py:118
 #, fuzzy, python-format
 msgid "Storing observation %s to database"
 msgstr "Stockage de l'observation %s en base de données"
 
-#: src/export_vn/store_postgresql.py:147
-msgid "Observation not found in database, inserting new row"
-msgstr "Observation absente en base, insertion d'une nouvelle ligne"
-
-#: src/export_vn/store_postgresql.py:154
-#, python-format
-msgid "Observation %s found in database, updating row"
-msgstr "Observation %s présente en base, mias à jour de la ligne"
-
-#: src/export_vn/store_postgresql.py:199
+#: src/export_vn/store_postgresql.py:187
 #, python-format
 msgid "Table %s not found => Creating it"
 msgstr "Table %s non trouvée => Création"
 
-#: src/export_vn/store_postgresql.py:203
+#: src/export_vn/store_postgresql.py:191
 #, python-format
 msgid "Table %s already exists => Keeping it"
 msgstr "La table %s existe déjà => elle est conservée"
 
-#: src/export_vn/store_postgresql.py:338
+#: src/export_vn/store_postgresql.py:360
 #, python-format
 msgid "Connecting to postgres database, to create %s database"
 msgstr "Connexion à la base de données postgres, pour créer la base %s"
 
-#: src/export_vn/store_postgresql.py:385
+#: src/export_vn/store_postgresql.py:418
 #, python-format
 msgid "Connecting to postgres database, to delete %s database"
 msgstr "Connexion à la base de données postgres, pour supprime la base %s"
 
-#: src/export_vn/store_postgresql.py:428
+#: src/export_vn/store_postgresql.py:469
 #, python-format
 msgid "Connecting to %s database, to finalize creation"
 msgstr "Connexion à la base de données %s, pour finaliser la création"
 
-#: src/export_vn/store_postgresql.py:503 src/export_vn/store_postgresql.py:537
-#: src/export_vn/store_postgresql.py:575
+#: src/export_vn/store_postgresql.py:552 src/export_vn/store_postgresql.py:590
+#: src/export_vn/store_postgresql.py:630
 #, python-format
 msgid "Connecting to database %s"
 msgstr "Connexion à la base de données %s"
 
-#: src/export_vn/store_postgresql.py:528
+#: src/export_vn/store_postgresql.py:579
 msgid "Counting observations in database for all sites"
 msgstr "Comptage des observations en base, pour tous les sites"
 
-#: src/export_vn/store_postgresql.py:666
+#: src/export_vn/store_postgresql.py:693
+#, python-format
+msgid "Creating %s worker threads, queue size: %s"
+msgstr "Création de %s tâches, taille de la file : %s"
+
+#: src/export_vn/store_postgresql.py:716
+#, python-format
+msgid "Stopping %s worker threads"
+msgstr "Arrêt de %s tâches"
+
+#: src/export_vn/store_postgresql.py:753 src/export_vn/store_postgresql.py:870
 #, python-format
 msgid "Storing %d items from %s of site %s"
 msgstr "Stockage de %d items depuis %s du site %s"
 
-#: src/export_vn/store_postgresql.py:673
+#: src/export_vn/store_postgresql.py:762 src/export_vn/store_postgresql.py:827
+#: src/export_vn/store_postgresql.py:887
 #, python-format
 msgid "Storing element %s"
 msgstr "Stockage de l'élement %s"
 
-#: src/export_vn/store_postgresql.py:683
-msgid "Element not found in database, inserting new row"
-msgstr "Elément non trouvé en base, insertion d'une nouvelle ligne"
-
-#: src/export_vn/store_postgresql.py:690
+#: src/export_vn/store_postgresql.py:822
 #, python-format
-msgid "Element %s found in database, updating row"
-msgstr "Elément %s trouvé en base, mise à jour de la ligne"
+msgid "Storing %d items from %s"
+msgstr "Stockage de %d éléments de %s"
 
-#: src/export_vn/store_postgresql.py:760
+#: src/export_vn/store_postgresql.py:959
 #, fuzzy, python-format
 msgid "Storing %d single observations"
 msgstr "Stockage de %d observations unitaires"
 
-#: src/export_vn/store_postgresql.py:794
+#: src/export_vn/store_postgresql.py:1007
 #, python-format
 msgid "Stored %d observations or forms to database"
 msgstr "%d observations ou formulaires stockés en base de données"
 
-#: src/export_vn/store_postgresql.py:829
+#: src/export_vn/store_postgresql.py:1045
 msgid "Not implemented"
 msgstr "Non implémenté"
 
-#: src/export_vn/store_postgresql.py:846
+#: src/export_vn/store_postgresql.py:1062
 #, python-format
 msgid "Deleting %d observations from database"
 msgstr "Suppression de %d observation en base de données"
 
-#: src/export_vn/transfer_vn.py:57
+#: src/export_vn/transfer_vn.py:70
 msgid "Print version number"
 msgstr "Imprime la version"
 
-#: src/export_vn/transfer_vn.py:62
+#: src/export_vn/transfer_vn.py:75
 msgid "Increase output verbosity"
 msgstr "Plus verbeux"
 
-#: src/export_vn/transfer_vn.py:65
+#: src/export_vn/transfer_vn.py:78
 msgid "Reduce output verbosity"
 msgstr "Moins verbeux"
 
-#: src/export_vn/transfer_vn.py:68 src/export_vn/transfer_vn.py:322
+#: src/export_vn/transfer_vn.py:81
+msgid "Initialize the YAML configuration file"
+msgstr "Initialisation du fichier de configuration YAML"
+
+#: src/export_vn/transfer_vn.py:84 src/export_vn/transfer_vn.py:390
 msgid "Delete if exists database and roles"
 msgstr "Détruit la base de données et les rôles"
 
-#: src/export_vn/transfer_vn.py:71 src/export_vn/transfer_vn.py:326
+#: src/export_vn/transfer_vn.py:87 src/export_vn/transfer_vn.py:394
 msgid "Create database and roles"
 msgstr "Crée la base de données et les rôle"
 
-#: src/export_vn/transfer_vn.py:74
+#: src/export_vn/transfer_vn.py:91
 msgid "Create or recreate json tables"
 msgstr "Crée, si elles n'existent pas, les tables JSON"
 
-#: src/export_vn/transfer_vn.py:77
+#: src/export_vn/transfer_vn.py:96
 msgid "Create or recreate colums based tables"
 msgstr "Crée ou recrée les tables en colonne"
 
-#: src/export_vn/transfer_vn.py:80
+#: src/export_vn/transfer_vn.py:100
 msgid "Perform a full download"
 msgstr "Réalise un téléchargement complèt"
 
-#: src/export_vn/transfer_vn.py:83
+#: src/export_vn/transfer_vn.py:103
 msgid "Perform an incremental download"
 msgstr "Réalise un téléchargement incrémental"
 
-#: src/export_vn/transfer_vn.py:86
+#: src/export_vn/transfer_vn.py:107
 msgid "Count observations by site and taxo_group"
 msgstr "Statistiques des observations par site et groupe taxonomique"
 
-#: src/export_vn/transfer_vn.py:89
+#: src/export_vn/transfer_vn.py:112
+msgid "Gather and print profiling times"
+msgstr "Collecte et impression des durées de profilage"
+
+#: src/export_vn/transfer_vn.py:115
 msgid "Configuration file name"
 msgstr "Nom du fichier de configuration"
 
-#: src/export_vn/transfer_vn.py:105 src/export_vn/transfer_vn.py:191
+#: src/export_vn/transfer_vn.py:128
+#, python-format
+msgid "Creating YAML configuration file %s, from %s"
+msgstr "Création du fichier de configuration YAML %s, à partir de %s"
+
+#: src/export_vn/transfer_vn.py:131
+#, python-format
+msgid "Please edit %s before running the script"
+msgstr "Merci d'éditer %s avant d'exécuter le script"
+
+#: src/export_vn/transfer_vn.py:145
+#, python-format
+msgid "Using controler %s once"
+msgstr "Utilisation unique du contrôleur %s"
+
+#: src/export_vn/transfer_vn.py:153 src/export_vn/transfer_vn.py:232
 #, python-format
 msgid "Working on site %s"
 msgstr "Traitement du site %s"
 
-#: src/export_vn/transfer_vn.py:109 src/export_vn/transfer_vn.py:116
-#: src/export_vn/transfer_vn.py:134 src/export_vn/transfer_vn.py:141
-#: src/export_vn/transfer_vn.py:148 src/export_vn/transfer_vn.py:155
-#: src/export_vn/transfer_vn.py:162 src/export_vn/transfer_vn.py:169
+#: src/export_vn/transfer_vn.py:157 src/export_vn/transfer_vn.py:163
+#: src/export_vn/transfer_vn.py:181 src/export_vn/transfer_vn.py:187
+#: src/export_vn/transfer_vn.py:193 src/export_vn/transfer_vn.py:199
+#: src/export_vn/transfer_vn.py:205 src/export_vn/transfer_vn.py:211
 #, python-format
 msgid "Using controler %s on site %s"
 msgstr "Utilisation du contrôleur %s pour le site %s"
 
-#: src/export_vn/transfer_vn.py:121 src/export_vn/transfer_vn.py:199
+#: src/export_vn/transfer_vn.py:167 src/export_vn/transfer_vn.py:240
 #, python-format
 msgid "Excluded taxo_groups: %s"
 msgstr "Groupes taxonomique exclus : %s"
 
-#: src/export_vn/transfer_vn.py:128 src/export_vn/transfer_vn.py:205
+#: src/export_vn/transfer_vn.py:174 src/export_vn/transfer_vn.py:247
 #, python-format
 msgid "Downloading from taxo_groups: %s"
 msgstr "Téléchargement du groupe taxonomique : %s"
 
-#: src/export_vn/transfer_vn.py:175 src/export_vn/transfer_vn.py:210
+#: src/export_vn/transfer_vn.py:216 src/export_vn/transfer_vn.py:251
 #, python-format
 msgid "Skipping site %s"
 msgstr "Site %s ignoré"
 
-#: src/export_vn/transfer_vn.py:195
+#: src/export_vn/transfer_vn.py:236
 #, python-format
 msgid "Using controler %s"
 msgstr "Utilisation du contrôleur %s"
 
-#: src/export_vn/transfer_vn.py:229
+#: src/export_vn/transfer_vn.py:270
 #, python-format
 msgid "Getting counts from %s"
 msgstr "Récupérations de statistiques depuis %s"
 
-#: src/export_vn/transfer_vn.py:256
+#: src/export_vn/transfer_vn.py:305
 msgid "Site"
 msgstr "Site"
 
-#: src/export_vn/transfer_vn.py:256
+#: src/export_vn/transfer_vn.py:306
 msgid "TaxoName"
 msgstr "Taxon"
 
-#: src/export_vn/transfer_vn.py:257
+#: src/export_vn/transfer_vn.py:307
 msgid "Remote count"
 msgstr "Total distant"
 
-#: src/export_vn/transfer_vn.py:257
+#: src/export_vn/transfer_vn.py:308
 msgid "Local count"
 msgstr "Total local"
 
-#: src/export_vn/transfer_vn.py:260
+#: src/export_vn/transfer_vn.py:314
 #, python-format
 msgid "Can not retrieve informations from %s"
 msgstr "Impossible de récupérer les informations depuis %s"
 
-#: src/export_vn/transfer_vn.py:305
+#: src/export_vn/transfer_vn.py:355
+msgid "Started yappi"
+msgstr "Démarrage de yappi"
+
+#: src/export_vn/transfer_vn.py:367
 #, python-format
 msgid "%s, version %s"
 msgstr "%s, version %s"
 
-#: src/export_vn/transfer_vn.py:306
+#: src/export_vn/transfer_vn.py:368
 #, python-format
 msgid "Arguments: %s"
 msgstr "Arguments : %s"
 
-#: src/export_vn/transfer_vn.py:310
+#: src/export_vn/transfer_vn.py:372
+msgid "Creating YAML configuration file"
+msgstr "Création du fichier de configuration YAML"
+
+#: src/export_vn/transfer_vn.py:378
 #, python-format
 msgid "File %s does not exist"
 msgstr "Le fichier %s n'existe pas"
 
-#: src/export_vn/transfer_vn.py:314
+#: src/export_vn/transfer_vn.py:381
 #, python-format
 msgid "Getting configuration data from %s"
 msgstr "Configuration à partir de %s"
 
-#: src/export_vn/transfer_vn.py:330
+#: src/export_vn/transfer_vn.py:398
 msgid "Create, if not exists, json tables"
 msgstr "Création, si elles n'existent pas, des tables json"
 
-#: src/export_vn/transfer_vn.py:334
+#: src/export_vn/transfer_vn.py:402
 msgid "Creating or recreating vn colums based files"
 msgstr "Création, si elles n'existent pas, des tables en colonne"
 
-#: src/export_vn/transfer_vn.py:354
+#: src/export_vn/transfer_vn.py:436
 msgid "Performing a full download"
 msgstr "Lancement du téléchargement complèt"
 
-#: src/export_vn/transfer_vn.py:358
+#: src/export_vn/transfer_vn.py:440
 msgid "Performing an incremental download of observations"
 msgstr "Lancement du téléchargement incrémental"
 
-#: src/export_vn/transfer_vn.py:362
+#: src/export_vn/transfer_vn.py:444
 msgid "Counting observations"
 msgstr "Statistiques des observations"
+
+#: src/export_vn/transfer_vn.py:449
+msgid "Printing yappi results"
+msgstr "Impression des résultats yappi"
+
+#~ msgid "Iteration %s, opt_params = %s"
+#~ msgstr "Itération %s, opt_param = %s"
+
+#~ msgid "Iter: %s, %s obs, taxo_group: %s, date: %s, interval: %s"
+#~ msgstr "Itération %s, %s obs, taxo_group %s, date %s, interval %s"
+
+#~ msgid "Getting observation %s"
+#~ msgstr "Réception de l'observation %s"
+
+#~ msgid "Observation not found in database, inserting new row"
+#~ msgstr "Observation absente en base, insertion d'une nouvelle ligne"
+
+#~ msgid "Observation %s found in database, updating row"
+#~ msgstr "Observation %s présente en base, mias à jour de la ligne"
+
+#~ msgid "Element not found in database, inserting new row"
+#~ msgstr "Elément non trouvé en base, insertion d'une nouvelle ligne"
+
+#~ msgid "Element %s found in database, updating row"
+#~ msgstr "Elément %s trouvé en base, mise à jour de la ligne"
 
