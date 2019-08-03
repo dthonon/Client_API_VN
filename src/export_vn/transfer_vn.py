@@ -130,6 +130,46 @@ def init(file: str):
     shutil.copyfile(yaml_src, yaml_dst)
     logger.info(_("Please edit %s before running the script"), yaml_dst)
 
+
+def col_table_create(cfg, sql_quiet, client_min_message):
+    """Create the column based tables, by running psql script."""
+    in_sql = pkg_resources.resource_filename(
+        __name__, "sql/create-vn-tables.sql"
+    )
+    with open(in_sql, "r") as myfile:
+        template = myfile.read()
+    (cmd, exp_globals) = pyexpander.expandToStr(
+        template, external_definitions=db_config(cfg)
+    )
+    tmp_sql = str(Path.home()) + "/tmp/create-vn-tables.sql"
+    with open(tmp_sql, "w") as myfile:
+        myfile.write(cmd)
+    try:
+        subprocess.run(
+            ' PGPASSWORD="' + cfg.db_pw + '" '
+            'env PGOPTIONS="-c client-min-messages='
+            + client_min_message
+            + '" psql '
+            + sql_quiet
+            + " --host="
+            + cfg.db_host
+            + " --port="
+            + cfg.db_port
+            + " --dbname="
+            + cfg.db_name
+            + " --user="
+            + cfg.db_user
+            + " --file="
+            + tmp_sql,
+            check=True,
+            shell=True,
+        )
+    except subprocess.CalledProcessError as err:
+        logger.error(err)
+
+    return None
+
+
 def full_download(cfg_ctrl):
     """Performs a full download of all sites and controlers,
        based on configuration file."""
@@ -384,7 +424,6 @@ def main(args):
     cfg = list(cfg_site_list.values())[0]
 
     manage_pg = PostgresqlUtils(cfg)
-    db_cfg = db_config(cfg)
 
     if args.db_drop:
         logger.info(_("Delete if exists database and roles"))
@@ -400,37 +439,7 @@ def main(args):
 
     if args.col_tables_create:
         logger.info(_("Creating or recreating vn colums based files"))
-        filename = str(Path.home()) + "/Client_API_VN/sql/create-vn-tables.sql"
-        with open(filename, "r") as myfile:
-            template = myfile.read()
-        (cmd, exp_globals) = pyexpander.expandToStr(
-            template, external_definitions=db_cfg
-        )
-        filename = str(Path.home()) + "/tmp/create-vn-tables.sql"
-        with open(filename, "w") as myfile:
-            myfile.write(cmd)
-        try:
-            subprocess.run(
-                ' PGPASSWORD="' + cfg.db_pw + '" '
-                'env PGOPTIONS="-c client-min-messages='
-                + client_min_message
-                + '" psql '
-                + sql_quiet
-                + " --host="
-                + cfg.db_host
-                + " --port="
-                + cfg.db_port
-                + " --dbname="
-                + cfg.db_name
-                + " --user="
-                + cfg.db_user
-                + " --file="
-                + filename,
-                check=True,
-                shell=True,
-            )
-        except subprocess.CalledProcessError as err:
-            logger.error(err)
+        col_table_create(cfg, sql_quiet, client_min_message)
 
     if args.full:
         logger.info(_("Performing a full download"))
