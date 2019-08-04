@@ -21,20 +21,18 @@ Install from PyPI::
 
     pip install Client-API-VN
 
-Copy the sample YAML file to your HOME directory and edit with
+Initialize the sample YAML file in your HOME directory and edit with
 your local details::
 
-    cp $HOME/VN_env/lib/python3.5/site-packages/*/export_vn/data/evn_template.yaml $HOME/.evn_your_site.yaml
+    transfer_vn --init .evn_your_site.yaml
     editor $HOME/.evn_your_site.yaml
-
-*NOTE: this a transient hack, until --init option is developed.*
 
 
 You can then download data, as enabled in the YAML file.
 Beware that, depending on the volume of observations,
 this can take hours. We recommend starting with a small taxonomic group first::
 
-    transfer_vn --db-create --json_tables_create --col_tables_create --full .evn_your_site.yaml 
+    transfer_vn --db-create --json_tables_create --col_tables_create --full .evn_your_site.yaml
 
 
 Once this is done, you can update the database with new observations::

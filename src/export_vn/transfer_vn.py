@@ -14,6 +14,7 @@ import shutil
 import pkg_resources
 import requests
 
+import yappi
 import pyexpander.lib as pyexpander
 from bs4 import BeautifulSoup
 from export_vn.biolovision_api import TaxoGroupsAPI
@@ -106,6 +107,11 @@ def arguments(args):
         help=_("Count observations by site and taxo_group"),
         action="store_true",
     )
+    parser.add_argument(
+        "--profile",
+        help=_("Gather and print profiling times"),
+        action="store_true",
+    )
     parser.add_argument("file", help=_("Configuration file name"))
 
     return parser.parse_args(args)
@@ -124,6 +130,46 @@ def init(file: str):
     shutil.copyfile(yaml_src, yaml_dst)
     logger.info(_("Please edit %s before running the script"), yaml_dst)
 
+
+def col_table_create(cfg, sql_quiet, client_min_message):
+    """Create the column based tables, by running psql script."""
+    in_sql = pkg_resources.resource_filename(
+        __name__, "sql/create-vn-tables.sql"
+    )
+    with open(in_sql, "r") as myfile:
+        template = myfile.read()
+    (cmd, exp_globals) = pyexpander.expandToStr(
+        template, external_definitions=db_config(cfg)
+    )
+    tmp_sql = str(Path.home()) + "/tmp/create-vn-tables.sql"
+    with open(tmp_sql, "w") as myfile:
+        myfile.write(cmd)
+    try:
+        subprocess.run(
+            ' PGPASSWORD="' + cfg.db_pw + '" '
+            'env PGOPTIONS="-c client-min-messages='
+            + client_min_message
+            + '" psql '
+            + sql_quiet
+            + " --host="
+            + cfg.db_host
+            + " --port="
+            + cfg.db_port
+            + " --dbname="
+            + cfg.db_name
+            + " --user="
+            + cfg.db_user
+            + " --file="
+            + tmp_sql,
+            check=True,
+            shell=True,
+        )
+    except subprocess.CalledProcessError as err:
+        logger.error(err)
+
+    return None
+
+
 def full_download(cfg_ctrl):
     """Performs a full download of all sites and controlers,
        based on configuration file."""
@@ -131,6 +177,15 @@ def full_download(cfg_ctrl):
     cfg_crtl_list = cfg_ctrl.ctrl_list
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
+
+    # Donwload field only once
+    with StorePostgresql(cfg) as store_pg:
+        ctrl = "fields"
+        if cfg_crtl_list[ctrl].enabled:
+            logger.info(_("Using controler %s once"), ctrl)
+            fields = Fields(cfg, store_pg)
+            fields.store()
+
     # Looping on sites
     for site, cfg in cfg_site_list.items():
         with StorePostgresql(cfg) as store_pg:
@@ -165,12 +220,6 @@ def full_download(cfg_ctrl):
                 if cfg_crtl_list[ctrl].enabled:
                     logger.info(_("Using controler %s on site %s"), ctrl, cfg.site)
                     entities = Entities(cfg, store_pg)
-                    entities.store()
-
-                ctrl = "fields"
-                if cfg_crtl_list[ctrl].enabled:
-                    logger.info(_("Using controler %s on site %s"), ctrl, cfg.site)
-                    entities = Fields(cfg, store_pg)
                     entities.store()
 
                 ctrl = "territorial_units"
@@ -340,6 +389,11 @@ def main(args):
     # Get command line arguments
     args = arguments(args)
 
+    # Start profiling if required
+    if args.profile:
+        yappi.start()
+        logger.info(_("Started yappi"))
+
     # Define verbosity
     if args.verbose:
         logger.setLevel(logging.DEBUG)
@@ -370,7 +424,6 @@ def main(args):
     cfg = list(cfg_site_list.values())[0]
 
     manage_pg = PostgresqlUtils(cfg)
-    db_cfg = db_config(cfg)
 
     if args.db_drop:
         logger.info(_("Delete if exists database and roles"))
@@ -386,37 +439,7 @@ def main(args):
 
     if args.col_tables_create:
         logger.info(_("Creating or recreating vn colums based files"))
-        filename = str(Path.home()) + "/Client_API_VN/sql/create-vn-tables.sql"
-        with open(filename, "r") as myfile:
-            template = myfile.read()
-        (cmd, exp_globals) = pyexpander.expandToStr(
-            template, external_definitions=db_cfg
-        )
-        filename = str(Path.home()) + "/tmp/create-vn-tables.sql"
-        with open(filename, "w") as myfile:
-            myfile.write(cmd)
-        try:
-            subprocess.run(
-                ' PGPASSWORD="' + cfg.db_pw + '" '
-                'env PGOPTIONS="-c client-min-messages='
-                + client_min_message
-                + '" psql '
-                + sql_quiet
-                + " --host="
-                + cfg.db_host
-                + " --port="
-                + cfg.db_port
-                + " --dbname="
-                + cfg.db_name
-                + " --user="
-                + cfg.db_user
-                + " --file="
-                + filename,
-                check=True,
-                shell=True,
-            )
-        except subprocess.CalledProcessError as err:
-            logger.error(err)
+        col_table_create(cfg, sql_quiet, client_min_message)
 
     if args.full:
         logger.info(_("Performing a full download"))
@@ -429,6 +452,13 @@ def main(args):
     if args.count:
         logger.info(_("Counting observations"))
         count_observations(cfg_ctrl)
+
+    # Stop and output profiling if required
+    if args.profile:
+        logger.info(_("Printing yappi results"))
+        yappi.stop()
+        yappi.get_func_stats().print_all()
+        yappi.get_thread_stats().print_all()
 
     return None
 

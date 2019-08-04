@@ -1,3 +1,41 @@
+Client-API-VN v2.3.3 (2019-08-04)
+=================================
+
+Features
+--------
+
+- Several performance enhancements:
+
+  - projection to local coordinates is much faster, reducing processing time by at least a factor of 6
+
+  - forms are only processed once, at the first observation of the form. (`#56 <https://framagit.org/lpo/Client_API_VN/issues/56>`_)
+
+
+Bugfixes
+--------
+
+- SQL file should be correct, when installed from PyPI.
+  To be tested from PyPI and from framagit clone. (`#57 <https://framagit.org/lpo/Client_API_VN/issues/57>`_)
+- In table observations, update_date is correctly filled. (`#59 <https://framagit.org/lpo/Client_API_VN/issues/59>`_)
+- Increments are correctly tracked. When using --update, only new or changed observations are downloaded. (`#60 <https://framagit.org/lpo/Client_API_VN/issues/60>`_)
+- Fields are now dowloaded in 2 tables :
+
+  - field_groups, which lists all groups of fields
+
+  - field_details, which lists all values for each group
+
+  Column observations.behaviours is now a Postgresql ARRAY,
+  listing behaviours link_id code. (`#61 <https://framagit.org/lpo/Client_API_VN/issues/61>`_)
+
+
+Improved Documentation
+----------------------
+
+- README.rst updated to document --init option.
+  CONTRIBUTING.rst improved.
+  Updated french translations. (`#58 <https://framagit.org/lpo/Client_API_VN/issues/58>`_)
+
+
 Client-API-VN v2.3.2 (2019-07-27)
 =================================
 

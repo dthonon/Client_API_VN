@@ -29,13 +29,40 @@ Clone framagit repository::
     git checkout develop
 
 Installing the application
------------------
+--------------------------
 
 Run::
 
     ./setup.py install
 
 Note: maybe ./setup.py develop is sufficient.
+
+Code changes
+------------
+
+Code changes must be related to an framagit issue. Any development, except
+urgent patches, must be done on the develop branch.
+
+The prefered editor is MS Visual Studio Code, with `blake` formating.
+
+Each commit must include a reference to the framagit issue and must be
+documented.
+Changes are documented using towncrier (https://pypi.org/project/towncrier/).
+To document a change :
+
+1. Create a file in newsfragment, named `issue.type`, where:
+
+    - `issue` is the framagit issue number
+    - `type` describes the type of change:
+
+        - `feature`: Signifying a new feature.
+        - `bugfix`: Signifying a bug fix.
+        - `doc`: Signifying a documentation improvement.
+        - `removal`: Signifying a deprecation or removal of public API.
+        - `misc`: A ticket has been closed, but it is not of interest to users.
+
+2. Describe, for the users, the results of the change.
+3. Commit this file with your changes.
 
 Running the tests
 -----------------
@@ -45,10 +72,14 @@ Run tests (try one or the other, as I haven't found which one is best)::
     ./setup.py tests
     pytest
 
+When tests are OK, run full test suite::
+
+    tox
+
 Updating translations
 ---------------------
 
-If you added new text messages, enclosed in _(), you need to 
+If you added new text messages, enclosed in _(), you need to
 update the translations::
 
     ./setup.py extract_messages
@@ -60,11 +91,17 @@ update the translations::
 Generating and uploading
 ------------------------
 
-Generating distribution archives::
+Generate CHANGELOG.rst from news fragment::
+
+    LANG=C.UTF-8; towncrier --name=Client-API-VN --version=vX.Y.Z
+
+Commit pending changes and tag vX.Y.Z.
+
+Generate distribution archives::
 
     ./setup.py sdist bdist_wheel
 
-Uploading to test.pypi::
+Upload to test.pypi::
 
     twine upload --repository-url https://test.pypi.org/legacy/ dist/*
 

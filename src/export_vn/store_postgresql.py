@@ -17,16 +17,25 @@ import threading
 from datetime import datetime
 from uuid import uuid4
 
-from sqlalchemy import (Column, DateTime, Integer, MetaData,
-                        PrimaryKeyConstraint, String, Table, create_engine,
-                        func, select)
+from sqlalchemy import (
+    Column,
+    DateTime,
+    Integer,
+    MetaData,
+    PrimaryKeyConstraint,
+    String,
+    Table,
+    create_engine,
+    func,
+    select,
+)
 from sqlalchemy.dialects.postgresql import JSONB, insert
 from sqlalchemy.engine.url import URL
 from sqlalchemy.sql import and_
 
 from export_vn.store_file import StoreFile
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-from pyproj import Proj, transform
+from pyproj import Transformer
 
 from . import _, __version__
 
@@ -40,7 +49,7 @@ class StorePostgresqlException(Exception):
 class ObservationItem:
     """Properties of an observation, for transmission in Queue."""
 
-    def __init__(self, site, metadata, conn, elem, in_proj, out_proj):
+    def __init__(self, site, metadata, conn, transformer, elem):
         """Item elements.
 
         Parameters
@@ -51,19 +60,16 @@ class ObservationItem:
             sqlalchemy metadata for observation table.
         conn :
             sqlalchemy connection to database
+        transformer :
+            pyproj transformer used to create local coordinates
         elem : dict
             Single observation to process and store.
-        in_proj :
-            Projection used in input item.
-        out_proj :
-            Projection added to item.
         """
         self._site = site
         self._metadata = metadata
         self._conn = conn
+        self._transformer = transformer
         self._elem = elem
-        self._in_proj = in_proj
-        self._out_proj = out_proj
         return None
 
     @property
@@ -82,26 +88,21 @@ class ObservationItem:
         return self._conn
 
     @property
+    def transformer(self):
+        """Return transformer."""
+        return self._transformer
+
+    @property
     def elem(self):
         """Return elem."""
         return self._elem
-
-    @property
-    def in_proj(self):
-        """Return in_proj."""
-        return self._in_proj
-
-    @property
-    def out_proj(self):
-        """Return out_proj."""
-        return self._out_proj
 
 
 def store_1_observation(item):
     """Process and store a single observation.
 
     - find insert or update date
-    - simplity data to remove redundant items: dates... (TBD)
+    - simplify data to remove redundant items: dates... (TBD)
     - add x, y transform to local coordinates
     - store json in Postgresql
 
@@ -125,14 +126,11 @@ def store_1_observation(item):
         update_date = elem["observers"][0]["insert_date"]
 
     # Add Lambert x, y transform to local coordinates
-    x, y = transform(
-        item.in_proj,
-        item.out_proj,
-        elem["observers"][0]["coord_lon"],
-        elem["observers"][0]["coord_lat"],
+    elem["observers"][0]["coord_x_local"], elem["observers"][0][
+        "coord_y_local"
+    ] = item.transformer(
+        elem["observers"][0]["coord_lon"], elem["observers"][0]["coord_lat"]
     )
-    elem["observers"][0]["coord_x_local"] = x
-    elem["observers"][0]["coord_y_local"] = y
 
     # Store in Postgresql
     items_json = json.dumps(elem)
@@ -147,7 +145,7 @@ def store_1_observation(item):
     do_update_stmt = insert_stmt.on_conflict_do_update(
         constraint=metadata.primary_key,
         set_=dict(update_ts=update_date, item=items_json),
-        where=(metadata.c.update_ts < update_date)
+        where=(metadata.c.update_ts < update_date),
     )
 
     item.conn.execute(do_update_stmt)
@@ -211,10 +209,10 @@ class PostgresqlUtils:
         """Create increment_log table if it does not exist."""
         self._create_table(
             "increment_log",
-            Column("id", Integer, primary_key=True),
             Column("site", String, nullable=False),
             Column("taxo_group", Integer, nullable=False),
             Column("last_ts", DateTime, server_default=func.now(), nullable=False),
+            PrimaryKeyConstraint("site", "taxo_group", name="increment_log_pk"),
         )
         return None
 
@@ -229,14 +227,23 @@ class PostgresqlUtils:
         )
         return None
 
-    def _create_fields_json(self):
-        """Create fields_json table if it does not exist."""
+    def _create_field_groups_json(self):
+        """Create field_groups_json table if it does not exist."""
         self._create_table(
-            "fields_json",
+            "field_groups_json",
             Column("id", Integer, nullable=False),
-            Column("site", String, nullable=False),
             Column("item", JSONB, nullable=False),
-            PrimaryKeyConstraint("id", "site", name="fields_json_pk"),
+            PrimaryKeyConstraint("id", name="field_groups_json_pk"),
+        )
+        return None
+
+    def _create_field_details_json(self):
+        """Create field_details_json table if it does not exist."""
+        self._create_table(
+            "field_details_json",
+            Column("id", Integer, nullable=False),
+            Column("item", JSONB, nullable=False),
+            PrimaryKeyConstraint("id", name="field_detais_json_pk"),
         )
         return None
 
@@ -506,7 +513,8 @@ class PostgresqlUtils:
         self._create_increment_log()
 
         self._create_entities_json()
-        self._create_fields_json()
+        self._create_field_groups_json()
+        self._create_field_details_json()
         self._create_forms_json()
         self._create_local_admin_units_json()
         self._create_uuid_xref()
@@ -631,7 +639,8 @@ class StorePostgresql:
         # Map Biolovision tables in a single dict for easy reference
         self._table_defs = {
             "entities": {"type": "simple", "metadata": None},
-            "fields": {"type": "simple", "metadata": None},
+            "field_groups": {"type": "fields", "metadata": None},
+            "field_details": {"type": "fields", "metadata": None},
             "forms": {"type": "others", "metadata": None},
             "local_admin_units": {"type": "geometry", "metadata": None},
             "uuid_xref": {"type": "others", "metadata": None},
@@ -645,8 +654,11 @@ class StorePostgresql:
         self._table_defs["entities"]["metadata"] = self._metadata.tables[
             dbschema + ".entities_json"
         ]
-        self._table_defs["fields"]["metadata"] = self._metadata.tables[
-            dbschema + ".fields_json"
+        self._table_defs["field_groups"]["metadata"] = self._metadata.tables[
+            dbschema + ".field_groups_json"
+        ]
+        self._table_defs["field_details"]["metadata"] = self._metadata.tables[
+            dbschema + ".field_details_json"
         ]
         self._table_defs["forms"]["metadata"] = self._metadata.tables[
             dbschema + ".forms_json"
@@ -677,9 +689,14 @@ class StorePostgresql:
         ]
 
         # Create parallel workers for database queries
-        logger.info(_("Creating %s worker threads, queue size: %s"),
-                    self._config.tuning_db_worker_threads, self._config.tuning_db_worker_queue)
-        self._observations_queue = queue.Queue(maxsize=self._config.tuning_db_worker_queue)
+        logger.debug(
+            _("Creating %s worker threads, queue size: %s"),
+            self._config.tuning_db_worker_threads,
+            self._config.tuning_db_worker_queue,
+        )
+        self._observations_queue = queue.Queue(
+            maxsize=self._config.tuning_db_worker_queue
+        )
         self._observations_threads = []
         for i in range(self._config.tuning_db_worker_threads):
             t = threading.Thread(
@@ -695,7 +712,9 @@ class StorePostgresql:
 
     def __exit__(self, exc_type, exc_value, traceback):
         """Send finish signal to workers and wait for tasks to finish."""
-        logger.info(_("Stopping %s worker threads"), self._config.tuning_db_worker_threads)
+        logger.debug(
+            _("Stopping %s worker threads"), self._config.tuning_db_worker_threads
+        )
         for i in range(self._config.tuning_db_worker_threads):
             self._observations_queue.put(None)
         for t in self._observations_threads:
@@ -742,13 +761,10 @@ class StorePostgresql:
             items_json = json.dumps(elem)
             logger.debug(_("Storing element %s"), items_json)
             insert_stmt = insert(metadata).values(
-                id=elem["id"],
-                site=self._config.site,
-                item=items_json,
+                id=elem["id"], site=self._config.site, item=items_json
             )
             do_update_stmt = insert_stmt.on_conflict_do_update(
-                constraint=metadata.primary_key,
-                set_=dict(item=items_json)
+                constraint=metadata.primary_key, set_=dict(item=items_json)
             )
             self._conn.execute(do_update_stmt)
 
@@ -773,14 +789,49 @@ class StorePostgresql:
             Count of items stored (not exact for observations, due to forms).
         """
 
-        in_proj = Proj(init="epsg:4326")
-        out_proj = Proj(init="epsg:" + self._config.db_out_proj)
+        transformer = Transformer.from_proj(
+            4326, int(self._config.db_out_proj), always_xy=True
+        )
         # Loop on data array to reproject
         for elem in items_dict["data"]:
-            elem["coord_x_local"], elem["coord_y_local"] = transform(
-                in_proj, out_proj, elem["coord_lon"], elem["coord_lat"]
+            elem["coord_x_local"], elem["coord_y_local"] = transformer.transform(
+                elem["coord_lon"], elem["coord_lat"]
             )
         return self._store_simple(controler, items_dict)
+
+    def _store_fields(self, controler, items_dict):
+        """Write items_dict to database, for field_groups and field_details.
+
+        Converts each element to JSON and store to database in a tables
+        named from controler.
+
+        Parameters
+        ----------
+        controler : str
+            Name of API controler.
+        items_dict : dict
+            Data returned from API call.
+
+        Returns
+        -------
+        int
+            Count of items stored (not exact for observations, due to forms).
+        """
+
+        # Loop on data array to store each element to database
+        logger.info(_("Storing %d items from %s"), len(items_dict["data"]), controler)
+        metadata = self._table_defs[controler]["metadata"]
+        for elem in items_dict["data"]:
+            # Convert to json
+            items_json = json.dumps(elem)
+            logger.debug(_("Storing element %s"), items_json)
+            insert_stmt = insert(metadata).values(id=elem["id"], item=items_json)
+            do_update_stmt = insert_stmt.on_conflict_do_update(
+                constraint=metadata.primary_key, set_=dict(item=items_json)
+            )
+            self._conn.execute(do_update_stmt)
+
+        return len(items_dict["data"])
 
     def _store_form(self, items_dict):
         """Write forms to database.
@@ -799,34 +850,49 @@ class StorePostgresql:
         """
 
         controler = "forms"
-        logger.debug(
-            _("Storing %d items from %s of site %s"),
-            len(items_dict),
-            controler,
-            self._config.site,
+        # Check if form already inserted
+        stmt = select(
+            [
+                self._table_defs[controler]["metadata"].c.id,
+                self._table_defs[controler]["metadata"].c.site,
+            ]
+        ).where(
+            and_(
+                self._table_defs[controler]["metadata"].c.id == items_dict["@id"],
+                self._table_defs[controler]["metadata"].c.site == self._config.site,
+            )
         )
-        # Add local coordinates
-        if ("lon" in items_dict) and ("lat" in items_dict):
-            in_proj = Proj(init="epsg:4326")
-            out_proj = Proj(init="epsg:" + self._config.db_out_proj)
-            items_dict["coord_x_local"], items_dict["coord_y_local"] = transform(
-                in_proj, out_proj, items_dict["lon"], items_dict["lat"]
+        result = self._conn.execute(stmt)
+        row = result.fetchone()
+        if row is None:
+            # Forms no found, inserting
+            logger.debug(
+                _("Storing %d items from %s of site %s"),
+                len(items_dict),
+                controler,
+                self._config.site,
             )
 
-        # Convert to json
-        items_json = json.dumps(items_dict)
-        logger.debug(_("Storing element %s"), items_json)
-        metadata = self._table_defs[controler]["metadata"]
-        insert_stmt = insert(metadata).values(
-            id=items_dict["@id"],
-            site=self._config.site,
-            item=items_json,
-        )
-        do_update_stmt = insert_stmt.on_conflict_do_update(
-            constraint=metadata.primary_key,
-            set_=dict(item=items_json)
-        )
-        self._conn.execute(do_update_stmt)
+            # Add local coordinates
+            transformer = Transformer.from_proj(
+                4326, int(self._config.db_out_proj), always_xy=True
+            )
+            if ("lon" in items_dict) and ("lat" in items_dict):
+                items_dict["coord_x_local"], items_dict[
+                    "coord_y_local"
+                ] = transformer.transform(items_dict["lon"], items_dict["lat"])
+
+            # Convert to json
+            items_json = json.dumps(items_dict)
+            logger.debug(_("Storing element %s"), items_json)
+            metadata = self._table_defs[controler]["metadata"]
+            insert_stmt = insert(metadata).values(
+                id=items_dict["@id"], site=self._config.site, item=items_json
+            )
+            do_update_stmt = insert_stmt.on_conflict_do_update(
+                constraint=metadata.primary_key, set_=dict(item=items_json)
+            )
+            self._conn.execute(do_update_stmt)
 
         return len(items_dict)
 
@@ -860,7 +926,7 @@ class StorePostgresql:
             update_ts=datetime.now(),
         )
         do_nothing_stmt = insert_stmt.on_conflict_do_nothing(
-            constraint=metadata.primary_key,
+            constraint=metadata.primary_key
         )
         self._conn.execute(do_nothing_stmt)
 
@@ -888,12 +954,12 @@ class StorePostgresql:
             Count of items stored (not exact for observations, due to forms).
         """
         # Insert simple sightings, each row contains id, update timestamp and full json body
-        in_proj = Proj(init="epsg:4326")
-        out_proj = Proj(init="epsg:" + self._config.db_out_proj)
         nb_obs = 0
         logger.debug(
-            _("Storing %d single observations"),
-            len(items_dict["data"]["sightings"]),
+            _("Storing %d single observations"), len(items_dict["data"]["sightings"])
+        )
+        transformer = Transformer.from_proj(
+            4326, int(self._config.db_out_proj), always_xy=True
         )
         for i in range(0, len(items_dict["data"]["sightings"])):
             elem = items_dict["data"]["sightings"][i]
@@ -907,9 +973,8 @@ class StorePostgresql:
                 self._config.site,
                 self._table_defs[controler]["metadata"],
                 self._conn,
+                transformer.transform,
                 elem,
-                in_proj,
-                out_proj,
             )
             self._observations_queue.put(obs)
             nb_obs += 1
@@ -926,9 +991,8 @@ class StorePostgresql:
                                 self._config.site,
                                 self._table_defs[controler]["metadata"],
                                 self._conn,
+                                transformer.transform,
                                 v[i],
-                                in_proj,
-                                out_proj,
                             )
                             self._observations_queue.put(obs)
                             nb_obs += 1
@@ -968,12 +1032,15 @@ class StorePostgresql:
             Count of items stored (not exact for observations, due to forms).
         """
         self._file_store.store(controler, seq, items_dict)
-        if self._table_defs[controler]["type"] == "simple":
+        if self._table_defs[controler]["type"] == "observation":
+            nb_item = self._store_observation(controler, items_dict)
+        elif self._table_defs[controler]["type"] == "simple":
             nb_item = self._store_simple(controler, items_dict)
         elif self._table_defs[controler]["type"] == "geometry":
             nb_item = self._store_geometry(controler, items_dict)
-        elif self._table_defs[controler]["type"] == "observation":
-            nb_item = self._store_observation(controler, items_dict)
+        elif self._table_defs[controler]["type"] == "fields":
+            nb_item = self._store_fields(controler, items_dict)
+
         else:
             raise StorePostgresqlException(_("Not implemented"))
 
@@ -1057,13 +1124,10 @@ class StorePostgresql:
         ]
 
         insert_stmt = insert(metadata).values(
-            taxo_group=taxo_group,
-            site=site,
-            last_ts=last_ts,
+            taxo_group=taxo_group, site=site, last_ts=last_ts
         )
         do_update_stmt = insert_stmt.on_conflict_do_update(
-            constraint=metadata.primary_key,
-            set_=dict(last_ts=last_ts)
+            constraint=metadata.primary_key, set_=dict(last_ts=last_ts)
         )
         self._conn.execute(do_update_stmt)
 
