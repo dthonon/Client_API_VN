@@ -1,8 +1,0 @@
-Fields are now dowloaded in 2 tables :
-
-- field_groups, which lists all groups of fields
-
-- field_details, which lists all values for each group
-
-Column observations.behaviours is now a Postgresql ARRAY,
-listing behaviours link_id code.
