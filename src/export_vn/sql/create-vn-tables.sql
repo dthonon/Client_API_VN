@@ -65,11 +65,11 @@ CREATE OR REPLACE FUNCTION update_entities() RETURNS TRIGGER AS \$\$
     ELSIF (TG_OP = 'UPDATE') THEN
         -- Updating or inserting data when JSON data is updated
         UPDATE $(db_schema_vn).entities SET
-            short_name         = CAST(NEW.item->>0 AS JSON)->>'short_name',
-            full_name_french   = CAST(NEW.item->>0 AS JSON)->>'full_name_french',
-            description_french = CAST(NEW.item->>0 AS JSON)->>'description_french',
-            url                = CAST(NEW.item->>0 AS JSON)->>'url',
-            address            = CAST(NEW.item->>0 AS JSON)->>'address'
+            short_name         = NEW.item->>'short_name',
+            full_name_french   = NEW.item->>'full_name_french',
+            description_french = NEW.item->>'description_french',
+            url                = NEW.item->>'url',
+            address            = NEW.item->>'address'
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
@@ -78,11 +78,11 @@ CREATE OR REPLACE FUNCTION update_entities() RETURNS TRIGGER AS \$\$
             VALUES (
                 NEW.site,
                 NEW.id,
-                CAST(NEW.item->>0 AS JSON)->>'short_name',
-                CAST(NEW.item->>0 AS JSON)->>'full_name_french',
-                CAST(NEW.item->>0 AS JSON)->>'description_french',
-                CAST(NEW.item->>0 AS JSON)->>'url',
-                CAST(NEW.item->>0 AS JSON)->>'address'
+                NEW.item->>'short_name',
+                NEW.item->>'full_name_french',
+                NEW.item->>'description_french',
+                NEW.item->>'url',
+                NEW.item->>'address'
             );
             END IF;
         RETURN NEW;
@@ -94,11 +94,11 @@ CREATE OR REPLACE FUNCTION update_entities() RETURNS TRIGGER AS \$\$
         VALUES (
             NEW.site,
             NEW.id,
-            CAST(NEW.item->>0 AS JSON)->>'short_name',
-            CAST(NEW.item->>0 AS JSON)->>'full_name_french',
-            CAST(NEW.item->>0 AS JSON)->>'description_french',
-            CAST(NEW.item->>0 AS JSON)->>'url',
-            CAST(NEW.item->>0 AS JSON)->>'address'
+            NEW.item->>'short_name',
+            NEW.item->>'full_name_french',
+            NEW.item->>'description_french',
+            NEW.item->>'url',
+            NEW.item->>'address'
         );
         RETURN NEW;
     END IF;
@@ -138,20 +138,20 @@ CREATE OR REPLACE FUNCTION update_field_details() RETURNS TRIGGER AS \$\$
     ELSIF (TG_OP = 'UPDATE') THEN
         -- Updating or inserting data when JSON data is updated
         UPDATE $(db_schema_vn).field_details SET
-            group_id = CAST(CAST(NEW.item->>0 AS JSON)->>'group' AS INTEGER),
-            value_id = CAST(CAST(NEW.item->>0 AS JSON)->>'value' AS INTEGER),
-            order_id = CAST(CAST(NEW.item->>0 AS JSON)->>'order_id' AS INTEGER),
-            name     = CAST(NEW.item->>0 AS JSON)->>'name'
+            group_id = CAST(NEW.item->>'group' AS INTEGER),
+            value_id = CAST(NEW.item->>'value' AS INTEGER),
+            order_id = CAST(NEW.item->>'order_id' AS INTEGER),
+            name     = NEW.item->>'name'
         WHERE id = OLD.id;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
             INSERT INTO $(db_schema_vn).field_details(id, group_id, value_id, order_id, name)
             VALUES (
                 NEW.id,
-                CAST(CAST(NEW.item->>0 AS JSON)->>'group' AS INTEGER),
-                CAST(CAST(NEW.item->>0 AS JSON)->>'value' AS INTEGER),
-                CAST(CAST(NEW.item->>0 AS JSON)->>'order_id' AS INTEGER),
-                CAST(NEW.item->>0 AS JSON)->>'name'
+                CAST(NEW.item->>'group' AS INTEGER),
+                CAST(NEW.item->>'value' AS INTEGER),
+                CAST(NEW.item->>'order_id' AS INTEGER),
+                NEW.item->>'name'
             );
             END IF;
         RETURN NEW;
@@ -161,10 +161,10 @@ CREATE OR REPLACE FUNCTION update_field_details() RETURNS TRIGGER AS \$\$
         INSERT INTO $(db_schema_vn).field_details(id, group_id, value_id, order_id, name)
         VALUES (
             NEW.id,
-            CAST(CAST(NEW.item->>0 AS JSON)->>'group' AS INTEGER),
-            CAST(CAST(NEW.item->>0 AS JSON)->>'value' AS INTEGER),
-            CAST(CAST(NEW.item->>0 AS JSON)->>'order_id' AS INTEGER),
-            CAST(NEW.item->>0 AS JSON)->>'name'
+            CAST(NEW.item->>'group' AS INTEGER),
+            CAST(NEW.item->>'value' AS INTEGER),
+            CAST(NEW.item->>'order_id' AS INTEGER),
+            NEW.item->>'name'
         );
         RETURN NEW;
     END IF;
@@ -204,20 +204,20 @@ CREATE OR REPLACE FUNCTION update_field_groups() RETURNS TRIGGER AS \$\$
     ELSIF (TG_OP = 'UPDATE') THEN
         -- Updating or inserting data when JSON data is updated
         UPDATE $(db_schema_vn).field_groups SET
-            default_v    = CAST(NEW.item->>0 AS JSON)->>'default',
-            empty_choice = CAST(NEW.item->>0 AS JSON)->>'empty_choice',
-            mandatory    = CAST(NEW.item->>0 AS JSON)->>'mandatory',
-            name         = CAST(NEW.item->>0 AS JSON)->>'name'
+            default_v    = NEW.item->>'default',
+            empty_choice = NEW.item->>'empty_choice',
+            mandatory    = NEW.item->>'mandatory',
+            name         = NEW.item->>'name'
         WHERE id = OLD.id;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
             INSERT INTO $(db_schema_vn).field_groups(id, default_v, empty_choice, mandatory, name)
             VALUES (
                 NEW.id,
-                CAST(NEW.item->>0 AS JSON)->>'default',
-                CAST(NEW.item->>0 AS JSON)->>'empty_choice',
-                CAST(NEW.item->>0 AS JSON)->>'mandatory',
-                CAST(NEW.item->>0 AS JSON)->>'name'
+                NEW.item->>'default',
+                NEW.item->>'empty_choice',
+                NEW.item->>'mandatory',
+                NEW.item->>'name'
             );
             END IF;
         RETURN NEW;
@@ -227,10 +227,10 @@ CREATE OR REPLACE FUNCTION update_field_groups() RETURNS TRIGGER AS \$\$
         INSERT INTO $(db_schema_vn).field_groups(id, default_v, empty_choice, mandatory, name)
         VALUES (
             NEW.id,
-            CAST(NEW.item->>0 AS JSON)->>'default',
-            CAST(NEW.item->>0 AS JSON)->>'empty_choice',
-            CAST(NEW.item->>0 AS JSON)->>'mandatory',
-            CAST(NEW.item->>0 AS JSON)->>'name'
+            NEW.item->>'default',
+            NEW.item->>'empty_choice',
+            NEW.item->>'mandatory',
+            NEW.item->>'name'
         );
         RETURN NEW;
     END IF;
@@ -411,13 +411,13 @@ CREATE OR REPLACE FUNCTION update_local_admin_units() RETURNS TRIGGER AS \$\$
     ELSIF (TG_OP = 'UPDATE') THEN
         -- Updating or inserting data when JSON data is updated
         UPDATE $(db_schema_vn).local_admin_units SET
-            id_canton    = CAST(CAST(NEW.item->>0 AS JSON)->>'id_canton' AS INTEGER),
-            name         = CAST(NEW.item->>0 AS JSON)->>'name',
-            insee        = CAST(NEW.item->>0 AS JSON)->>'insee',
-            coord_lat    = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lat' AS FLOAT),
-            coord_lon    = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lon' AS FLOAT),
-            coord_x_local  = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_local' AS FLOAT),
-            coord_y_local  = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_local' AS FLOAT)
+            id_canton     = CAST(NEW.item->>'id_canton' AS INTEGER),
+            name          = NEW.item->>'name',
+            insee         = NEW.item->>'insee',
+            coord_lat     = CAST(NEW.item->>'coord_lat' AS FLOAT),
+            coord_lon     = CAST(NEW.item->>'coord_lon' AS FLOAT),
+            coord_x_local = CAST(NEW.item->>'coord_x_local' AS FLOAT),
+            coord_y_local = CAST(NEW.item->>'coord_y_local' AS FLOAT)
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
@@ -426,13 +426,13 @@ CREATE OR REPLACE FUNCTION update_local_admin_units() RETURNS TRIGGER AS \$\$
             VALUES (
                 NEW.site,
                 NEW.id,
-                CAST(CAST(NEW.item->>0 AS JSON)->>'id_canton' AS INTEGER),
-                CAST(NEW.item->>0 AS JSON)->>'name',
-                CAST(NEW.item->>0 AS JSON)->>'insee',
-                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lat' AS FLOAT),
-                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lon' AS FLOAT),
-                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_local' AS FLOAT),
-                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_local' AS FLOAT)
+                CAST(NEW.item->>'id_canton' AS INTEGER),
+                NEW.item->>'name',
+                NEW.item->>'insee',
+                CAST(NEW.item->>'coord_lat' AS FLOAT),
+                CAST(NEW.item->>'coord_lon' AS FLOAT),
+                CAST(NEW.item->>'coord_x_local' AS FLOAT),
+                CAST(NEW.item->>'coord_y_local' AS FLOAT)
             );
             END IF;
         RETURN NEW;
@@ -444,13 +444,13 @@ CREATE OR REPLACE FUNCTION update_local_admin_units() RETURNS TRIGGER AS \$\$
         VALUES (
             NEW.site,
             NEW.id,
-            CAST(CAST(NEW.item->>0 AS JSON)->>'id_canton' AS INTEGER),
-            CAST(NEW.item->>0 AS JSON)->>'name',
-            CAST(NEW.item->>0 AS JSON)->>'insee',
-            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lat' AS FLOAT),
-            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lon' AS FLOAT),
-            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_local' AS FLOAT),
-            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_local' AS FLOAT)
+            CAST(NEW.item->>'id_canton' AS INTEGER),
+            NEW.item->>'name',
+            NEW.item->>'insee',
+            CAST(NEW.item->>'coord_lat' AS FLOAT),
+            CAST(NEW.item->>'coord_lon' AS FLOAT),
+            CAST(NEW.item->>'coord_x_local' AS FLOAT),
+            CAST(NEW.item->>'coord_y_local' AS FLOAT)
         );
         RETURN NEW;
     END IF;

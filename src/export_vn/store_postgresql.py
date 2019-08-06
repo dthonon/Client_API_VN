@@ -822,12 +822,10 @@ class StorePostgresql:
         logger.info(_("Storing %d items from %s"), len(items_dict["data"]), controler)
         metadata = self._table_defs[controler]["metadata"]
         for elem in items_dict["data"]:
-            # Convert to json
-            items_json = json.dumps(elem)
-            logger.debug(_("Storing element %s"), items_json)
-            insert_stmt = insert(metadata).values(id=elem["id"], item=items_json)
+            logger.debug(_("Storing element %s"), elem)
+            insert_stmt = insert(metadata).values(id=elem["id"], item=elem)
             do_update_stmt = insert_stmt.on_conflict_do_update(
-                constraint=metadata.primary_key, set_=dict(item=items_json)
+                constraint=metadata.primary_key, set_=dict(item=elem)
             )
             self._conn.execute(do_update_stmt)
 
