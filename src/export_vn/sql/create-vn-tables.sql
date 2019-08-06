@@ -116,10 +116,9 @@ AFTER INSERT OR UPDATE OR DELETE ON $(db_schema_import).entities_json
 -- Field_details
 ----------------
 CREATE TABLE $(db_schema_vn).field_details(
-    id                  INTEGER,
+    id                  VARCHAR(100),
     group_id            INTEGER,
     value_id            INTEGER,
-    link_id             VARCHAR(100),
     order_id            INTEGER,
     name                VARCHAR(1000),
     PRIMARY KEY (id)
@@ -141,18 +140,16 @@ CREATE OR REPLACE FUNCTION update_field_details() RETURNS TRIGGER AS \$\$
         UPDATE $(db_schema_vn).field_details SET
             group_id = CAST(CAST(NEW.item->>0 AS JSON)->>'group' AS INTEGER),
             value_id = CAST(CAST(NEW.item->>0 AS JSON)->>'value' AS INTEGER),
-            link_id = (CAST(NEW.item->>0 AS JSON)->>'group') || '_' || (CAST(NEW.item->>0 AS JSON)->>'value'),
             order_id = CAST(CAST(NEW.item->>0 AS JSON)->>'order_id' AS INTEGER),
             name     = CAST(NEW.item->>0 AS JSON)->>'name'
         WHERE id = OLD.id;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
-            INSERT INTO $(db_schema_vn).field_details(id, group_id, value_id, link_id, order_id, name)
+            INSERT INTO $(db_schema_vn).field_details(id, group_id, value_id, order_id, name)
             VALUES (
                 NEW.id,
                 CAST(CAST(NEW.item->>0 AS JSON)->>'group' AS INTEGER),
                 CAST(CAST(NEW.item->>0 AS JSON)->>'value' AS INTEGER),
-                (CAST(NEW.item->>0 AS JSON)->>'group') || '_' || (CAST(NEW.item->>0 AS JSON)->>'value'),
                 CAST(CAST(NEW.item->>0 AS JSON)->>'order_id' AS INTEGER),
                 CAST(NEW.item->>0 AS JSON)->>'name'
             );
@@ -161,12 +158,11 @@ CREATE OR REPLACE FUNCTION update_field_details() RETURNS TRIGGER AS \$\$
 
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting row when raw data is inserted
-        INSERT INTO $(db_schema_vn).field_details(id, group_id, value_id, link_id, order_id, name)
+        INSERT INTO $(db_schema_vn).field_details(id, group_id, value_id, order_id, name)
         VALUES (
             NEW.id,
             CAST(CAST(NEW.item->>0 AS JSON)->>'group' AS INTEGER),
             CAST(CAST(NEW.item->>0 AS JSON)->>'value' AS INTEGER),
-            (CAST(NEW.item->>0 AS JSON)->>'group') || '_' || (CAST(NEW.item->>0 AS JSON)->>'value'),
             CAST(CAST(NEW.item->>0 AS JSON)->>'order_id' AS INTEGER),
             CAST(NEW.item->>0 AS JSON)->>'name'
         );
@@ -527,9 +523,9 @@ CREATE TRIGGER trg_geom BEFORE INSERT or UPDATE
     ON $(db_schema_vn).observations FOR EACH ROW
     EXECUTE PROCEDURE update_geom_triggerfn();
 
--- Transform JSON array in PG ARRAY
+-- Transform behaviours JSON array in PG ARRAY
 CREATE OR REPLACE FUNCTION behaviour_array(
-    p_input json
+    p_input TEXT
     ) RETURNS TEXT[] AS \$v_output\$
 
 DECLARE v_output TEXT[];
@@ -538,7 +534,7 @@ BEGIN
     SELECT array_agg(u.x)::TEXT[]
     INTO v_output
     FROM (SELECT t.value->>'@id' AS x
-        FROM json_array_elements(p_input) AS t)  AS u;
+        FROM json_array_elements(CAST(p_input AS JSON)) AS t)  AS u;
 
     RETURN v_output;
 END;
@@ -580,7 +576,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             admin_hidden    = CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'admin_hidden' AS BOOLEAN),
             observer_uid    = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> '@uid',
             details         = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'details',
-            behaviours      = behaviour_array(((CAST(NEW.item->0 AS JSON) -> 'observers') -> 0) -> 'behaviours'),
+            behaviours      = $(db_schema_vn).behaviour_array(CAST((((CAST(NEW.item->0 AS JSON) -> 'observers') -> 0) -> 'behaviours') AS TEXT)),
             comment         = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'comment',
             hidden_comment  = ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'hidden_comment',
             mortality       = CAST(((((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info,mortality}'::text []) is not null) as BOOLEAN),
@@ -623,7 +619,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
                 CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'admin_hidden' AS BOOLEAN),
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> '@uid',
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'details',
-                behaviour_array(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) -> 'behaviours'),
+                $(db_schema_vn).behaviour_array(CAST((((CAST(NEW.item->0 AS JSON) -> 'observers') -> 0) -> 'behaviours') AS TEXT)),
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'comment',
                 ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'hidden_comment',
                 CAST(((((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info,mortality}'::text []) is not null) as BOOLEAN),
@@ -667,7 +663,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             CAST(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'admin_hidden' AS BOOLEAN),
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> '@uid',
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'details',
-            behaviour_array(((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) -> 'behaviours'),
+            $(db_schema_vn).behaviour_array(CAST((((CAST(NEW.item->0 AS JSON) -> 'observers') -> 0) -> 'behaviours') AS TEXT)),
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'comment',
             ((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) ->> 'hidden_comment',
             CAST(((((CAST(NEW.item->>0 AS JSON) -> 'observers') -> 0) #>> '{extended_info,mortality}'::text []) is not null) as BOOLEAN),
@@ -724,13 +720,13 @@ CREATE OR REPLACE FUNCTION update_observers() RETURNS TRIGGER AS \$\$
     ELSIF (TG_OP = 'UPDATE') THEN
         -- Updating or inserting data when JSON data is updated
         UPDATE $(db_schema_vn).observers SET
-            id_universal   = CAST(CAST(NEW.item->>0 AS JSON)->>'id_universal' AS INTEGER),
-            id_entity      = CAST(CAST(NEW.item->>0 AS JSON)->>'id_entity' AS INTEGER),
-            anonymous      = CAST(CAST(NEW.item->>0 AS JSON)->>'anonymous' AS BOOLEAN),
-            collectif      = CAST(CAST(NEW.item->>0 AS JSON)->>'collectif' AS BOOLEAN),
-            default_hidden = CAST(CAST(NEW.item->>0 AS JSON)->>'default_hidden' AS BOOLEAN),
-            name           = CAST(NEW.item->>0 AS JSON)->>'name',
-            surname        = CAST(NEW.item->>0 AS JSON)->>'surname'
+            id_universal   = NEW.id_universal,
+            id_entity      = CAST(NEW.item->>'id_entity' AS INTEGER),
+            anonymous      = CAST(NEW.item->>'anonymous' AS BOOLEAN),
+            collectif      = CAST(NEW.item->>'collectif' AS BOOLEAN),
+            default_hidden = CAST(NEW.item->>'default_hidden' AS BOOLEAN),
+            name           = NEW.item->>'name',
+            surname        = NEW.item->>'surname'
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
@@ -739,14 +735,14 @@ CREATE OR REPLACE FUNCTION update_observers() RETURNS TRIGGER AS \$\$
             VALUES (
                 NEW.site,
                 NEW.id,
-                CAST(CAST(NEW.item->>0 AS JSON)->>'id_universal' AS INTEGER),
+                NEW.id_universal,
                 encode(hmac(CAST(CAST(NEW.item ->> 0 as json) ->> 'id_universal' as integer)::text, '$(db_secret_key)', 'sha1'), 'hex'),
-                CAST(CAST(NEW.item->>0 AS JSON)->>'id_entity' AS INTEGER),
-                CAST(CAST(NEW.item->>0 AS JSON)->>'anonymous' AS BOOLEAN),
-                CAST(CAST(NEW.item->>0 AS JSON)->>'collectif' AS BOOLEAN),
-                CAST(CAST(NEW.item->>0 AS JSON)->>'default_hidden' AS BOOLEAN),
-                CAST(NEW.item->>0 AS JSON)->>'name',
-                CAST(NEW.item->>0 AS JSON)->>'surname'
+                CAST(NEW.item->>'id_entity' AS INTEGER),
+                CAST(NEW.item->>'anonymous' AS BOOLEAN),
+                CAST(NEW.item->>'collectif' AS BOOLEAN),
+                CAST(NEW.item->>'default_hidden' AS BOOLEAN),
+                NEW.item->>'name',
+                NEW.item->>'surname'
             );
             END IF;
         RETURN NEW;
@@ -758,14 +754,14 @@ CREATE OR REPLACE FUNCTION update_observers() RETURNS TRIGGER AS \$\$
         VALUES (
             NEW.site,
             NEW.id,
-            CAST(CAST(NEW.item->>0 AS JSON)->>'id_universal' AS INTEGER),
+            NEW.id_universal,
             encode(hmac(CAST(CAST(NEW.item ->> 0 as json) ->> 'id_universal' as integer)::text, '$(db_secret_key)', 'sha1'), 'hex'),
-            CAST(CAST(NEW.item->>0 AS JSON)->>'id_entity' AS INTEGER),
-            CAST(CAST(NEW.item->>0 AS JSON)->>'anonymous' AS BOOLEAN),
-            CAST(CAST(NEW.item->>0 AS JSON)->>'collectif' AS BOOLEAN),
-            CAST(CAST(NEW.item->>0 AS JSON)->>'default_hidden' AS BOOLEAN),
-            CAST(NEW.item->>0 AS JSON)->>'name',
-            CAST(NEW.item->>0 AS JSON)->>'surname'
+            CAST(NEW.item->>'id_entity' AS INTEGER),
+            CAST(NEW.item->>'anonymous' AS BOOLEAN),
+            CAST(NEW.item->>'collectif' AS BOOLEAN),
+            CAST(NEW.item->>'default_hidden' AS BOOLEAN),
+            NEW.item->>'name',
+            NEW.item->>'surname'
         );
         RETURN NEW;
     END IF;
@@ -832,18 +828,18 @@ CREATE OR REPLACE FUNCTION update_places() RETURNS TRIGGER AS \$\$
     ELSIF (TG_OP = 'UPDATE') THEN
         -- Updating or inserting data when JSON data is updated
         UPDATE $(db_schema_vn).places SET
-            id_commune    = CAST(CAST(NEW.item->>0 AS JSON)->>'id_commune' AS INTEGER),
-            id_region     = CAST(CAST(NEW.item->>0 AS JSON)->>'id_region' AS INTEGER),
-            name          = CAST(NEW.item->>0 AS JSON)->>'name',
-            is_private    = CAST(CAST(NEW.item->>0 AS JSON)->>'is_private' AS BOOLEAN),
-            loc_precision = CAST(CAST(NEW.item->>0 AS JSON)->>'loc_precision' AS INTEGER),
-            altitude      = CAST(CAST(NEW.item->>0 AS JSON)->>'altitude' AS INTEGER),
-            place_type    = CAST(NEW.item->>0 AS JSON)->>'place_type',
-            visible       = CAST(CAST(NEW.item->>0 AS JSON)->>'visible' AS BOOLEAN),
-            coord_lat     = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lat' AS FLOAT),
-            coord_lon     = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lon' AS FLOAT),
-            coord_x_local   = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_local' AS FLOAT),
-            coord_y_local   = CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_local' AS FLOAT)
+            id_commune    = CAST(NEW.item->>'id_commune' AS INTEGER),
+            id_region     = CAST(NEW.item->>'id_region' AS INTEGER),
+            name          = NEW.item->>'name',
+            is_private    = CAST(NEW.item->>'is_private' AS BOOLEAN),
+            loc_precision = CAST(NEW.item->>'loc_precision' AS INTEGER),
+            altitude      = CAST(NEW.item->>'altitude' AS INTEGER),
+            place_type    = NEW.item->>'place_type',
+            visible       = CAST(NEW.item->>'visible' AS BOOLEAN),
+            coord_lat     = CAST(NEW.item->>'coord_lat' AS FLOAT),
+            coord_lon     = CAST(NEW.item->>'coord_lon' AS FLOAT),
+            coord_x_local = CAST(NEW.item->>'coord_x_local' AS FLOAT),
+            coord_y_local = CAST(NEW.item->>'coord_y_local' AS FLOAT)
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
@@ -853,18 +849,18 @@ CREATE OR REPLACE FUNCTION update_places() RETURNS TRIGGER AS \$\$
             VALUES (
                 NEW.site,
                 NEW.id,
-                CAST(CAST(NEW.item->>0 AS JSON)->>'id_commune' AS INTEGER),
-                CAST(CAST(NEW.item->>0 AS JSON)->>'id_region' AS INTEGER),
-                CAST(NEW.item->>0 AS JSON)->>'name',
-                CAST(CAST(NEW.item->>0 AS JSON)->>'is_private' AS BOOLEAN),
-                CAST(CAST(NEW.item->>0 AS JSON)->>'loc_precision' AS INTEGER),
-                CAST(CAST(NEW.item->>0 AS JSON)->>'altitude' AS INTEGER),
-                CAST(NEW.item->>0 AS JSON)->>'place_type',
-                CAST(CAST(NEW.item->>0 AS JSON)->>'visible' AS BOOLEAN),
-                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lat' AS FLOAT),
-                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lon' AS FLOAT),
-                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_local' AS FLOAT),
-                CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_local' AS FLOAT)
+                CAST(NEW.item->>'id_commune' AS INTEGER),
+                CAST(NEW.item->>'id_region' AS INTEGER),
+                NEW.item->>'name',
+                CAST(NEW.item->>'is_private' AS BOOLEAN),
+                CAST(NEW.item->>'loc_precision' AS INTEGER),
+                CAST(NEW.item->>'altitude' AS INTEGER),
+                NEW.item->>'place_type',
+                CAST(NEW.item->>'visible' AS BOOLEAN),
+                CAST(NEW.item->>'coord_lat' AS FLOAT),
+                CAST(NEW.item->>'coord_lon' AS FLOAT),
+                CAST(NEW.item->>'coord_x_local' AS FLOAT),
+                CAST(NEW.item->>'coord_y_local' AS FLOAT)
             );
             END IF;
         RETURN NEW;
@@ -877,18 +873,18 @@ CREATE OR REPLACE FUNCTION update_places() RETURNS TRIGGER AS \$\$
         VALUES (
             NEW.site,
             NEW.id,
-            CAST(CAST(NEW.item->>0 AS JSON)->>'id_commune' AS INTEGER),
-            CAST(CAST(NEW.item->>0 AS JSON)->>'id_region' AS INTEGER),
-            CAST(NEW.item->>0 AS JSON)->>'name',
-            CAST(CAST(NEW.item->>0 AS JSON)->>'is_private' AS BOOLEAN),
-            CAST(CAST(NEW.item->>0 AS JSON)->>'loc_precision' AS INTEGER),
-            CAST(CAST(NEW.item->>0 AS JSON)->>'altitude' AS INTEGER),
-            CAST(NEW.item->>0 AS JSON)->>'place_type',
-            CAST(CAST(NEW.item->>0 AS JSON)->>'visible' AS BOOLEAN),
-            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lat' AS FLOAT),
-            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_lon' AS FLOAT),
-            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_x_local' AS FLOAT),
-            CAST(CAST(NEW.item->>0 AS JSON)->>'coord_y_local' AS FLOAT)
+            CAST(NEW.item->>'id_commune' AS INTEGER),
+            CAST(NEW.item->>'id_region' AS INTEGER),
+            NEW.item->>'name',
+            CAST(NEW.item->>'is_private' AS BOOLEAN),
+            CAST(NEW.item->>'loc_precision' AS INTEGER),
+            CAST(NEW.item->>'altitude' AS INTEGER),
+            NEW.item->>'place_type',
+            CAST(NEW.item->>'visible' AS BOOLEAN),
+            CAST(NEW.item->>'coord_lat' AS FLOAT),
+            CAST(NEW.item->>'coord_lon' AS FLOAT),
+            CAST(NEW.item->>'coord_x_local' AS FLOAT),
+            CAST(NEW.item->>'coord_y_local' AS FLOAT)
         );
         RETURN NEW;
     END IF;
@@ -941,15 +937,15 @@ CREATE OR REPLACE FUNCTION update_species() RETURNS TRIGGER AS \$\$
     ELSIF (TG_OP = 'UPDATE') THEN
         -- Updating or inserting data when JSON data is updated
         UPDATE $(db_schema_vn).species SET
-            id_taxo_group = CAST(CAST(NEW.item->>0 AS JSON)->>'id_taxo_group' AS INTEGER),
-            is_used       = CAST(CAST(NEW.item->>0 AS JSON)->>'is_used' AS BOOLEAN),
-            french_name   = CAST(NEW.item->>0 AS JSON)->>'french_name',
-            latin_name    = CAST(NEW.item->>0 AS JSON)->>'latin_name',
-            rarity        = CAST(NEW.item->>0 AS JSON)->>'rarity',
-            category_1    = CAST(NEW.item->>0 AS JSON)->>'category_1',
-            sys_order     = CAST(CAST(NEW.item->>0 AS JSON)->>'sys_order' AS INTEGER),
-            atlas_start   = CAST(CAST(NEW.item->>0 AS JSON)->>'atlas_start' AS INTEGER),
-            atlas_end     = CAST(CAST(NEW.item->>0 AS JSON)->>'atlas_end' AS INTEGER)
+            id_taxo_group = CAST(NEW.item->>'id_taxo_group' AS INTEGER),
+            is_used       = CAST(NEW.item->>'is_used' AS BOOLEAN),
+            french_name   = NEW.item->>'french_name',
+            latin_name    = NEW.item->>'latin_name',
+            rarity        = NEW.item->>'rarity',
+            category_1    = NEW.item->>'category_1',
+            sys_order     = CAST(NEW.item->>'sys_order' AS INTEGER),
+            atlas_start   = CAST(NEW.item->>'atlas_start' AS INTEGER),
+            atlas_end     = CAST(NEW.item->>'atlas_end' AS INTEGER)
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
@@ -958,15 +954,15 @@ CREATE OR REPLACE FUNCTION update_species() RETURNS TRIGGER AS \$\$
             VALUES (
                 NEW.site,
                 NEW.id,
-                CAST(CAST(NEW.item->>0 AS JSON)->>'id_taxo_group' AS INTEGER),
-                CAST(CAST(NEW.item->>0 AS JSON)->>'is_used' AS BOOLEAN),
-                CAST(NEW.item->>0 AS JSON)->>'french_name',
-                CAST(NEW.item->>0 AS JSON)->>'latin_name',
-                CAST(NEW.item->>0 AS JSON)->>'rarity',
-                CAST(NEW.item->>0 AS JSON)->>'category_1',
-                CAST(CAST(NEW.item->>0 AS JSON)->>'sys_order' AS INTEGER),
-                CAST(CAST(NEW.item->>0 AS JSON)->>'atlas_start' AS INTEGER),
-                CAST(CAST(NEW.item->>0 AS JSON)->>'atlas_end' AS INTEGER)
+                CAST(NEW.item->>'id_taxo_group' AS INTEGER),
+                CAST(NEW.item->>'is_used' AS BOOLEAN),
+                NEW.item->>'french_name',
+                NEW.item->>'latin_name',
+                NEW.item->>'rarity',
+                NEW.item->>'category_1',
+                CAST(NEW.item->>'sys_order' AS INTEGER),
+                CAST(NEW.item->>'atlas_start' AS INTEGER),
+                CAST(NEW.item->>'atlas_end' AS INTEGER)
             );
             END IF;
         RETURN NEW;
@@ -978,15 +974,15 @@ CREATE OR REPLACE FUNCTION update_species() RETURNS TRIGGER AS \$\$
         VALUES (
             NEW.site,
             NEW.id,
-            CAST(CAST(NEW.item->>0 AS JSON)->>'id_taxo_group' AS INTEGER),
-            CAST(CAST(NEW.item->>0 AS JSON)->>'is_used' AS BOOLEAN),
-            CAST(NEW.item->>0 AS JSON)->>'french_name',
-            CAST(NEW.item->>0 AS JSON)->>'latin_name',
-            CAST(NEW.item->>0 AS JSON)->>'rarity',
-            CAST(NEW.item->>0 AS JSON)->>'category_1',
-            CAST(CAST(NEW.item->>0 AS JSON)->>'sys_order' AS INTEGER),
-            CAST(CAST(NEW.item->>0 AS JSON)->>'atlas_start' AS INTEGER),
-            CAST(CAST(NEW.item->>0 AS JSON)->>'atlas_end' AS INTEGER)
+            CAST(NEW.item->>'id_taxo_group' AS INTEGER),
+            CAST(NEW.item->>'is_used' AS BOOLEAN),
+            NEW.item->>'french_name',
+            NEW.item->>'latin_name',
+            NEW.item->>'rarity',
+            NEW.item->>'category_1',
+            CAST(NEW.item->>'sys_order' AS INTEGER),
+            CAST(NEW.item->>'atlas_start' AS INTEGER),
+            CAST(NEW.item->>'atlas_end' AS INTEGER)
         );
         RETURN NEW;
     END IF;
@@ -1034,22 +1030,22 @@ CREATE OR REPLACE FUNCTION update_taxo_groups() RETURNS TRIGGER AS \$\$
     ELSIF (TG_OP = 'UPDATE') THEN
         -- Updating or inserting data when JSON data is updated
         UPDATE $(db_schema_vn).taxo_groups SET
-            name          = CAST(NEW.item->>0 AS JSON)->>'name',
-            latin_name    = CAST(NEW.item->>0 AS JSON)->>'latin_name',
-            name_constant = CAST(NEW.item->>0 AS JSON)->>'name_constant',
-            access_mode   = CAST(NEW.item->>0 AS JSON)->>'access_mode'
+            name          = NEW.item->>'name',
+            latin_name    = NEW.item->>'latin_name',
+            name_constant = NEW.item->>'name_constant',
+            access_mode   = NEW.item->>'access_mode'
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
             INSERT INTO $(db_schema_vn).taxo_groups(site, id, name, latin_name, name_constant,
-                                                        access_mode)
+                                                    access_mode)
             VALUES (
                 NEW.site,
                 NEW.id,
-                CAST(NEW.item->>0 AS JSON)->>'name',
-                CAST(NEW.item->>0 AS JSON)->>'latin_name',
-                CAST(NEW.item->>0 AS JSON)->>'name_constant',
-                CAST(NEW.item->>0 AS JSON)->>'access_mode'
+                NEW.item->>'name',
+                NEW.item->>'latin_name',
+                NEW.item->>'name_constant',
+                NEW.item->>'access_mode'
             );
             END IF;
         RETURN NEW;
@@ -1057,14 +1053,14 @@ CREATE OR REPLACE FUNCTION update_taxo_groups() RETURNS TRIGGER AS \$\$
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting data on src_vn.observations when raw data is inserted
         INSERT INTO $(db_schema_vn).taxo_groups(site, id, name, latin_name, name_constant,
-                                                    access_mode)
+                                                access_mode)
         VALUES (
             NEW.site,
             NEW.id,
-            CAST(NEW.item->>0 AS JSON)->>'name',
-            CAST(NEW.item->>0 AS JSON)->>'latin_name',
-            CAST(NEW.item->>0 AS JSON)->>'name_constant',
-            CAST(NEW.item->>0 AS JSON)->>'access_mode'
+            NEW.item->>'name',
+            NEW.item->>'latin_name',
+            NEW.item->>'name_constant',
+            NEW.item->>'access_mode'
         );
         RETURN NEW;
     END IF;
@@ -1110,9 +1106,9 @@ CREATE OR REPLACE FUNCTION update_territorial_units() RETURNS TRIGGER AS \$\$
     ELSIF (TG_OP = 'UPDATE') THEN
         -- Updating or inserting data when JSON data is updated
         UPDATE $(db_schema_vn).territorial_units SET
-            id_country   = CAST(CAST(NEW.item->>0 AS JSON)->>'id_country' AS INTEGER),
-            name         = CAST(NEW.item->>0 AS JSON)->>'name',
-            short_name   = CAST(NEW.item->>0 AS JSON)->>'short_name'
+            id_country   = CAST(NEW.item->>'id_country' AS INTEGER),
+            name         = NEW.item->>'name',
+            short_name   = NEW.item->>'short_name'
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
@@ -1120,9 +1116,9 @@ CREATE OR REPLACE FUNCTION update_territorial_units() RETURNS TRIGGER AS \$\$
             VALUES (
                 NEW.site,
                 NEW.id,
-                CAST(CAST(NEW.item->>0 AS JSON)->>'id_country' AS INTEGER),
-                CAST(NEW.item->>0 AS JSON)->>'name',
-                CAST(NEW.item->>0 AS JSON)->>'short_name'
+                CAST(NEW.item->>'id_country' AS INTEGER),
+                NEW.item->>'name',
+                NEW.item->>'short_name'
             );
             END IF;
         RETURN NEW;
@@ -1133,9 +1129,9 @@ CREATE OR REPLACE FUNCTION update_territorial_units() RETURNS TRIGGER AS \$\$
         VALUES (
             NEW.site,
             NEW.id,
-            CAST(CAST(NEW.item->>0 AS JSON)->>'id_country' AS INTEGER),
-            CAST(NEW.item->>0 AS JSON)->>'name',
-            CAST(NEW.item->>0 AS JSON)->>'short_name'
+            CAST(NEW.item->>'id_country' AS INTEGER),
+            NEW.item->>'name',
+            NEW.item->>'short_name'
         );
         RETURN NEW;
     END IF;
