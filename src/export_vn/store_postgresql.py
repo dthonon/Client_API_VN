@@ -10,7 +10,6 @@ Properties
 -
 
 """
-import json
 import logging
 import queue
 import threading
@@ -133,18 +132,17 @@ def store_1_observation(item):
     )
 
     # Store in Postgresql
-    items_json = json.dumps(elem)
     metadata = item.metadata
     site = item.site
     insert_stmt = insert(metadata).values(
         id=elem["observers"][0]["id_sighting"],
         site=site,
         update_ts=update_date,
-        item=items_json,
+        item=elem,
     )
     do_update_stmt = insert_stmt.on_conflict_do_update(
         constraint=metadata.primary_key,
-        set_=dict(update_ts=update_date, item=items_json),
+        set_=dict(update_ts=update_date, item=elem),
         where=(metadata.c.update_ts < update_date),
     )
 
@@ -863,7 +861,7 @@ class StorePostgresql:
         result = self._conn.execute(stmt)
         row = result.fetchone()
         if row is None:
-            # Forms no found, inserting
+            # Forms no found, inserting a new one
             logger.debug(
                 _("Storing %d items from %s of site %s"),
                 len(items_dict),
@@ -881,14 +879,13 @@ class StorePostgresql:
                 ] = transformer.transform(items_dict["lon"], items_dict["lat"])
 
             # Convert to json
-            items_json = json.dumps(items_dict)
-            logger.debug(_("Storing element %s"), items_json)
+            logger.debug(_("Storing element %s"), items_dict)
             metadata = self._table_defs[controler]["metadata"]
             insert_stmt = insert(metadata).values(
-                id=items_dict["@id"], site=self._config.site, item=items_json
+                id=items_dict["@id"], site=self._config.site, item=items_dict
             )
             do_update_stmt = insert_stmt.on_conflict_do_update(
-                constraint=metadata.primary_key, set_=dict(item=items_json)
+                constraint=metadata.primary_key, set_=dict(item=items_dict)
             )
             self._conn.execute(do_update_stmt)
 
