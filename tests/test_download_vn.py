@@ -70,7 +70,7 @@ def test_entities_store(capsys):
 # ---------
 def test_fields_store(capsys):
     """Store fields to file."""
-    file_json = str(Path.home()) + "/" + CFG.file_store + "fields_1.json.gz"
+    file_json = str(Path.home()) + "/" + CFG.file_store + "field_details_1.json.gz"
     if Path(file_json).is_file():
         Path(file_json).unlink()
     FIELDS.store()

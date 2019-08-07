@@ -32,7 +32,7 @@ You can then download data, as enabled in the YAML file.
 Beware that, depending on the volume of observations,
 this can take hours. We recommend starting with a small taxonomic group first::
 
-    transfer_vn --db-create --json_tables_create --col_tables_create --full .evn_your_site.yaml
+    transfer_vn --db_create --json_tables_create --col_tables_create --full .evn_your_site.yaml
 
 
 Once this is done, you can update the database with new observations::

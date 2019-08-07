@@ -10,7 +10,6 @@ Properties
 -
 
 """
-import json
 import logging
 import queue
 import threading
@@ -133,18 +132,17 @@ def store_1_observation(item):
     )
 
     # Store in Postgresql
-    items_json = json.dumps(elem)
     metadata = item.metadata
     site = item.site
     insert_stmt = insert(metadata).values(
         id=elem["observers"][0]["id_sighting"],
         site=site,
         update_ts=update_date,
-        item=items_json,
+        item=elem,
     )
     do_update_stmt = insert_stmt.on_conflict_do_update(
         constraint=metadata.primary_key,
-        set_=dict(update_ts=update_date, item=items_json),
+        set_=dict(update_ts=update_date, item=elem),
         where=(metadata.c.update_ts < update_date),
     )
 
@@ -241,7 +239,7 @@ class PostgresqlUtils:
         """Create field_details_json table if it does not exist."""
         self._create_table(
             "field_details_json",
-            Column("id", Integer, nullable=False),
+            Column("id", String, nullable=False),
             Column("item", JSONB, nullable=False),
             PrimaryKeyConstraint("id", name="field_detais_json_pk"),
         )
@@ -275,8 +273,8 @@ class PostgresqlUtils:
             "uuid_xref",
             Column("id", Integer, nullable=False),
             Column("site", String, nullable=False),
-            Column("universal_id", String, nullable=False),
-            Column("uuid", String, nullable=False),
+            Column("universal_id", String, nullable=False, index=True),
+            Column("uuid", String, nullable=False, index=True),
             Column("alias", JSONB, nullable=True),
             Column("update_ts", DateTime, server_default=func.now(), nullable=False),
             PrimaryKeyConstraint("id", "site", name="uuid_xref_json_pk"),
@@ -301,6 +299,7 @@ class PostgresqlUtils:
             "observers_json",
             Column("id", Integer, nullable=False),
             Column("site", String, nullable=False),
+            Column("id_universal", Integer, nullable=False, index=True),
             Column("item", JSONB, nullable=False),
             PrimaryKeyConstraint("id", "site", name="observers_json_pk"),
         )
@@ -645,7 +644,7 @@ class StorePostgresql:
             "local_admin_units": {"type": "geometry", "metadata": None},
             "uuid_xref": {"type": "others", "metadata": None},
             "observations": {"type": "observation", "metadata": None},
-            "observers": {"type": "simple", "metadata": None},
+            "observers": {"type": "observers", "metadata": None},
             "places": {"type": "geometry", "metadata": None},
             "species": {"type": "simple", "metadata": None},
             "taxo_groups": {"type": "simple", "metadata": None},
@@ -758,13 +757,12 @@ class StorePostgresql:
         metadata = self._table_defs[controler]["metadata"]
         for elem in items_dict["data"]:
             # Convert to json
-            items_json = json.dumps(elem)
-            logger.debug(_("Storing element %s"), items_json)
+            logger.debug(_("Storing element %s"), elem)
             insert_stmt = insert(metadata).values(
-                id=elem["id"], site=self._config.site, item=items_json
+                id=elem["id"], site=self._config.site, item=elem
             )
             do_update_stmt = insert_stmt.on_conflict_do_update(
-                constraint=metadata.primary_key, set_=dict(item=items_json)
+                constraint=metadata.primary_key, set_=dict(item=elem)
             )
             self._conn.execute(do_update_stmt)
 
@@ -822,12 +820,10 @@ class StorePostgresql:
         logger.info(_("Storing %d items from %s"), len(items_dict["data"]), controler)
         metadata = self._table_defs[controler]["metadata"]
         for elem in items_dict["data"]:
-            # Convert to json
-            items_json = json.dumps(elem)
-            logger.debug(_("Storing element %s"), items_json)
-            insert_stmt = insert(metadata).values(id=elem["id"], item=items_json)
+            logger.debug(_("Storing element %s"), elem)
+            insert_stmt = insert(metadata).values(id=elem["id"], item=elem)
             do_update_stmt = insert_stmt.on_conflict_do_update(
-                constraint=metadata.primary_key, set_=dict(item=items_json)
+                constraint=metadata.primary_key, set_=dict(item=elem)
             )
             self._conn.execute(do_update_stmt)
 
@@ -865,7 +861,7 @@ class StorePostgresql:
         result = self._conn.execute(stmt)
         row = result.fetchone()
         if row is None:
-            # Forms no found, inserting
+            # Forms no found, inserting a new one
             logger.debug(
                 _("Storing %d items from %s of site %s"),
                 len(items_dict),
@@ -883,14 +879,13 @@ class StorePostgresql:
                 ] = transformer.transform(items_dict["lon"], items_dict["lat"])
 
             # Convert to json
-            items_json = json.dumps(items_dict)
-            logger.debug(_("Storing element %s"), items_json)
+            logger.debug(_("Storing element %s"), items_dict)
             metadata = self._table_defs[controler]["metadata"]
             insert_stmt = insert(metadata).values(
-                id=items_dict["@id"], site=self._config.site, item=items_json
+                id=items_dict["@id"], site=self._config.site, item=items_dict
             )
             do_update_stmt = insert_stmt.on_conflict_do_update(
-                constraint=metadata.primary_key, set_=dict(item=items_json)
+                constraint=metadata.primary_key, set_=dict(item=items_dict)
             )
             self._conn.execute(do_update_stmt)
 
@@ -1007,6 +1002,46 @@ class StorePostgresql:
         logger.debug(_("Stored %d observations or forms to database"), nb_obs)
         return nb_obs
 
+    def _store_observers(self, controler, items_dict):
+        """Write observers items_dict to database.
+
+        Converts each element to JSON and store to database in a tables
+        named from controler.
+
+        Parameters
+        ----------
+        controler : str
+            Name of API controler.
+        items_dict : dict
+            Data returned from API call.
+
+        Returns
+        -------
+        int
+            Count of items stored (not exact for observations, due to forms).
+        """
+
+        # Loop on data array to store each element to database
+        logger.info(
+            _("Storing observers %d items from %s of site %s"),
+            len(items_dict["data"]),
+            controler,
+            self._config.site,
+        )
+        metadata = self._table_defs[controler]["metadata"]
+        for elem in items_dict["data"]:
+            # Convert to json
+            logger.debug(_("Storing element %s"), elem)
+            insert_stmt = insert(metadata).values(
+                id=elem["id"], id_universal=elem["id_universal"], site=self._config.site, item=elem
+            )
+            do_update_stmt = insert_stmt.on_conflict_do_update(
+                constraint=metadata.primary_key, set_=dict(id_universal=elem["id_universal"], item=elem)
+            )
+            self._conn.execute(do_update_stmt)
+
+        return len(items_dict["data"])
+
     # ---------------
     # External methods
     # ---------------
@@ -1038,6 +1073,8 @@ class StorePostgresql:
             nb_item = self._store_simple(controler, items_dict)
         elif self._table_defs[controler]["type"] == "geometry":
             nb_item = self._store_geometry(controler, items_dict)
+        elif self._table_defs[controler]["type"] == "observers":
+            nb_item = self._store_observers(controler, items_dict)
         elif self._table_defs[controler]["type"] == "fields":
             nb_item = self._store_fields(controler, items_dict)
 

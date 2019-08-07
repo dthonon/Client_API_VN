@@ -1,3 +1,15 @@
+Client-API-VN v2.4.0 (2019-08-07)
+=================================
+
+Features
+--------
+
+- Storage and processing of JSON data has been improved, reducing processing time. (`#56 <https://framagit.org/lpo/Client_API_VN/issues/56>`_)
+- Field groups details use the text index provided by the API.
+  For example, field_details.id '5_1' is value '1' of group '5', meaning 'COLL_TRANS'. (`#62 <https://framagit.org/lpo/Client_API_VN/issues/62>`_)
+- In observers_json, id_universal is stored in a separate column. (`#64 <https://framagit.org/lpo/Client_API_VN/issues/64>`_)
+
+
 Client-API-VN v2.3.3 (2019-08-04)
 =================================
 
