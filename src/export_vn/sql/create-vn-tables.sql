@@ -575,7 +575,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
         UPDATE $(db_schema_vn).observations SET
             id_universal    = ((NEW.item -> 'observers') -> 0) ->> 'id_universal',
             id_species      = CAST(NEW.item #>> '{species,@id}' AS INTEGER),
-            taxonomy        = CAST(NEW.item #>> '{species,taxonomy}' TO INTEGER),
+            taxonomy        = CAST(NEW.item #>> '{species,taxonomy}' AS INTEGER),
             "date"          = to_date(NEW.item #>> '{date,@ISO8601}', 'YYYY-MM-DD'),
             date_year       = CAST(extract(year from to_date(NEW.item #>> '{date,@ISO8601}', 'YYYY-MM-DD')) AS INTEGER),
             timing          = to_timestamp(CAST(((NEW.item -> 'observers') -> 0) #>> '{timing,@timestamp}' AS DOUBLE PRECISION)),
@@ -617,7 +617,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
                 encode(hmac(NEW.id::text, '$(db_secret_key)', 'sha1'), 'hex'),
                 ((NEW.item -> 'observers') -> 0) ->> 'id_universal',
                 CAST(NEW.item #>> '{species,@id}' AS INTEGER),
-                CAST(NEW.item #>> '{species,taxonomy}' TO INTEGER),
+                CAST(NEW.item #>> '{species,taxonomy}' AS INTEGER),
                 to_date(NEW.item #>> '{date,@ISO8601}', 'YYYY-MM-DD'),
                 CAST(extract(year from to_date(NEW.item #>> '{date,@ISO8601}', 'YYYY-MM-DD')) AS INTEGER),
                 -- Missing time_start & time_stop
@@ -661,7 +661,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             encode(hmac(NEW.id::text, '$(db_secret_key)', 'sha1'), 'hex'),
             ((NEW.item -> 'observers') -> 0) ->> 'id_universal',
             CAST(NEW.item #>> '{species,@id}' AS INTEGER),
-            CAST(NEW.item #>> '{species,taxonomy}' TO INTEGER),
+            CAST(NEW.item #>> '{species,taxonomy}' AS INTEGER),
             to_date(NEW.item #>> '{date,@ISO8601}', 'YYYY-MM-DD'),
             CAST(extract(year from to_date(NEW.item #>> '{date,@ISO8601}', 'YYYY-MM-DD')) AS INTEGER),
             -- Missing time_start & time_stop

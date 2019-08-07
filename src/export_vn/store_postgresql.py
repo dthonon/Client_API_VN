@@ -249,7 +249,7 @@ class PostgresqlUtils:
         """Create forms_json table if it does not exist."""
         self._create_table(
             "forms_json",
-            Column("id", Integer, nullable=False),
+            Column("id", Integer, nullable=False, index=True),
             Column("site", String, nullable=False),
             Column("item", JSONB, nullable=False),
             PrimaryKeyConstraint("id", "site", name="forms_json_pk"),
@@ -271,8 +271,8 @@ class PostgresqlUtils:
         """Create uuid_xref table if it does not exist."""
         self._create_table(
             "uuid_xref",
-            Column("id", Integer, nullable=False),
-            Column("site", String, nullable=False),
+            Column("id", Integer, nullable=False, index=True),
+            Column("site", String, nullable=False, index=True),
             Column("universal_id", String, nullable=False, index=True),
             Column("uuid", String, nullable=False, index=True),
             Column("alias", JSONB, nullable=True),
@@ -285,7 +285,7 @@ class PostgresqlUtils:
         """Create observations_json table if it does not exist."""
         self._create_table(
             "observations_json",
-            Column("id", Integer, nullable=False),
+            Column("id", Integer, nullable=False, index=True),
             Column("site", String, nullable=False),
             Column("item", JSONB, nullable=False),
             Column("update_ts", Integer, nullable=False),
@@ -297,7 +297,7 @@ class PostgresqlUtils:
         """Create observers_json table if it does not exist."""
         self._create_table(
             "observers_json",
-            Column("id", Integer, nullable=False),
+            Column("id", Integer, nullable=False, index=True),
             Column("site", String, nullable=False),
             Column("id_universal", Integer, nullable=False, index=True),
             Column("item", JSONB, nullable=False),
@@ -309,7 +309,7 @@ class PostgresqlUtils:
         """Create places_json table if it does not exist."""
         self._create_table(
             "places_json",
-            Column("id", Integer, nullable=False),
+            Column("id", Integer, nullable=False, index=True),
             Column("site", String, nullable=False),
             Column("item", JSONB, nullable=False),
             PrimaryKeyConstraint("id", "site", name="places_json_pk"),
@@ -320,7 +320,7 @@ class PostgresqlUtils:
         """Create species_json table if it does not exist."""
         self._create_table(
             "species_json",
-            Column("id", Integer, nullable=False),
+            Column("id", Integer, nullable=False, index=True),
             Column("site", String, nullable=False),
             Column("item", JSONB, nullable=False),
             PrimaryKeyConstraint("id", "site", name="species_json_pk"),
