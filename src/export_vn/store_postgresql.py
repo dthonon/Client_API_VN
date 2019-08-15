@@ -48,7 +48,7 @@ class StorePostgresqlException(Exception):
 class ObservationItem:
     """Properties of an observation, for transmission in Queue."""
 
-    def __init__(self, site, metadata, conn, transformer, elem):
+    def __init__(self, site, metadata, conn, transformer, elem, form):
         """Item elements.
 
         Parameters
@@ -63,12 +63,15 @@ class ObservationItem:
             pyproj transformer used to create local coordinates
         elem : dict
             Single observation to process and store.
+        form : str
+            id_form_universal if in form, or None
         """
         self._site = site
         self._metadata = metadata
         self._conn = conn
         self._transformer = transformer
         self._elem = elem
+        self._form = form
         return None
 
     @property
@@ -95,6 +98,11 @@ class ObservationItem:
     def elem(self):
         """Return elem."""
         return self._elem
+
+    @property
+    def form(self):
+        """Return form."""
+        return self._form
 
 
 def store_1_observation(item):
@@ -138,11 +146,12 @@ def store_1_observation(item):
         id=elem["observers"][0]["id_sighting"],
         site=site,
         update_ts=update_date,
+        id_form_universal=item.form,
         item=elem,
     )
     do_update_stmt = insert_stmt.on_conflict_do_update(
         constraint=metadata.primary_key,
-        set_=dict(update_ts=update_date, item=elem),
+        set_=dict(update_ts=update_date, item=elem, id_form_universal=item.form),
         where=(metadata.c.update_ts < update_date),
     )
 
@@ -289,6 +298,7 @@ class PostgresqlUtils:
             Column("site", String, nullable=False),
             Column("item", JSONB, nullable=False),
             Column("update_ts", Integer, nullable=False),
+            Column("id_form_universal", String),
             PrimaryKeyConstraint("id", "site", name="observations_json_pk"),
         )
         return None
@@ -829,7 +839,7 @@ class StorePostgresql:
 
         return len(items_dict["data"])
 
-    def _store_form(self, items_dict):
+    def _store_form(self, items_dict, transformer):
         """Write forms to database.
 
         Check if forms is in database and either insert or update.
@@ -838,6 +848,8 @@ class StorePostgresql:
         ----------
         items_dict : dict
             Forms data to store.
+        transformer : Transformer.from_proj
+            Projection transformer for adding local coordinates
 
         Returns
         -------
@@ -854,9 +866,6 @@ class StorePostgresql:
         )
 
         # Add local coordinates
-        transformer = Transformer.from_proj(
-            4326, int(self._config.db_out_proj), always_xy=True
-        )
         if ("lon" in items_dict) and ("lat" in items_dict):
             items_dict["coord_x_local"], items_dict[
                 "coord_y_local"
@@ -937,6 +946,7 @@ class StorePostgresql:
         logger.debug(
             _("Storing %d single observations"), len(items_dict["data"]["sightings"])
         )
+        # Create projection transformer
         transformer = Transformer.from_proj(
             4326, int(self._config.db_out_proj), always_xy=True
         )
@@ -961,6 +971,10 @@ class StorePostgresql:
         if "forms" in items_dict["data"]:
             for f in range(0, len(items_dict["data"]["forms"])):
                 forms_data = {}
+                if "id_form_universal" in items_dict["data"]["forms"][f]:
+                    id_form_universal = items_dict["data"]["forms"][f]["id_form_universal"]
+                else:
+                    id_form_universal = None
                 for (k, v) in items_dict["data"]["forms"][f].items():
                     if k == "sightings":
                         nb_s = len(v)
@@ -972,13 +986,14 @@ class StorePostgresql:
                                 self._conn,
                                 transformer.transform,
                                 v[i],
+                                id_form_universal,
                             )
                             self._observations_queue.put(obs)
                             nb_obs += 1
                     else:
                         # Put anything except sightings in forms data
                         forms_data[k] = v
-                self._store_form(forms_data)
+                self._store_form(forms_data, transformer.transform)
 
         # Wait for threads to finish before commit
         # self._observations_queue.join()
