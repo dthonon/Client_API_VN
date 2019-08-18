@@ -12,15 +12,15 @@ Features
   is too much for the work required. At most 1 or 2 are used.
   The default is now 2 workers.
 
-  NOTE: if your YAML configuration file contrains a `[tuning]` section,
-  please modify `db_worker_threads: 2`. (`#71 <https://framagit.org/lpo/Client_API_VN/issues/71>`_)
+  NOTE: if your YAML configuration file contains a ``[tuning]`` section,
+  please modify ``db_worker_threads: 2``. (`#71 <https://framagit.org/lpo/Client_API_VN/issues/71>`_)
 - For sites with a large number of observations per day, the minimum was too large,
   leading to chunks exceeding 10 000 observations. Large chunk size reduce parallel
   processing between client and server.
   The minimum is now 5 days by default.
 
-  NOTE: if your YAML configuration file contrains a `[tuning]` section,
-  please modify `pid_limit_min: 5`. If your chunk size are still larger
+  NOTE: if your YAML configuration file contains a ``[tuning]`` section,
+  please modify ``pid_limit_min: 5``. If your chunk size are still larger
   than 10 000 observations, you can reduce it further. (`#72 <https://framagit.org/lpo/Client_API_VN/issues/72>`_)
 
 
@@ -28,7 +28,7 @@ Bugfixes
 --------
 
 - Forms should now be correctly updated if changed on the site. (`#66 <https://framagit.org/lpo/Client_API_VN/issues/66>`_)
-- id_form_universal added to observations, to refer to enclosing form. (`#73 <https://framagit.org/lpo/Client_API_VN/issues/73>`_)
+- ``id_form_universal`` added to observations table, to refer to enclosing form. (`#73 <https://framagit.org/lpo/Client_API_VN/issues/73>`_)
 
 
 Client-API-VN v2.4.0 (2019-08-07)
