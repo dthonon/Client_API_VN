@@ -105,9 +105,9 @@ site:
 # File storage backend parameters
 file:
     # Enable storing to file
-    enabled: false
+    enabled: true
     # Top level path name for downloaded file storage, relative to $HOME
-    file_store: VN_files
+    file_store: test_files
 
 # Postgresql backend related parameters
 database:
@@ -153,9 +153,9 @@ tuning:
     pid_ki: 0.003
     pid_kd: 0.0
     pid_setpoint: 10000
-    pid_limit_min: 10
+    pid_limit_min: 5
     pid_limit_max: 2000
     pid_delta_days: 15
     # Postgresql DB tuning parameters
-    db_worker_threads: 4
+    db_worker_threads: 2
     db_worker_queue: 100000

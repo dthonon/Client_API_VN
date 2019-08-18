@@ -16,6 +16,7 @@ import threading
 from datetime import datetime
 from uuid import uuid4
 
+from pyproj import Transformer
 from sqlalchemy import (
     Column,
     DateTime,
@@ -34,7 +35,6 @@ from sqlalchemy.sql import and_
 
 from export_vn.store_file import StoreFile
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-from pyproj import Transformer
 
 from . import _, __version__
 
@@ -48,7 +48,7 @@ class StorePostgresqlException(Exception):
 class ObservationItem:
     """Properties of an observation, for transmission in Queue."""
 
-    def __init__(self, site, metadata, conn, transformer, elem):
+    def __init__(self, site, metadata, conn, transformer, elem, form=None):
         """Item elements.
 
         Parameters
@@ -63,12 +63,15 @@ class ObservationItem:
             pyproj transformer used to create local coordinates
         elem : dict
             Single observation to process and store.
+        form : str
+            id_form_universal if in form, or None
         """
         self._site = site
         self._metadata = metadata
         self._conn = conn
         self._transformer = transformer
         self._elem = elem
+        self._form = form
         return None
 
     @property
@@ -95,6 +98,11 @@ class ObservationItem:
     def elem(self):
         """Return elem."""
         return self._elem
+
+    @property
+    def form(self):
+        """Return form."""
+        return self._form
 
 
 def store_1_observation(item):
@@ -138,11 +146,12 @@ def store_1_observation(item):
         id=elem["observers"][0]["id_sighting"],
         site=site,
         update_ts=update_date,
+        id_form_universal=item.form,
         item=elem,
     )
     do_update_stmt = insert_stmt.on_conflict_do_update(
         constraint=metadata.primary_key,
-        set_=dict(update_ts=update_date, item=elem),
+        set_=dict(update_ts=update_date, item=elem, id_form_universal=item.form),
         where=(metadata.c.update_ts < update_date),
     )
 
@@ -249,7 +258,7 @@ class PostgresqlUtils:
         """Create forms_json table if it does not exist."""
         self._create_table(
             "forms_json",
-            Column("id", Integer, nullable=False),
+            Column("id", Integer, nullable=False, index=True),
             Column("site", String, nullable=False),
             Column("item", JSONB, nullable=False),
             PrimaryKeyConstraint("id", "site", name="forms_json_pk"),
@@ -271,8 +280,8 @@ class PostgresqlUtils:
         """Create uuid_xref table if it does not exist."""
         self._create_table(
             "uuid_xref",
-            Column("id", Integer, nullable=False),
-            Column("site", String, nullable=False),
+            Column("id", Integer, nullable=False, index=True),
+            Column("site", String, nullable=False, index=True),
             Column("universal_id", String, nullable=False, index=True),
             Column("uuid", String, nullable=False, index=True),
             Column("alias", JSONB, nullable=True),
@@ -285,10 +294,11 @@ class PostgresqlUtils:
         """Create observations_json table if it does not exist."""
         self._create_table(
             "observations_json",
-            Column("id", Integer, nullable=False),
+            Column("id", Integer, nullable=False, index=True),
             Column("site", String, nullable=False),
             Column("item", JSONB, nullable=False),
             Column("update_ts", Integer, nullable=False),
+            Column("id_form_universal", String),
             PrimaryKeyConstraint("id", "site", name="observations_json_pk"),
         )
         return None
@@ -297,7 +307,7 @@ class PostgresqlUtils:
         """Create observers_json table if it does not exist."""
         self._create_table(
             "observers_json",
-            Column("id", Integer, nullable=False),
+            Column("id", Integer, nullable=False, index=True),
             Column("site", String, nullable=False),
             Column("id_universal", Integer, nullable=False, index=True),
             Column("item", JSONB, nullable=False),
@@ -309,7 +319,7 @@ class PostgresqlUtils:
         """Create places_json table if it does not exist."""
         self._create_table(
             "places_json",
-            Column("id", Integer, nullable=False),
+            Column("id", Integer, nullable=False, index=True),
             Column("site", String, nullable=False),
             Column("item", JSONB, nullable=False),
             PrimaryKeyConstraint("id", "site", name="places_json_pk"),
@@ -320,7 +330,7 @@ class PostgresqlUtils:
         """Create species_json table if it does not exist."""
         self._create_table(
             "species_json",
-            Column("id", Integer, nullable=False),
+            Column("id", Integer, nullable=False, index=True),
             Column("site", String, nullable=False),
             Column("item", JSONB, nullable=False),
             PrimaryKeyConstraint("id", "site", name="species_json_pk"),
@@ -381,13 +391,15 @@ class PostgresqlUtils:
         row = result.fetchone()
         if row is None:
             text = """
-                CREATE ROLE {db_group} NOLOGIN NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION
+                CREATE ROLE {db_group} NOLOGIN NOSUPERUSER INHERIT NOCREATEDB
+                NOCREATEROLE NOREPLICATION
                 """.format(
                 db_group=self._config.db_group
             )
         else:
             text = """
-                ALTER ROLE {db_group} NOLOGIN NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION
+                ALTER ROLE {db_group} NOLOGIN NOSUPERUSER INHERIT NOCREATEDB
+                NOCREATEROLE NOREPLICATION
                 """.format(
                 db_group=self._config.db_group
             )
@@ -596,7 +608,8 @@ class PostgresqlUtils:
         text = """
         SELECT o.site, o.taxonomy, t.name, COUNT(o.id_sighting)
             FROM {}.observations AS o
-                LEFT JOIN {}.taxo_groups AS t ON (o.taxonomy::integer = t.id AND o.site LIKE t.site)
+                LEFT JOIN {}.taxo_groups AS t
+                    ON (o.taxonomy::integer = t.id AND o.site LIKE t.site)
             GROUP BY o.site, o.taxonomy, t.name
         """.format(
             dbschema, dbschema
@@ -829,7 +842,7 @@ class StorePostgresql:
 
         return len(items_dict["data"])
 
-    def _store_form(self, items_dict):
+    def _store_form(self, items_dict, transformer):
         """Write forms to database.
 
         Check if forms is in database and either insert or update.
@@ -838,6 +851,8 @@ class StorePostgresql:
         ----------
         items_dict : dict
             Forms data to store.
+        transformer : Transformer.from_proj
+            Projection transformer for adding local coordinates
 
         Returns
         -------
@@ -846,48 +861,29 @@ class StorePostgresql:
         """
 
         controler = "forms"
-        # Check if form already inserted
-        stmt = select(
-            [
-                self._table_defs[controler]["metadata"].c.id,
-                self._table_defs[controler]["metadata"].c.site,
-            ]
-        ).where(
-            and_(
-                self._table_defs[controler]["metadata"].c.id == items_dict["@id"],
-                self._table_defs[controler]["metadata"].c.site == self._config.site,
-            )
+        logger.debug(
+            _("Storing %d items from %s of site %s"),
+            len(items_dict),
+            controler,
+            self._config.site,
         )
-        result = self._conn.execute(stmt)
-        row = result.fetchone()
-        if row is None:
-            # Forms no found, inserting a new one
-            logger.debug(
-                _("Storing %d items from %s of site %s"),
-                len(items_dict),
-                controler,
-                self._config.site,
+
+        # Add local coordinates
+        if ("lon" in items_dict) and ("lat" in items_dict):
+            items_dict["coord_x_local"], items_dict["coord_y_local"] = transformer(
+                items_dict["lon"], items_dict["lat"]
             )
 
-            # Add local coordinates
-            transformer = Transformer.from_proj(
-                4326, int(self._config.db_out_proj), always_xy=True
-            )
-            if ("lon" in items_dict) and ("lat" in items_dict):
-                items_dict["coord_x_local"], items_dict[
-                    "coord_y_local"
-                ] = transformer.transform(items_dict["lon"], items_dict["lat"])
-
-            # Convert to json
-            logger.debug(_("Storing element %s"), items_dict)
-            metadata = self._table_defs[controler]["metadata"]
-            insert_stmt = insert(metadata).values(
-                id=items_dict["@id"], site=self._config.site, item=items_dict
-            )
-            do_update_stmt = insert_stmt.on_conflict_do_update(
-                constraint=metadata.primary_key, set_=dict(item=items_dict)
-            )
-            self._conn.execute(do_update_stmt)
+        # Convert to json
+        logger.debug(_("Storing element %s"), items_dict)
+        metadata = self._table_defs[controler]["metadata"]
+        insert_stmt = insert(metadata).values(
+            id=items_dict["@id"], site=self._config.site, item=items_dict
+        )
+        do_update_stmt = insert_stmt.on_conflict_do_update(
+            constraint=metadata.primary_key, set_=dict(item=items_dict)
+        )
+        self._conn.execute(do_update_stmt)
 
         return len(items_dict)
 
@@ -948,11 +944,13 @@ class StorePostgresql:
         int
             Count of items stored (not exact for observations, due to forms).
         """
-        # Insert simple sightings, each row contains id, update timestamp and full json body
+        # Insert simple sightings, each row contains id, update timestamp and
+        # full json body
         nb_obs = 0
         logger.debug(
             _("Storing %d single observations"), len(items_dict["data"]["sightings"])
         )
+        # Create projection transformer
         transformer = Transformer.from_proj(
             4326, int(self._config.db_out_proj), always_xy=True
         )
@@ -977,6 +975,12 @@ class StorePostgresql:
         if "forms" in items_dict["data"]:
             for f in range(0, len(items_dict["data"]["forms"])):
                 forms_data = {}
+                if "id_form_universal" in items_dict["data"]["forms"][f]:
+                    id_form_universal = items_dict["data"]["forms"][f][
+                        "id_form_universal"
+                    ]
+                else:
+                    id_form_universal = None
                 for (k, v) in items_dict["data"]["forms"][f].items():
                     if k == "sightings":
                         nb_s = len(v)
@@ -988,13 +992,14 @@ class StorePostgresql:
                                 self._conn,
                                 transformer.transform,
                                 v[i],
+                                id_form_universal,
                             )
                             self._observations_queue.put(obs)
                             nb_obs += 1
                     else:
                         # Put anything except sightings in forms data
                         forms_data[k] = v
-                self._store_form(forms_data)
+                self._store_form(forms_data, transformer.transform)
 
         # Wait for threads to finish before commit
         # self._observations_queue.join()
@@ -1033,10 +1038,14 @@ class StorePostgresql:
             # Convert to json
             logger.debug(_("Storing element %s"), elem)
             insert_stmt = insert(metadata).values(
-                id=elem["id"], id_universal=elem["id_universal"], site=self._config.site, item=elem
+                id=elem["id"],
+                id_universal=elem["id_universal"],
+                site=self._config.site,
+                item=elem,
             )
             do_update_stmt = insert_stmt.on_conflict_do_update(
-                constraint=metadata.primary_key, set_=dict(id_universal=elem["id_universal"], item=elem)
+                constraint=metadata.primary_key,
+                set_=dict(id_universal=elem["id_universal"], item=elem),
             )
             self._conn.execute(do_update_stmt)
 

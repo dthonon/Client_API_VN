@@ -124,6 +124,10 @@ CREATE TABLE $(db_schema_vn).field_details(
     PRIMARY KEY (id)
 );
 
+DROP INDEX IF EXISTS field_details_idx_group_id;
+CREATE INDEX field_details_idx_group_id
+    ON $(db_schema_vn).field_details USING btree(group_id);
+
 CREATE OR REPLACE FUNCTION update_field_details() RETURNS TRIGGER AS \$\$
     BEGIN
     IF (TG_OP = 'DELETE') THEN
@@ -272,6 +276,9 @@ CREATE INDEX forms_idx_site
 DROP INDEX IF EXISTS forms_idx_id;
 CREATE INDEX forms_idx_id
     ON $(db_schema_vn).forms USING btree(id);
+DROP INDEX IF EXISTS forms_idx_id_form_universal;
+CREATE INDEX forms_idx_id_form_universal
+    ON $(db_schema_vn).forms USING btree(id_form_universal);
 DROP INDEX IF EXISTS forms_gidx_geom;
 CREATE INDEX forms_gidx_geom
     ON $(db_schema_vn).forms USING gist(geom);
@@ -387,6 +394,9 @@ CREATE INDEX local_admin_units_idx_site
 DROP INDEX IF EXISTS local_admin_units_idx_id;
 CREATE INDEX local_admin_units_idx_id
     ON $(db_schema_vn).local_admin_units USING btree(id);
+DROP INDEX IF EXISTS local_admin_units_idx_id_canton;
+CREATE INDEX local_admin_units_idx_id_canton
+    ON $(db_schema_vn).local_admin_units USING btree(id_canton);
 DROP INDEX IF EXISTS local_admin_units_gidx_geom;
 CREATE INDEX local_admin_units_gidx_geom
     ON $(db_schema_vn).local_admin_units USING gist(geom);
@@ -472,8 +482,9 @@ CREATE TABLE $(db_schema_vn).observations (
     id_sighting         INTEGER,
     pseudo_id_sighting  VARCHAR(200),
     id_universal        VARCHAR(200),
+    id_form_universal   VARCHAR(200),
     id_species          INTEGER,
-    taxonomy            VARCHAR(150),
+    taxonomy            INTEGER,
     date                DATE,
     date_year           INTEGER, -- Missing time_start & time_stop
     timing              TIMESTAMP,
@@ -491,7 +502,7 @@ CREATE TABLE $(db_schema_vn).observations (
     project_code        VARCHAR(50),
     hidden              BOOLEAN,
     admin_hidden        BOOLEAN,
-    observer_uid        VARCHAR(100),
+    observer_uid        INTEGER,
     details             VARCHAR(10000),
     behaviours          TEXT[],
     comment             VARCHAR(10000),
@@ -510,9 +521,18 @@ CREATE INDEX observations_idx_site
 DROP INDEX IF EXISTS observations_idx_id_sighting;
 CREATE INDEX observations_idx_id_sighting
     ON $(db_schema_vn).observations USING btree(id_sighting);
+DROP INDEX IF EXISTS observations_idx_id_species;
+CREATE INDEX observations_idx_id_species
+    ON $(db_schema_vn).observations USING btree(id_species);
+DROP INDEX IF EXISTS observations_idx_taxonomy;
+CREATE INDEX observations_idx_taxonomy
+    ON $(db_schema_vn).observations USING btree(taxonomy);
 DROP INDEX IF EXISTS observations_idx_id_universal;
 CREATE INDEX observations_idx_id_universal
     ON $(db_schema_vn).observations USING btree(id_universal);
+DROP INDEX IF EXISTS observations_idx_observer_uid;
+CREATE INDEX observations_idx_observer_uid
+    ON $(db_schema_vn).observations USING btree(observer_uid);
 DROP INDEX IF EXISTS observations_gidx_geom;
 CREATE INDEX observations_gidx_geom
     ON $(db_schema_vn).observations USING gist(geom);
@@ -554,41 +574,42 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
     ELSIF (TG_OP = 'UPDATE') THEN
         -- Updating data on src_vn.observations when raw data is updated
         UPDATE $(db_schema_vn).observations SET
-            id_universal    = ((NEW.item -> 'observers') -> 0) ->> 'id_universal',
-            id_species      = CAST(NEW.item #>> '{species,@id}' AS INTEGER),
-            taxonomy        = NEW.item #>> '{species,taxonomy}',
-            "date"          = to_date(NEW.item #>> '{date,@ISO8601}', 'YYYY-MM-DD'),
-            date_year       = CAST(extract(year from to_date(NEW.item #>> '{date,@ISO8601}', 'YYYY-MM-DD')) AS INTEGER),
-            timing          = to_timestamp(CAST(((NEW.item -> 'observers') -> 0) #>> '{timing,@timestamp}' AS DOUBLE PRECISION)),
-            id_place        = CAST(NEW.item #>> '{place,@id}' AS INTEGER),
-            place           = NEW.item #>> '{place,name}',
-            coord_lat       = CAST(((NEW.item -> 'observers') -> 0) ->> 'coord_lat' AS FLOAT),
-            coord_lon       = CAST(((NEW.item -> 'observers') -> 0) ->> 'coord_lon' AS FLOAT),
-            coord_x_local   = CAST(((NEW.item -> 'observers') -> 0) ->> 'coord_x_local' AS FLOAT),
-            coord_y_local   = CAST(((NEW.item -> 'observers') -> 0) ->> 'coord_y_local' AS FLOAT),
-            precision       = ((NEW.item -> 'observers') -> 0) ->> 'precision',
-            estimation_code = ((NEW.item -> 'observers') -> 0) ->> 'estimation_code',
-            count           = CAST(((NEW.item -> 'observers') -> 0) ->> 'count' AS INTEGER),
-            atlas_code      = CAST(((NEW.item -> 'observers') -> 0) ->> 'atlas_code' AS INTEGER),
-            altitude        = CAST(((NEW.item -> 'observers') -> 0) ->> 'altitude' AS INTEGER),
-            project_code    = ((NEW.item -> 'observers') -> 0) ->> 'project_code',
-            hidden          = CAST(((NEW.item -> 'observers') -> 0) ->> 'hidden' AS BOOLEAN),
-            admin_hidden    = CAST(((NEW.item -> 'observers') -> 0) ->> 'admin_hidden' AS BOOLEAN),
-            observer_uid    = ((NEW.item -> 'observers') -> 0) ->> '@uid',
-            details         = ((NEW.item -> 'observers') -> 0) ->> 'details',
-            behaviours      = $(db_schema_vn).behaviour_array(((NEW.item -> 'observers') -> 0) -> 'behaviours'),
-            comment         = ((NEW.item -> 'observers') -> 0) ->> 'comment',
-            hidden_comment  = ((NEW.item -> 'observers') -> 0) ->> 'hidden_comment',
-            mortality       = CAST(((((NEW.item -> 'observers') -> 0) #>> '{extended_info,mortality}'::text []) is not null) as BOOLEAN),
-            death_cause2    = ((NEW.item -> 'observers') -> 0) #>> '{extended_info, mortality, death_cause2}',
-            insert_date     = to_timestamp(CAST(((NEW.item -> 'observers') -> 0) ->> 'insert_date' AS DOUBLE PRECISION)),
-            update_date     = to_timestamp(NEW.update_ts)
+            id_universal      = ((NEW.item -> 'observers') -> 0) ->> 'id_universal',
+            id_form_universal = NEW.id_form_universal,
+            id_species        = CAST(NEW.item #>> '{species,@id}' AS INTEGER),
+            taxonomy          = CAST(NEW.item #>> '{species,taxonomy}' AS INTEGER),
+            "date"            = to_date(NEW.item #>> '{date,@ISO8601}', 'YYYY-MM-DD'),
+            date_year         = CAST(extract(year from to_date(NEW.item #>> '{date,@ISO8601}', 'YYYY-MM-DD')) AS INTEGER),
+            timing            = to_timestamp(CAST(((NEW.item -> 'observers') -> 0) #>> '{timing,@timestamp}' AS DOUBLE PRECISION)),
+            id_place          = CAST(NEW.item #>> '{place,@id}' AS INTEGER),
+            place             = NEW.item #>> '{place,name}',
+            coord_lat         = CAST(((NEW.item -> 'observers') -> 0) ->> 'coord_lat' AS FLOAT),
+            coord_lon         = CAST(((NEW.item -> 'observers') -> 0) ->> 'coord_lon' AS FLOAT),
+            coord_x_local     = CAST(((NEW.item -> 'observers') -> 0) ->> 'coord_x_local' AS FLOAT),
+            coord_y_local     = CAST(((NEW.item -> 'observers') -> 0) ->> 'coord_y_local' AS FLOAT),
+            precision         = ((NEW.item -> 'observers') -> 0) ->> 'precision',
+            estimation_code   = ((NEW.item -> 'observers') -> 0) ->> 'estimation_code',
+            count             = CAST(((NEW.item -> 'observers') -> 0) ->> 'count' AS INTEGER),
+            atlas_code        = CAST(((NEW.item -> 'observers') -> 0) ->> 'atlas_code' AS INTEGER),
+            altitude          = CAST(((NEW.item -> 'observers') -> 0) ->> 'altitude' AS INTEGER),
+            project_code      = ((NEW.item -> 'observers') -> 0) ->> 'project_code',
+            hidden            = CAST(((NEW.item -> 'observers') -> 0) ->> 'hidden' AS BOOLEAN),
+            admin_hidden      = CAST(((NEW.item -> 'observers') -> 0) ->> 'admin_hidden' AS BOOLEAN),
+            observer_uid      = CAST(((NEW.item -> 'observers') -> 0) ->> '@uid' AS INTEGER),
+            details           = ((NEW.item -> 'observers') -> 0) ->> 'details',
+            behaviours        = $(db_schema_vn).behaviour_array(((NEW.item -> 'observers') -> 0) -> 'behaviours'),
+            comment           = ((NEW.item -> 'observers') -> 0) ->> 'comment',
+            hidden_comment    = ((NEW.item -> 'observers') -> 0) ->> 'hidden_comment',
+            mortality         = CAST(((((NEW.item -> 'observers') -> 0) #>> '{extended_info,mortality}'::text []) is not null) as BOOLEAN),
+            death_cause2      = ((NEW.item -> 'observers') -> 0) #>> '{extended_info, mortality, death_cause2}',
+            insert_date       = to_timestamp(CAST(((NEW.item -> 'observers') -> 0) ->> 'insert_date' AS DOUBLE PRECISION)),
+            update_date       = to_timestamp(NEW.update_ts)
         WHERE id_sighting = OLD.id AND site = OLD.site;
 
         IF NOT FOUND THEN
             -- Inserting data on src_vn.observations when raw data is inserted
-            INSERT INTO $(db_schema_vn).observations (site, id_sighting, pseudo_id_sighting, id_universal, id_species, taxonomy,
-                                             date, date_year, timing, id_place, place,
+            INSERT INTO $(db_schema_vn).observations (site, id_sighting, pseudo_id_sighting, id_universal, id_form_universal,
+                                             id_species, taxonomy, date, date_year, timing, id_place, place,
                                              coord_lat, coord_lon, coord_x_local, coord_y_local, precision, estimation_code,
                                              count, atlas_code, altitude, project_code, hidden, admin_hidden, observer_uid, details,
                                              behaviours, comment, hidden_comment, mortality, death_cause2, insert_date, update_date)
@@ -597,8 +618,9 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
                 NEW.id,
                 encode(hmac(NEW.id::text, '$(db_secret_key)', 'sha1'), 'hex'),
                 ((NEW.item -> 'observers') -> 0) ->> 'id_universal',
+                NEW.id_form_universal,
                 CAST(NEW.item #>> '{species,@id}' AS INTEGER),
-                NEW.item #>> '{species,taxonomy}',
+                CAST(NEW.item #>> '{species,taxonomy}' AS INTEGER),
                 to_date(NEW.item #>> '{date,@ISO8601}', 'YYYY-MM-DD'),
                 CAST(extract(year from to_date(NEW.item #>> '{date,@ISO8601}', 'YYYY-MM-DD')) AS INTEGER),
                 -- Missing time_start & time_stop
@@ -617,7 +639,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
                 ((NEW.item -> 'observers') -> 0) ->> 'project_code',
                 CAST(((NEW.item -> 'observers') -> 0) ->> 'hidden' AS BOOLEAN),
                 CAST(((NEW.item -> 'observers') -> 0) ->> 'admin_hidden' AS BOOLEAN),
-                ((NEW.item -> 'observers') -> 0) ->> '@uid',
+                CAST(((NEW.item -> 'observers') -> 0) ->> '@uid' AS INTEGER),
                 ((NEW.item -> 'observers') -> 0) ->> 'details',
                 $(db_schema_vn).behaviour_array(((NEW.item -> 'observers') -> 0) -> 'behaviours'),
                 ((NEW.item -> 'observers') -> 0) ->> 'comment',
@@ -631,8 +653,8 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
 
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting data on src_vn.observations when raw data is inserted
-        INSERT INTO $(db_schema_vn).observations (site, id_sighting, pseudo_id_sighting, id_universal, id_species, taxonomy,
-                                         date, date_year, timing, id_place, place,
+        INSERT INTO $(db_schema_vn).observations (site, id_sighting, pseudo_id_sighting, id_universal, id_form_universal,
+                                         id_species, taxonomy, date, date_year, timing, id_place, place,
                                          coord_lat, coord_lon, coord_x_local, coord_y_local, precision, estimation_code,
                                          count, atlas_code, altitude, project_code, hidden, admin_hidden, observer_uid, details,
                                          behaviours, comment, hidden_comment, mortality, death_cause2, insert_date, update_date)
@@ -641,8 +663,9 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             NEW.id,
             encode(hmac(NEW.id::text, '$(db_secret_key)', 'sha1'), 'hex'),
             ((NEW.item -> 'observers') -> 0) ->> 'id_universal',
+            NEW.id_form_universal,
             CAST(NEW.item #>> '{species,@id}' AS INTEGER),
-            NEW.item #>> '{species,taxonomy}',
+            CAST(NEW.item #>> '{species,taxonomy}' AS INTEGER),
             to_date(NEW.item #>> '{date,@ISO8601}', 'YYYY-MM-DD'),
             CAST(extract(year from to_date(NEW.item #>> '{date,@ISO8601}', 'YYYY-MM-DD')) AS INTEGER),
             -- Missing time_start & time_stop
@@ -661,7 +684,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             ((NEW.item -> 'observers') -> 0) ->> 'project_code',
             CAST(((NEW.item -> 'observers') -> 0) ->> 'hidden' AS BOOLEAN),
             CAST(((NEW.item -> 'observers') -> 0) ->> 'admin_hidden' AS BOOLEAN),
-            ((NEW.item -> 'observers') -> 0) ->> '@uid',
+            CAST(((NEW.item -> 'observers') -> 0) ->> '@uid' AS INTEGER),
             ((NEW.item -> 'observers') -> 0) ->> 'details',
             $(db_schema_vn).behaviour_array(((NEW.item -> 'observers') -> 0) -> 'behaviours'),
             ((NEW.item -> 'observers') -> 0) ->> 'comment',
@@ -705,6 +728,9 @@ CREATE INDEX observers_idx_site
 DROP INDEX IF EXISTS observers_idx_id;
 CREATE INDEX observers_idx_id
     ON $(db_schema_vn).observers USING btree(id);
+DROP INDEX IF EXISTS observers_idx_id_universal;
+CREATE INDEX observers_idx_id_universal
+    ON $(db_schema_vn).observers USING btree(id_universal);
 
 CREATE OR REPLACE FUNCTION update_observers() RETURNS TRIGGER AS \$\$
     BEGIN
@@ -804,6 +830,9 @@ CREATE INDEX places_idx_site
 DROP INDEX IF EXISTS places_idx_id;
 CREATE INDEX places_idx_id
     ON $(db_schema_vn).places USING btree(id);
+DROP INDEX IF EXISTS places_idx_id_commune;
+CREATE INDEX places_idx_id_commune
+    ON $(db_schema_vn).places USING btree(id_commune);
 DROP INDEX IF EXISTS places_gidx_geom;
 CREATE INDEX places_gidx_geom
     ON $(db_schema_vn).places USING gist(geom);
@@ -922,6 +951,9 @@ CREATE INDEX species_idx_site
 DROP INDEX IF EXISTS species_idx_id;
 CREATE INDEX species_idx_id
     ON $(db_schema_vn).species USING btree(id);
+DROP INDEX IF EXISTS species_idx_id_taxo_group;
+CREATE INDEX species_idx_id_taxo_group
+    ON $(db_schema_vn).species USING btree(id_taxo_group);
 
 CREATE OR REPLACE FUNCTION update_species() RETURNS TRIGGER AS \$\$
     BEGIN

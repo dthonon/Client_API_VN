@@ -110,10 +110,10 @@ _ConfSchema = Map(
                 Optional("pid_ki", default=0.003): Float(),
                 Optional("pid_kd", default=0.0): Float(),
                 Optional("pid_setpoint", default=10000): Float(),
-                Optional("pid_limit_min", default=10): Float(),
+                Optional("pid_limit_min", default=5): Float(),
                 Optional("pid_limit_max", default=2000): Float(),
                 Optional("pid_delta_days", default=15): Int(),
-                Optional("db_worker_threads", default=4): Int(),
+                Optional("db_worker_threads", default=2): Int(),
                 Optional("db_worker_queue", default=100000): Int(),
             }
         ),
@@ -217,10 +217,10 @@ class EvnSiteConf:
                 self._pid_ki = 0.003  # type: float
                 self._pid_kd = 0.0  # type: float
                 self._pid_setpoint = 10000  # type: float
-                self._pid_limit_min = 10  # type: float
+                self._pid_limit_min = 5  # type: float
                 self._pid_limit_max = 2000  # type: float
                 self._pid_delta_days = 15  # type: int
-                self._db_worker_threads = 4  # type:int
+                self._db_worker_threads = 2  # type:int
                 self._db_worker_queue = 100000  # type:int
 
         except Exception as e:
