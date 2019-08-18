@@ -105,9 +105,9 @@ site:
 # File storage backend parameters
 file:
     # Enable storing to file
-    enabled: false
+    enabled: true
     # Top level path name for downloaded file storage, relative to $HOME
-    file_store: VN_files
+    file_store: test_files
 
 # Postgresql backend related parameters
 database:

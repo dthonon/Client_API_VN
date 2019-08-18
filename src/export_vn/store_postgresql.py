@@ -16,6 +16,7 @@ import threading
 from datetime import datetime
 from uuid import uuid4
 
+from pyproj import Transformer
 from sqlalchemy import (
     Column,
     DateTime,
@@ -34,7 +35,6 @@ from sqlalchemy.sql import and_
 
 from export_vn.store_file import StoreFile
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-from pyproj import Transformer
 
 from . import _, __version__
 
@@ -48,7 +48,7 @@ class StorePostgresqlException(Exception):
 class ObservationItem:
     """Properties of an observation, for transmission in Queue."""
 
-    def __init__(self, site, metadata, conn, transformer, elem, form):
+    def __init__(self, site, metadata, conn, transformer, elem, form=None):
         """Item elements.
 
         Parameters
@@ -391,13 +391,15 @@ class PostgresqlUtils:
         row = result.fetchone()
         if row is None:
             text = """
-                CREATE ROLE {db_group} NOLOGIN NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION
+                CREATE ROLE {db_group} NOLOGIN NOSUPERUSER INHERIT NOCREATEDB
+                NOCREATEROLE NOREPLICATION
                 """.format(
                 db_group=self._config.db_group
             )
         else:
             text = """
-                ALTER ROLE {db_group} NOLOGIN NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION
+                ALTER ROLE {db_group} NOLOGIN NOSUPERUSER INHERIT NOCREATEDB
+                NOCREATEROLE NOREPLICATION
                 """.format(
                 db_group=self._config.db_group
             )
@@ -606,7 +608,8 @@ class PostgresqlUtils:
         text = """
         SELECT o.site, o.taxonomy, t.name, COUNT(o.id_sighting)
             FROM {}.observations AS o
-                LEFT JOIN {}.taxo_groups AS t ON (o.taxonomy::integer = t.id AND o.site LIKE t.site)
+                LEFT JOIN {}.taxo_groups AS t
+                    ON (o.taxonomy::integer = t.id AND o.site LIKE t.site)
             GROUP BY o.site, o.taxonomy, t.name
         """.format(
             dbschema, dbschema
@@ -867,9 +870,9 @@ class StorePostgresql:
 
         # Add local coordinates
         if ("lon" in items_dict) and ("lat" in items_dict):
-            items_dict["coord_x_local"], items_dict[
-                "coord_y_local"
-            ] = transformer.transform(items_dict["lon"], items_dict["lat"])
+            items_dict["coord_x_local"], items_dict["coord_y_local"] = transformer(
+                items_dict["lon"], items_dict["lat"]
+            )
 
         # Convert to json
         logger.debug(_("Storing element %s"), items_dict)
@@ -941,7 +944,8 @@ class StorePostgresql:
         int
             Count of items stored (not exact for observations, due to forms).
         """
-        # Insert simple sightings, each row contains id, update timestamp and full json body
+        # Insert simple sightings, each row contains id, update timestamp and
+        # full json body
         nb_obs = 0
         logger.debug(
             _("Storing %d single observations"), len(items_dict["data"]["sightings"])
@@ -972,7 +976,9 @@ class StorePostgresql:
             for f in range(0, len(items_dict["data"]["forms"])):
                 forms_data = {}
                 if "id_form_universal" in items_dict["data"]["forms"][f]:
-                    id_form_universal = items_dict["data"]["forms"][f]["id_form_universal"]
+                    id_form_universal = items_dict["data"]["forms"][f][
+                        "id_form_universal"
+                    ]
                 else:
                     id_form_universal = None
                 for (k, v) in items_dict["data"]["forms"][f].items():
@@ -1032,10 +1038,14 @@ class StorePostgresql:
             # Convert to json
             logger.debug(_("Storing element %s"), elem)
             insert_stmt = insert(metadata).values(
-                id=elem["id"], id_universal=elem["id_universal"], site=self._config.site, item=elem
+                id=elem["id"],
+                id_universal=elem["id_universal"],
+                site=self._config.site,
+                item=elem,
             )
             do_update_stmt = insert_stmt.on_conflict_do_update(
-                constraint=metadata.primary_key, set_=dict(id_universal=elem["id_universal"], item=elem)
+                constraint=metadata.primary_key,
+                set_=dict(id_universal=elem["id_universal"], item=elem),
             )
             self._conn.execute(do_update_stmt)
 
