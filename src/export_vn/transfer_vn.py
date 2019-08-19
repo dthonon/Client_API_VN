@@ -63,7 +63,8 @@ def arguments(args):
     """
     # Get options
     parser = argparse.ArgumentParser(
-        description="Script that transfers data from Biolovision and stores it to a Postgresql database."
+        description="Script that transfers data from Biolovision"
+        + "and stores it to a Postgresql database."
     )
     parser.add_argument(
         "--version",
@@ -108,9 +109,7 @@ def arguments(args):
         action="store_true",
     )
     parser.add_argument(
-        "--profile",
-        help=_("Gather and print profiling times"),
-        action="store_true",
+        "--profile", help=_("Gather and print profiling times"), action="store_true"
     )
     parser.add_argument("file", help=_("Configuration file name"))
 
@@ -120,22 +119,16 @@ def arguments(args):
 def init(file: str):
     """Copy template YAML file to home directory."""
     logger = logging.getLogger("transfer_vn")
-    yaml_src = pkg_resources.resource_filename(
-        __name__, "data/evn_template.yaml"
-    )
+    yaml_src = pkg_resources.resource_filename(__name__, "data/evn_template.yaml")
     yaml_dst = str(Path.home()) + "/" + file
-    logger.info(
-        _("Creating YAML configuration file %s, from %s"), yaml_dst, yaml_src
-    )
+    logger.info(_("Creating YAML configuration file %s, from %s"), yaml_dst, yaml_src)
     shutil.copyfile(yaml_src, yaml_dst)
     logger.info(_("Please edit %s before running the script"), yaml_dst)
 
 
 def col_table_create(cfg, sql_quiet, client_min_message):
     """Create the column based tables, by running psql script."""
-    in_sql = pkg_resources.resource_filename(
-        __name__, "sql/create-vn-tables.sql"
-    )
+    in_sql = pkg_resources.resource_filename(__name__, "sql/create-vn-tables.sql")
     with open(in_sql, "r") as myfile:
         template = myfile.read()
     (cmd, exp_globals) = pyexpander.expandToStr(
@@ -198,24 +191,6 @@ def full_download(cfg_ctrl):
                     taxo_group = TaxoGroup(cfg, store_pg)
                     taxo_group.store()
 
-                ctrl = "observations"
-                if cfg_crtl_list[ctrl].enabled:
-                    logger.info(_("Using controler %s on site %s"), ctrl, cfg.site)
-                    observations = Observations(cfg, store_pg)
-                    taxo_groups = TaxoGroupsAPI(cfg).api_list()["data"]
-                    taxo_groups_ex = cfg_crtl_list[ctrl].taxo_exclude
-                    logger.info(_("Excluded taxo_groups: %s"), taxo_groups_ex)
-                    taxo_groups_filt = []
-                    for taxo in taxo_groups:
-                        if (not taxo["name_constant"] in taxo_groups_ex) and (
-                            taxo["access_mode"] != "none"
-                        ):
-                            taxo_groups_filt.append(taxo["id"])
-                    logger.info(_("Downloading from taxo_groups: %s"), taxo_groups_filt)
-                    observations.store(
-                        taxo_groups_filt, method="search", by_specie=False
-                    )
-
                 ctrl = "entities"
                 if cfg_crtl_list[ctrl].enabled:
                     logger.info(_("Using controler %s on site %s"), ctrl, cfg.site)
@@ -251,6 +226,24 @@ def full_download(cfg_ctrl):
                     logger.info(_("Using controler %s on site %s"), ctrl, cfg.site)
                     observers = Observers(cfg, store_pg)
                     observers.store()
+
+                ctrl = "observations"
+                if cfg_crtl_list[ctrl].enabled:
+                    logger.info(_("Using controler %s on site %s"), ctrl, cfg.site)
+                    observations = Observations(cfg, store_pg)
+                    taxo_groups = TaxoGroupsAPI(cfg).api_list()["data"]
+                    taxo_groups_ex = cfg_crtl_list[ctrl].taxo_exclude
+                    logger.info(_("Excluded taxo_groups: %s"), taxo_groups_ex)
+                    taxo_groups_filt = []
+                    for taxo in taxo_groups:
+                        if (not taxo["name_constant"] in taxo_groups_ex) and (
+                            taxo["access_mode"] != "none"
+                        ):
+                            taxo_groups_filt.append(taxo["id"])
+                    logger.info(_("Downloading from taxo_groups: %s"), taxo_groups_filt)
+                    observations.store(
+                        taxo_groups_filt, method="search", by_specie=False
+                    )
 
             else:
                 logger.info(_("Skipping site %s"), site)
