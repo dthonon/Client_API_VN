@@ -9,8 +9,10 @@ import pytest
 
 from export_vn.download_vn import (
     Entities,
+    Fields,
     LocalAdminUnits,
     Observations,
+    Observers,
     Places,
     Species,
     TaxoGroup,
@@ -32,8 +34,10 @@ MANAGE_PG = PostgresqlUtils(CFG)
 try:
     STORE_PG = StorePostgresql(CFG)
     ENTITIES = Entities(CFG, STORE_PG)
+    FIELDS = Fields(CFG, STORE_PG)
     LOCAL_ADMIN_UNITS = LocalAdminUnits(CFG, STORE_PG)
     OBSERVATIONS = Observations(CFG, STORE_PG)
+    OBSERVERS = Observers(CFG, STORE_PG)
     PLACES = Places(CFG, STORE_PG)
     SPECIES = Species(CFG, STORE_PG)
     TAXO_GROUP = TaxoGroup(CFG, STORE_PG)
@@ -82,6 +86,15 @@ def test_entities_api_pg_store():
     ENTITIES.store()
 
 
+# ------
+# Fields
+# ------
+@pytest.mark.slow
+def test_fields_api_pg_store():
+    """Store fields to database."""
+    FIELDS.store()
+
+
 # -----------------
 # Local_admin_units
 # -----------------
@@ -109,6 +122,15 @@ def test_observations_api_pg_delete(capsys):
     elif SITE == "t07":
         nb_delete = STORE_PG.delete_obs([520918, 520944])
     assert nb_delete == 2
+
+
+# ---------
+# Observers
+# ---------
+@pytest.mark.slow
+def test_observers_api_pg_store():
+    """Store observers to database."""
+    OBSERVERS.store()
 
 
 # -------
