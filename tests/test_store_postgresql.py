@@ -104,7 +104,10 @@ def test_observations_api_pg_store(capsys):
 @pytest.mark.slow
 def test_observations_api_pg_delete(capsys):
     """Delete some observations of a taxo_group to database."""
-    nb_delete = STORE_PG.delete_obs([274830, 289120])
+    if SITE == "t38":
+        nb_delete = STORE_PG.delete_obs([274830, 289120])
+    elif SITE == "t07":
+        nb_delete = STORE_PG.delete_obs([520918, 520944])
     assert nb_delete == 2
 
 
