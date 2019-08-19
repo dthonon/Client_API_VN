@@ -1,3 +1,21 @@
+Client-API-VN v2.4.2 (2019-08-20)
+=================================
+
+Features
+--------
+
+- When using ``--full`` option, observations and forms are processed after all other controlers. (`#77 <https://framagit.org/lpo/Client_API_VN/issues/77>`_)
+
+
+Bugfixes
+--------
+
+- Some options are exclusives::
+
+      [--verbose | --quiet]
+      [--full | --update] (`#78 <https://framagit.org/lpo/Client_API_VN/issues/78>`_)
+
+
 Client-API-VN v2.4.1 (2019-08-19)
 =================================
 
