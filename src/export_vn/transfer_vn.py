@@ -72,11 +72,12 @@ def arguments(args):
         action="version",
         version="%(prog)s {version}".format(version=__version__),
     )
-    parser.add_argument(
-        "-v", "--verbose", help=_("Increase output verbosity"), action="store_true"
+    out_group = parser.add_mutually_exclusive_group()
+    out_group.add_argument(
+        "--verbose", help=_("Increase output verbosity"), action="store_true"
     )
-    parser.add_argument(
-        "-q", "--quiet", help=_("Reduce output verbosity"), action="store_true"
+    out_group.add_argument(
+        "--quiet", help=_("Reduce output verbosity"), action="store_true"
     )
     parser.add_argument(
         "--init", help=_("Initialize the YAML configuration file"), action="store_true"
@@ -97,10 +98,11 @@ def arguments(args):
         help=_("Create or recreate colums based tables"),
         action="store_true",
     )
-    parser.add_argument(
+    download_group = parser.add_mutually_exclusive_group()
+    download_group.add_argument(
         "--full", help=_("Perform a full download"), action="store_true"
     )
-    parser.add_argument(
+    download_group.add_argument(
         "--update", help=_("Perform an incremental download"), action="store_true"
     )
     parser.add_argument(

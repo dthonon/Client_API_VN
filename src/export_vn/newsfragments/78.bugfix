@@ -1,0 +1,4 @@
+Some options are exclusives::
+
+    [--verbose | --quiet]
+    [--full | --update]
