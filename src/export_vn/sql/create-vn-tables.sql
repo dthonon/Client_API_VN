@@ -487,7 +487,7 @@ CREATE TABLE $(db_schema_vn).observations (
     id_form_universal   VARCHAR(200),
     id_species          INTEGER,
     taxonomy            INTEGER,
-    date                DATE,
+    date                TIMESTAMP,
     date_year           INTEGER, -- Missing time_start & time_stop
     timing              TIMESTAMP,
     id_place            INTEGER,
@@ -583,8 +583,8 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             id_form_universal = NEW.id_form_universal,
             id_species        = CAST(NEW.item #>> '{species,@id}' AS INTEGER),
             taxonomy          = CAST(NEW.item #>> '{species,taxonomy}' AS INTEGER),
-            "date"            = to_date(NEW.item #>> '{date,@ISO8601}', 'YYYY-MM-DD'),
-            date_year         = CAST(extract(year from to_date(NEW.item #>> '{date,@ISO8601}', 'YYYY-MM-DD')) AS INTEGER),
+            "date"            = to_timestamp(CAST(NEW.item #>> '{date,@timestamp}' AS DOUBLE PRECISION)),
+            date_year         = CAST(extract(year from to_timestamp(CAST(NEW.item #>> '{date,@timestamp}' AS DOUBLE PRECISION))) AS INTEGER),
             timing            = to_timestamp(CAST(((NEW.item -> 'observers') -> 0) #>> '{timing,@timestamp}' AS DOUBLE PRECISION)),
             id_place          = CAST(NEW.item #>> '{place,@id}' AS INTEGER),
             place             = NEW.item #>> '{place,name}',
@@ -626,8 +626,8 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
                 NEW.id_form_universal,
                 CAST(NEW.item #>> '{species,@id}' AS INTEGER),
                 CAST(NEW.item #>> '{species,taxonomy}' AS INTEGER),
-                to_date(NEW.item #>> '{date,@ISO8601}', 'YYYY-MM-DD'),
-                CAST(extract(year from to_date(NEW.item #>> '{date,@ISO8601}', 'YYYY-MM-DD')) AS INTEGER),
+                to_timestamp(CAST(NEW.item #>> '{date,@timestamp}' AS DOUBLE PRECISION)),
+                CAST(extract(year from to_timestamp(CAST(NEW.item #>> '{date,@timestamp}' AS DOUBLE PRECISION))) AS INTEGER),
                 -- Missing time_start & time_stop
                 to_timestamp(CAST(((NEW.item -> 'observers') -> 0) #>> '{timing,@timestamp}' AS DOUBLE PRECISION)),
                 CAST(NEW.item #>> '{place,@id}' AS INTEGER),
@@ -671,8 +671,8 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             NEW.id_form_universal,
             CAST(NEW.item #>> '{species,@id}' AS INTEGER),
             CAST(NEW.item #>> '{species,taxonomy}' AS INTEGER),
-            to_date(NEW.item #>> '{date,@ISO8601}', 'YYYY-MM-DD'),
-            CAST(extract(year from to_date(NEW.item #>> '{date,@ISO8601}', 'YYYY-MM-DD')) AS INTEGER),
+            to_timestamp(CAST(NEW.item #>> '{date,@timestamp}' AS DOUBLE PRECISION)),
+            CAST(extract(year from to_timestamp(CAST(NEW.item #>> '{date,@timestamp}' AS DOUBLE PRECISION))) AS INTEGER),
             -- Missing time_start & time_stop
             to_timestamp(CAST(((NEW.item -> 'observers') -> 0) #>> '{timing,@timestamp}' AS DOUBLE PRECISION)),
             CAST(NEW.item #>> '{place,@id}' AS INTEGER),
@@ -1199,10 +1199,11 @@ VACUUM FULL ANALYZE $(db_schema_import).entities_json, $(db_schema_vn).entities;
 VACUUM FULL ANALYZE $(db_schema_import).field_details_json, $(db_schema_vn).field_details;
 VACUUM FULL ANALYZE $(db_schema_import).field_groups_json, $(db_schema_vn).field_groups;
 VACUUM FULL ANALYZE $(db_schema_import).forms_json, $(db_schema_vn).forms;
-VACUUM FULL ANALYZE $(db_schema_import).territorial_units_json, $(db_schema_vn).territorial_units;
 VACUUM FULL ANALYZE $(db_schema_import).local_admin_units_json, $(db_schema_vn).local_admin_units;
-VACUUM FULL ANALYZE $(db_schema_import).places_json, $(db_schema_vn).places;
-VACUUM FULL ANALYZE $(db_schema_import).taxo_groups_json, $(db_schema_vn).taxo_groups;
-VACUUM FULL ANALYZE $(db_schema_import).species_json, $(db_schema_vn).species;
-VACUUM FULL ANALYZE $(db_schema_import).observers_json, $(db_schema_vn).observers;
 VACUUM FULL ANALYZE $(db_schema_import).observations_json, $(db_schema_vn).observations;
+VACUUM FULL ANALYZE $(db_schema_import).observers_json, $(db_schema_vn).observers;
+VACUUM FULL ANALYZE $(db_schema_import).places_json, $(db_schema_vn).places;
+VACUUM FULL ANALYZE $(db_schema_import).species_json, $(db_schema_vn).species;
+VACUUM FULL ANALYZE $(db_schema_import).taxo_groups_json, $(db_schema_vn).taxo_groups;
+VACUUM FULL ANALYZE $(db_schema_import).territorial_units_json, $(db_schema_vn).territorial_units;
+VACUUM FULL ANALYZE $(db_schema_import).uuid_xref;
