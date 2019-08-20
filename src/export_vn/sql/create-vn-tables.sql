@@ -264,7 +264,7 @@ CREATE TABLE $(db_schema_vn).forms(
     coord_x_local       FLOAT,
     coord_y_local       FLOAT,
     comments            VARCHAR(100000),
-    protocol            VARCHAR(100000),
+    protocol            JSONB,
     geom                GEOMETRY(Point, $(proj)),
     PRIMARY KEY (site, id)
 );
@@ -279,10 +279,12 @@ CREATE INDEX forms_idx_id
 DROP INDEX IF EXISTS forms_idx_id_form_universal;
 CREATE INDEX forms_idx_id_form_universal
     ON $(db_schema_vn).forms USING btree(id_form_universal);
+DROP INDEX IF EXISTS forms_gidx_protocol;
+CREATE INDEX forms_gidx_protocol
+    ON $(db_schema_vn).forms USING GIN(protocol);
 DROP INDEX IF EXISTS forms_gidx_geom;
 CREATE INDEX forms_gidx_geom
     ON $(db_schema_vn).forms USING gist(geom);
-
 
 -- Add trigger for postgis geometry update
 DROP TRIGGER IF EXISTS trg_geom ON $(db_schema_vn).forms;
@@ -314,7 +316,7 @@ CREATE OR REPLACE FUNCTION update_forms() RETURNS TRIGGER AS \$\$
             coord_x_local     = CAST(NEW.item->>'coord_x_local' AS FLOAT),
             coord_y_local     = CAST(NEW.item->>'coord_y_local' AS FLOAT),
             comments          = NEW.item->>'comments',
-            protocol          = NEW.item->>'protocol'
+            protocol          = CAST(NEW.item->>'protocol' AS JSONB)
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
@@ -334,7 +336,7 @@ CREATE OR REPLACE FUNCTION update_forms() RETURNS TRIGGER AS \$\$
                 CAST(NEW.item->>'coord_x_local' AS FLOAT),
                 CAST(NEW.item->>'coord_y_local' AS FLOAT),
                 NEW.item->>'comments',
-                NEW.item->>'protocol'
+                CAST(NEW.item->>'protocol' AS JSONB)
             );
             END IF;
         RETURN NEW;
@@ -357,7 +359,7 @@ CREATE OR REPLACE FUNCTION update_forms() RETURNS TRIGGER AS \$\$
             CAST(NEW.item->>'coord_x_local' AS FLOAT),
             CAST(NEW.item->>'coord_y_local' AS FLOAT),
             NEW.item->>'comments',
-            NEW.item->>'protocol'
+            CAST(NEW.item->>'protocol' AS JSONB)
         );
         RETURN NEW;
     END IF;
@@ -530,6 +532,9 @@ CREATE INDEX observations_idx_taxonomy
 DROP INDEX IF EXISTS observations_idx_id_universal;
 CREATE INDEX observations_idx_id_universal
     ON $(db_schema_vn).observations USING btree(id_universal);
+DROP INDEX IF EXISTS observations_idx_id_form_universal;
+CREATE INDEX observations_idx_id_form_universal
+    ON $(db_schema_vn).observations USING btree(id_form_universal);
 DROP INDEX IF EXISTS observations_idx_observer_uid;
 CREATE INDEX observations_idx_observer_uid
     ON $(db_schema_vn).observations USING btree(observer_uid);
