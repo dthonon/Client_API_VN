@@ -1195,4 +1195,14 @@ UPDATE $(db_schema_import).observers_json SET site=site;
 UPDATE $(db_schema_import).observations_json SET site=site;
 
 -- Final cleanup
-VACUUM FULL ANALYZE;
+VACUUM FULL ANALYZE $(db_schema_import).entities_json, $(db_schema_vn).entities;
+VACUUM FULL ANALYZE $(db_schema_import).field_details_json, $(db_schema_vn).field_details;
+VACUUM FULL ANALYZE $(db_schema_import).field_groups_json, $(db_schema_vn).field_groups;
+VACUUM FULL ANALYZE $(db_schema_import).forms_json, $(db_schema_vn).forms;
+VACUUM FULL ANALYZE $(db_schema_import).territorial_units_json, $(db_schema_vn).territorial_units;
+VACUUM FULL ANALYZE $(db_schema_import).local_admin_units_json, $(db_schema_vn).local_admin_units;
+VACUUM FULL ANALYZE $(db_schema_import).places_json, $(db_schema_vn).places;
+VACUUM FULL ANALYZE $(db_schema_import).taxo_groups_json, $(db_schema_vn).taxo_groups;
+VACUUM FULL ANALYZE $(db_schema_import).species_json, $(db_schema_vn).species;
+VACUUM FULL ANALYZE $(db_schema_import).observers_json, $(db_schema_vn).observers;
+VACUUM FULL ANALYZE $(db_schema_import).observations_json, $(db_schema_vn).observations;
