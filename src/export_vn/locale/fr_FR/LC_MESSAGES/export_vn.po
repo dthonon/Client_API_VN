@@ -185,8 +185,8 @@ msgstr "Pas de date de dernier téléchargement, incrémentale abandonnée"
 
 #: src/export_vn/download_vn.py:566
 #, python-format
-msgid "Updating observation %s"
-msgstr "Mise à jour de l'observation %s"
+msgid "Updating observation {}"
+msgstr "Mise à jour de l'observation {}"
 
 #: src/export_vn/download_vn.py:648
 #, python-format
