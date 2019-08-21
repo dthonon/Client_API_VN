@@ -1,3 +1,39 @@
+Client-API-VN vX.Y.Z (2019-08-22)
+=================================
+
+Features
+--------
+
+- Added protocol_name column in forms table. (`#85 <https://framagit.org/lpo/Client_API_VN/issues/85>`_)
+
+
+Bugfixes
+--------
+
+- VACUUM is only performed on json and column-based tables created by transfer_vn.
+  This avoids a lengthy VACUUM on the full database. (`#70 <https://framagit.org/lpo/Client_API_VN/issues/70>`_)
+- Corrected loggin message "Updating observation {}" (`#79 <https://framagit.org/lpo/Client_API_VN/issues/79>`_)
+- UUID are now correctly created for all observations. (`#80 <https://framagit.org/lpo/Client_API_VN/issues/80>`_)
+- In observations, date and date_year are correctly extracted from JSON. (`#82 <https://framagit.org/lpo/Client_API_VN/issues/82>`_)
+- Protocol data is stored in JSONB column, in forms table.
+  See `example query <https://framagit.org/lpo/partage-de-codes/snippets/3741>`_
+  for how to use it to get STOC data.
+
+  Note: For survey datas, as G. Delaloye pointed out, protocols rights accesses must be configure in portals::
+      Aura Lpo (webadmin.aura@lpo.fr/2267) 	Droits de gestion des données complémentaires Gypaètes
+      Aura Lpo (webadmin.aura@lpo.fr/2267) 	Droit de voir toutes les observations cachées
+      Aura Lpo (webadmin.aura@lpo.fr/2267) 	Droits de faire des recherches, malgré le quota
+      Aura Lpo (webadmin.aura@lpo.fr/2267) 	Droits de gestion des observations
+      Aura Lpo (webadmin.aura@lpo.fr/2267) 	Droits d'administration
+      Aura Lpo (webadmin.aura@lpo.fr/2267) 	Accès admin Wetlands
+      Aura Lpo (webadmin.aura@lpo.fr/2267) 	Accès aux comptes utilisateurs tiers via l'API
+      Aura Lpo (webadmin.aura@lpo.fr/2267) 	Accès admin comptage protocolé
+      Aura Lpo (webadmin.aura@lpo.fr/2267) 	Accès admin STOC Montagne
+      Aura Lpo (webadmin.aura@lpo.fr/2267) 	Accès admin STOC Sites
+      Aura Lpo (webadmin.aura@lpo.fr/2267) 	Accès admin SHOC
+      Aura Lpo (webadmin.aura@lpo.fr/2267) 	Accès admin STOC EPS (`#83 <https://framagit.org/lpo/Client_API_VN/issues/83>`_)
+
+
 Client-API-VN v2.4.2 (2019-08-20)
 =================================
 

@@ -1,2 +1,0 @@
-VACUUM is only performed on json and column-based tables created by transfer_vn.
-This avoids a lengthy VACUUM on the full database.
