@@ -8,6 +8,7 @@ Installing the environment
 Note: install Debian development environment first::
 
     sudo apt install build-essential
+    sudo apt install git
     sudo apt install python3-dev
     sudo apt install python3-venv
 
@@ -99,6 +100,8 @@ Commit pending changes and tag vX.Y.Z.
 
 Generate distribution archives::
 
+    ./setup.py clean --all
+    rm dist/*
     ./setup.py sdist bdist_wheel
 
 Upload to test.pypi::
@@ -108,3 +111,8 @@ Upload to test.pypi::
 To test, install from test.pypi (until ready for PyPI)::
 
     pip install -i https://test.pypi.org/simple/ --extra https://pypi.org/simple Client-API-VN
+
+Upload to pypi::
+
+    twine upload dist/*
+
