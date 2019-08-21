@@ -29,7 +29,7 @@ from sqlalchemy import (
     func,
     select,
 )
-from sqlalchemy.dialects.postgresql import JSONB, insert
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB, insert
 from sqlalchemy.engine.url import URL
 from sqlalchemy.sql import and_
 
@@ -284,7 +284,7 @@ class PostgresqlUtils:
             Column("site", String, nullable=False, index=True),
             Column("universal_id", String, nullable=False, index=True),
             Column("uuid", String, nullable=False, index=True),
-            Column("alias", JSONB, nullable=True),
+            Column("alias", ARRAY(String), nullable=True),
             Column("update_ts", DateTime, server_default=func.now(), nullable=False),
             PrimaryKeyConstraint("id", "site", name="uuid_xref_json_pk"),
         )
@@ -961,7 +961,7 @@ class StorePostgresql:
                 elem["observers"][0]["id_sighting"],
                 elem["observers"][0]["id_universal"],
             )
-            # Senf observation to queue
+            # Send observation to queue
             obs = ObservationItem(
                 self._config.site,
                 self._table_defs[controler]["metadata"],
@@ -986,6 +986,11 @@ class StorePostgresql:
                         nb_s = len(v)
                         logger.debug("Storing %d observations in form %d", nb_s, f)
                         for i in range(0, nb_s):
+                            # Create UUID
+                            self._store_uuid(
+                                v[i]["observers"][0]["id_sighting"],
+                                v[i]["observers"][0]["id_universal"],
+                            )
                             obs = ObservationItem(
                                 self._config.site,
                                 self._table_defs[controler]["metadata"],

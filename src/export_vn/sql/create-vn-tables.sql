@@ -264,7 +264,8 @@ CREATE TABLE $(db_schema_vn).forms(
     coord_x_local       FLOAT,
     coord_y_local       FLOAT,
     comments            VARCHAR(100000),
-    protocol            VARCHAR(100000),
+    protocol_name       VARCHAR(500),
+    protocol            JSONB,
     geom                GEOMETRY(Point, $(proj)),
     PRIMARY KEY (site, id)
 );
@@ -279,10 +280,15 @@ CREATE INDEX forms_idx_id
 DROP INDEX IF EXISTS forms_idx_id_form_universal;
 CREATE INDEX forms_idx_id_form_universal
     ON $(db_schema_vn).forms USING btree(id_form_universal);
+DROP INDEX IF EXISTS forms_gidx_protocol_name;
+CREATE INDEX forms_gidx_protocol_name
+    ON $(db_schema_vn).forms USING btree(protocol_name);
+DROP INDEX IF EXISTS forms_gidx_protocol;
+CREATE INDEX forms_gidx_protocol
+    ON $(db_schema_vn).forms USING GIN(protocol);
 DROP INDEX IF EXISTS forms_gidx_geom;
 CREATE INDEX forms_gidx_geom
     ON $(db_schema_vn).forms USING gist(geom);
-
 
 -- Add trigger for postgis geometry update
 DROP TRIGGER IF EXISTS trg_geom ON $(db_schema_vn).forms;
@@ -314,13 +320,14 @@ CREATE OR REPLACE FUNCTION update_forms() RETURNS TRIGGER AS \$\$
             coord_x_local     = CAST(NEW.item->>'coord_x_local' AS FLOAT),
             coord_y_local     = CAST(NEW.item->>'coord_y_local' AS FLOAT),
             comments          = NEW.item->>'comments',
-            protocol          = NEW.item->>'protocol'
+            protocol_name     = NEW.item #>>'{protocol,protocol_name}',
+            protocol          = CAST(NEW.item->>'protocol' AS JSONB)
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
             INSERT INTO $(db_schema_vn).forms(site, id, id_form_universal, time_start, time_stop,
                                               full_form, version, coord_lat, coord_lon,
-                                              coord_x_local, coord_y_local, comments, protocol)
+                                              coord_x_local, coord_y_local, comments, protocol_name,protocol)
             VALUES (
                 NEW.site,
                 NEW.id,
@@ -334,7 +341,8 @@ CREATE OR REPLACE FUNCTION update_forms() RETURNS TRIGGER AS \$\$
                 CAST(NEW.item->>'coord_x_local' AS FLOAT),
                 CAST(NEW.item->>'coord_y_local' AS FLOAT),
                 NEW.item->>'comments',
-                NEW.item->>'protocol'
+                NEW.item #>>'{protocol,protocol_name}',
+                CAST(NEW.item->>'protocol' AS JSONB)
             );
             END IF;
         RETURN NEW;
@@ -343,7 +351,7 @@ CREATE OR REPLACE FUNCTION update_forms() RETURNS TRIGGER AS \$\$
         -- Inserting row when raw data is inserted
         INSERT INTO $(db_schema_vn).forms(site, id, id_form_universal, time_start, time_stop,
                                           full_form, version, coord_lat, coord_lon,
-                                          coord_x_local, coord_y_local, comments, protocol)
+                                          coord_x_local, coord_y_local, comments, protocol_name,protocol)
         VALUES (
             NEW.site,
             NEW.id,
@@ -357,7 +365,8 @@ CREATE OR REPLACE FUNCTION update_forms() RETURNS TRIGGER AS \$\$
             CAST(NEW.item->>'coord_x_local' AS FLOAT),
             CAST(NEW.item->>'coord_y_local' AS FLOAT),
             NEW.item->>'comments',
-            NEW.item->>'protocol'
+            NEW.item #>>'{protocol,protocol_name}',
+            CAST(NEW.item->>'protocol' AS JSONB)
         );
         RETURN NEW;
     END IF;
@@ -485,7 +494,7 @@ CREATE TABLE $(db_schema_vn).observations (
     id_form_universal   VARCHAR(200),
     id_species          INTEGER,
     taxonomy            INTEGER,
-    date                DATE,
+    date                TIMESTAMP,
     date_year           INTEGER, -- Missing time_start & time_stop
     timing              TIMESTAMP,
     id_place            INTEGER,
@@ -530,6 +539,9 @@ CREATE INDEX observations_idx_taxonomy
 DROP INDEX IF EXISTS observations_idx_id_universal;
 CREATE INDEX observations_idx_id_universal
     ON $(db_schema_vn).observations USING btree(id_universal);
+DROP INDEX IF EXISTS observations_idx_id_form_universal;
+CREATE INDEX observations_idx_id_form_universal
+    ON $(db_schema_vn).observations USING btree(id_form_universal);
 DROP INDEX IF EXISTS observations_idx_observer_uid;
 CREATE INDEX observations_idx_observer_uid
     ON $(db_schema_vn).observations USING btree(observer_uid);
@@ -578,8 +590,8 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             id_form_universal = NEW.id_form_universal,
             id_species        = CAST(NEW.item #>> '{species,@id}' AS INTEGER),
             taxonomy          = CAST(NEW.item #>> '{species,taxonomy}' AS INTEGER),
-            "date"            = to_date(NEW.item #>> '{date,@ISO8601}', 'YYYY-MM-DD'),
-            date_year         = CAST(extract(year from to_date(NEW.item #>> '{date,@ISO8601}', 'YYYY-MM-DD')) AS INTEGER),
+            "date"            = to_timestamp(CAST(NEW.item #>> '{date,@timestamp}' AS DOUBLE PRECISION)),
+            date_year         = CAST(extract(year from to_timestamp(CAST(NEW.item #>> '{date,@timestamp}' AS DOUBLE PRECISION))) AS INTEGER),
             timing            = to_timestamp(CAST(((NEW.item -> 'observers') -> 0) #>> '{timing,@timestamp}' AS DOUBLE PRECISION)),
             id_place          = CAST(NEW.item #>> '{place,@id}' AS INTEGER),
             place             = NEW.item #>> '{place,name}',
@@ -621,8 +633,8 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
                 NEW.id_form_universal,
                 CAST(NEW.item #>> '{species,@id}' AS INTEGER),
                 CAST(NEW.item #>> '{species,taxonomy}' AS INTEGER),
-                to_date(NEW.item #>> '{date,@ISO8601}', 'YYYY-MM-DD'),
-                CAST(extract(year from to_date(NEW.item #>> '{date,@ISO8601}', 'YYYY-MM-DD')) AS INTEGER),
+                to_timestamp(CAST(NEW.item #>> '{date,@timestamp}' AS DOUBLE PRECISION)),
+                CAST(extract(year from to_timestamp(CAST(NEW.item #>> '{date,@timestamp}' AS DOUBLE PRECISION))) AS INTEGER),
                 -- Missing time_start & time_stop
                 to_timestamp(CAST(((NEW.item -> 'observers') -> 0) #>> '{timing,@timestamp}' AS DOUBLE PRECISION)),
                 CAST(NEW.item #>> '{place,@id}' AS INTEGER),
@@ -666,8 +678,8 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS \$\$
             NEW.id_form_universal,
             CAST(NEW.item #>> '{species,@id}' AS INTEGER),
             CAST(NEW.item #>> '{species,taxonomy}' AS INTEGER),
-            to_date(NEW.item #>> '{date,@ISO8601}', 'YYYY-MM-DD'),
-            CAST(extract(year from to_date(NEW.item #>> '{date,@ISO8601}', 'YYYY-MM-DD')) AS INTEGER),
+            to_timestamp(CAST(NEW.item #>> '{date,@timestamp}' AS DOUBLE PRECISION)),
+            CAST(extract(year from to_timestamp(CAST(NEW.item #>> '{date,@timestamp}' AS DOUBLE PRECISION))) AS INTEGER),
             -- Missing time_start & time_stop
             to_timestamp(CAST(((NEW.item -> 'observers') -> 0) #>> '{timing,@timestamp}' AS DOUBLE PRECISION)),
             CAST(NEW.item #>> '{place,@id}' AS INTEGER),
@@ -1190,4 +1202,15 @@ UPDATE $(db_schema_import).observers_json SET site=site;
 UPDATE $(db_schema_import).observations_json SET site=site;
 
 -- Final cleanup
-VACUUM FULL ANALYZE;
+VACUUM FULL ANALYZE $(db_schema_import).entities_json, $(db_schema_vn).entities;
+VACUUM FULL ANALYZE $(db_schema_import).field_details_json, $(db_schema_vn).field_details;
+VACUUM FULL ANALYZE $(db_schema_import).field_groups_json, $(db_schema_vn).field_groups;
+VACUUM FULL ANALYZE $(db_schema_import).forms_json, $(db_schema_vn).forms;
+VACUUM FULL ANALYZE $(db_schema_import).local_admin_units_json, $(db_schema_vn).local_admin_units;
+VACUUM FULL ANALYZE $(db_schema_import).observations_json, $(db_schema_vn).observations;
+VACUUM FULL ANALYZE $(db_schema_import).observers_json, $(db_schema_vn).observers;
+VACUUM FULL ANALYZE $(db_schema_import).places_json, $(db_schema_vn).places;
+VACUUM FULL ANALYZE $(db_schema_import).species_json, $(db_schema_vn).species;
+VACUUM FULL ANALYZE $(db_schema_import).taxo_groups_json, $(db_schema_vn).taxo_groups;
+VACUUM FULL ANALYZE $(db_schema_import).territorial_units_json, $(db_schema_vn).territorial_units;
+VACUUM FULL ANALYZE $(db_schema_import).uuid_xref;

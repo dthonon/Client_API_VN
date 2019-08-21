@@ -563,7 +563,7 @@ class Observations(DownloadVn):
 
             # Process updates
             for obs in updated:
-                log_msg = _("Updating observation %s").format(obs)
+                log_msg = _("Updating observation {}").format(obs)
                 logger.debug(log_msg)
                 items_dict = self._api_instance.api_get(
                     obs, short_version=short_version

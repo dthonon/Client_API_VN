@@ -185,7 +185,7 @@ msgstr ""
 
 #: src/export_vn/download_vn.py:566
 #, python-format
-msgid "Updating observation %s"
+msgid "Updating observation {}"
 msgstr ""
 
 #: src/export_vn/download_vn.py:648
