@@ -264,6 +264,7 @@ CREATE TABLE $(db_schema_vn).forms(
     coord_x_local       FLOAT,
     coord_y_local       FLOAT,
     comments            VARCHAR(100000),
+    protocol_name       VARCHAR(500),
     protocol            JSONB,
     geom                GEOMETRY(Point, $(proj)),
     PRIMARY KEY (site, id)
@@ -279,6 +280,9 @@ CREATE INDEX forms_idx_id
 DROP INDEX IF EXISTS forms_idx_id_form_universal;
 CREATE INDEX forms_idx_id_form_universal
     ON $(db_schema_vn).forms USING btree(id_form_universal);
+DROP INDEX IF EXISTS forms_gidx_protocol_name;
+CREATE INDEX forms_gidx_protocol_name
+    ON $(db_schema_vn).forms USING btree(protocol_name);
 DROP INDEX IF EXISTS forms_gidx_protocol;
 CREATE INDEX forms_gidx_protocol
     ON $(db_schema_vn).forms USING GIN(protocol);
@@ -316,13 +320,14 @@ CREATE OR REPLACE FUNCTION update_forms() RETURNS TRIGGER AS \$\$
             coord_x_local     = CAST(NEW.item->>'coord_x_local' AS FLOAT),
             coord_y_local     = CAST(NEW.item->>'coord_y_local' AS FLOAT),
             comments          = NEW.item->>'comments',
+            protocol_name     = NEW.item #>>'{protocol,protocol_name}',
             protocol          = CAST(NEW.item->>'protocol' AS JSONB)
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
             INSERT INTO $(db_schema_vn).forms(site, id, id_form_universal, time_start, time_stop,
                                               full_form, version, coord_lat, coord_lon,
-                                              coord_x_local, coord_y_local, comments, protocol)
+                                              coord_x_local, coord_y_local, comments, protocol_name,protocol)
             VALUES (
                 NEW.site,
                 NEW.id,
@@ -336,6 +341,7 @@ CREATE OR REPLACE FUNCTION update_forms() RETURNS TRIGGER AS \$\$
                 CAST(NEW.item->>'coord_x_local' AS FLOAT),
                 CAST(NEW.item->>'coord_y_local' AS FLOAT),
                 NEW.item->>'comments',
+                NEW.item #>>'{protocol,protocol_name}',
                 CAST(NEW.item->>'protocol' AS JSONB)
             );
             END IF;
@@ -345,7 +351,7 @@ CREATE OR REPLACE FUNCTION update_forms() RETURNS TRIGGER AS \$\$
         -- Inserting row when raw data is inserted
         INSERT INTO $(db_schema_vn).forms(site, id, id_form_universal, time_start, time_stop,
                                           full_form, version, coord_lat, coord_lon,
-                                          coord_x_local, coord_y_local, comments, protocol)
+                                          coord_x_local, coord_y_local, comments, protocol_name,protocol)
         VALUES (
             NEW.site,
             NEW.id,
@@ -359,6 +365,7 @@ CREATE OR REPLACE FUNCTION update_forms() RETURNS TRIGGER AS \$\$
             CAST(NEW.item->>'coord_x_local' AS FLOAT),
             CAST(NEW.item->>'coord_y_local' AS FLOAT),
             NEW.item->>'comments',
+            NEW.item #>>'{protocol,protocol_name}',
             CAST(NEW.item->>'protocol' AS JSONB)
         );
         RETURN NEW;
