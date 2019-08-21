@@ -961,7 +961,7 @@ class StorePostgresql:
                 elem["observers"][0]["id_sighting"],
                 elem["observers"][0]["id_universal"],
             )
-            # Senf observation to queue
+            # Send observation to queue
             obs = ObservationItem(
                 self._config.site,
                 self._table_defs[controler]["metadata"],
