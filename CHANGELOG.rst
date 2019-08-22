@@ -1,3 +1,16 @@
+Client-API-VN v2.4.4 (2019-08-22)
+=================================
+
+Features
+--------
+
+- The following colums are added to forms::
+
+      observer_uid        INT,
+      date_start          DATE,
+      date_stop           DATE, (`#86 <https://framagit.org/lpo/Client_API_VN/issues/86>`_)
+
+
 Client-API-VN v2.4.3 (2019-08-22)
 =================================
 
