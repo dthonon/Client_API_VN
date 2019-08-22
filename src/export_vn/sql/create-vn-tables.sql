@@ -314,7 +314,7 @@ CREATE OR REPLACE FUNCTION update_forms() RETURNS TRIGGER AS \$\$
         -- Updating or inserting data when JSON data is updated
         UPDATE $(db_schema_vn).forms SET
             id_form_universal = NEW.item->>'id_form_universal',
-            observer_uid      = CAST(NEW.item) ->> '@uid' as INT),
+            observer_uid      = CAST(NEW.item->>'@uid' as INT),
             date_start        = CAST(NEW.item->>'date_start' AS DATE),
             date_stop         = CAST(NEW.item->>'date_stop' AS DATE),
             time_start        = NEW.item->>'time_start',
@@ -339,7 +339,7 @@ CREATE OR REPLACE FUNCTION update_forms() RETURNS TRIGGER AS \$\$
                 NEW.site,
                 NEW.id,
                 NEW.item->>'id_form_universal',
-                CAST(NEW.item) ->> '@uid' as INT),
+                CAST(NEW.item->>'@uid' as INT),
                 CAST(NEW.item->>'date_start' AS DATE),
                 CAST(NEW.item->>'date_stop' AS DATE),
                 NEW.item->>'time_start',
@@ -367,7 +367,7 @@ CREATE OR REPLACE FUNCTION update_forms() RETURNS TRIGGER AS \$\$
             NEW.site,
             NEW.id,
             NEW.item->>'id_form_universal',
-            CAST(NEW.item) ->> '@uid' as INT),
+            CAST(NEW.item->>'@uid' as INT),
             CAST(NEW.item->>'date_start' AS DATE),
             CAST(NEW.item->>'date_stop' AS DATE),
             NEW.item->>'time_start',
