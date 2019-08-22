@@ -28,7 +28,6 @@ from sqlalchemy import (
     create_engine,
     func,
     select,
-    Date
 )
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, insert
 from sqlalchemy.engine.url import URL
@@ -984,12 +983,14 @@ class StorePostgresql:
                     id_form_universal = None
                 for (k, v) in items_dict["data"]["forms"][f].items():
                     if k == "sightings":
-                        dates=[]
+                        dates = []
                         nb_s = len(v)
                         logger.debug("Storing %d observations in form %d", nb_s, f)
                         for i in range(0, nb_s):
-                            #Find max and min dates
-                            dates.append(date.fromtimestamp(int(v[i]['date']['@timestamp'])))
+                            # Find max and min dates
+                            dates.append(
+                                date.fromtimestamp(int(v[i]["date"]["@timestamp"]))
+                            )
                             # Create UUID
                             self._store_uuid(
                                 v[i]["observers"][0]["id_sighting"],
@@ -1006,10 +1007,10 @@ class StorePostgresql:
                             self._observations_queue.put(obs)
                             nb_obs += 1
                         # Add presumed start and stop date from observations
-                        forms_data['date_start']=min(dates).isoformat()
-                        forms_data['date_stop']=max(dates).isoformat()
+                        forms_data["date_start"] = min(dates).isoformat()
+                        forms_data["date_stop"] = max(dates).isoformat()
                         # Add presumed observer from first observation
-                        forms_data['@uid']= v[0]['observers'][0]['@uid']
+                        forms_data["@uid"] = v[0]["observers"][0]["@uid"]
                     else:
                         # Put anything except sightings in forms data
                         forms_data[k] = v
