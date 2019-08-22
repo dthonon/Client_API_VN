@@ -19,20 +19,34 @@ Bugfixes
   See `example query <https://framagit.org/lpo/partage-de-codes/snippets/3741>`_
   for how to use it to get STOC data.
 
-  Note: For survey datas, as G. Delaloye pointed out, protocols rights accesses must be configure in portals::
-      Aura Lpo (webadmin.aura@lpo.fr/2267) 	Droits de gestion des données complémentaires Gypaètes
-      Aura Lpo (webadmin.aura@lpo.fr/2267) 	Droit de voir toutes les observations cachées
-      Aura Lpo (webadmin.aura@lpo.fr/2267) 	Droits de faire des recherches, malgré le quota
-      Aura Lpo (webadmin.aura@lpo.fr/2267) 	Droits de gestion des observations
-      Aura Lpo (webadmin.aura@lpo.fr/2267) 	Droits d'administration
-      Aura Lpo (webadmin.aura@lpo.fr/2267) 	Accès admin Wetlands
-      Aura Lpo (webadmin.aura@lpo.fr/2267) 	Accès aux comptes utilisateurs tiers via l'API
-      Aura Lpo (webadmin.aura@lpo.fr/2267) 	Accès admin comptage protocolé
-      Aura Lpo (webadmin.aura@lpo.fr/2267) 	Accès admin STOC Montagne
-      Aura Lpo (webadmin.aura@lpo.fr/2267) 	Accès admin STOC Sites
-      Aura Lpo (webadmin.aura@lpo.fr/2267) 	Accès admin SHOC
-      Aura Lpo (webadmin.aura@lpo.fr/2267) 	Accès admin STOC EPS (`#83 <https://framagit.org/lpo/Client_API_VN/issues/83>`_)
-
+  Note: For survey datas, as G. Delaloye pointed out, protocols rights accesses must be configure in portals
+      +-----------------------------------------------+--------------------------------------------------------+
+      |                    compte                     |                         droit                          |
+      +===============================================+========================================================+
+      | utilisateur_api (utilisateur_api@mail.net/id) | Droits de gestion des données complémentaires Gypaètes |
+      +-----------------------------------------------+--------------------------------------------------------+
+      | utilisateur_api (utilisateur_api@mail.net/id) | Droit de voir toutes les observations cachées          |
+      +-----------------------------------------------+--------------------------------------------------------+
+      | utilisateur_api (utilisateur_api@mail.net/id) | Droits de faire des recherches, malgré le quota        |
+      +-----------------------------------------------+--------------------------------------------------------+
+      | utilisateur_api (utilisateur_api@mail.net/id) | Droits de gestion des observations                     |
+      +-----------------------------------------------+--------------------------------------------------------+
+      | utilisateur_api (utilisateur_api@mail.net/id) | Droits d'administration                                |
+      +-----------------------------------------------+--------------------------------------------------------+
+      | utilisateur_api (utilisateur_api@mail.net/id) | Accès admin Wetlands                                   |
+      +-----------------------------------------------+--------------------------------------------------------+
+      | utilisateur_api (utilisateur_api@mail.net/id) | Accès aux comptes utilisateurs tiers via l'API         |
+      +-----------------------------------------------+--------------------------------------------------------+
+      | utilisateur_api (utilisateur_api@mail.net/id) | Accès admin comptage protocolé                         |
+      +-----------------------------------------------+--------------------------------------------------------+
+      | utilisateur_api (utilisateur_api@mail.net/id) | Accès admin STOC Montagne                              |
+      +-----------------------------------------------+--------------------------------------------------------+
+      | utilisateur_api (utilisateur_api@mail.net/id) | Accès admin STOC Sites                                 |
+      +-----------------------------------------------+--------------------------------------------------------+
+      | utilisateur_api (utilisateur_api@mail.net/id) | Accès admin SHOC                                       |
+      +-----------------------------------------------+--------------------------------------------------------+
+      | utilisateur_api (utilisateur_api@mail.net/id) | Accès admin STOC EPS                                   |
+      +-----------------------------------------------+--------------------------------------------------------+
 
 Client-API-VN v2.4.2 (2019-08-20)
 =================================
