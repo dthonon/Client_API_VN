@@ -48,8 +48,9 @@ It must run at least every week.
 Prerequisites
 -------------
 
-Installation requires the following python module
-* pip
+Installation requires the following python module::
+
+    pip
 
 All other dependencies are managed by pip install.
 
@@ -61,23 +62,26 @@ The application runs as::
     transfer_vn  options file
 
 where:
+
 - options  command line options described below
 - file     YAML file, located in $HOME directory, described in sample file
 
 Command-line options
 --------------------
 
--h, --help             Affiche l'aide et termine
---version              Affiche la version
--v, --verbose          Plus verbeux
--q, --quiet            Moins verbeux
---db_drop              Détruit la base de données et les rôles
---db_create            Crée la base de données et les rôle
---json_tables_create   Crée, si elles n'existent pas, les tables JSON
---col_tables_create    Crée ou recrée les tables en colonne
---full                 Réalise un téléchargement complet
---update               Réalise un téléchargement incrémental
---count                Statistiques des observations par site
+-h, --help             Prints help and exits
+--version              Print version number
+-v, --verbose          Increase output verbosity
+-q, --quiet            Reduce output verbosity
+--init                 Initialize the YAML configuration file
+--db_drop              Delete if exists database and roles
+--db_create            Create database and roles
+--json_tables_create   Create or recreate json tables
+--col_tables_create    Create or recreate colums based tables
+--full                 Perform a full download
+--update               Perform an incremental download
+--count                Count observations by site and taxo_group
+--profile              Gather and print profiling times
 
 
 Note
