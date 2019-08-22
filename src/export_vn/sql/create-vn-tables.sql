@@ -255,8 +255,9 @@ CREATE TABLE $(db_schema_vn).forms(
     site                VARCHAR(50),
     id                  INTEGER,
     id_form_universal   VARCHAR(500),
+    observer_uid        INT,
     date_start          DATE,
-    date_stop            DATE,
+    date_stop           DATE,
     time_start          VARCHAR(500),
     time_stop           VARCHAR(500),
     full_form           VARCHAR(500),
@@ -313,6 +314,7 @@ CREATE OR REPLACE FUNCTION update_forms() RETURNS TRIGGER AS \$\$
         -- Updating or inserting data when JSON data is updated
         UPDATE $(db_schema_vn).forms SET
             id_form_universal = NEW.item->>'id_form_universal',
+            observer_uid      = CAST(NEW.item) ->> '@uid' as INT),
             date_start        = CAST(NEW.item->>'date_start' AS DATE),
             date_stop         = CAST(NEW.item->>'date_stop' AS DATE),
             time_start        = NEW.item->>'time_start',
@@ -329,13 +331,15 @@ CREATE OR REPLACE FUNCTION update_forms() RETURNS TRIGGER AS \$\$
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
-            INSERT INTO $(db_schema_vn).forms(site, id, id_form_universal, date_start, date_stop, time_start, time_stop,
-                                              full_form, version, coord_lat, coord_lon,
-                                              coord_x_local, coord_y_local, comments, protocol_name,protocol)
+            INSERT INTO $(db_schema_vn).forms(site, id, id_form_universal, observer_uid, date_start, 
+                                              date_stop, time_start, time_stop, full_form, version, 
+                                              coord_lat, coord_lon, coord_x_local, coord_y_local, 
+                                              comments, protocol_name, protocol)
             VALUES (
                 NEW.site,
                 NEW.id,
                 NEW.item->>'id_form_universal',
+                CAST(NEW.item) ->> '@uid' as INT),
                 CAST(NEW.item->>'date_start' AS DATE),
                 CAST(NEW.item->>'date_stop' AS DATE),
                 NEW.item->>'time_start',
@@ -355,13 +359,15 @@ CREATE OR REPLACE FUNCTION update_forms() RETURNS TRIGGER AS \$\$
 
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting row when raw data is inserted
-        INSERT INTO $(db_schema_vn).forms(site, id, id_form_universal, date_start, date_stop, time_start, time_stop,
-                                          full_form, version, coord_lat, coord_lon,
-                                          coord_x_local, coord_y_local, comments, protocol_name,protocol)
+        INSERT INTO $(db_schema_vn).forms(site, id, id_form_universal, observer_uid, date_start, 
+                                          date_stop, time_start, time_stop, full_form, version, 
+                                          coord_lat, coord_lon, coord_x_local, coord_y_local, 
+                                          comments, protocol_name, protocol)
         VALUES (
             NEW.site,
             NEW.id,
             NEW.item->>'id_form_universal',
+            CAST(NEW.item) ->> '@uid' as INT),
             CAST(NEW.item->>'date_start' AS DATE),
             CAST(NEW.item->>'date_stop' AS DATE),
             NEW.item->>'time_start',

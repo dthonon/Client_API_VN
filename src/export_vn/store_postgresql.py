@@ -1005,8 +1005,11 @@ class StorePostgresql:
                             )
                             self._observations_queue.put(obs)
                             nb_obs += 1
+                        # Add presumed start and stop date from observations
                         forms_data['date_start']=min(dates).isoformat()
                         forms_data['date_stop']=max(dates).isoformat()
+                        # Add presumed observer from first observation
+                        forms_data['@uid']= v[0]['observers'][0]['@uid']
                     else:
                         # Put anything except sightings in forms data
                         forms_data[k] = v
