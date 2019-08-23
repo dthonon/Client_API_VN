@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Test each method of download_vn module, using file store.
 """

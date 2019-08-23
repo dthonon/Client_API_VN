@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Test each property of envconf module.
 """
