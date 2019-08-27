@@ -25,8 +25,8 @@ from export_vn.evnconf import EvnConf
 from export_vn.store_file import StoreFile
 
 # Using faune-ardeche or faune-isere site, that needs to be created first
-SITE = "t07"
-# SITE = 't38'
+# SITE = "t07"
+SITE = 't38'
 FILE = ".evn_test.yaml"
 
 # Get configuration for test site
@@ -56,7 +56,12 @@ def test_entities_get():
     """Get an entity."""
     entity = ENTITIES_API.api_get("2")
     assert ENTITIES_API.transfer_errors == 0
-    assert entity["data"][0]["short_name"] == "LPO 07"
+    if SITE == "t38":
+        entity["data"][0]["short_name"] == "LPO ISERE"
+    elif SITE == "t07":
+        entity["data"][0]["short_name"] == "LPO 07"
+    else:
+        assert False
 
 
 def test_entities_list():
@@ -314,10 +319,10 @@ def test_observations_get(capsys):
                                         "path": "http://media.biolovision.net/data.biolovision.net/2018-09",  # noqa: E501
                                         "insert_date": {
                                             "@notime": "0",
-                                            "@offset": "3600",
-                                            "@ISO8601": "1970-01-01T01:33:38+01:00",
-                                            "@timestamp": "2018",
-                                            "#text": "jeudi 1 janvier 1970, 01:33:38",
+                                            "@offset": "7200",
+                                            "@ISO8601": "2018-09-15T19:45:01+02:00",
+                                            "@timestamp": "1537033501",
+                                            "#text": "samedi 15 septembre 2018, 19:45:01",
                                         },
                                         "metadata": "",
                                         "type": "PHOTO",
@@ -431,6 +436,129 @@ def test_observations_get(capsys):
         }
 
 
+def test_observations_get_short(capsys):
+    """Get a specific sighting."""
+    if SITE == "t38":
+        sighting = OBSERVATIONS_API.api_get("2246086", short_version="1")
+        assert sighting == {
+            "data": {
+                "sightings": [
+                    {
+                        "date": {
+                            "@notime": "1",
+                            "@offset": "7200",
+                            "@timestamp": "1536962400",
+                        },
+                        "observers": [
+                            {
+                                "estimation_code": "MINIMUM",
+                                "count": "15",
+                                "id_sighting": "2246086",
+                                "insert_date": "1537033501",
+                                "medias": [
+                                    {
+                                        "media_is_hidden": "0",
+                                        "filename": "3_1537024802877-15194452-5272.jpg",
+                                        "path": "http://media.biolovision.net/data.biolovision.net/2018-09",  # noqa: E501
+                                        "insert_date": "1537033501",
+                                        "type": "PHOTO",
+                                        "@id": "49174",
+                                    }
+                                ],
+                                "@uid": "11675",
+                                "precision": "precise",
+                                "id_universal": "65_71846872",
+                                "traid": "33",
+                                "timing": {
+                                    "@notime": "0",
+                                    "@offset": "7200",
+                                    "@timestamp": "1537024756",
+                                },
+                                "altitude": "215",
+                                "source": "WEB",
+                                "coord_lat": "45.18724",
+                                "flight_number": "1",
+                                "coord_lon": "5.735458",
+                                "@id": "33",
+                                "version": "0",
+                            }
+                        ],
+                        "place": {
+                            "@id": "100197",
+                            "id_universal": "65_71846872",
+                            "lat": "45.187677239404",
+                            "lon": "5.735372035327",
+                            "loc_precision": "0",
+                            "name": "Museum (Parc du Museum)",
+                            "place_type": "place",
+                        },
+                        "species": {
+                            "@id": "86",
+                            "rarity": "verycommon",
+                            "taxonomy": "1",
+                        },
+                    }
+                ]
+            }
+        }
+    if SITE == "t07":
+        sighting = OBSERVATIONS_API.api_get("274830", short_version="1")
+        assert sighting == {
+            "data": {
+                "sightings": [
+                    {
+                        "date": {
+                            "@notime": "1",
+                            "@offset": "7200",
+                            "@timestamp": "1430258400",
+                        },
+                        "observers": [
+                            {
+                                "@id": "104",
+                                "@uid": "4040",
+                                "altitude": "99",
+                                "comment": "juv",
+                                "coord_lat": "44.373198",
+                                "coord_lon": "4.428607",
+                                "count": "1",
+                                "estimation_code": "MINIMUM",
+                                "flight_number": "1",
+                                "hidden_comment": "RNNGA",
+                                "id_sighting": "274830",
+                                "id_universal": "30_274830",
+                                "insert_date": "1446413437",
+                                "precision": "precise",
+                                "source": "WEB",
+                                "timing": {
+                                    "@notime": "1",
+                                    "@offset": "7200",
+                                    "@timestamp": "1430258400",
+                                },
+                                "traid": "104",
+                                "update_date": "1522080083",
+                                "version": "0"
+                            }
+                        ],
+                        "place": {
+                            "@id": "122870",
+                            "id_universal": "30_274830",
+                            "lat": "44.371928319497",
+                            "lon": "4.4273367833997",
+                            "loc_precision": "0",
+                            "name": "Rapide des Trois Eaux",
+                            "place_type": "place",
+                        },
+                        "species": {
+                            "@id": "19703",
+                            "rarity": "unusual",
+                            "taxonomy": "18",
+                        },
+                    }
+                ]
+            }
+        }
+
+
 def test_observations_search_1(capsys):
     """Query sightings, from taxo_group 18: Mantodea and date range."""
     q_param = {
@@ -484,73 +612,8 @@ def test_observers_get(capsys):
     observer = OBSERVERS_API.api_get(o)
     assert OBSERVERS_API.transfer_errors == 0
     if SITE == "t38":
-        assert observer == {
-            "data": [
-                {
-                    "anonymous": "0",
-                    "archive_account": "0",
-                    "atlas_list": "16",
-                    "birth_year": "1959",
-                    "bypass_purchase": "0",
-                    "collectif": "0",
-                    "debug_file_upload": "0",
-                    "default_hidden": "0",
-                    "display_order": "DATE_PLACE_SPECIES",
-                    "email": "d.thonon9@gmail.com",
-                    "external_id": "0",
-                    "has_search_access": "0",
-                    "hide_email": "0",
-                    "id": "1084",
-                    "id_entity": "1",
-                    "id_universal": "11675",
-                    "item_per_page_gallery": "12",
-                    "item_per_page_obs": "20",
-                    "langu": "fr",
-                    "last_inserted_data": {
-                        "#text": "mardi 1 novembre 2016, 17:03:06",
-                        "@ISO8601": "2016-11-01T17:03:06+01:00",
-                        "@notime": "0",
-                        "@offset": "3600",
-                        "@timestamp": "1478016186",
-                    },
-                    "last_login": {
-                        "#text": "dimanche 6 janvier 2019, 21:32:23",
-                        "@ISO8601": "2019-01-06T21:32:23+01:00",
-                        "@notime": "0",
-                        "@offset": "3600",
-                        "@timestamp": "1546806743",
-                    },
-                    "lat": "44.7221149943671",
-                    "lon": "4.59373711385036",
-                    "mobile_phone": "0675291894",
-                    "mobile_use_form": "0",
-                    "mobile_use_mortality": "0",
-                    "mobile_use_protocol": "0",
-                    "mobile_use_trace": "0",
-                    "municipality": "Meylan",
-                    "name": "Thonon",
-                    "number": "",
-                    "photo": "",
-                    "postcode": "38240",
-                    "presentation": "",
-                    "private_phone": "09 53 74 56 59",
-                    "private_website": "",
-                    "registration_date": {
-                        "#text": "vendredi 1 mai 2015",
-                        "@ISO8601": "2015-05-01T19:11:31+02:00",
-                        "@notime": "1",
-                        "@offset": "7200",
-                        "@timestamp": "1430500291",
-                    },
-                    "show_precise": "0",
-                    "species_order": "ALPHA",
-                    "street": "13, Av. du Vercors",
-                    "surname": "Daniel",
-                    "use_latin_search": "N",
-                    "work_phone": "",
-                }
-            ]
-        }
+        assert observer["data"][0]["id_universal"] == "11675"
+        assert observer["data"][0]["email"] == "d.thonon9@gmail.com"
     elif SITE == "t07":
         assert observer == {
             "data": [
