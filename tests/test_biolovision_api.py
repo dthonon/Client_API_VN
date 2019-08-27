@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 import requests
 
-from export_vn.biolovision_api import (
+from biolovision.api import (
     EntitiesAPI,
     FieldsAPI,
     LocalAdminUnitsAPI,
@@ -276,7 +276,7 @@ def test_observations_get(capsys):
                             "coord_lon": "5.735372035327",
                             "@id": "100197",
                             "loc_precision": "0",
-                            "place_type": "precise",
+                            "place_type": "place",
                         },
                         "date": {
                             "@notime": "1",
@@ -415,7 +415,7 @@ def test_observations_get(capsys):
                             "loc_precision": "0",
                             "municipality": "Vallon-Pont-d'Arc",
                             "name": "Rapide des Trois Eaux",
-                            "place_type": "precise",
+                            "place_type": "place",
                         },
                         "species": {
                             "@id": "19703",
