@@ -322,7 +322,7 @@ def test_observations_get(capsys):
                                             "@offset": "7200",
                                             "@ISO8601": "2018-09-15T19:45:01+02:00",
                                             "@timestamp": "1537033501",
-                                            "#text": "samedi 15 septembre 2018, 19:45:01",
+                                            "#text": "samedi 15 septembre 2018, 19:45:01",  # noqa: E501
                                         },
                                         "metadata": "",
                                         "type": "PHOTO",
