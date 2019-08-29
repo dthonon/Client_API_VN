@@ -13,7 +13,7 @@ Properties
 import logging
 from datetime import datetime, timedelta
 
-from export_vn.biolovision_api import (
+from biolovision.api import (
     EntitiesAPI,
     FieldsAPI,
     LocalAdminUnitsAPI,

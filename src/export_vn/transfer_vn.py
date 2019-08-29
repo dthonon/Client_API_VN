@@ -17,7 +17,7 @@ import requests
 import yappi
 import pyexpander.lib as pyexpander
 from bs4 import BeautifulSoup
-from export_vn.biolovision_api import TaxoGroupsAPI
+from biolovision.api import TaxoGroupsAPI
 from export_vn.download_vn import (
     Entities,
     Fields,

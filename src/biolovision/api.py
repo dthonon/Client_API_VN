@@ -236,7 +236,8 @@ class BiolovisionAPI:
                 try:
                     resp_chunk = resp.json()
                 except Exception:
-                    # Error during JSON decoding => Logging error and no further processing of empty chunk
+                    # Error during JSON decoding =>
+                    # Logging error and no further processing of empty chunk
                     resp_chunk = json.loads("{}")
                     logger.error(_("Incorrect response content: %s"), resp.text)
                     logger.exception(_("Exception raised during JSON decoding"))
@@ -339,7 +340,8 @@ class BiolovisionAPI:
         Parameters
         ----------
         opt_params : HashableDict (to enable lru_cache)
-            optional URL parameters, empty by default. See Biolovision API documentation.
+            optional URL parameters, empty by default.
+            See Biolovision API documentation.
 
         Returns
         -------
@@ -373,7 +375,8 @@ class BiolovisionAPI:
         id_entity : str
             entity to retrieve.
         **kwargs :
-            optional URL parameters, empty by default. See Biolovision API documentation.
+            optional URL parameters, empty by default.
+            See Biolovision API documentation.
 
         Returns
         -------
@@ -399,7 +402,8 @@ class BiolovisionAPI:
         Parameters
         ----------
         opt_params : dict
-            optional URL parameters, empty by default. See Biolovision API documentation.
+            optional URL parameters, empty by default.
+            See Biolovision API documentation.
 
         Returns
         -------
@@ -494,7 +498,8 @@ class ObservationsAPI(BiolovisionAPI):
         id_taxo_group : integer
             taxo_group to query for observations
         **kwargs :
-            optional URL parameters, empty by default. See Biolovision API documentation.
+            optional URL parameters, empty by default.
+            See Biolovision API documentation.
 
         Returns
         -------
@@ -557,7 +562,8 @@ class ObservationsAPI(BiolovisionAPI):
         json : dict or None
             dict decoded from json if status OK, else None
         **kwargs :
-            optional URL parameters, empty by default. See Biolovision API documentation.
+            optional URL parameters, empty by default.
+            See Biolovision API documentation.
         """
         # Mandatory parameters.
         params = {
