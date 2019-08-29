@@ -9,6 +9,7 @@ import pytest
 
 from export_vn import __version__
 from export_vn.evnconf import EvnConf
+from strictyaml import YAMLValidationError
 
 # Testing constants
 CRTL = "observations"
@@ -36,6 +37,12 @@ CRTL = "observations"
             "site_enabled": True,
             "file_enabled": False,
         },
+        {
+            "file": "evn_tst3.yaml",
+            "site": "tst4",
+            "site_enabled": True,
+            "file_enabled": False,
+        },
     ],
 )
 def create_file(request):
@@ -48,7 +55,13 @@ def create_file(request):
     if (not out_file.is_file()) or (in_file.stat().st_mtime > out_file.stat().st_mtime):
         shutil.copy(in_file, out_file)
     # Instantiate configuration classes
-    cfg = EvnConf(cfg_file)
+    if request.param["file"] == "evn_tst3.yaml":
+        try:
+            cfg = EvnConf(cfg_file)
+        except YAMLValidationError:
+            pytest.skip("Expected YAML error")
+    else:
+        cfg = EvnConf(cfg_file)
     c_cfg = cfg.ctrl_list[CRTL]
     s_cfg = cfg.site_list[request.param["site"]]
     return (cfg, c_cfg, s_cfg, cfg_file, request.param)

@@ -10,6 +10,7 @@ parameters are then available as properties of EvnCtrlConf and EvnSiteConf.
 import logging
 from pathlib import Path
 from typing import Any, Dict, List, cast
+import sys
 
 from strictyaml import (
     Bool,
@@ -414,10 +415,13 @@ class EvnConf:
         try:
             logger.info(_("Loading YAML configuration %s"), file)
             self._config = load(yaml_text, _ConfSchema).data
-        except YAMLValidationError as error:
-            logger.exception(_("Incorrect content in YAML configuration %s"), file)
-        except YAMLError as error:
-            logger.exception(_("Error while reading YAML configuration %s"), file)
+        except YAMLValidationError:
+            logger.critical(_("Incorrect content in YAML configuration %s"), file)
+            logger.critical(_("%s"), sys.exc_info()[1])
+            raise
+        except YAMLError:
+            logger.critical(_("Error while reading YAML configuration %s"), file)
+            raise
 
         self._ctrl_list = {}  # type: _CtrlType
         for ctrl in self._config["controler"]:

@@ -1,4 +1,4 @@
-# Test file with only required parameters
+# Test file with error
 
 # General parameters
 main:
@@ -11,7 +11,7 @@ main:
 controler:
     entities:
         # Enable download from this controler
-        enabled: true
+        enabled: error
     fields:
         # Enable download from this controler
         enabled: true
@@ -74,7 +74,7 @@ controler:
 
 # VisioNature site access parameters
 site:
-    tst3:
+    tst4:
         # Enable download from this site
         enabled: true
         # URL

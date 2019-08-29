@@ -5,32 +5,25 @@ Program managing VisioNature export to Postgresql database
 """
 import argparse
 import logging
+import shutil
 import subprocess
 import sys
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
-import shutil
 
 import pkg_resources
 import requests
-
 import yappi
+
 import pyexpander.lib as pyexpander
-from bs4 import BeautifulSoup
 from biolovision.api import TaxoGroupsAPI
-from export_vn.download_vn import (
-    Entities,
-    Fields,
-    LocalAdminUnits,
-    Observations,
-    Observers,
-    Places,
-    Species,
-    TaxoGroup,
-    TerritorialUnits,
-)
+from bs4 import BeautifulSoup
+from export_vn.download_vn import (Entities, Fields, LocalAdminUnits,
+                                   Observations, Observers, Places, Species,
+                                   TaxoGroup, TerritorialUnits)
 from export_vn.evnconf import EvnConf
 from export_vn.store_postgresql import PostgresqlUtils, StorePostgresql
+from strictyaml import YAMLValidationError
 from tabulate import tabulate
 
 from . import _, __version__
@@ -414,7 +407,12 @@ def main(args):
         return None
 
     logger.info(_("Getting configuration data from %s"), args.file)
-    cfg_ctrl = EvnConf(args.file)
+    try:
+        cfg_ctrl = EvnConf(args.file)
+    except YAMLValidationError as error:
+        logger.critical(_("Incorrect content in YAML configuration %s"), args.file)
+        sys.exit(0)
+
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
 
