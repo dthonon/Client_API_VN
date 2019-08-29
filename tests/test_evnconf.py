@@ -42,11 +42,11 @@ CRTL = "observations"
 def create_file(request):
     cfg_file = "." + request.param["file"]
     # Copy test file to HOME
-    in_file = str(Path.home()) + "/Client_API_VN/tests/data/" + request.param["file"]
-    out_file = str(Path.home()) + "/" + cfg_file
-    if (not os.path.exists(out_file)) or (
-        os.path.getctime(in_file) > os.path.getctime(out_file)
-    ):
+    in_file = (
+        Path.home() / "Client_API_VN" / "tests" / "data" / request.param["file"]
+    )
+    out_file = Path.home() / cfg_file
+    if (not out_file.is_file()) or (in_file.stat().st_mtime > out_file.stat().st_mtime):
         shutil.copy(in_file, out_file)
     # Instantiate configuration classes
     cfg = EvnConf(cfg_file)
@@ -84,7 +84,7 @@ def test_ctrl_list(create_file):
 def test_site(create_file):
     """Check if configuration file exists."""
     cfg, c_cfg, s_cfg, cfg_file, params = create_file
-    cfg_file = Path(str(Path.home()) + "/" + cfg_file)
+    cfg_file = Path.home() / cfg_file
     assert cfg_file.is_file()
 
 
