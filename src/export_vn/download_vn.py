@@ -562,11 +562,12 @@ class Observations(DownloadVn):
                 )
 
             # Process updates
-            for obs in updated:
-                log_msg = _("Updating observation {}").format(obs)
+            if len(updated) > 0:
+                log_msg = _("Creating or updating {} observations").format(len(updated))
                 logger.debug(log_msg)
-                items_dict = self._api_instance.api_get(
-                    obs, short_version=short_version
+                items_dict = self._api_instance.api_list(
+                    taxo, id_sightings_list=",".join(updated),
+                    short_version=short_version
                 )
                 # Call backend to store log
                 self._backend.log(
