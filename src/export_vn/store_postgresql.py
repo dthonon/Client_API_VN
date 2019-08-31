@@ -1043,7 +1043,7 @@ class StorePostgresql:
 
         # Loop on data array to store each element to database
         logger.info(
-            _("Storing observers %d items from %s of site %s"),
+            _("Storing observers %d items of site %s"),
             len(items_dict["data"]),
             controler,
             self._config.site,
