@@ -147,7 +147,7 @@ class BiolovisionAPI:
     # ----------------
     # Internal methods
     # ----------------
-    def _url_get(self, params, scope, method="GET", body=None):
+    def _url_get(self, params, scope, method="GET", body=None, optional_headers=None):
         """Internal function used to request from Biolovision API.
 
         Prepare the URL header, perform HTTP request and get json content.
@@ -164,6 +164,8 @@ class BiolovisionAPI:
             HTTP method to use: GET/POST/DELETE/PUT. Default to GET
         body : str
             Optional body for POST or PUT
+        optional_headers : dict
+            Optional body for request
 
         Returns
         -------
@@ -189,6 +191,8 @@ class BiolovisionAPI:
             payload = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
             logger.debug(_("Params: %s"), payload)
             headers = {"Content-Type": "application/json;charset=UTF-8"}
+            if optional_headers is not None:
+                headers.update(optional_headers)
             protected_url = self._api_url + scope
             if method == "GET":
                 resp = requests.get(
@@ -332,7 +336,7 @@ class BiolovisionAPI:
 
         return data_rec
 
-    def _api_list(self, opt_params=None):
+    def _api_list(self, opt_params=None, optional_headers=None):
         """Query for a list of entities of the given controler.
 
         Calls /ctrl API.
@@ -342,6 +346,8 @@ class BiolovisionAPI:
         opt_params : HashableDict (to enable lru_cache)
             optional URL parameters, empty by default.
             See Biolovision API documentation.
+        optional_headers : dict
+            Optional body for GET request
 
         Returns
         -------
@@ -355,9 +361,16 @@ class BiolovisionAPI:
         }
         if opt_params is not None:
             params.update(opt_params)
-        logger.debug(_("List from %s, with option %s"), self._ctrl, params)
+        logger.debug(
+            _("List from:%s, with options:%s, optional_headers:%s"),
+            self._ctrl,
+            params,
+            optional_headers,
+        )
         # GET from API
-        entities = self._url_get(params, self._ctrl)["data"]
+        entities = self._url_get(params, self._ctrl, optional_headers=optional_headers)[
+            "data"
+        ]
         logger.debug(_("Number of entities = %i"), len(entities))
         return {"data": entities}
 
@@ -390,11 +403,13 @@ class BiolovisionAPI:
         }
         for key, value in kwargs.items():
             params[key] = value
-        logger.debug(_("In api_get, with parameters %s"), params)
+        logger.debug(
+            _("In api_get for controler:%s, with parameters:%s"), id_entity, params
+        )
         # GET from API
         return self._url_get(params, self._ctrl + "/" + str(id_entity))
 
-    def api_list(self, opt_params=None):
+    def api_list(self, opt_params=None, optional_headers=None):
         """Query for a list of entities of the given controler.
 
         Calls /ctrl API.
@@ -404,17 +419,17 @@ class BiolovisionAPI:
         opt_params : dict
             optional URL parameters, empty by default.
             See Biolovision API documentation.
+        optional_headers : dict
+            Optional body for GET request
 
         Returns
         -------
         json : dict or None
             dict decoded from json if status OK, else None
         """
-        if opt_params is None:
-            lst = self._api_list()
-        else:
-            lst = self._api_list(HashableDict(opt_params))
-        return lst
+        h_params = None if opt_params is None else HashableDict(opt_params)
+        h_headers = None if optional_headers is None else HashableDict(optional_headers)
+        return self._api_list(opt_params=h_params, optional_headers=h_headers)
 
     # -------------------------
     # Exception testing methods

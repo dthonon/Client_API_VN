@@ -1,7 +1,9 @@
 # .coveragerc to control coverage.py
 [run]
 branch = True
-source = export_vn
+source = 
+    biolovision
+    export_vn
 # omit = bad_file.py
 
 [paths]

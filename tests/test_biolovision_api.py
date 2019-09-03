@@ -10,10 +10,18 @@ from pathlib import Path
 import pytest
 import requests
 
-from biolovision.api import (EntitiesAPI, FieldsAPI, LocalAdminUnitsAPI,
-                             MaxChunksError, ObservationsAPI, ObserversAPI,
-                             PlacesAPI, SpeciesAPI, TaxoGroupsAPI,
-                             TerritorialUnitsAPI)
+from biolovision.api import (
+    EntitiesAPI,
+    FieldsAPI,
+    LocalAdminUnitsAPI,
+    MaxChunksError,
+    ObservationsAPI,
+    ObserversAPI,
+    PlacesAPI,
+    SpeciesAPI,
+    TaxoGroupsAPI,
+    TerritorialUnitsAPI,
+)
 from export_vn.evnconf import EvnConf
 from export_vn.store_file import StoreFile
 
@@ -135,9 +143,7 @@ def test_local_admin_units_list_all():
     """Get list of all local admin units."""
     logging.debug("Getting all local admin unit")
     local_admin_units_list = LOCAL_ADMIN_UNITS_API.api_list()
-    logging.debug(
-        "Received %d local admin units", len(local_admin_units_list["data"])
-    )
+    logging.debug("Received %d local admin units", len(local_admin_units_list["data"]))
     assert LOCAL_ADMIN_UNITS_API.transfer_errors == 0
     if SITE == "t38":
         assert len(local_admin_units_list["data"]) >= 534
@@ -202,9 +208,7 @@ def test_observations_list_2_1():
         file_json.unlink()
     list = OBSERVATIONS_API.api_list("1", id_species="518", short_version="1")
     logging.debug(
-        "local test_observations_list_3_0 unit {} sightings/forms ".format(
-            len(list)
-        )
+        "local test_observations_list_3_0 unit {} sightings/forms ".format(len(list))
     )
     assert OBSERVATIONS_API.transfer_errors == 0
     assert len(list) > 0
@@ -219,9 +223,7 @@ def test_observations_list_3_0():
         file_json.unlink()
     list = OBSERVATIONS_API.api_list("1", id_species="382")
     logging.debug(
-        "local test_observations_list_3_0 unit {} sightings/forms ".format(
-            len(list)
-        )
+        "local test_observations_list_3_0 unit {} sightings/forms ".format(len(list))
     )
     assert OBSERVATIONS_API.transfer_errors == 0
     assert len(list) > 0
@@ -236,9 +238,7 @@ def test_observations_list_3_1():
         file_json.unlink()
     list = OBSERVATIONS_API.api_list("1", id_species="382", short_version="1")
     logging.debug(
-        "local test_observations_list_3_0 unit {} sightings/forms ".format(
-            len(list)
-        )
+        "local test_observations_list_3_0 unit {} sightings/forms ".format(len(list))
     )
     assert OBSERVATIONS_API.transfer_errors == 0
     assert len(list) > 0
@@ -248,7 +248,8 @@ def test_observations_list_3_1():
 def test_observations_list_list():
     """Get the list of sightings, from taxo_group 1 523219."""
     list = OBSERVATIONS_API.api_list(
-        "1", id_sightings_list="523219,523550", short_version="1")
+        "1", id_sightings_list="523219,523550", short_version="1"
+    )
     logging.debug(json.dumps(list, sort_keys=True, indent=4))
 
 
@@ -526,7 +527,7 @@ def test_observations_get_short():
                                 },
                                 "traid": "104",
                                 "update_date": "1522080083",
-                                "version": "0"
+                                "version": "0",
                             }
                         ],
                         "place": {
@@ -601,77 +602,51 @@ def test_observers_get():
     logging.debug("Getting observer %s", o)
     observer = OBSERVERS_API.api_get(o)
     assert OBSERVERS_API.transfer_errors == 0
-    if SITE == "t38":
-        assert observer["data"][0]["id_universal"] == "11675"
-        assert observer["data"][0]["email"] == "d.thonon9@gmail.com"
-    elif SITE == "t07":
-        assert observer == {
-            "data": [
-                {
-                    "anonymous": "0",
-                    "archive_account": "0",
-                    "atlas_list": "16",
-                    "birth_year": "1959",
-                    "bypass_purchase": "0",
-                    "collectif": "0",
-                    "debug_file_upload": "0",
-                    "default_hidden": "0",
-                    "display_order": "DATE_PLACE_SPECIES",
-                    "email": "d.thonon9@gmail.com",
-                    "external_id": "0",
-                    "has_search_access": "0",
-                    "hide_email": "0",
-                    "id": "1084",
-                    "id_entity": "1",
-                    "id_universal": "11675",
-                    "item_per_page_gallery": "12",
-                    "item_per_page_obs": "20",
-                    "langu": "fr",
-                    "last_inserted_data": {
-                        "#text": "mardi 1 novembre 2016, 17:03:06",
-                        "@ISO8601": "2016-11-01T17:03:06+01:00",
-                        "@notime": "0",
-                        "@offset": "3600",
-                        "@timestamp": "1478016186",
-                    },
-                    "last_login": {
-                        "#text": "dimanche 6 janvier 2019, 21:32:23",
-                        "@ISO8601": "2019-01-06T21:32:23+01:00",
-                        "@notime": "0",
-                        "@offset": "3600",
-                        "@timestamp": "1546806743",
-                    },
-                    "lat": "44.7221149943671",
-                    "lon": "4.59373711385036",
-                    "mobile_phone": "0675291894",
-                    "mobile_use_form": "0",
-                    "mobile_use_mortality": "0",
-                    "mobile_use_protocol": "0",
-                    "mobile_use_trace": "0",
-                    "municipality": "Meylan",
-                    "name": "Thonon",
-                    "number": "",
-                    "photo": "",
-                    "postcode": "38240",
-                    "presentation": "",
-                    "private_phone": "09 53 74 56 59",
-                    "private_website": "",
-                    "registration_date": {
-                        "#text": "vendredi 1 mai 2015",
-                        "@ISO8601": "2015-05-01T19:11:31+02:00",
-                        "@notime": "1",
-                        "@offset": "7200",
-                        "@timestamp": "1430500291",
-                    },
-                    "show_precise": "0",
-                    "species_order": "ALPHA",
-                    "street": "13, Av. du Vercors",
-                    "surname": "Daniel",
-                    "use_latin_search": "N",
-                    "work_phone": "",
-                }
-            ]
-        }
+    assert observer["data"][0]["id_universal"] == "11675"
+    assert observer["data"][0]["email"] == "d.thonon9@gmail.com"
+    assert "anonymous" in observer["data"][0]
+    assert "archive_account" in observer["data"][0]
+    assert "atlas_list" in observer["data"][0]
+    assert "birth_year" in observer["data"][0]
+    assert "bypass_purchase" in observer["data"][0]
+    assert "collectif" in observer["data"][0]
+    assert "debug_file_upload" in observer["data"][0]
+    assert "default_hidden" in observer["data"][0]
+    assert "display_order" in observer["data"][0]
+    assert "email" in observer["data"][0]
+    assert "external_id" in observer["data"][0]
+    assert "has_search_access" in observer["data"][0]
+    assert "hide_email" in observer["data"][0]
+    assert "id" in observer["data"][0]
+    assert "id_entity" in observer["data"][0]
+    assert "id_universal" in observer["data"][0]
+    assert "item_per_page_gallery" in observer["data"][0]
+    assert "item_per_page_obs" in observer["data"][0]
+    assert "langu" in observer["data"][0]
+    assert "last_inserted_data" in observer["data"][0]
+    assert "last_login" in observer["data"][0]
+    assert "lat" in observer["data"][0]
+    assert "lon" in observer["data"][0]
+    assert "mobile_phone" in observer["data"][0]
+    assert "mobile_use_form" in observer["data"][0]
+    assert "mobile_use_mortality" in observer["data"][0]
+    assert "mobile_use_protocol" in observer["data"][0]
+    assert "mobile_use_trace" in observer["data"][0]
+    assert "municipality" in observer["data"][0]
+    assert "name" in observer["data"][0]
+    assert "number" in observer["data"][0]
+    assert "photo" in observer["data"][0]
+    assert "postcode" in observer["data"][0]
+    assert "presentation" in observer["data"][0]
+    assert "private_phone" in observer["data"][0]
+    assert "private_website" in observer["data"][0]
+    assert "registration_date" in observer["data"][0]
+    assert "show_precise" in observer["data"][0]
+    assert "species_order" in observer["data"][0]
+    assert "street" in observer["data"][0]
+    assert "surname" in observer["data"][0]
+    assert "use_latin_search" in observer["data"][0]
+    assert "work_phone" in observer["data"][0]
 
 
 def test_observers_list_all():
@@ -683,7 +658,22 @@ def test_observers_list_all():
         assert len(observers_list["data"]) >= 4500
         assert observers_list["data"][0]["name"] == "Biolovision"
     elif SITE == "t07":
-        assert len(observers_list["data"]) >= 2400
+        assert len(observers_list["data"]) >= 2500
+        assert observers_list["data"][0]["name"] == "Biolovision"
+
+
+def test_observers_list_diff():
+    """Get list of all observers."""
+    observers_list = OBSERVERS_API.api_list(
+        optional_headers={"If-Modified-Since": "Tue, 01 Jan 2019 00:00:00 GMT"}
+    )
+    logging.debug("Received %d observers", len(observers_list["data"]))
+    assert OBSERVERS_API.transfer_errors == 0
+    if SITE == "t38":
+        assert len(observers_list["data"]) >= 4500
+        assert observers_list["data"][0]["name"] == "Biolovision"
+    elif SITE == "t07":
+        assert len(observers_list["data"]) >= 2500
         assert observers_list["data"][0]["name"] == "Biolovision"
 
 
@@ -811,6 +801,16 @@ def test_species_list_30():
     logging.debug("Taxo_group 30 ==> {} species".format(len(species_list["data"])))
     assert SPECIES_API.transfer_errors == 0
     assert species_list["data"][0]["french_name"] == "Aucune espèce"
+
+
+def test_species_list_30_diff():
+    """Get a list of updated species from taxo_group 30."""
+    species_list = SPECIES_API.api_list(
+        {"id_taxo_group": "30"},
+        optional_headers={"If-Modified-Since": "Tue, 01 Jan 2019 00:00:00 GMT"},
+    )
+    logging.debug("Taxo_group 30 ==> {} species".format(len(species_list["data"])))
+    assert SPECIES_API.transfer_errors == 0
 
 
 def test_species_list_error():

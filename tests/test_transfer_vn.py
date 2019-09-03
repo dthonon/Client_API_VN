@@ -25,9 +25,8 @@ def test_init():
     assert Path(file_yaml).is_file()
 
 
-@pytest.mark.slow
 def test_db_ops():
-    """Check database management parameters."""
+    """Check database management operations."""
     file_yaml = ".evn_test.yaml"
     with patch("sys.argv", ["py.test", "--db_drop", file_yaml]):
         transfer_vn.run()
@@ -37,5 +36,25 @@ def test_db_ops():
         transfer_vn.run()
     with patch("sys.argv", ["py.test", "--col_tables_create", file_yaml]):
         transfer_vn.run()
+
+
+@pytest.mark.slow
+def test_db_full():
+    """Check database full download."""
+    file_yaml = ".evn_test.yaml"
     with patch("sys.argv", ["py.test", "--full", file_yaml]):
+        transfer_vn.run()
+
+
+def test_db_count():
+    """Check database counting."""
+    file_yaml = ".evn_test.yaml"
+    with patch("sys.argv", ["py.test", "--count", file_yaml]):
+        transfer_vn.run()
+
+
+def test_db_update():
+    """Check database updating."""
+    file_yaml = ".evn_test.yaml"
+    with patch("sys.argv", ["py.test", "--count", file_yaml]):
         transfer_vn.run()
