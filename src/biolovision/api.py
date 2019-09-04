@@ -57,6 +57,7 @@ Exceptions
 - IncorrectParameter         - Incorrect or missing parameter
 
 """
+from copy import copy
 import json
 import logging
 import time
@@ -147,6 +148,14 @@ class BiolovisionAPI:
     # ----------------
     # Internal methods
     # ----------------
+    @staticmethod
+    def _clean_params(params: dict):
+        """Remove sensitive data from param dict."""
+        c_params = copy(params)
+        c_params["user_email"] = "***"
+        c_params["user_pw"] = "***"
+        return c_params
+
     def _url_get(self, params, scope, method="GET", body=None, optional_headers=None):
         """Internal function used to request from Biolovision API.
 
@@ -364,7 +373,7 @@ class BiolovisionAPI:
         logger.debug(
             _("List from:%s, with options:%s, optional_headers:%s"),
             self._ctrl,
-            params,
+            self._clean_params(params),
             optional_headers,
         )
         # GET from API
@@ -404,7 +413,9 @@ class BiolovisionAPI:
         for key, value in kwargs.items():
             params[key] = value
         logger.debug(
-            _("In api_get for controler:%s, with parameters:%s"), id_entity, params
+            _("In api_get for controler:%s, with parameters:%s"),
+            id_entity,
+            self._clean_params(params),
         )
         # GET from API
         return self._url_get(params, self._ctrl + "/" + str(id_entity))
@@ -593,7 +604,10 @@ class ObservationsAPI(BiolovisionAPI):
         else:
             raise IncorrectParameter
         logger.debug(
-            _("Search from %s, with option %s and body %s"), self._ctrl, params, body
+            _("Search from %s, with option %s and body %s"),
+            self._ctrl,
+            self._clean_params(params),
+            body,
         )
         # GET from API
         return super()._url_get(params, "observations/search/", "POST", body)

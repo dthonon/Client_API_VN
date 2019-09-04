@@ -665,7 +665,7 @@ def test_observers_list_all():
 def test_observers_list_diff():
     """Get list of all observers."""
     observers_list = OBSERVERS_API.api_list(
-        optional_headers={"If-Modified-Since": "Tue, 01 Jan 2019 00:00:00 GMT"}
+        optional_headers={"If-Modified-Since": datetime(2019, 2, 1).strftime("%a, %d %b %Y %H:%M:%S GMT")}
     )
     logging.debug("Received %d observers", len(observers_list["data"]))
     assert OBSERVERS_API.transfer_errors == 0
@@ -743,6 +743,15 @@ def test_places_list_all():
         assert places_list["data"][0]["name"] == "Accons - sans lieu-dit défini"
 
 
+def test_places_list_diff():
+    """Get list of all places."""
+    places_list = PLACES_API.api_list(
+        optional_headers={"If-Modified-Since": datetime(2019, 2, 1).strftime("%a, %d %b %Y %H:%M:%S GMT")}
+    )
+    logging.debug("Received %d places", len(places_list["data"]))
+    assert PLACES_API.transfer_errors == 0
+
+
 def test_places_list_1():
     """Get a list of places from a single local admin unit."""
     if SITE == "t38":
@@ -807,7 +816,8 @@ def test_species_list_30_diff():
     """Get a list of updated species from taxo_group 30."""
     species_list = SPECIES_API.api_list(
         {"id_taxo_group": "30"},
-        optional_headers={"If-Modified-Since": "Tue, 01 Jan 2019 00:00:00 GMT"},
+        optional_headers={"If-Modified-Since": datetime(2019, 2, 1).strftime("%a, %d %b %Y %H:%M:%S GMT")},
+        # optional_headers={"If-Modified-Since": "Sun, 01 Sep 2019 00:00:00 GMT"},
     )
     logging.debug("Taxo_group 30 ==> {} species".format(len(species_list["data"])))
     assert SPECIES_API.transfer_errors == 0
