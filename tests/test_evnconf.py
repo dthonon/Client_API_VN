@@ -1,6 +1,7 @@
 """
 Test each property of envconf module.
 """
+from datetime import datetime
 import logging
 import shutil
 from pathlib import Path
@@ -24,24 +25,28 @@ CRTL = "observations"
             "site": "tst1",
             "site_enabled": True,
             "file_enabled": True,
+            "start_date": datetime(2019, 9, 1),
         },
         {
             "file": "evn_tst1.yaml",
             "site": "tst2",
             "site_enabled": False,
             "file_enabled": True,
+            "start_date": datetime(2019, 9, 1),
         },
         {
             "file": "evn_tst2.yaml",
             "site": "tst3",
             "site_enabled": True,
             "file_enabled": False,
+            "start_date": None,
         },
         {
             "file": "evn_tst3.yaml",
             "site": "tst4",
             "site_enabled": True,
             "file_enabled": False,
+            "start_date": None,
         },
     ],
 )
@@ -122,6 +127,24 @@ def test_ctrl_taxo_exclude(create_file):
     """ Test property."""
     cfg, c_cfg, s_cfg, cfg_file, params = create_file
     assert c_cfg.taxo_exclude == ["TAXO_GROUP_ALIEN_PLANTS"]
+
+
+def test_ctrl_json_format(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, cfg_file, params = create_file
+    assert c_cfg.json_format == "short"
+
+
+def test_ctrl_start_date(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, cfg_file, params = create_file
+    assert c_cfg.start_date == params["start_date"]
+
+
+def test_ctrl_end_date(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, cfg_file, params = create_file
+    assert c_cfg.end_date is None
 
 
 def test_base_url(create_file):
@@ -245,12 +268,6 @@ def test_tuning_lru_maxsize(create_file):
     """ Test property."""
     cfg, c_cfg, s_cfg, cfg_file, params = create_file
     assert s_cfg.tuning_lru_maxsize == 32
-
-
-def test_tuning_min_year(create_file):
-    """ Test property."""
-    cfg, c_cfg, s_cfg, cfg_file, params = create_file
-    assert s_cfg.tuning_min_year == 1901
 
 
 def test_tuning_pid_kp(create_file):

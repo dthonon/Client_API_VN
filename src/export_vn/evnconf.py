@@ -8,12 +8,14 @@ parameters are then available as properties of EvnCtrlConf and EvnSiteConf.
 
 """
 import logging
+import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, cast
-import sys
 
 from strictyaml import (
     Bool,
+    Datetime,
     Email,
     Enum,
     Float,
@@ -58,10 +60,12 @@ _ConfSchema = Map(
                 "observations": Map(
                     {
                         "enabled": Bool(),
+                        Optional("taxo_exclude"): Seq(Str()),
                         Optional("json_format", default="short"): Enum(
                             ["short", "long"]
                         ),
-                        "taxo_exclude": Seq(Str()),
+                        Optional("start_date"): Datetime(),
+                        Optional("end_date"): Datetime(),
                     }
                 ),
                 "observers": Map({"enabled": Bool()}),
@@ -106,7 +110,6 @@ _ConfSchema = Map(
                 Optional("max_requests", default=0): Int(),
                 Optional("retry_delay", default=5): Int(),
                 Optional("lru_maxsize", default=32): Int(),
-                Optional("min_year", default=1901): Int(),
                 Optional("pid_kp", default=0.0): Float(),
                 Optional("pid_ki", default=0.003): Float(),
                 Optional("pid_kd", default=0.0): Float(),
@@ -136,6 +139,15 @@ class EvnCtrlConf:
         self._taxo_exclude = []  # type: List[str]
         if "taxo_exclude" in config["controler"][ctrl]:
             self._taxo_exclude = config["controler"][ctrl]["taxo_exclude"]
+        self._json_format = "short"  # type: str
+        if "json_format" in config["controler"][ctrl]:
+            self._json_format = config["controler"][ctrl]["json_format"]
+        self._start_date = None  # type: datetime
+        if "start_date" in config["controler"][ctrl]:
+            self._start_date = config["controler"][ctrl]["start_date"]
+        self._end_date = None  # type: datetime
+        if "end_date" in config["controler"][ctrl]:
+            self._end_date = config["controler"][ctrl]["end_date"]
 
     @property
     def enabled(self) -> bool:
@@ -146,6 +158,21 @@ class EvnCtrlConf:
     def taxo_exclude(self) -> List[str]:
         """Return list of taxo_groups excluded from download."""
         return self._taxo_exclude
+
+    @property
+    def json_format(self) -> str:
+        """Return json format (short/long) for download."""
+        return self._json_format
+
+    @property
+    def start_date(self) -> datetime:
+        """Return earliest date for download."""
+        return self._start_date
+
+    @property
+    def end_date(self) -> datetime:
+        """Return latest date for download."""
+        return self._end_date
 
 
 class EvnSiteConf:
@@ -196,7 +223,6 @@ class EvnSiteConf:
                 self._max_requests = config["tuning"]["max_requests"]  # type: int
                 self._retry_delay = config["tuning"]["retry_delay"]  # type: int
                 self._lru_maxsize = config["tuning"]["lru_maxsize"]  # type: int
-                self._min_year = config["tuning"]["min_year"]  # type: int
                 self._pid_kp = config["tuning"]["pid_kp"]  # type: float
                 self._pid_ki = config["tuning"]["pid_ki"]  # type: float
                 self._pid_kd = config["tuning"]["pid_kd"]  # type: float
@@ -204,7 +230,9 @@ class EvnSiteConf:
                 self._pid_limit_min = config["tuning"]["pid_limit_min"]  # type: float
                 self._pid_limit_max = config["tuning"]["pid_limit_max"]  # type: float
                 self._pid_delta_days = config["tuning"]["pid_delta_days"]  # type: int
-                self._db_worker_threads = config["tuning"]["db_worker_threads"]  # type: int
+                self._db_worker_threads = config["tuning"][
+                    "db_worker_threads"
+                ]  # type: int
                 self._db_worker_queue = config["tuning"]["db_worker_queue"]  # type: int
             else:
                 # Provide default values
@@ -213,7 +241,6 @@ class EvnSiteConf:
                 self._max_requests = 0  # type: int
                 self._retry_delay = 5  # type: int
                 self._lru_maxsize = 32  # type: int
-                self._min_year = 1901  # type: int
                 self._pid_kp = 0.0  # type: float
                 self._pid_ki = 0.003  # type: float
                 self._pid_kd = 0.0  # type: float
@@ -350,11 +377,6 @@ class EvnSiteConf:
     def tuning_lru_maxsize(self) -> int:
         """Return tuning parameter."""
         return self._lru_maxsize
-
-    @property
-    def tuning_min_year(self) -> int:
-        """Return tuning parameter."""
-        return self._min_year
 
     @property
     def tuning_pid_kp(self) -> float:

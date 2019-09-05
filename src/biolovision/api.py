@@ -57,7 +57,6 @@ Exceptions
 - IncorrectParameter         - Incorrect or missing parameter
 
 """
-from copy import copy
 import json
 import logging
 import time
@@ -151,7 +150,7 @@ class BiolovisionAPI:
     @staticmethod
     def _clean_params(params: dict):
         """Remove sensitive data from param dict."""
-        c_params = copy(params)
+        c_params = params.copy()
         c_params["user_email"] = "***"
         c_params["user_pw"] = "***"
         return c_params

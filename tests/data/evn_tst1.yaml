@@ -56,6 +56,8 @@ controler:
             #- TAXO_GROUP_BIVALVIA
             #- TAXO_GROUP_BRANCHIOPODA
             - TAXO_GROUP_ALIEN_PLANTS
+        json_format: short
+        start_date: 2019-09-01
     observers:
         # Enable download from this controler
         enabled: true
@@ -145,8 +147,6 @@ tuning:
     retry_delay: 5
     # LRU cache size for common requests (taxo_groups...)
     lru_maxsize: 32
-    # Earliest year in the archive. Queries will not ge before this date.
-    min_year: 1901
     # PID parameters, for throughput management.
     pid_kp: 0.0
     pid_ki: 0.003
