@@ -123,28 +123,28 @@ def test_ctrl_enabled(create_file):
     assert c_cfg.enabled
 
 
-def test_ctrl_taxo_exclude(create_file):
+def test_taxo_exclude(create_file):
     """ Test property."""
     cfg, c_cfg, s_cfg, cfg_file, params = create_file
-    assert c_cfg.taxo_exclude == ["TAXO_GROUP_ALIEN_PLANTS"]
+    assert s_cfg.taxo_exclude == ["TAXO_GROUP_ALIEN_PLANTS"]
 
 
-def test_ctrl_json_format(create_file):
+def test_json_format(create_file):
     """ Test property."""
     cfg, c_cfg, s_cfg, cfg_file, params = create_file
-    assert c_cfg.json_format == "short"
+    assert s_cfg.json_format == "short"
 
 
-def test_ctrl_start_date(create_file):
+def test_start_date(create_file):
     """ Test property."""
     cfg, c_cfg, s_cfg, cfg_file, params = create_file
-    assert c_cfg.start_date == params["start_date"]
+    assert s_cfg.start_date == params["start_date"]
 
 
-def test_ctrl_end_date(create_file):
+def test_end_date(create_file):
     """ Test property."""
     cfg, c_cfg, s_cfg, cfg_file, params = create_file
-    assert c_cfg.end_date is None
+    assert s_cfg.end_date is None
 
 
 def test_base_url(create_file):

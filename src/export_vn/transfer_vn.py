@@ -227,7 +227,7 @@ def full_download(cfg_ctrl):
                     logger.info(_("Using controler %s on site %s"), ctrl, cfg.site)
                     observations = Observations(cfg, store_pg)
                     taxo_groups = TaxoGroupsAPI(cfg).api_list()["data"]
-                    taxo_groups_ex = cfg_crtl_list[ctrl].taxo_exclude
+                    taxo_groups_ex = cfg.taxo_exclude
                     logger.info(_("Excluded taxo_groups: %s"), taxo_groups_ex)
                     taxo_groups_filt = []
                     for taxo in taxo_groups:

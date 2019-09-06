@@ -57,22 +57,20 @@ _ConfSchema = Map(
                 "entities": Map({"enabled": Bool()}),
                 "fields": Map({"enabled": Bool()}),
                 "local_admin_units": Map({"enabled": Bool()}),
-                "observations": Map(
-                    {
-                        "enabled": Bool(),
-                        Optional("taxo_exclude"): Seq(Str()),
-                        Optional("json_format", default="short"): Enum(
-                            ["short", "long"]
-                        ),
-                        Optional("start_date"): Datetime(),
-                        Optional("end_date"): Datetime(),
-                    }
-                ),
+                "observations": Map({"enabled": Bool()}),
                 "observers": Map({"enabled": Bool()}),
                 "places": Map({"enabled": Bool()}),
                 "species": Map({"enabled": Bool()}),
                 "taxo_groups": Map({"enabled": Bool()}),
                 "territorial_units": Map({"enabled": Bool()}),
+            }
+        ),
+        Optional("filter"): Map(
+            {
+                Optional("taxo_exclude"): Seq(Str()),
+                Optional("json_format", default="short"): Enum(["short", "long"]),
+                Optional("start_date"): Datetime(),
+                Optional("end_date"): Datetime(),
             }
         ),
         "site": MapPattern(
@@ -136,43 +134,11 @@ class EvnCtrlConf:
         self._enabled = True
         if "enabled" in config["controler"][ctrl]:
             self._enabled = config["controler"][ctrl]["enabled"]
-        self._taxo_exclude = []  # type: List[str]
-        if "taxo_exclude" in config["controler"][ctrl]:
-            self._taxo_exclude = config["controler"][ctrl]["taxo_exclude"]
-        self._json_format = "short"  # type: str
-        if "json_format" in config["controler"][ctrl]:
-            self._json_format = config["controler"][ctrl]["json_format"]
-        self._start_date = None  # type: datetime
-        if "start_date" in config["controler"][ctrl]:
-            self._start_date = config["controler"][ctrl]["start_date"]
-        self._end_date = None  # type: datetime
-        if "end_date" in config["controler"][ctrl]:
-            self._end_date = config["controler"][ctrl]["end_date"]
 
     @property
     def enabled(self) -> bool:
         """Return enabled flag, defining if controler should be used."""
         return self._enabled
-
-    @property
-    def taxo_exclude(self) -> List[str]:
-        """Return list of taxo_groups excluded from download."""
-        return self._taxo_exclude
-
-    @property
-    def json_format(self) -> str:
-        """Return json format (short/long) for download."""
-        return self._json_format
-
-    @property
-    def start_date(self) -> datetime:
-        """Return earliest date for download."""
-        return self._start_date
-
-    @property
-    def end_date(self) -> datetime:
-        """Return latest date for download."""
-        return self._end_date
 
 
 class EvnSiteConf:
@@ -191,6 +157,20 @@ class EvnSiteConf:
             self._user_email = config["site"][site]["user_email"]  # type: str
             self._user_pw = config["site"][site]["user_pw"]  # type: str
             self._base_url = config["site"][site]["site"]  # type: str
+
+            self._taxo_exclude = []  # type: List[str]
+            self._json_format = "short"  # type: str
+            self._start_date = None  # type: datetime
+            self._end_date = None  # type: datetime
+            if "filter" in config:
+                if "taxo_exclude" in config["filter"]:
+                    self._taxo_exclude = config["filter"]["taxo_exclude"]
+                if "json_format" in config["filter"]:
+                    self._json_format = config["filter"]["json_format"]
+                if "start_date" in config["filter"]:
+                    self._start_date = config["filter"]["start_date"]
+                if "end_date" in config["filter"]:
+                    self._end_date = config["filter"]["end_date"]
 
             self._file_enabled = False
             self._file_store = ""
@@ -291,6 +271,26 @@ class EvnSiteConf:
         """Return base URL of VisioNature site,
         used as prefix for API calls."""
         return self._base_url
+
+    @property
+    def taxo_exclude(self) -> List[str]:
+        """Return list of taxo_groups excluded from download."""
+        return self._taxo_exclude
+
+    @property
+    def json_format(self) -> str:
+        """Return json format (short/long) for download."""
+        return self._json_format
+
+    @property
+    def start_date(self) -> datetime:
+        """Return earliest date for download."""
+        return self._start_date
+
+    @property
+    def end_date(self) -> datetime:
+        """Return latest date for download."""
+        return self._end_date
 
     @property
     def file_enabled(self) -> bool:

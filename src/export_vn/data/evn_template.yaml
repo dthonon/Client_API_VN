@@ -22,41 +22,6 @@ controler:
     observations:
         # Enable download from this controler
         enabled: true
-        # List of taxo_groups to exclude from download
-        # Uncommment taxo_groups to disable download
-        taxo_exclude:
-            #- TAXO_GROUP_BIRD
-            #- TAXO_GROUP_BAT
-            #- TAXO_GROUP_MAMMAL
-            #- TAXO_GROUP_SEA_MAMMAL
-            #- TAXO_GROUP_REPTILIAN
-            #- TAXO_GROUP_AMPHIBIAN
-            #- TAXO_GROUP_ODONATA
-            #- TAXO_GROUP_BUTTERFLY
-            #- TAXO_GROUP_MOTH
-            #- TAXO_GROUP_ORTHOPTERA
-            #- TAXO_GROUP_HYMENOPTERA
-            #- TAXO_GROUP_ORCHIDACEAE
-            #- TAXO_GROUP_TRASH
-            #- TAXO_GROUP_EPHEMEROPTERA
-            #- TAXO_GROUP_PLECOPTERA
-            #- TAXO_GROUP_MANTODEA
-            #- TAXO_GROUP_AUCHENORRHYNCHA
-            #- TAXO_GROUP_HETEROPTERA
-            #- TAXO_GROUP_COLEOPTERA
-            #- TAXO_GROUP_NEVROPTERA
-            #- TAXO_GROUP_TRICHOPTERA
-            #- TAXO_GROUP_MECOPTERA
-            #- TAXO_GROUP_DIPTERA
-            #- TAXO_GROUP_PHASMATODEA
-            #- TAXO_GROUP_ARACHNIDA
-            #- TAXO_GROUP_SCORPIONES
-            #- TAXO_GROUP_FISH
-            #- TAXO_GROUP_MALACOSTRACA
-            #- TAXO_GROUP_GASTROPODA
-            #- TAXO_GROUP_BIVALVIA
-            #- TAXO_GROUP_BRANCHIOPODA
-            - TAXO_GROUP_ALIEN_PLANTS
     observers:
         # Enable download from this controler
         enabled: true
@@ -72,6 +37,49 @@ controler:
     territorial_units:
         # Enable download from this controler
         enabled: true
+
+# Observations filter, to limit download scope
+filter:
+    # List of taxo_groups to exclude from download
+    # Uncommment taxo_groups to disable download
+    taxo_exclude:
+        #- TAXO_GROUP_BIRD
+        #- TAXO_GROUP_BAT
+        #- TAXO_GROUP_MAMMAL
+        #- TAXO_GROUP_SEA_MAMMAL
+        #- TAXO_GROUP_REPTILIAN
+        #- TAXO_GROUP_AMPHIBIAN
+        #- TAXO_GROUP_ODONATA
+        #- TAXO_GROUP_BUTTERFLY
+        #- TAXO_GROUP_MOTH
+        #- TAXO_GROUP_ORTHOPTERA
+        #- TAXO_GROUP_HYMENOPTERA
+        #- TAXO_GROUP_ORCHIDACEAE
+        #- TAXO_GROUP_TRASH
+        #- TAXO_GROUP_EPHEMEROPTERA
+        #- TAXO_GROUP_PLECOPTERA
+        #- TAXO_GROUP_MANTODEA
+        #- TAXO_GROUP_AUCHENORRHYNCHA
+        #- TAXO_GROUP_HETEROPTERA
+        #- TAXO_GROUP_COLEOPTERA
+        #- TAXO_GROUP_NEVROPTERA
+        #- TAXO_GROUP_TRICHOPTERA
+        #- TAXO_GROUP_MECOPTERA
+        #- TAXO_GROUP_DIPTERA
+        #- TAXO_GROUP_PHASMATODEA
+        #- TAXO_GROUP_ARACHNIDA
+        #- TAXO_GROUP_SCORPIONES
+        #- TAXO_GROUP_FISH
+        #- TAXO_GROUP_MALACOSTRACA
+        #- TAXO_GROUP_GASTROPODA
+        #- TAXO_GROUP_BIVALVIA
+        #- TAXO_GROUP_BRANCHIOPODA
+        - TAXO_GROUP_ALIEN_PLANTS
+    # Use short (recommended) or long JSON data
+    # json_format: short
+    # Optional start and end dates
+    # start_date: 2019-09-01
+    # end_date: 2019-08-01
 
 # VisioNature site access parameters
 site:
@@ -146,8 +154,6 @@ tuning:
     retry_delay: 5
     # LRU cache size for common requests (taxo_groups...)
     lru_maxsize: 32
-    # Earliest year in the archive. Queries will not go before that date.
-    min_year: 1901
     # PID parameters, for throughput management.
     pid_kp: 0.0
     pid_ki: 0.003
@@ -156,6 +162,6 @@ tuning:
     pid_limit_min: 5
     pid_limit_max: 2000
     pid_delta_days: 15
-    # Postgresql DB tuning parameters
+    # Postgresql interface tuning parameters
     db_worker_threads: 2
     db_worker_queue: 100000

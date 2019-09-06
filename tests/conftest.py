@@ -5,7 +5,6 @@ Configure tests of biolovision_api module.
 Add option --logging=LEVEL.
 """
 import pytest
-import logging
 
 
 def pytest_addoption(parser):

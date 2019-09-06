@@ -372,9 +372,17 @@ class Observations(DownloadVn):
                 self._backend.increment_log(
                     self._config.site, id_taxo_group, datetime.now()
                 )
-                end_date = datetime.now()
+                end_date = (
+                    datetime.now()
+                    if self._config.start_date is None
+                    else self._config.start_date
+                )
                 start_date = end_date
-                min_date = datetime(self._config.tuning_min_year, 1, 1)
+                min_date = (
+                    datetime(1900, 1, 1)
+                    if self._config.end_date is None
+                    else self._config.end_date
+                )
                 seq = 1
                 pid = PID(
                     kp=self._config.tuning_pid_kp,
@@ -566,8 +574,9 @@ class Observations(DownloadVn):
                 log_msg = _("Creating or updating {} observations").format(len(updated))
                 logger.debug(log_msg)
                 items_dict = self._api_instance.api_list(
-                    taxo, id_sightings_list=",".join(updated),
-                    short_version=short_version
+                    taxo,
+                    id_sightings_list=",".join(updated),
+                    short_version=short_version,
                 )
                 # Call backend to store log
                 self._backend.log(
