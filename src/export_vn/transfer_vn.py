@@ -115,7 +115,7 @@ def init(file: str):
     """Copy template YAML file to home directory."""
     logger = logging.getLogger("transfer_vn")
     yaml_src = pkg_resources.resource_filename(__name__, "data/evn_template.yaml")
-    yaml_dst = str(Path.home()) + "/" + file
+    yaml_dst = str(Path.home() / file)
     logger.info(_("Creating YAML configuration file %s, from %s"), yaml_dst, yaml_src)
     shutil.copyfile(yaml_src, yaml_dst)
     logger.info(_("Please edit %s before running the script"), yaml_dst)
@@ -129,8 +129,8 @@ def col_table_create(cfg, sql_quiet, client_min_message):
     (cmd, exp_globals) = pyexpander.expandToStr(
         template, external_definitions=db_config(cfg)
     )
-    tmp_sql = str(Path.home()) + "/tmp/create-vn-tables.sql"
-    with open(tmp_sql, "w") as myfile:
+    tmp_sql = Path.home() / "tmp/create-vn-tables.sql"
+    with tmp_sql.open(mode="w") as myfile:
         myfile.write(cmd)
     try:
         subprocess.run(
@@ -351,7 +351,7 @@ def main(args):
       args ([str]): command line parameter list
     """
     # Create $HOME/tmp directory if it does not exist
-    Path(str(Path.home()) + "/tmp").mkdir(exist_ok=True)
+    (Path.home() / "tmp").mkdir(exist_ok=True)
 
     # Define logger format and handlers
     logger = logging.getLogger("transfer_vn")
@@ -402,8 +402,8 @@ def main(args):
         return None
 
     # Get configuration from file
-    if not Path(str(Path.home()) + "/" + args.file).is_file():
-        logger.critical(_("File %s does not exist"), str(Path.home()) + "/" + args.file)
+    if not (Path.home() / args.file).is_file():
+        logger.critical(_("File %s does not exist"), str(Path.home() / args.file))
         return None
 
     logger.info(_("Getting configuration data from %s"), args.file)
