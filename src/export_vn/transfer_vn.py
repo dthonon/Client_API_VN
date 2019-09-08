@@ -158,6 +158,24 @@ def col_table_create(cfg, sql_quiet, client_min_message):
     return None
 
 
+def full_download_1(ctrl, cfg_crtl_list, cfg, store_pg):
+    """Downloads from a single controler."""
+    logger = logging.getLogger("transfer_vn")
+    downloader = ctrl(cfg, store_pg)
+    if cfg_crtl_list[downloader.name].enabled:
+        logger.info(_("Using controler %s once"), downloader.name)
+        downloader.store()
+
+
+def full_download_observations(ctrl, cfg_crtl_list, cfg, store_pg):
+    """Downloads from a single controler."""
+    logger = logging.getLogger("transfer_vn")
+    downloader = ctrl(cfg, store_pg)
+    if cfg_crtl_list[downloader.name].enabled:
+        logger.info(_("Using controler %s once"), downloader.name)
+        downloader.store()
+
+
 def full_download(cfg_ctrl):
     """Performs a full download of all sites and controlers,
        based on configuration file."""
@@ -168,59 +186,20 @@ def full_download(cfg_ctrl):
 
     # Donwload field only once
     with StorePostgresql(cfg) as store_pg:
-        ctrl = "fields"
-        if cfg_crtl_list[ctrl].enabled:
-            logger.info(_("Using controler %s once"), ctrl)
-            fields = Fields(cfg, store_pg)
-            fields.store()
+        full_download_1(Fields, cfg_crtl_list, cfg, store_pg)
 
     # Looping on sites
     for site, cfg in cfg_site_list.items():
         with StorePostgresql(cfg) as store_pg:
             if cfg.enabled:
                 logger.info(_("Working on site %s"), cfg.site)
-
-                ctrl = "taxo_groups"
-                if cfg_crtl_list[ctrl].enabled:
-                    logger.info(_("Using controler %s on site %s"), ctrl, cfg.site)
-                    taxo_group = TaxoGroup(cfg, store_pg)
-                    taxo_group.store()
-
-                ctrl = "entities"
-                if cfg_crtl_list[ctrl].enabled:
-                    logger.info(_("Using controler %s on site %s"), ctrl, cfg.site)
-                    entities = Entities(cfg, store_pg)
-                    entities.store()
-
-                ctrl = "territorial_units"
-                if cfg_crtl_list[ctrl].enabled:
-                    logger.info(_("Using controler %s on site %s"), ctrl, cfg.site)
-                    territorial_unit = TerritorialUnits(cfg, store_pg)
-                    territorial_unit.store()
-
-                ctrl = "local_admin_units"
-                if cfg_crtl_list[ctrl].enabled:
-                    logger.info(_("Using controler %s on site %s"), ctrl, cfg.site)
-                    local_admin_units = LocalAdminUnits(cfg, store_pg)
-                    local_admin_units.store()
-
-                ctrl = "places"
-                if cfg_crtl_list[ctrl].enabled:
-                    logger.info(_("Using controler %s on site %s"), ctrl, cfg.site)
-                    places = Places(cfg, store_pg)
-                    places.store()
-
-                ctrl = "species"
-                if cfg_crtl_list[ctrl].enabled:
-                    logger.info(_("Using controler %s on site %s"), ctrl, cfg.site)
-                    species = Species(cfg, store_pg)
-                    species.store()
-
-                ctrl = "observers"
-                if cfg_crtl_list[ctrl].enabled:
-                    logger.info(_("Using controler %s on site %s"), ctrl, cfg.site)
-                    observers = Observers(cfg, store_pg)
-                    observers.store()
+                full_download_1(TaxoGroup, cfg_crtl_list, cfg, store_pg)
+                full_download_1(Entities, cfg_crtl_list, cfg, store_pg)
+                full_download_1(TerritorialUnits, cfg_crtl_list, cfg, store_pg)
+                full_download_1(LocalAdminUnits, cfg_crtl_list, cfg, store_pg)
+                full_download_1(Places, cfg_crtl_list, cfg, store_pg)
+                full_download_1(Species, cfg_crtl_list, cfg, store_pg)
+                full_download_1(Observers, cfg_crtl_list, cfg, store_pg)
 
                 ctrl = "observations"
                 if cfg_crtl_list[ctrl].enabled:

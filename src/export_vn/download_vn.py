@@ -78,6 +78,11 @@ class DownloadVn:
         """Return the number of HTTP errors during this session."""
         return self._api_instance.transfer_errors
 
+    @property
+    def name(self):
+        """Return the controler name."""
+        return self._api_instance.controler
+
     # ----------------
     # Internal methods
     # ----------------
