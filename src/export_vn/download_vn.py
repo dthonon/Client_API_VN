@@ -441,14 +441,16 @@ class Observations(DownloadVn):
                     delta_days = int(pid(nb_obs))
         return None
 
-    def _list_taxo_groups(self, id_taxo_group):
+    def _list_taxo_groups(self, id_taxo_group, taxo_groups_ex=None):
         """Return the list of enabled taxo_groups."""
         if id_taxo_group is None:
             # Get all active taxo_groups
             taxo_groups = TaxoGroupsAPI(self._config).api_list()
             taxo_list = []
             for taxo in taxo_groups["data"]:
-                if taxo["access_mode"] != "none":
+                if (not taxo["name_constant"] in taxo_groups_ex) and (
+                    taxo["access_mode"] != "none"
+                ):
                     logger.debug(
                         _("Starting to download observations from taxo_group %s: %s"),
                         taxo["id"],
@@ -466,7 +468,12 @@ class Observations(DownloadVn):
         return taxo_list
 
     def store(
-        self, id_taxo_group=None, by_specie=False, method="search", short_version="1"
+        self,
+        id_taxo_group=None,
+        by_specie=False,
+        method="search",
+        taxo_groups_ex=None,
+        short_version="1",
     ):
         """Download from VN by API and store json to backend.
 
@@ -484,11 +491,14 @@ class Observations(DownloadVn):
             If True, downloading by specie.
         method : str
             API used to download, either 'search' or 'list'.
+        taxo_groups_ex : list
+            List of taxo_groups to exclude from storage.
         short_version : str
             '0' for long JSON and '1' for short_version.
         """
         # Get the list of taxo groups to process
-        taxo_list = self._list_taxo_groups(id_taxo_group)
+        taxo_list = self._list_taxo_groups(id_taxo_group, taxo_groups_ex)
+        logger.info(_("Downloaded taxo_groups: %s"), taxo_list)
 
         if method == "search":
             for taxo in taxo_list:

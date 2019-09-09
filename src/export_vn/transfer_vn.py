@@ -18,9 +18,17 @@ import yappi
 import pyexpander.lib as pyexpander
 from biolovision.api import TaxoGroupsAPI
 from bs4 import BeautifulSoup
-from export_vn.download_vn import (Entities, Fields, LocalAdminUnits,
-                                   Observations, Observers, Places, Species,
-                                   TaxoGroup, TerritorialUnits)
+from export_vn.download_vn import (
+    Entities,
+    Fields,
+    LocalAdminUnits,
+    Observations,
+    Observers,
+    Places,
+    Species,
+    TaxoGroup,
+    TerritorialUnits,
+)
 from export_vn.evnconf import EvnConf
 from export_vn.store_postgresql import PostgresqlUtils, StorePostgresql
 from strictyaml import YAMLValidationError
@@ -171,9 +179,16 @@ def full_download_observations(ctrl, cfg_crtl_list, cfg, store_pg):
     """Downloads from a single controler."""
     logger = logging.getLogger("transfer_vn")
     downloader = ctrl(cfg, store_pg)
+    taxo_groups_ex = cfg.taxo_exclude
+    logger.info(_("Excluded taxo_groups: %s"), taxo_groups_ex)
     if cfg_crtl_list[downloader.name].enabled:
         logger.info(_("Using controler %s once"), downloader.name)
-        downloader.store()
+        downloader.store(
+            id_taxo_group=None,
+            method="search",
+            by_specie=False,
+            taxo_groups_ex=taxo_groups_ex,
+        )
 
 
 def full_download(cfg_ctrl):
@@ -201,23 +216,7 @@ def full_download(cfg_ctrl):
                 full_download_1(Species, cfg_crtl_list, cfg, store_pg)
                 full_download_1(Observers, cfg_crtl_list, cfg, store_pg)
 
-                ctrl = "observations"
-                if cfg_crtl_list[ctrl].enabled:
-                    logger.info(_("Using controler %s on site %s"), ctrl, cfg.site)
-                    observations = Observations(cfg, store_pg)
-                    taxo_groups = TaxoGroupsAPI(cfg).api_list()["data"]
-                    taxo_groups_ex = cfg.taxo_exclude
-                    logger.info(_("Excluded taxo_groups: %s"), taxo_groups_ex)
-                    taxo_groups_filt = []
-                    for taxo in taxo_groups:
-                        if (not taxo["name_constant"] in taxo_groups_ex) and (
-                            taxo["access_mode"] != "none"
-                        ):
-                            taxo_groups_filt.append(taxo["id"])
-                    logger.info(_("Downloading from taxo_groups: %s"), taxo_groups_filt)
-                    observations.store(
-                        taxo_groups_filt, method="search", by_specie=False
-                    )
+                full_download_observations(Observations, cfg_crtl_list, cfg, store_pg)
 
             else:
                 logger.info(_("Skipping site %s"), site)
