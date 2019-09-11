@@ -8,12 +8,21 @@ import logging
 import shutil
 import subprocess
 import sys
+import time
+from datetime import datetime, timezone
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
 import pkg_resources
 import requests
 import yappi
+from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED, EVENT_JOB_SUBMITTED
+from apscheduler.executors.pool import ProcessPoolExecutor
+from apscheduler.jobstores.memory import MemoryJobStore
+from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+from apscheduler.schedulers.background import BackgroundScheduler
+from pytz import utc
+from strictyaml import YAMLValidationError
 
 import pyexpander.lib as pyexpander
 from biolovision.api import TaxoGroupsAPI
@@ -31,10 +40,83 @@ from export_vn.download_vn import (
 )
 from export_vn.evnconf import EvnConf
 from export_vn.store_postgresql import PostgresqlUtils, StorePostgresql
-from strictyaml import YAMLValidationError
 from tabulate import tabulate
 
 from . import _, __version__
+
+logger = logging.getLogger("transfer_vn")
+
+
+class Jobs:
+    def _listener(self, event):
+        if event.code == EVENT_JOB_SUBMITTED:
+            logger.debug("The job %s started", event.job_id)
+            self._job_set.add(event.job_id)
+        else:
+            if event.job_id in self._job_set:
+                self._job_set.remove(event.job_id)
+            else:
+                logger.error(_("Job %s not found in job_set"), event.job_id)
+            if event.exception:
+                logger.error("The job %s crashed", event.job_id)
+            else:
+                logger.debug("The job %s worked", event.job_id)
+        logger.debug("Job set: %s", self._job_set)
+
+    # instance attributes
+    def __init__(self):
+        self._job_set = set()
+        logger.debug("Creating scheduler")
+        jobstores = {
+            "once": MemoryJobStore(),
+            "default": SQLAlchemyJobStore(url="sqlite:///jobs.sqlite"),
+        }
+        executors = {"default": ProcessPoolExecutor(2)}
+        job_defaults = {
+            "coalesce": True,
+            "max_instances": 1,
+            "misfire_grace_time": 3600,
+        }
+        self._scheduler = BackgroundScheduler(
+            jobstores=jobstores,
+            executors=executors,
+            job_defaults=job_defaults,
+            timezone=utc,
+        )
+        self._scheduler.add_listener(
+            self._listener, EVENT_JOB_SUBMITTED | EVENT_JOB_EXECUTED | EVENT_JOB_ERROR
+        )
+
+    def start(self):
+        logger.debug("Starting scheduler")
+        self._scheduler.start()
+
+    def add_job_once(self, job_fn, args=None, kwargs=None):
+        logger.debug("Adding job %s", args[0].__name__)
+        self._scheduler.add_job(
+            job_fn,
+            args=args,
+            kwargs=kwargs,
+            id=args[0].__name__ + "_" + args[2].site,
+            jobstore="once",
+        )
+
+    def count_jobs(self):
+        # self._scheduler.print_jobs()
+        jobs = self._scheduler.get_jobs()
+        logger.debug("Number of jobs scheduled, %s", len(jobs))
+        for j in jobs:
+            logger.debug(
+                "Job %s, scheduled in: %s",
+                j.id,
+                j.next_run_time - datetime.now(timezone.utc),
+            )
+        logger.debug("Number of jobs running, %s", len(self._job_set))
+        return len(self._job_set)
+
+    def shutdown(self):
+        logger.info("Shutting down scheduler")
+        self._scheduler.shutdown()
 
 
 def db_config(cfg):
@@ -166,29 +248,34 @@ def col_table_create(cfg, sql_quiet, client_min_message):
     return None
 
 
-def full_download_1(ctrl, cfg_crtl_list, cfg, store_pg):
+def full_download_1(ctrl, cfg_crtl_list, cfg):
     """Downloads from a single controler."""
     logger = logging.getLogger("transfer_vn")
-    downloader = ctrl(cfg, store_pg)
-    if cfg_crtl_list[downloader.name].enabled:
-        logger.info(_("Using controler %s once"), downloader.name)
-        downloader.store()
-
-
-def full_download_observations(ctrl, cfg_crtl_list, cfg, store_pg):
-    """Downloads from a single controler."""
-    logger = logging.getLogger("transfer_vn")
-    downloader = ctrl(cfg, store_pg)
-    taxo_groups_ex = cfg.taxo_exclude
-    logger.info(_("Excluded taxo_groups: %s"), taxo_groups_ex)
-    if cfg_crtl_list[downloader.name].enabled:
-        logger.info(_("Using controler %s once"), downloader.name)
-        downloader.store(
-            id_taxo_group=None,
-            method="search",
-            by_specie=False,
-            taxo_groups_ex=taxo_groups_ex,
-        )
+    logger.debug("Enter full_download_1: {}".format(ctrl.__name__))
+    with StorePostgresql(cfg) as store_pg:
+        downloader = ctrl(cfg, store_pg)
+        if cfg_crtl_list[downloader.name].enabled:
+            if cfg_crtl_list[downloader.name].enabled:
+                logger.info(
+                    _("Starting download from site %s using controler %s"),
+                    cfg.site,
+                    downloader.name,
+                )
+                if downloader.name == "observations":
+                    logger.info(_("Excluded taxo_groups: %s"), cfg.taxo_exclude)
+                    downloader.store(
+                        id_taxo_group=None,
+                        method="search",
+                        by_specie=False,
+                        taxo_groups_ex=cfg.taxo_exclude,
+                    )
+                else:
+                    downloader.store()
+                logger.info(
+                    _("Ending download from site %s using controler %s"),
+                    cfg.site,
+                    downloader.name,
+                )
 
 
 def full_download(cfg_ctrl):
@@ -199,27 +286,45 @@ def full_download(cfg_ctrl):
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
 
+    logger.info(_("Defining jobs"))
+    jobs = Jobs()
     # Donwload field only once
-    with StorePostgresql(cfg) as store_pg:
-        full_download_1(Fields, cfg_crtl_list, cfg, store_pg)
-
-    # Looping on sites
+    jobs.add_job_once(job_fn=full_download_1, args=[Fields, cfg_crtl_list, cfg])
+    # Looping on sites for other controlers
     for site, cfg in cfg_site_list.items():
-        with StorePostgresql(cfg) as store_pg:
-            if cfg.enabled:
-                logger.info(_("Working on site %s"), cfg.site)
-                full_download_1(TaxoGroup, cfg_crtl_list, cfg, store_pg)
-                full_download_1(Entities, cfg_crtl_list, cfg, store_pg)
-                full_download_1(TerritorialUnits, cfg_crtl_list, cfg, store_pg)
-                full_download_1(LocalAdminUnits, cfg_crtl_list, cfg, store_pg)
-                full_download_1(Places, cfg_crtl_list, cfg, store_pg)
-                full_download_1(Species, cfg_crtl_list, cfg, store_pg)
-                full_download_1(Observers, cfg_crtl_list, cfg, store_pg)
+        if cfg.enabled:
+            logger.info(_("Scheduling work for site %s"), cfg.site)
+            jobs.add_job_once(
+                job_fn=full_download_1, args=[TaxoGroup, cfg_crtl_list, cfg]
+            )
+            jobs.add_job_once(
+                job_fn=full_download_1, args=[Entities, cfg_crtl_list, cfg]
+            )
+            jobs.add_job_once(
+                job_fn=full_download_1, args=[TerritorialUnits, cfg_crtl_list, cfg]
+            )
+            jobs.add_job_once(
+                job_fn=full_download_1, args=[LocalAdminUnits, cfg_crtl_list, cfg]
+            )
+            jobs.add_job_once(job_fn=full_download_1, args=[Places, cfg_crtl_list, cfg])
+            jobs.add_job_once(
+                job_fn=full_download_1, args=[Species, cfg_crtl_list, cfg]
+            )
+            jobs.add_job_once(
+                job_fn=full_download_1, args=[Observers, cfg_crtl_list, cfg]
+            )
+            jobs.add_job_once(
+                job_fn=full_download_1, args=[Observations, cfg_crtl_list, cfg]
+            )
+        else:
+            logger.info(_("Skipping site %s"), site)
 
-                full_download_observations(Observations, cfg_crtl_list, cfg, store_pg)
-
-            else:
-                logger.info(_("Skipping site %s"), site)
+    # Start scheduler and wait for jobs to finish
+    jobs.start()
+    time.sleep(1)
+    while jobs.count_jobs() > 0:
+        time.sleep(1)
+    jobs.shutdown()
 
     return None
 
