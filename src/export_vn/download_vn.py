@@ -511,7 +511,9 @@ class Observations(DownloadVn):
 
         return None
 
-    def update(self, id_taxo_group=None, since=None, short_version="1"):
+    def update(
+        self, id_taxo_group=None, since=None, taxo_groups_ex=None, short_version="1"
+    ):
         """Download increment from VN by API and store json to file.
 
         Gets previous update date from database and updates since then.
@@ -526,6 +528,8 @@ class Observations(DownloadVn):
         since : str or None
             If None, updates since last download
             Or if provided, updates since that given date.
+        taxo_groups_ex : list
+            List of taxo_groups to exclude from storage.
         short_version : str
             '0' for long JSON and '1' for short_version.
         """
@@ -536,17 +540,13 @@ class Observations(DownloadVn):
         )
 
         # Get the list of taxo groups to process
-        taxo_list = self._list_taxo_groups(id_taxo_group)
-
-        if since is None:
-            get_since = True
-        else:
-            get_since = False
+        taxo_list = self._list_taxo_groups(id_taxo_group, taxo_groups_ex)
+        logger.info(_("Downloaded taxo_groups: %s"), taxo_list)
 
         for taxo in taxo_list:
             updated = list()
             deleted = list()
-            if get_since:
+            if since is None:
                 since = self._backend.increment_get(self._config.site, taxo)
             if since is not None:
                 # Valid since date provided or found in database

@@ -25,7 +25,6 @@ from pytz import utc
 from strictyaml import YAMLValidationError
 
 import pyexpander.lib as pyexpander
-from biolovision.api import TaxoGroupsAPI
 from bs4 import BeautifulSoup
 from export_vn.download_vn import (
     Entities,
@@ -238,7 +237,7 @@ def col_table_create(cfg, sql_quiet, client_min_message):
             + " --user="
             + cfg.db_user
             + " --file="
-            + tmp_sql,
+            + str(tmp_sql),
             check=True,
             shell=True,
         )
@@ -255,27 +254,26 @@ def full_download_1(ctrl, cfg_crtl_list, cfg):
     with StorePostgresql(cfg) as store_pg:
         downloader = ctrl(cfg, store_pg)
         if cfg_crtl_list[downloader.name].enabled:
-            if cfg_crtl_list[downloader.name].enabled:
-                logger.info(
-                    _("Starting download from site %s using controler %s"),
-                    cfg.site,
-                    downloader.name,
+            logger.info(
+                _("Starting download from site %s using controler %s"),
+                cfg.site,
+                downloader.name,
+            )
+            if downloader.name == "observations":
+                logger.info(_("Excluded taxo_groups: %s"), cfg.taxo_exclude)
+                downloader.store(
+                    id_taxo_group=None,
+                    method="search",
+                    by_specie=False,
+                    taxo_groups_ex=cfg.taxo_exclude,
                 )
-                if downloader.name == "observations":
-                    logger.info(_("Excluded taxo_groups: %s"), cfg.taxo_exclude)
-                    downloader.store(
-                        id_taxo_group=None,
-                        method="search",
-                        by_specie=False,
-                        taxo_groups_ex=cfg.taxo_exclude,
-                    )
-                else:
-                    downloader.store()
-                logger.info(
-                    _("Ending download from site %s using controler %s"),
-                    cfg.site,
-                    downloader.name,
-                )
+            else:
+                downloader.store()
+            logger.info(
+                _("Ending download from site %s using controler %s"),
+                cfg.site,
+                downloader.name,
+            )
 
 
 def full_download(cfg_ctrl):
@@ -329,6 +327,18 @@ def full_download(cfg_ctrl):
     return None
 
 
+def increment_download_1(ctrl, cfg_crtl_list, cfg):
+    """Download incremental updates from one site."""
+    logger = logging.getLogger("transfer_vn")
+    logger.debug("Enter increment_download_1: {}".format(ctrl.__name__))
+    with StorePostgresql(cfg) as store_pg:
+        downloader = ctrl(cfg, store_pg)
+        if cfg_crtl_list[downloader.name].enabled:
+            logger.info(_("Using controler %s"), downloader.name)
+            logger.info(_("Excluded taxo_groups: %s"), cfg.taxo_exclude)
+            downloader.update(taxo_groups_ex=cfg.taxo_exclude)
+
+
 def increment_download(cfg_ctrl):
     """Performs an incremental download of observations from all sites
     and controlers, based on configuration file."""
@@ -336,30 +346,23 @@ def increment_download(cfg_ctrl):
     cfg_crtl_list = cfg_ctrl.ctrl_list
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
+    jobs = Jobs()
     # Looping on sites
     for site, cfg in cfg_site_list.items():
-        with StorePostgresql(cfg) as store_pg:
-            if cfg.enabled:
-                logger.info(_("Working on site %s"), site)
+        if cfg.enabled:
+            logger.info(_("Scheduling increments on site %s"), site)
+            jobs.add_job_once(
+                job_fn=increment_download_1, args=[Observations, cfg_crtl_list, cfg]
+            )
+        else:
+            logger.info(_("Skipping site %s"), site)
 
-                ctrl = "observations"
-                if cfg_crtl_list[ctrl].enabled:
-                    logger.info(_("Using controler %s"), ctrl)
-                    observations = Observations(cfg, store_pg)
-                    taxo_groups = TaxoGroupsAPI(cfg).api_list()["data"]
-                    taxo_groups_ex = cfg_crtl_list[ctrl].taxo_exclude
-                    logger.info(_("Excluded taxo_groups: %s"), taxo_groups_ex)
-                    taxo_groups_filt = []
-                    for taxo in taxo_groups:
-                        if (not taxo["name_constant"] in taxo_groups_ex) and (
-                            taxo["access_mode"] != "none"
-                        ):
-                            taxo_groups_filt.append(taxo["id"])
-                    logger.info(_("Downloading from taxo_groups: %s"), taxo_groups_filt)
-                    observations.update(taxo_groups_filt)
-
-            else:
-                logger.info(_("Skipping site %s"), site)
+    # Start scheduler and wait for jobs to finish
+    jobs.start()
+    time.sleep(1)
+    while jobs.count_jobs() > 0:
+        time.sleep(1)
+    jobs.shutdown()
 
     return None
 
