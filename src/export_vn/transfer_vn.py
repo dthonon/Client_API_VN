@@ -255,12 +255,14 @@ def full_download_1(ctrl, cfg_crtl_list, cfg):
         downloader = ctrl(cfg, store_pg)
         if cfg_crtl_list[downloader.name].enabled:
             logger.info(
-                _("Starting download from site %s using controler %s"),
+                _("%s => Starting download using controler %s"),
                 cfg.site,
                 downloader.name,
             )
             if downloader.name == "observations":
-                logger.info(_("Excluded taxo_groups: %s"), cfg.taxo_exclude)
+                logger.info(
+                    _("%s => Excluded taxo_groups: %s"), cfg.site, cfg.taxo_exclude
+                )
                 downloader.store(
                     id_taxo_group=None,
                     method="search",
@@ -270,9 +272,7 @@ def full_download_1(ctrl, cfg_crtl_list, cfg):
             else:
                 downloader.store()
             logger.info(
-                _("Ending download from site %s using controler %s"),
-                cfg.site,
-                downloader.name,
+                _("%s => Ending download using controler %s"), cfg.site, downloader.name
             )
 
 

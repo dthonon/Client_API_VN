@@ -297,7 +297,7 @@ class Observations(DownloadVn):
                         if specie["is_used"] == "1":
                             logger.info(
                                 _(
-                                    "Getting observations from taxo_group %s, species %s"
+                                    "Getting observations from taxo_group %s, specie %s"
                                 ),
                                 id_taxo_group,
                                 specie["id"],
@@ -419,8 +419,9 @@ class Observations(DownloadVn):
                         items_dict,
                     )
                     log_msg = _(
-                        "Iter: {}, {} obs, taxo_group: {}, date: {}, interval: {}"
+                        "{} => Iter: {}, {} obs, taxo_group: {}, date: {}, interval: {}"
                     ).format(
+                        self._config.site,
                         seq,
                         nb_obs,
                         id_taxo_group,
@@ -498,7 +499,9 @@ class Observations(DownloadVn):
         """
         # Get the list of taxo groups to process
         taxo_list = self._list_taxo_groups(id_taxo_group, taxo_groups_ex)
-        logger.info(_("Downloaded taxo_groups: %s"), taxo_list)
+        logger.info(
+            _("%s => Downloading taxo_groups: %s"), self._config.site, taxo_list
+        )
 
         if method == "search":
             for taxo in taxo_list:
