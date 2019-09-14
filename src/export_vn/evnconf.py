@@ -54,15 +54,159 @@ _ConfSchema = Map(
         "main": Map({"admin_mail": Email()}),
         "controler": Map(
             {
-                "entities": Map({"enabled": Bool()}),
-                "fields": Map({"enabled": Bool()}),
-                "local_admin_units": Map({"enabled": Bool()}),
-                "observations": Map({"enabled": Bool()}),
-                "observers": Map({"enabled": Bool()}),
-                "places": Map({"enabled": Bool()}),
-                "species": Map({"enabled": Bool()}),
-                "taxo_groups": Map({"enabled": Bool()}),
-                "territorial_units": Map({"enabled": Bool()}),
+                "entities": Map(
+                    {
+                        "enabled": Bool(),
+                        "schedule": Map(
+                            {
+                                Optional("year"): Str(),
+                                Optional("month"): Str(),
+                                Optional("day"): Str(),
+                                Optional("week"): Str(),
+                                Optional("day_of_week"): Str(),
+                                Optional("hour"): Str(),
+                                Optional("minute"): Str(),
+                                Optional("second"): Str(),
+                            }
+                        ),
+                    }
+                ),
+                "fields": Map(
+                    {
+                        "enabled": Bool(),
+                        "schedule": Map(
+                            {
+                                Optional("year"): Str(),
+                                Optional("month"): Str(),
+                                Optional("day"): Str(),
+                                Optional("week"): Str(),
+                                Optional("day_of_week"): Str(),
+                                Optional("hour"): Str(),
+                                Optional("minute"): Str(),
+                                Optional("second"): Str(),
+                            }
+                        ),
+                    }
+                ),
+                "local_admin_units": Map(
+                    {
+                        "enabled": Bool(),
+                        "schedule": Map(
+                            {
+                                Optional("year"): Str(),
+                                Optional("month"): Str(),
+                                Optional("day"): Str(),
+                                Optional("week"): Str(),
+                                Optional("day_of_week"): Str(),
+                                Optional("hour"): Str(),
+                                Optional("minute"): Str(),
+                                Optional("second"): Str(),
+                            }
+                        ),
+                    }
+                ),
+                "observations": Map(
+                    {
+                        "enabled": Bool(),
+                        "schedule": Map(
+                            {
+                                Optional("year"): Str(),
+                                Optional("month"): Str(),
+                                Optional("day"): Str(),
+                                Optional("week"): Str(),
+                                Optional("day_of_week"): Str(),
+                                Optional("hour"): Str(),
+                                Optional("minute"): Str(),
+                                Optional("second"): Str(),
+                            }
+                        ),
+                    }
+                ),
+                "observers": Map(
+                    {
+                        "enabled": Bool(),
+                        "schedule": Map(
+                            {
+                                Optional("year"): Str(),
+                                Optional("month"): Str(),
+                                Optional("day"): Str(),
+                                Optional("week"): Str(),
+                                Optional("day_of_week"): Str(),
+                                Optional("hour"): Str(),
+                                Optional("minute"): Str(),
+                                Optional("second"): Str(),
+                            }
+                        ),
+                    }
+                ),
+                "places": Map(
+                    {
+                        "enabled": Bool(),
+                        "schedule": Map(
+                            {
+                                Optional("year"): Str(),
+                                Optional("month"): Str(),
+                                Optional("day"): Str(),
+                                Optional("week"): Str(),
+                                Optional("day_of_week"): Str(),
+                                Optional("hour"): Str(),
+                                Optional("minute"): Str(),
+                                Optional("second"): Str(),
+                            }
+                        ),
+                    }
+                ),
+                "species": Map(
+                    {
+                        "enabled": Bool(),
+                        "schedule": Map(
+                            {
+                                Optional("year"): Str(),
+                                Optional("month"): Str(),
+                                Optional("day"): Str(),
+                                Optional("week"): Str(),
+                                Optional("day_of_week"): Str(),
+                                Optional("hour"): Str(),
+                                Optional("minute"): Str(),
+                                Optional("second"): Str(),
+                            }
+                        ),
+                    }
+                ),
+                "taxo_groups": Map(
+                    {
+                        "enabled": Bool(),
+                        "schedule": Map(
+                            {
+                                Optional("year"): Str(),
+                                Optional("month"): Str(),
+                                Optional("day"): Str(),
+                                Optional("week"): Str(),
+                                Optional("day_of_week"): Str(),
+                                Optional("hour"): Str(),
+                                Optional("minute"): Str(),
+                                Optional("second"): Str(),
+                            }
+                        ),
+                    }
+                ),
+                "territorial_units": Map(
+                    {
+                        "enabled": Bool(),
+                        "schedule": Map(
+                            {
+                                Optional("year"): Str(),
+                                Optional("month"): Str(),
+                                Optional("day"): Str(),
+                                Optional("week"): Str(),
+                                Optional("day_of_week"): Str(),
+                                Optional("hour"): Str(),
+                                Optional("minute"): Str(),
+                                Optional("second"): Str(),
+                            }
+                        ),
+                    }
+                ),
             }
         ),
         Optional("filter"): Map(
@@ -127,18 +271,85 @@ class EvnCtrlConf:
     """Expose controler configuration as properties.
     """
 
+    @staticmethod
+    def _schedule_param(cfg: Dict, param: str) -> str:
+        return (
+            None
+            if ("schedule" not in cfg)
+            else None
+            if (param not in cfg["schedule"])
+            else cfg["schedule"][param]
+        )
+
     def __init__(self, ctrl: str, config: _CtrlType) -> None:
         self._ctrl = ctrl
 
         # Import parameters in properties
-        self._enabled = True
-        if "enabled" in config["controler"][ctrl]:
-            self._enabled = config["controler"][ctrl]["enabled"]
+        self._enabled = (
+            True
+            if "enabled" not in config["controler"][ctrl]
+            else config["controler"][ctrl]["enabled"]
+        )
+
+        self._schedule_year = self._schedule_param(config["controler"][ctrl], "year")
+        self._schedule_month = self._schedule_param(config["controler"][ctrl], "month")
+        self._schedule_day = self._schedule_param(config["controler"][ctrl], "day")
+        self._schedule_week = self._schedule_param(config["controler"][ctrl], "week")
+        self._schedule_day_of_week = self._schedule_param(
+            config["controler"][ctrl], "day_of_week"
+        )
+        self._schedule_hour = self._schedule_param(config["controler"][ctrl], "hour")
+        self._schedule_minute = self._schedule_param(
+            config["controler"][ctrl], "minute"
+        )
+        self._schedule_second = self._schedule_param(
+            config["controler"][ctrl], "second"
+        )
 
     @property
     def enabled(self) -> bool:
         """Return enabled flag, defining if controler should be used."""
         return self._enabled
+
+    @property
+    def schedule_year(self) -> int:
+        """Return scheduling parameter."""
+        return self._schedule_year
+
+    @property
+    def schedule_month(self) -> int:
+        """Return scheduling parameter."""
+        return self._schedule_month
+
+    @property
+    def schedule_day(self) -> int:
+        """Return scheduling parameter."""
+        return self._schedule_day
+
+    @property
+    def schedule_week(self) -> int:
+        """Return scheduling parameter."""
+        return self._schedule_week
+
+    @property
+    def schedule_day_of_week(self) -> int:
+        """Return scheduling parameter."""
+        return self._schedule_day_of_week
+
+    @property
+    def schedule_hour(self) -> int:
+        """Return scheduling parameter."""
+        return self._schedule_hour
+
+    @property
+    def schedule_minute(self) -> int:
+        """Return scheduling parameter."""
+        return self._schedule_minute
+
+    @property
+    def schedule_second(self) -> int:
+        """Return scheduling parameter."""
+        return self._schedule_second
 
 
 class EvnSiteConf:
@@ -149,9 +360,11 @@ class EvnSiteConf:
         self._site = site
         # Import parameters in properties
         try:
-            self._enabled = True
-            if "enabled" in config["site"][site]:
-                self._enabled = config["site"][site]["enabled"]
+            self._enabled = (
+                True
+                if "enabled" not in config["site"][site]
+                else config["site"][site]["enabled"]
+            )
             self._client_key = config["site"][site]["client_key"]  # type: str
             self._client_secret = config["site"][site]["client_secret"]  # type: str
             self._user_email = config["site"][site]["user_email"]  # type: str
@@ -175,8 +388,11 @@ class EvnSiteConf:
             self._file_enabled = False
             self._file_store = ""
             if "file" in config:
-                if "enabled" in config["file"]:
-                    self._file_enabled = config["file"]["enabled"]
+                self._file_enabled = (
+                    False
+                    if "enabled" not in config["file"]
+                    else config["file"]["enabled"]
+                )
                 if self._file_enabled:
                     if "file_store" in config["file"]:
                         self._file_store = (
@@ -231,7 +447,7 @@ class EvnSiteConf:
                 self._db_worker_threads = 2  # type:int
                 self._db_worker_queue = 100000  # type:int
 
-        except Exception as e:
+        except Exception:  # pragma: no cover
             logger.exception(_("Error creating %s configuration"), site)
             raise
         return None
@@ -441,7 +657,7 @@ class EvnConf:
             logger.critical(_("Incorrect content in YAML configuration %s"), file)
             logger.critical(_("%s"), sys.exc_info()[1])
             raise
-        except YAMLError:
+        except YAMLError:  # pragma: no cover
             logger.critical(_("Error while reading YAML configuration %s"), file)
             raise
 

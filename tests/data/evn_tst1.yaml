@@ -12,30 +12,73 @@ controler:
     entities:
         # Enable download from this controler
         enabled: true
+        # Define scheduling parameters
+        schedule:
+            year: '*'
+            month: '*'
+            day: '*'
+            week: '*'
+            day_of_week: 2
+            hour: 23
+            minute: '*'
+            second: '*'
     fields:
         # Enable download from this controler
         enabled: true
+        # Define scheduling parameters
+        schedule:
+            day_of_week: 2
+            hour: 23
     local_admin_units:
         # Enable download from this controler
         enabled: true
+        # Define scheduling parameters
+        schedule:
+            day_of_week: 2
+            hour: 23
     observations:
         # Enable download from this controler
         enabled: true
+        # Define scheduling parameters
+        schedule:
+            year: '*'
+            month: '*'
+            day: '*'
+            week: '*'
+            day_of_week: '*'
+            hour: '*'
+            minute: 0
+            second: 0
     observers:
         # Enable download from this controler
         enabled: true
+        # Define scheduling parameters
+        schedule:
+            hour: 22
     places:
         # Enable download from this controler
         enabled: true
+        # Define scheduling parameters
+        schedule:
+            hour: 5
     species:
         # Enable download from this controler
         enabled: true
+        # Define scheduling parameters
+        schedule:
+            hour: 6
     taxo_groups:
         # Enable download from this controler
         enabled: true
+        # Define scheduling parameters
+        schedule:
+            hour: 6
     territorial_units:
         # Enable download from this controler
         enabled: true
+        # Define scheduling parameters
+        schedule:
+            hour: 5
 
 # Observations filter, to limit download scope
 filter:

@@ -53,9 +53,7 @@ CRTL = "observations"
 def create_file(request):
     cfg_file = "." + request.param["file"]
     # Copy test file to HOME
-    in_file = (
-        Path.home() / "Client_API_VN" / "tests" / "data" / request.param["file"]
-    )
+    in_file = Path.home() / "Client_API_VN" / "tests" / "data" / request.param["file"]
     out_file = Path.home() / cfg_file
     if (not out_file.is_file()) or (in_file.stat().st_mtime > out_file.stat().st_mtime):
         shutil.copy(in_file, out_file)
@@ -121,6 +119,78 @@ def test_ctrl_enabled(create_file):
     """ Test property."""
     cfg, c_cfg, s_cfg, cfg_file, params = create_file
     assert c_cfg.enabled
+
+
+def test_ctrl_schedule_year(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, cfg_file, params = create_file
+    if params["site"] in ["tst1", "tst2"]:
+        assert c_cfg.schedule_year == "*"
+    else:
+        assert c_cfg.schedule_year is None
+
+
+def test_ctrl_schedule_month(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, cfg_file, params = create_file
+    if params["site"] in ["tst1", "tst2"]:
+        assert c_cfg.schedule_month == "*"
+    else:
+        assert c_cfg.schedule_month is None
+
+
+def test_ctrl_schedule_day(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, cfg_file, params = create_file
+    if params["site"] in ["tst1", "tst2"]:
+        assert c_cfg.schedule_day == "*"
+    else:
+        assert c_cfg.schedule_day is None
+
+
+def test_ctrl_schedule_week(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, cfg_file, params = create_file
+    if params["site"] in ["tst1", "tst2"]:
+        assert c_cfg.schedule_week == "*"
+    else:
+        assert c_cfg.schedule_week is None
+
+
+def test_ctrl_schedule_day_of_week(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, cfg_file, params = create_file
+    if params["site"] in ["tst1", "tst2"]:
+        assert c_cfg.schedule_day_of_week == "*"
+    else:
+        assert c_cfg.schedule_day_of_week == "2"
+
+
+def test_ctrl_schedule_hour(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, cfg_file, params = create_file
+    if params["site"] in ["tst1", "tst2"]:
+        assert c_cfg.schedule_hour == "*"
+    else:
+        assert c_cfg.schedule_hour is None
+
+
+def test_ctrl_schedule_minute(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, cfg_file, params = create_file
+    if params["site"] in ["tst1", "tst2"]:
+        assert c_cfg.schedule_minute == "0"
+    else:
+        assert c_cfg.schedule_minute is None
+
+
+def test_ctrl_schedule_second(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, cfg_file, params = create_file
+    if params["site"] in ["tst1", "tst2"]:
+        assert c_cfg.schedule_second == "0"
+    else:
+        assert c_cfg.schedule_second is None
 
 
 def test_taxo_exclude(create_file):
