@@ -367,7 +367,7 @@ def test_tuning_pid_setpoint(create_file):
 def test_tuning_pid_limit_min(create_file):
     """ Test property."""
     cfg, c_cfg, s_cfg, cfg_file, params = create_file
-    assert s_cfg.tuning_pid_limit_min == 5
+    assert s_cfg.tuning_pid_limit_min == 1
 
 
 def test_tuning_pid_limit_max(create_file):

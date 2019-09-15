@@ -289,22 +289,32 @@ class EvnCtrlConf:
             True
             if "enabled" not in config["controler"][ctrl]
             else config["controler"][ctrl]["enabled"]
-        )
+        )  # type: bool
 
-        self._schedule_year = self._schedule_param(config["controler"][ctrl], "year")
-        self._schedule_month = self._schedule_param(config["controler"][ctrl], "month")
-        self._schedule_day = self._schedule_param(config["controler"][ctrl], "day")
-        self._schedule_week = self._schedule_param(config["controler"][ctrl], "week")
+        self._schedule_year = self._schedule_param(
+            config["controler"][ctrl], "year"
+        )  # type: str
+        self._schedule_month = self._schedule_param(
+            config["controler"][ctrl], "month"
+        )  # type: str
+        self._schedule_day = self._schedule_param(
+            config["controler"][ctrl], "day"
+        )  # type: str
+        self._schedule_week = self._schedule_param(
+            config["controler"][ctrl], "week"
+        )  # type: str
         self._schedule_day_of_week = self._schedule_param(
             config["controler"][ctrl], "day_of_week"
-        )
-        self._schedule_hour = self._schedule_param(config["controler"][ctrl], "hour")
+        )  # type: str
+        self._schedule_hour = self._schedule_param(
+            config["controler"][ctrl], "hour"
+        )  # type: str
         self._schedule_minute = self._schedule_param(
             config["controler"][ctrl], "minute"
-        )
+        )  # type: str
         self._schedule_second = self._schedule_param(
             config["controler"][ctrl], "second"
-        )
+        )  # type: str
 
     @property
     def enabled(self) -> bool:
@@ -385,8 +395,8 @@ class EvnSiteConf:
                 if "end_date" in config["filter"]:
                     self._end_date = config["filter"]["end_date"]
 
-            self._file_enabled = False
-            self._file_store = ""
+            self._file_enabled = False  # type: bool
+            self._file_store = ""  # type: str
             if "file" in config:
                 self._file_enabled = (
                     False
@@ -441,7 +451,7 @@ class EvnSiteConf:
                 self._pid_ki = 0.003  # type: float
                 self._pid_kd = 0.0  # type: float
                 self._pid_setpoint = 10000  # type: float
-                self._pid_limit_min = 5  # type: float
+                self._pid_limit_min = 1  # type: float
                 self._pid_limit_max = 2000  # type: float
                 self._pid_delta_days = 15  # type: int
                 self._db_worker_threads = 2  # type:int
