@@ -111,6 +111,10 @@ class Jobs:
         logger.debug("Starting scheduler")
         self._scheduler.start()
 
+    def remove_all_jobs(self):
+        logger.debug(_("Removing all scheduled jobs"))
+        self._scheduler.remove_all_jobs()
+
     def add_job_once(self, job_fn, args=None, kwargs=None):
         logger.debug(
             _("Adding immediate job %s"), args[0].__name__ + "_" + args[2].site
@@ -177,9 +181,9 @@ class Jobs:
 
     def print_jobs(self):
         jobs = self._scheduler.get_jobs()
-        logger.debug("Number of jobs scheduled, %s", len(jobs))
+        logger.info("Number of jobs scheduled, %s", len(jobs))
         for j in jobs:
-            logger.debug("Job %s, scheduled: %s", j.id, j.trigger)
+            logger.info("Job %s, scheduled: %s", j.id, j.trigger)
 
 
 def db_config(cfg):
@@ -254,6 +258,11 @@ def arguments(args):
     download_group.add_argument(
         "--schedule",
         help=_("Create or modify incremental download schedule"),
+        action="store_true",
+    )
+    parser.add_argument(
+        "--status",
+        help=_("Print downloading status (schedule, errors...)"),
         action="store_true",
     )
     parser.add_argument(
@@ -362,8 +371,10 @@ def full_download(cfg_ctrl):
         "port": cfg.db_port,
         "database": "postgres",
     }
-    jobs = Jobs(url=URL(**db_url))
-    # Donwload field only once
+    jobs = Jobs(url=URL(**db_url), nb_executors=cfg.tuning_sched_executors)
+    jobs.remove_all_jobs()
+    jobs.print_jobs()
+    # Download field only once
     jobs.add_job_once(job_fn=full_download_1, args=[Fields, cfg_crtl_list, cfg])
     # Looping on sites for other controlers
     for site, cfg in cfg_site_list.items():
@@ -444,12 +455,10 @@ def increment_download(cfg_ctrl):
         "port": cfg.db_port,
         "database": "postgres",
     }
-    # jobs = Jobs(url=URL(**db_url))
-    jobs = Jobs()
+    jobs = Jobs(url=URL(**db_url))
 
     # Start scheduler and wait for jobs to finish
     jobs.start()
-    jobs.print_jobs()
     time.sleep(1)
     while jobs.count_jobs() > 0:
         time.sleep(1)
@@ -475,8 +484,7 @@ def increment_schedule(cfg_ctrl):
         "port": cfg.db_port,
         "database": "postgres",
     }
-    # jobs = Jobs(url=URL(**db_url))
-    jobs = Jobs()
+    jobs = Jobs(url=URL(**db_url))
     # Looping on sites
     for site, cfg in cfg_site_list.items():
         if cfg.enabled:
@@ -486,7 +494,6 @@ def increment_schedule(cfg_ctrl):
                     logger.debug(
                         _("%s => Adding schedule for controler %s"), site, ctrl_name
                     )
-                    print(ctrl_props.schedule_minute)
                     jobs.add_job_schedule(
                         job_fn=increment_download_1,
                         args=[CTRL_DEFS[ctrl_name], cfg_crtl_list, cfg],
@@ -508,6 +515,27 @@ def increment_schedule(cfg_ctrl):
     jobs.shutdown()
 
     return None
+
+
+def status(cfg_ctrl):
+    """Print download status, using logger."""
+    logger = logging.getLogger("transfer_vn")
+    cfg_site_list = cfg_ctrl.site_list
+    cfg_site_list = cfg_ctrl.site_list
+    cfg = list(cfg_site_list.values())[0]
+    logger.info(_("Download jobs status"))
+    db_url = {
+        "drivername": "postgresql+psycopg2",
+        "username": cfg.db_user,
+        "password": cfg.db_pw,
+        "host": cfg.db_host,
+        "port": cfg.db_port,
+        "database": "postgres",
+    }
+    jobs = Jobs(url=URL(**db_url))
+    jobs.start()
+    jobs.print_jobs()
+    jobs.shutdown()
 
 
 def count_observations(cfg_ctrl):
@@ -672,8 +700,12 @@ def main(args):
         increment_schedule(cfg_ctrl)
 
     if args.update:
-        logger.info(_("Performing an incremental download of observations"))
+        logger.info(_("Performing an incremental download"))
         increment_download(cfg_ctrl)
+
+    if args.status:
+        logger.info(_("Printing download status"))
+        status(cfg_ctrl)
 
     if args.count:
         logger.info(_("Counting observations"))
