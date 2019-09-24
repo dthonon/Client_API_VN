@@ -85,7 +85,7 @@ class Jobs:
 
         """
         self._job_set = set()
-        logger.debug(
+        logger.info(
             "Creating scheduler, %s executors, storing in %s",
             nb_executors,
             str(url)[0 : str(url).find(":")],
@@ -455,7 +455,7 @@ def increment_download(cfg_ctrl):
         "port": cfg.db_port,
         "database": "postgres",
     }
-    jobs = Jobs(url=URL(**db_url))
+    jobs = Jobs(url=URL(**db_url), nb_executors=cfg.tuning_sched_executors)
 
     # Start scheduler and wait for jobs to finish
     jobs.start()
@@ -484,7 +484,7 @@ def increment_schedule(cfg_ctrl):
         "port": cfg.db_port,
         "database": "postgres",
     }
-    jobs = Jobs(url=URL(**db_url))
+    jobs = Jobs(url=URL(**db_url), nb_executors=cfg.tuning_sched_executors)
     # Looping on sites
     for site, cfg in cfg_site_list.items():
         if cfg.enabled:
@@ -523,6 +523,7 @@ def status(cfg_ctrl):
     cfg_site_list = cfg_ctrl.site_list
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
+    
     logger.info(_("Download jobs status"))
     db_url = {
         "drivername": "postgresql+psycopg2",
@@ -532,7 +533,7 @@ def status(cfg_ctrl):
         "port": cfg.db_port,
         "database": "postgres",
     }
-    jobs = Jobs(url=URL(**db_url))
+    jobs = Jobs(url=URL(**db_url), nb_executors=cfg.tuning_sched_executors)
     jobs.start()
     jobs.print_jobs()
     jobs.shutdown()
