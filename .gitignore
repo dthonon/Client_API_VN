@@ -30,6 +30,7 @@ tags
 *.eggs/
 .installed.cfg
 *.egg-info
+pip-wheel-metadata/*
 
 # Unittest and coverage
 htmlcov/*
