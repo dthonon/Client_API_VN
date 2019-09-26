@@ -25,18 +25,29 @@ Install from PyPI::
     pip install Client-API-VN
 
 Initialize the sample YAML file in your HOME directory and edit with
-your local details::
+your local details. The YAML file is self documented::
 
     transfer_vn --init .evn_your_site.yaml
     editor $HOME/.evn_your_site.yaml
 
+Create the database and tables::
 
-You can then download data, as enabled in the YAML file.
+    transfer_vn --db_create --json_tables_create --col_tables_create .evn_your_site.yaml
+
+You can then download data, as enabled and filtered in the YAML file.
 Beware that, depending on the volume of observations,
-this can take hours. We recommend starting with a small taxonomic group first::
+this can take several hours. We recommend starting with a small taxonomic
+group first::
 
-    transfer_vn --db_create --json_tables_create --col_tables_create --full .evn_your_site.yaml
+    transfer_vn --full .evn_your_site.yaml
 
+After this full download, data can be updated. For observations, only new,
+modified or deleted observations are downloaded. For other controlers, a full
+download is always performed. Each controler runs on its own schedule,
+defined in the YAML configuration file. To create or update, after
+modifying the configuration file, the schedule::
+
+    transfer_vn --schedule .evn_your_site.yaml
 
 Once this is done, you can update the database with new observations::
 
@@ -59,7 +70,7 @@ Running the application
 
 The application runs as::
 
-    transfer_vn  options file
+    transfer_vn options file
 
 where:
 
@@ -71,8 +82,8 @@ Command-line options
 
 -h, --help             Prints help and exits
 --version              Print version number
--v, --verbose          Increase output verbosity
--q, --quiet            Reduce output verbosity
+--verbose              Increase output verbosity
+--quiet                Reduce output verbosity
 --init                 Initialize the YAML configuration file
 --db_drop              Delete if exists database and roles
 --db_create            Create database and roles
@@ -80,6 +91,8 @@ Command-line options
 --col_tables_create    Create or recreate colums based tables
 --full                 Perform a full download
 --update               Perform an incremental download
+--schedule             Create or update the incremental update schedule
+--status               Print downloading status (schedule, errors...)
 --count                Count observations by site and taxo_group
 --profile              Gather and print profiling times
 
