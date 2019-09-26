@@ -164,7 +164,7 @@ class BiolovisionAPI:
 
         Parameters
         ----------
-        params : dict of 'parameter name': 'parameter value'.
+        params : dict of 'parameter name': 'parameter value'
             params is used to build URL GET string.
         scope : str
             scope is the api to be queried, for example 'taxo_groups/'.

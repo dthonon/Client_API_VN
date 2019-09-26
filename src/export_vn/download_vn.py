@@ -78,6 +78,11 @@ class DownloadVn:
         """Return the number of HTTP errors during this session."""
         return self._api_instance.transfer_errors
 
+    @property
+    def name(self):
+        """Return the controler name."""
+        return self._api_instance.controler
+
     # ----------------
     # Internal methods
     # ----------------
@@ -292,7 +297,7 @@ class Observations(DownloadVn):
                         if specie["is_used"] == "1":
                             logger.info(
                                 _(
-                                    "Getting observations from taxo_group %s, species %s"
+                                    "Getting observations from taxo_group %s, specie %s"
                                 ),
                                 id_taxo_group,
                                 specie["id"],
@@ -414,8 +419,9 @@ class Observations(DownloadVn):
                         items_dict,
                     )
                     log_msg = _(
-                        "Iter: {}, {} obs, taxo_group: {}, date: {}, interval: {}"
+                        "{} => Iter: {}, {} obs, taxo_group: {}, date: {}, interval: {}"
                     ).format(
+                        self._config.site,
                         seq,
                         nb_obs,
                         id_taxo_group,
@@ -436,14 +442,16 @@ class Observations(DownloadVn):
                     delta_days = int(pid(nb_obs))
         return None
 
-    def _list_taxo_groups(self, id_taxo_group):
+    def _list_taxo_groups(self, id_taxo_group, taxo_groups_ex=None):
         """Return the list of enabled taxo_groups."""
         if id_taxo_group is None:
             # Get all active taxo_groups
             taxo_groups = TaxoGroupsAPI(self._config).api_list()
             taxo_list = []
             for taxo in taxo_groups["data"]:
-                if taxo["access_mode"] != "none":
+                if (not taxo["name_constant"] in taxo_groups_ex) and (
+                    taxo["access_mode"] != "none"
+                ):
                     logger.debug(
                         _("Starting to download observations from taxo_group %s: %s"),
                         taxo["id"],
@@ -461,7 +469,12 @@ class Observations(DownloadVn):
         return taxo_list
 
     def store(
-        self, id_taxo_group=None, by_specie=False, method="search", short_version="1"
+        self,
+        id_taxo_group=None,
+        by_specie=False,
+        method="search",
+        taxo_groups_ex=None,
+        short_version="1",
     ):
         """Download from VN by API and store json to backend.
 
@@ -479,11 +492,16 @@ class Observations(DownloadVn):
             If True, downloading by specie.
         method : str
             API used to download, either 'search' or 'list'.
+        taxo_groups_ex : list
+            List of taxo_groups to exclude from storage.
         short_version : str
             '0' for long JSON and '1' for short_version.
         """
         # Get the list of taxo groups to process
-        taxo_list = self._list_taxo_groups(id_taxo_group)
+        taxo_list = self._list_taxo_groups(id_taxo_group, taxo_groups_ex)
+        logger.info(
+            _("%s => Downloading taxo_groups: %s"), self._config.site, taxo_list
+        )
 
         if method == "search":
             for taxo in taxo_list:
@@ -496,7 +514,9 @@ class Observations(DownloadVn):
 
         return None
 
-    def update(self, id_taxo_group=None, since=None, short_version="1"):
+    def update(
+        self, id_taxo_group=None, since=None, taxo_groups_ex=None, short_version="1"
+    ):
         """Download increment from VN by API and store json to file.
 
         Gets previous update date from database and updates since then.
@@ -511,6 +531,8 @@ class Observations(DownloadVn):
         since : str or None
             If None, updates since last download
             Or if provided, updates since that given date.
+        taxo_groups_ex : list
+            List of taxo_groups to exclude from storage.
         short_version : str
             '0' for long JSON and '1' for short_version.
         """
@@ -521,17 +543,13 @@ class Observations(DownloadVn):
         )
 
         # Get the list of taxo groups to process
-        taxo_list = self._list_taxo_groups(id_taxo_group)
-
-        if since is None:
-            get_since = True
-        else:
-            get_since = False
+        taxo_list = self._list_taxo_groups(id_taxo_group, taxo_groups_ex)
+        logger.info(_("Downloaded taxo_groups: %s"), taxo_list)
 
         for taxo in taxo_list:
             updated = list()
             deleted = list()
-            if get_since:
+            if since is None:
                 since = self._backend.increment_get(self._config.site, taxo)
             if since is not None:
                 # Valid since date provided or found in database

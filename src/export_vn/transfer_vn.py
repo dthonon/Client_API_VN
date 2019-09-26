@@ -8,25 +8,182 @@ import logging
 import shutil
 import subprocess
 import sys
+import time
+from datetime import datetime, timezone
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
 import pkg_resources
+import pyexpander.lib as pyexpander
 import requests
 import yappi
-
-import pyexpander.lib as pyexpander
-from biolovision.api import TaxoGroupsAPI
+from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED, EVENT_JOB_SUBMITTED
+from apscheduler.executors.pool import ProcessPoolExecutor
+from apscheduler.jobstores.memory import MemoryJobStore
+from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+from apscheduler.schedulers.background import BackgroundScheduler
 from bs4 import BeautifulSoup
-from export_vn.download_vn import (Entities, Fields, LocalAdminUnits,
-                                   Observations, Observers, Places, Species,
-                                   TaxoGroup, TerritorialUnits)
+from export_vn.download_vn import (
+    Entities,
+    Fields,
+    LocalAdminUnits,
+    Observations,
+    Observers,
+    Places,
+    Species,
+    TaxoGroup,
+    TerritorialUnits,
+)
 from export_vn.evnconf import EvnConf
 from export_vn.store_postgresql import PostgresqlUtils, StorePostgresql
+from pytz import utc
+from sqlalchemy.engine.url import URL
 from strictyaml import YAMLValidationError
 from tabulate import tabulate
 
 from . import _, __version__
+
+CTRL_DEFS = {
+    "entities": Entities,
+    "fields": Fields,
+    "local_admin_units": LocalAdminUnits,
+    "observations": Observations,
+    "observers": Observers,
+    "places": Places,
+    "species": Species,
+    "taxo_groups": TaxoGroup,
+    "territorial_units": TerritorialUnits,
+}
+logger = logging.getLogger("transfer_vn")
+
+
+class Jobs:
+    def _listener(self, event):
+        if event.code == EVENT_JOB_SUBMITTED:
+            logger.debug("The job %s started", event.job_id)
+            self._job_set.add(event.job_id)
+        else:
+            if event.job_id in self._job_set:
+                self._job_set.remove(event.job_id)
+            else:
+                logger.error(_("Job %s not found in job_set"), event.job_id)
+            if event.exception:
+                logger.error("The job %s crashed", event.job_id)
+            else:
+                logger.debug("The job %s worked", event.job_id)
+        logger.debug("Job set: %s", self._job_set)
+
+    def __init__(self, url="sqlite:///jobs.sqlite", nb_executors=1):
+        """Initialize class.
+
+        Parameters
+        ----------
+        url: str
+            SQLalchemy URL for persistent jobstore.
+        nb_executors : int
+            Number of concurrent executor processes.
+
+        """
+        self._job_set = set()
+        logger.info(
+            "Creating scheduler, %s executors, storing in %s",
+            nb_executors,
+            str(url)[0 : str(url).find(":")],
+        )
+        jobstores = {"once": MemoryJobStore(), "default": SQLAlchemyJobStore(url=url)}
+        executors = {"default": ProcessPoolExecutor(nb_executors)}
+        job_defaults = {
+            "coalesce": True,
+            "max_instances": 1,
+            "misfire_grace_time": 3600,
+        }
+        self._scheduler = BackgroundScheduler(
+            jobstores=jobstores,
+            executors=executors,
+            job_defaults=job_defaults,
+            timezone=utc,
+        )
+        self._scheduler.add_listener(
+            self._listener, EVENT_JOB_SUBMITTED | EVENT_JOB_EXECUTED | EVENT_JOB_ERROR
+        )
+
+    def start(self):
+        logger.debug("Starting scheduler")
+        self._scheduler.start()
+
+    def remove_all_jobs(self):
+        logger.debug(_("Removing all scheduled jobs"))
+        self._scheduler.remove_all_jobs()
+
+    def add_job_once(self, job_fn, args=None, kwargs=None):
+        logger.debug(
+            _("Adding immediate job %s"), args[0].__name__ + "_" + args[2].site
+        )
+        self._scheduler.add_job(
+            job_fn,
+            args=args,
+            kwargs=kwargs,
+            id=args[0].__name__ + "_" + args[2].site,
+            jobstore="once",
+        )
+
+    def add_job_schedule(
+        self,
+        job_fn,
+        args=None,
+        kwargs=None,
+        year=None,
+        month=None,
+        day=None,
+        week=None,
+        day_of_week=None,
+        hour=None,
+        minute=None,
+        second=None,
+    ):
+        logger.debug(
+            _("Adding scheduled job %s"), args[0].__name__ + "_" + args[2].site
+        )
+        self._scheduler.add_job(
+            job_fn,
+            args=args,
+            kwargs=kwargs,
+            id=args[0].__name__ + "_" + args[2].site,
+            jobstore="default",
+            trigger="cron",
+            year=year,
+            month=month,
+            day=day,
+            week=week,
+            day_of_week=day_of_week,
+            hour=hour,
+            minute=minute,
+            second=second,
+            replace_existing=True,
+        )
+
+    def count_jobs(self):
+        # self._scheduler.print_jobs()
+        jobs = self._scheduler.get_jobs()
+        logger.debug("Number of jobs scheduled, %s", len(jobs))
+        for j in jobs:
+            logger.debug(
+                "Job %s, scheduled in: %s",
+                j.id,
+                j.next_run_time - datetime.now(timezone.utc),
+            )
+        logger.debug("Number of jobs running, %s", len(self._job_set))
+        return len(self._job_set)
+
+    def shutdown(self):
+        logger.info("Shutting down scheduler")
+        self._scheduler.shutdown()
+
+    def print_jobs(self):
+        jobs = self._scheduler.get_jobs()
+        logger.info("Number of jobs scheduled, %s", len(jobs))
+        for j in jobs:
+            logger.info("Job %s, scheduled: %s", j.id, j.trigger)
 
 
 def db_config(cfg):
@@ -98,6 +255,16 @@ def arguments(args):
     download_group.add_argument(
         "--update", help=_("Perform an incremental download"), action="store_true"
     )
+    download_group.add_argument(
+        "--schedule",
+        help=_("Create or modify incremental download schedule"),
+        action="store_true",
+    )
+    parser.add_argument(
+        "--status",
+        help=_("Print downloading status (schedule, errors...)"),
+        action="store_true",
+    )
     parser.add_argument(
         "--count",
         help=_("Count observations by site and taxo_group"),
@@ -148,7 +315,7 @@ def col_table_create(cfg, sql_quiet, client_min_message):
             + " --user="
             + cfg.db_user
             + " --file="
-            + tmp_sql,
+            + str(tmp_sql),
             check=True,
             shell=True,
         )
@@ -156,6 +323,35 @@ def col_table_create(cfg, sql_quiet, client_min_message):
         logger.error(err)
 
     return None
+
+
+def full_download_1(ctrl, cfg_crtl_list, cfg):
+    """Downloads from a single controler."""
+    logger = logging.getLogger("transfer_vn")
+    logger.debug("Enter full_download_1: {}".format(ctrl.__name__))
+    with StorePostgresql(cfg) as store_pg:
+        downloader = ctrl(cfg, store_pg)
+        if cfg_crtl_list[downloader.name].enabled:
+            logger.info(
+                _("%s => Starting download using controler %s"),
+                cfg.site,
+                downloader.name,
+            )
+            if downloader.name == "observations":
+                logger.info(
+                    _("%s => Excluded taxo_groups: %s"), cfg.site, cfg.taxo_exclude
+                )
+                downloader.store(
+                    id_taxo_group=None,
+                    method="search",
+                    by_specie=False,
+                    taxo_groups_ex=cfg.taxo_exclude,
+                )
+            else:
+                downloader.store()
+            logger.info(
+                _("%s => Ending download using controler %s"), cfg.site, downloader.name
+            )
 
 
 def full_download(cfg_ctrl):
@@ -166,119 +362,181 @@ def full_download(cfg_ctrl):
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
 
-    # Donwload field only once
-    with StorePostgresql(cfg) as store_pg:
-        ctrl = "fields"
-        if cfg_crtl_list[ctrl].enabled:
-            logger.info(_("Using controler %s once"), ctrl)
-            fields = Fields(cfg, store_pg)
-            fields.store()
-
-    # Looping on sites
+    logger.info(_("Defining full download jobs"))
+    db_url = {
+        "drivername": "postgresql+psycopg2",
+        "username": cfg.db_user,
+        "password": cfg.db_pw,
+        "host": cfg.db_host,
+        "port": cfg.db_port,
+        "database": "postgres",
+    }
+    jobs = Jobs(url=URL(**db_url), nb_executors=cfg.tuning_sched_executors)
+    jobs.remove_all_jobs()
+    jobs.print_jobs()
+    # Download field only once
+    jobs.add_job_once(job_fn=full_download_1, args=[Fields, cfg_crtl_list, cfg])
+    # Looping on sites for other controlers
     for site, cfg in cfg_site_list.items():
-        with StorePostgresql(cfg) as store_pg:
-            if cfg.enabled:
-                logger.info(_("Working on site %s"), cfg.site)
+        if cfg.enabled:
+            logger.info(_("Scheduling work for site %s"), cfg.site)
+            jobs.add_job_once(
+                job_fn=full_download_1, args=[TaxoGroup, cfg_crtl_list, cfg]
+            )
+            jobs.add_job_once(
+                job_fn=full_download_1, args=[Entities, cfg_crtl_list, cfg]
+            )
+            jobs.add_job_once(
+                job_fn=full_download_1, args=[TerritorialUnits, cfg_crtl_list, cfg]
+            )
+            jobs.add_job_once(
+                job_fn=full_download_1, args=[LocalAdminUnits, cfg_crtl_list, cfg]
+            )
+            jobs.add_job_once(job_fn=full_download_1, args=[Places, cfg_crtl_list, cfg])
+            jobs.add_job_once(
+                job_fn=full_download_1, args=[Species, cfg_crtl_list, cfg]
+            )
+            jobs.add_job_once(
+                job_fn=full_download_1, args=[Observers, cfg_crtl_list, cfg]
+            )
+            jobs.add_job_once(
+                job_fn=full_download_1, args=[Observations, cfg_crtl_list, cfg]
+            )
+        else:
+            logger.info(_("Skipping site %s"), site)
 
-                ctrl = "taxo_groups"
-                if cfg_crtl_list[ctrl].enabled:
-                    logger.info(_("Using controler %s on site %s"), ctrl, cfg.site)
-                    taxo_group = TaxoGroup(cfg, store_pg)
-                    taxo_group.store()
-
-                ctrl = "entities"
-                if cfg_crtl_list[ctrl].enabled:
-                    logger.info(_("Using controler %s on site %s"), ctrl, cfg.site)
-                    entities = Entities(cfg, store_pg)
-                    entities.store()
-
-                ctrl = "territorial_units"
-                if cfg_crtl_list[ctrl].enabled:
-                    logger.info(_("Using controler %s on site %s"), ctrl, cfg.site)
-                    territorial_unit = TerritorialUnits(cfg, store_pg)
-                    territorial_unit.store()
-
-                ctrl = "local_admin_units"
-                if cfg_crtl_list[ctrl].enabled:
-                    logger.info(_("Using controler %s on site %s"), ctrl, cfg.site)
-                    local_admin_units = LocalAdminUnits(cfg, store_pg)
-                    local_admin_units.store()
-
-                ctrl = "places"
-                if cfg_crtl_list[ctrl].enabled:
-                    logger.info(_("Using controler %s on site %s"), ctrl, cfg.site)
-                    places = Places(cfg, store_pg)
-                    places.store()
-
-                ctrl = "species"
-                if cfg_crtl_list[ctrl].enabled:
-                    logger.info(_("Using controler %s on site %s"), ctrl, cfg.site)
-                    species = Species(cfg, store_pg)
-                    species.store()
-
-                ctrl = "observers"
-                if cfg_crtl_list[ctrl].enabled:
-                    logger.info(_("Using controler %s on site %s"), ctrl, cfg.site)
-                    observers = Observers(cfg, store_pg)
-                    observers.store()
-
-                ctrl = "observations"
-                if cfg_crtl_list[ctrl].enabled:
-                    logger.info(_("Using controler %s on site %s"), ctrl, cfg.site)
-                    observations = Observations(cfg, store_pg)
-                    taxo_groups = TaxoGroupsAPI(cfg).api_list()["data"]
-                    taxo_groups_ex = cfg.taxo_exclude
-                    logger.info(_("Excluded taxo_groups: %s"), taxo_groups_ex)
-                    taxo_groups_filt = []
-                    for taxo in taxo_groups:
-                        if (not taxo["name_constant"] in taxo_groups_ex) and (
-                            taxo["access_mode"] != "none"
-                        ):
-                            taxo_groups_filt.append(taxo["id"])
-                    logger.info(_("Downloading from taxo_groups: %s"), taxo_groups_filt)
-                    observations.store(
-                        taxo_groups_filt, method="search", by_specie=False
-                    )
-
-            else:
-                logger.info(_("Skipping site %s"), site)
+    # Start scheduler and wait for jobs to finish
+    jobs.start()
+    time.sleep(1)
+    while jobs.count_jobs() > 0:
+        time.sleep(1)
+    jobs.shutdown()
 
     return None
+
+
+def increment_download_1(ctrl, cfg_crtl_list, cfg):
+    """Download incremental updates from one site."""
+    logger = logging.getLogger("transfer_vn")
+    logger.debug("Enter increment_download_1: {}".format(ctrl.__name__))
+    with StorePostgresql(cfg) as store_pg:
+        downloader = ctrl(cfg, store_pg)
+        if cfg_crtl_list[downloader.name].enabled:
+            logger.info(
+                _("%s => Starting incremental download using controler %s"),
+                cfg.site,
+                downloader.name,
+            )
+            if downloader.name == "observations":
+                logger.info(
+                    _("%s => Excluded taxo_groups: %s"), cfg.site, cfg.taxo_exclude
+                )
+                downloader.update(taxo_groups_ex=cfg.taxo_exclude)
+            else:
+                downloader.store()
+            logger.info(
+                _("%s => Ending download using controler %s"), cfg.site, downloader.name
+            )
 
 
 def increment_download(cfg_ctrl):
     """Performs an incremental download of observations from all sites
     and controlers, based on configuration file."""
     logger = logging.getLogger("transfer_vn")
+    cfg_site_list = cfg_ctrl.site_list
+    cfg = list(cfg_site_list.values())[0]
+
+    logger.info(_("Starting incremental download jobs"))
+    db_url = {
+        "drivername": "postgresql+psycopg2",
+        "username": cfg.db_user,
+        "password": cfg.db_pw,
+        "host": cfg.db_host,
+        "port": cfg.db_port,
+        "database": "postgres",
+    }
+    jobs = Jobs(url=URL(**db_url), nb_executors=cfg.tuning_sched_executors)
+
+    # Start scheduler and wait for jobs to finish
+    jobs.start()
+    time.sleep(1)
+    while jobs.count_jobs() > 0:
+        time.sleep(1)
+    jobs.shutdown()
+
+    return None
+
+
+def increment_schedule(cfg_ctrl):
+    """Creates or modify the incremental download schedule,
+    based on YAML controler configuration."""
+    logger = logging.getLogger("transfer_vn")
     cfg_crtl_list = cfg_ctrl.ctrl_list
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
+
+    logger.info(_("Defining incremental download jobs"))
+    db_url = {
+        "drivername": "postgresql+psycopg2",
+        "username": cfg.db_user,
+        "password": cfg.db_pw,
+        "host": cfg.db_host,
+        "port": cfg.db_port,
+        "database": "postgres",
+    }
+    jobs = Jobs(url=URL(**db_url), nb_executors=cfg.tuning_sched_executors)
     # Looping on sites
     for site, cfg in cfg_site_list.items():
-        with StorePostgresql(cfg) as store_pg:
-            if cfg.enabled:
-                logger.info(_("Working on site %s"), site)
+        if cfg.enabled:
+            logger.info(_("Scheduling increments on site %s"), site)
+            for ctrl_name, ctrl_props in cfg_crtl_list.items():
+                if ctrl_props.enabled:
+                    logger.debug(
+                        _("%s => Adding schedule for controler %s"), site, ctrl_name
+                    )
+                    jobs.add_job_schedule(
+                        job_fn=increment_download_1,
+                        args=[CTRL_DEFS[ctrl_name], cfg_crtl_list, cfg],
+                        year=ctrl_props.schedule_year,
+                        month=ctrl_props.schedule_month,
+                        day=ctrl_props.schedule_day,
+                        week=ctrl_props.schedule_week,
+                        day_of_week=ctrl_props.schedule_day_of_week,
+                        hour=ctrl_props.schedule_hour,
+                        minute=ctrl_props.schedule_minute,
+                        second=ctrl_props.schedule_second,
+                    )
+        else:
+            logger.info(_("Skipping site %s"), site)
 
-                ctrl = "observations"
-                if cfg_crtl_list[ctrl].enabled:
-                    logger.info(_("Using controler %s"), ctrl)
-                    observations = Observations(cfg, store_pg)
-                    taxo_groups = TaxoGroupsAPI(cfg).api_list()["data"]
-                    taxo_groups_ex = cfg_crtl_list[ctrl].taxo_exclude
-                    logger.info(_("Excluded taxo_groups: %s"), taxo_groups_ex)
-                    taxo_groups_filt = []
-                    for taxo in taxo_groups:
-                        if (not taxo["name_constant"] in taxo_groups_ex) and (
-                            taxo["access_mode"] != "none"
-                        ):
-                            taxo_groups_filt.append(taxo["id"])
-                    logger.info(_("Downloading from taxo_groups: %s"), taxo_groups_filt)
-                    observations.update(taxo_groups_filt)
-
-            else:
-                logger.info(_("Skipping site %s"), site)
+    # Start scheduler and wait for jobs to finish
+    jobs.start()
+    jobs.print_jobs()
+    jobs.shutdown()
 
     return None
+
+
+def status(cfg_ctrl):
+    """Print download status, using logger."""
+    logger = logging.getLogger("transfer_vn")
+    cfg_site_list = cfg_ctrl.site_list
+    cfg_site_list = cfg_ctrl.site_list
+    cfg = list(cfg_site_list.values())[0]
+    
+    logger.info(_("Download jobs status"))
+    db_url = {
+        "drivername": "postgresql+psycopg2",
+        "username": cfg.db_user,
+        "password": cfg.db_pw,
+        "host": cfg.db_host,
+        "port": cfg.db_port,
+        "database": "postgres",
+    }
+    jobs = Jobs(url=URL(**db_url), nb_executors=cfg.tuning_sched_executors)
+    jobs.start()
+    jobs.print_jobs()
+    jobs.shutdown()
 
 
 def count_observations(cfg_ctrl):
@@ -438,9 +696,17 @@ def main(args):
         logger.info(_("Performing a full download"))
         full_download(cfg_ctrl)
 
+    if args.schedule:
+        logger.info(_("Creating or modifying incremental download schedule"))
+        increment_schedule(cfg_ctrl)
+
     if args.update:
-        logger.info(_("Performing an incremental download of observations"))
+        logger.info(_("Performing an incremental download"))
         increment_download(cfg_ctrl)
+
+    if args.status:
+        logger.info(_("Printing download status"))
+        status(cfg_ctrl)
 
     if args.count:
         logger.info(_("Counting observations"))

@@ -8,35 +8,67 @@ main:
 
 # Biolovision API controlers parameters
 # Enables or disables download from each Biolovision API
-# Also provides controler specific parameters, when applicable
+# Also defines scheduling (cron-like) parameters
 controler:
     entities:
         # Enable download from this controler
         enabled: true
+        schedule:
+            day_of_week: 4
+            hour: 23
     fields:
         # Enable download from this controler
         enabled: true
+        schedule:
+            day_of_week: 4
+            hour: 23
     local_admin_units:
         # Enable download from this controler
         enabled: true
+        schedule:
+            day_of_week: 3
+            hour: 22
     observations:
         # Enable download from this controler
         enabled: true
+        # Define scheduling parameters
+        schedule:
+            year: '*'
+            month: '*'
+            day: '*'
+            week: '*'
+            day_of_week: '*'
+            hour: '*'
+            minute: 0
     observers:
         # Enable download from this controler
         enabled: true
+        schedule:
+            hour: 5
     places:
         # Enable download from this controler
         enabled: true
+        schedule:
+            day_of_week: 3
+            hour: 23
     species:
         # Enable download from this controler
         enabled: true
+        schedule:
+            day_of_week: 2
+            hour: 22
     taxo_groups:
         # Enable download from this controler
         enabled: true
+        schedule:
+            day_of_week: 2
+            hour: 22
     territorial_units:
         # Enable download from this controler
         enabled: true
+        schedule:
+            day_of_week: 3
+            hour: 22
 
 # Observations filter, to limit download scope
 filter:
@@ -140,7 +172,7 @@ database:
     # Coordinates systems for local projection, see EPSG
     db_out_proj: 2154
 
-# Tuning parameters, for expert use.
+# Optional tuning parameters, for expert use.
 tuning:
     # Max chunks in a request before aborting.
     max_chunks: 10
@@ -161,7 +193,7 @@ tuning:
     pid_setpoint: 10000
     pid_limit_min: 5
     pid_limit_max: 2000
-    pid_delta_days: 15
+    pid_delta_days: 10
     # Postgresql interface tuning parameters
     db_worker_threads: 2
     db_worker_queue: 100000
