@@ -8,31 +8,35 @@ main:
 
 # Biolovision API controlers parameters
 # Enables or disables download from each Biolovision API
-# Also defines scheduling (cron-like) parameters
+# Also defines scheduling (cron-like) parameters, in UTC
 controler:
     entities:
         # Enable download from this controler
         enabled: true
         schedule:
+            # Every Friday at 23:00 UTC
             day_of_week: 4
             hour: 23
     fields:
         # Enable download from this controler
         enabled: true
         schedule:
+            # Every Friday at 23:00 UTC
             day_of_week: 4
             hour: 23
     local_admin_units:
         # Enable download from this controler
         enabled: true
         schedule:
-            day_of_week: 3
-            hour: 22
+            # Every Monday at 05:00 UTC
+            day_of_week: 0
+            hour: 5
     observations:
         # Enable download from this controler
         enabled: true
         # Define scheduling parameters
         schedule:
+            # Every hour
             year: '*'
             month: '*'
             day: '*'
@@ -44,31 +48,36 @@ controler:
         # Enable download from this controler
         enabled: true
         schedule:
-            hour: 5
+            # Every day at 06:00 UTC
+            hour: 6
     places:
         # Enable download from this controler
         enabled: true
         schedule:
+            # Every Thursday at 23:00 UTC
             day_of_week: 3
             hour: 23
     species:
         # Enable download from this controler
         enabled: true
         schedule:
+            # Every Wednesday at 22:00 UTC
             day_of_week: 2
             hour: 22
     taxo_groups:
         # Enable download from this controler
         enabled: true
         schedule:
+            # Every Wednesday at 22:00 UTC
             day_of_week: 2
             hour: 22
     territorial_units:
         # Enable download from this controler
         enabled: true
         schedule:
+            # Every Thursday at 23:00 UTC
             day_of_week: 3
-            hour: 22
+            hour: 23
 
 # Observations filter, to limit download scope
 filter:

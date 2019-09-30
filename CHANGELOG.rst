@@ -6,9 +6,11 @@ Features
 
 - The following colums are added to forms::
 
-      observer_uid        INT,
-      date_start          DATE,
-      date_stop           DATE, (`#86 <https://framagit.org/lpo/Client_API_VN/issues/86>`_)
+      observer_uid        INT
+      date_start          DATE
+      date_stop           DATE
+
+(`#86 <https://framagit.org/lpo/Client_API_VN/issues/86>`_)
 
 
 Client-API-VN v2.4.3 (2019-08-22)
@@ -32,34 +34,35 @@ Bugfixes
   See `example query <https://framagit.org/lpo/partage-de-codes/snippets/3741>`_
   for how to use it to get STOC data.
 
-  Note: For survey datas, as G. Delaloye pointed out, protocols rights accesses must be configure in portals
-      +-----------------------------------------------+--------------------------------------------------------+
-      |                    compte                     |                         droit                          |
-      +===============================================+========================================================+
-      | utilisateur_api (utilisateur_api@mail.net/id) | Droits de gestion des données complémentaires Gypaètes |
-      +-----------------------------------------------+--------------------------------------------------------+
-      | utilisateur_api (utilisateur_api@mail.net/id) | Droit de voir toutes les observations cachées          |
-      +-----------------------------------------------+--------------------------------------------------------+
-      | utilisateur_api (utilisateur_api@mail.net/id) | Droits de faire des recherches, malgré le quota        |
-      +-----------------------------------------------+--------------------------------------------------------+
-      | utilisateur_api (utilisateur_api@mail.net/id) | Droits de gestion des observations                     |
-      +-----------------------------------------------+--------------------------------------------------------+
-      | utilisateur_api (utilisateur_api@mail.net/id) | Droits d'administration                                |
-      +-----------------------------------------------+--------------------------------------------------------+
-      | utilisateur_api (utilisateur_api@mail.net/id) | Accès admin Wetlands                                   |
-      +-----------------------------------------------+--------------------------------------------------------+
-      | utilisateur_api (utilisateur_api@mail.net/id) | Accès aux comptes utilisateurs tiers via l'API         |
-      +-----------------------------------------------+--------------------------------------------------------+
-      | utilisateur_api (utilisateur_api@mail.net/id) | Accès admin comptage protocolé                         |
-      +-----------------------------------------------+--------------------------------------------------------+
-      | utilisateur_api (utilisateur_api@mail.net/id) | Accès admin STOC Montagne                              |
-      +-----------------------------------------------+--------------------------------------------------------+
-      | utilisateur_api (utilisateur_api@mail.net/id) | Accès admin STOC Sites                                 |
-      +-----------------------------------------------+--------------------------------------------------------+
-      | utilisateur_api (utilisateur_api@mail.net/id) | Accès admin SHOC                                       |
-      +-----------------------------------------------+--------------------------------------------------------+
-      | utilisateur_api (utilisateur_api@mail.net/id) | Accès admin STOC EPS                                   |
-      +-----------------------------------------------+--------------------------------------------------------+
+  Note: For survey datas, as G. Delaloye pointed out, protocols rights accesses
+  must be configured in portals:
+  +-----------------+--------------------------------------------------------+
+  |    compte       |                         droit                          |
+  +=================+========================================================+
+  | utilisateur_api | Droits de gestion des données complémentaires Gypaètes |
+  +-----------------+--------------------------------------------------------+
+  | utilisateur_api | Droit de voir toutes les observations cachées          |
+  +-----------------+--------------------------------------------------------+
+  | utilisateur_api | Droits de faire des recherches, malgré le quota        |
+  +-----------------+--------------------------------------------------------+
+  | utilisateur_api | Droits de gestion des observations                     |
+  +-----------------+--------------------------------------------------------+
+  | utilisateur_api | Droits d'administration                                |
+  +-----------------+--------------------------------------------------------+
+  | utilisateur_api | Accès admin Wetlands                                   |
+  +-----------------+--------------------------------------------------------+
+  | utilisateur_api | Accès aux comptes utilisateurs tiers via l'API         |
+  +-----------------+--------------------------------------------------------+
+  | utilisateur_api | Accès admin comptage protocolé                         |
+  +-----------------+--------------------------------------------------------+
+  | utilisateur_api | Accès admin STOC Montagne                              |
+  +-----------------+--------------------------------------------------------+
+  | utilisateur_api | Accès admin STOC Sites                                 |
+  +-----------------+--------------------------------------------------------+
+  | utilisateur_api | Accès admin SHOC                                       |
+  +-----------------+--------------------------------------------------------+
+  | utilisateur_api | Accès admin STOC EPS                                   |
+  +-----------------+--------------------------------------------------------+
 
 Client-API-VN v2.4.2 (2019-08-20)
 =================================
@@ -95,9 +98,9 @@ Features
 
   NOTE: if your YAML configuration file contains a ``[tuning]`` section,
   please modify ``db_worker_threads: 2``. (`#71 <https://framagit.org/lpo/Client_API_VN/issues/71>`_)
-- For sites with a large number of observations per day, the minimum was too large,
-  leading to chunks exceeding 10 000 observations. Large chunk size reduce parallel
-  processing between client and server.
+- For sites with a large number of observations per day, the minimum was too
+  large, leading to chunks exceeding 10 000 observations. Large chunk size
+  reduce parallel processing between client and server.
   The minimum is now 5 days by default.
 
   NOTE: if your YAML configuration file contains a ``[tuning]`` section,
@@ -132,7 +135,8 @@ Features
 
 - Several performance enhancements:
 
-  - projection to local coordinates is much faster, reducing processing time by at least a factor of 6
+  - projection to local coordinates is much faster, reducing processing
+    time by at least a factor of 6
 
   - forms are only processed once, at the first observation of the form. (`#56 <https://framagit.org/lpo/Client_API_VN/issues/56>`_)
 
@@ -171,7 +175,7 @@ Features
 - Added --init option, that creates a draft YAML configuration file.
   This file then needs to be edited before use. (`#37 <https://framagit.org/lpo/Client_API_VN/issues/37>`_)
 - The comment in download_log table is improved, displaying more information about observations download progress. (`#53 <https://framagit.org/lpo/Client_API_VN/issues/53>`_)
-- Number of concurrent database insert/update and queue size are parameters 
+- Number of concurrent database insert/update and queue size are parameters
   in YAML file, ``[tuning]`` section:
 
   .. code-block:: yaml
@@ -196,7 +200,7 @@ Features
 --------
 
 - HMAC encoding key is defined by YAML parameter db_secret_key (`#50 <https://framagit.org/lpo/Client_API_VN/issues/50>`_)
-- A new field is added to src_vn.observers to anonymize observers: 
+- A new field is added to src_vn.observers to anonymize observers:
    pseudo_observer_uid. It should be used for data exchance to respect
    user privacy. It is encoded by HMAC, using db_secret_key token. (`#51 <https://framagit.org/lpo/Client_API_VN/issues/51>`_)
 
@@ -217,7 +221,7 @@ Features
   The new YAML configuration parameter `db_out_proj` selects the
   EPGS system for coordinate transformation. It defaults to 2154 (Lambert 93).
   Local coordinates are available in columns coord_x_local and coord_y_local.
-  
+
   (`#22 <https://framagit.org/lpo/Client_API_VN/issues/22>`_)
 
 - Forms are now available in the forms_json and forms tables.
@@ -252,16 +256,16 @@ Features
   +-------------------+-----------------+
   | protocol          | VARCHAR(100000) |
   +-------------------+-----------------+
-  
+
   (`#28 <https://framagit.org/lpo/Client_API_VN/issues/28>`_)
 
 - Added parameters to YAML configuration file.
   See also Issue #43 and #44 for new or changed parameters.
 
-  In ``database:`` section, the followng parameter defines the 
-  geographic projection (EPGS code) used to create 
+  In ``database:`` section, the followng parameter defines the
+  geographic projection (EPGS code) used to create
   ``coord_x_local`` and ``coord_y_local``.
- 
+
   Optional parameters are added in a new ``tuning:`` section, for expert use:
 
   .. code-block:: yaml
@@ -289,14 +293,15 @@ Features
         pid_limit_max: 2000
         pid_delta_days: 15
 
-  Deprecated ``local:`` section and parameters must be removed. 
+  Deprecated ``local:`` section and parameters must be removed.
   An error is raised if not.
 
   (`#33 <https://framagit.org/lpo/Client_API_VN/issues/33>`_)
 
 - UUID are not (re)created during columns tables creation.
   For observations, they are in a separate uui_xref table. They can be
-  obtained by joining observations and uui_xref on (site=site and id=id_sighing)
+  obtained by joining observations and uui_xref on
+  (site=site and id=id_sighing).
 
   They are dropped for other tables.
 
@@ -342,7 +347,7 @@ Features
   +--------------+---------------+
   | mandatory    | VARCHAR(500)  |
   +--------------+---------------+
-  | name         | VARCHAR(1000) | 
+  | name         | VARCHAR(1000) |
   +--------------+---------------+
 
   (`#43 <https://framagit.org/lpo/Client_API_VN/issues/43>`_)
@@ -395,18 +400,18 @@ Bugfixes
   +--------------+---------------------------------+
 
   The following parameters are not available in observations table and
-  need to be fetched from observers table. 
-  
+  need to be fetched from observers table.
+
   (`#41 <https://framagit.org/lpo/Client_API_VN/issues/41>`_)
 
 - Incorrect parameters name in YAML configuration file.
   Replace:
   - taxo_group by taxo_groups
-  - territorial_unit by territorial_units 
-  
+  - territorial_unit by territorial_units
+
   (`#44 <https://framagit.org/lpo/Client_API_VN/issues/44>`_)
 
-- update_date is extracted correctly and does raise an exception. 
+- update_date is extracted correctly and does raise an exception.
 
   (`#49 <https://framagit.org/lpo/Client_API_VN/issues/49>`_)
 
@@ -441,7 +446,8 @@ Client-API-VN 2.2.1 (2019-05-09)
 Features
 --------
 
-- Starting with this version, the application is packaged and disributed in PyPI. 
-  Seehttps://pypi.org/project/Client-API-VN/ for more information.
+- Starting with this version, the application is packaged and distributed
+  in PyPI.
+  See https://pypi.org/project/Client-API-VN/ for more information.
 
   transfer_vn is now available as a shell script. (`#29 <https://framagit.org/lpo/Client_API_VN/issues/29>`_)
