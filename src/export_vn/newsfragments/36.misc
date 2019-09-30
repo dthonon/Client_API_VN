@@ -1,2 +1,0 @@
-Improved test coverage by calling some transfer_vn functions in test_transfer_vn.py.
-Also corrected some test assertions error for site=t38.

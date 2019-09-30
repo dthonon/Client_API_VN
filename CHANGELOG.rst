@@ -1,3 +1,168 @@
+Client-API-VN v2.5.0 (2019-10-01)
+=================================
+
+Features
+--------
+
+- Major change on incremental (and full) download.
+  All controlers can now be downloaded on a regular basis.
+  See README for more information on download process.
+
+  YAML configuration file must be updated to define download
+  schedule for all controlers. A typical example is given below:
+
+    .. code-block:: yaml
+
+      # Biolovision API controlers parameters
+      # Enables or disables download from each Biolovision API
+      # Also defines scheduling (cron-like) parameters, in UTC
+      controler:
+          entities:
+              # Enable download from this controler
+              enabled: true
+              schedule:
+                  # Every Friday at 23:00 UTC
+                  day_of_week: 4
+                  hour: 23
+          fields:
+              # Enable download from this controler
+              enabled: true
+              schedule:
+                  # Every Friday at 23:00 UTC
+                  day_of_week: 4
+                  hour: 23
+          local_admin_units:
+              # Enable download from this controler
+              enabled: true
+              schedule:
+                  # Every Monday at 05:00 UTC
+                  day_of_week: 0
+                  hour: 5
+          observations:
+              # Enable download from this controler
+              enabled: true
+              # Define scheduling parameters
+              schedule:
+                  # Every hour
+                  year: '*'
+                  month: '*'
+                  day: '*'
+                  week: '*'
+                  day_of_week: '*'
+                  hour: '*'
+                  minute: 0
+          observers:
+              # Enable download from this controler
+              enabled: true
+              schedule:
+                  # Every day at 06:00 UTC
+                  hour: 6
+          places:
+              # Enable download from this controler
+              enabled: true
+              schedule:
+                  # Every Thursday at 23:00 UTC
+                  day_of_week: 3
+                  hour: 23
+          species:
+              # Enable download from this controler
+              enabled: true
+              schedule:
+                  # Every Wednesday at 22:00 UTC
+                  day_of_week: 2
+                  hour: 22
+          taxo_groups:
+              # Enable download from this controler
+              enabled: true
+              schedule:
+                  # Every Wednesday at 22:00 UTC
+                  day_of_week: 2
+                  hour: 22
+          territorial_units:
+              # Enable download from this controler
+              enabled: true
+              schedule:
+                  # Every Thursday at 23:00 UTC
+                  day_of_week: 3
+                  hour: 23
+
+  (`#24 <https://framagit.org/lpo/Client_API_VN/issues/24>`_)
+
+- When using --update option, observations create or update are
+  grouped in a single API call. This should improve performances.
+  download_log table now contains one row for each group of updates. (`#76 <https://framagit.org/lpo/Client_API_VN/issues/76>`_)
+- For developers: biolovision_api.py moved to an independant module.
+  Replace ``from export_vn.biolovision_api import ...`` by ``from biolovision.api import ...`` (`#88 <https://framagit.org/lpo/Client_API_VN/issues/88>`_)
+- In case of parsing error in YAML configuration file,
+  the error message is printed without traceback. (`#89 <https://framagit.org/lpo/Client_API_VN/issues/89>`_)
+- A new ``filter:`` section is added to YAML configuration file.
+  ``taxo_exclude:`` list needs to be moved to this new section.
+
+  To limit full download to a time interval, you can add:
+
+  - ``start_date``, optional date of first observation.
+    If omitted, start with earliest data.
+  - ``end_date``, optional date of last observation.
+    If omitted, start with latest data.
+
+  Date format is YYYY-MM-DD.
+
+  For example:
+
+    .. code-block:: yaml
+
+      # Observations filter, to limit download scope
+      filter:
+          # List of taxo_groups to exclude from download
+          # Uncommment taxo_groups to disable download
+          taxo_exclude:
+              #- TAXO_GROUP_BIRD
+              #- TAXO_GROUP_BAT
+              #- TAXO_GROUP_MAMMAL
+              - TAXO_GROUP_SEA_MAMMAL
+              #- TAXO_GROUP_REPTILIAN
+              #- TAXO_GROUP_AMPHIBIAN
+              #- TAXO_GROUP_ODONATA
+              #- TAXO_GROUP_BUTTERFLY
+              #- TAXO_GROUP_MOTH
+              #- TAXO_GROUP_ORTHOPTERA
+              #- TAXO_GROUP_HYMENOPTERA
+              #- TAXO_GROUP_ORCHIDACEAE
+              #- TAXO_GROUP_TRASH
+              #- TAXO_GROUP_EPHEMEROPTERA
+              #- TAXO_GROUP_PLECOPTERA
+              #- TAXO_GROUP_MANTODEA
+              #- TAXO_GROUP_AUCHENORRHYNCHA
+              #- TAXO_GROUP_HETEROPTERA
+              #- TAXO_GROUP_COLEOPTERA
+              #- TAXO_GROUP_NEVROPTERA
+              #- TAXO_GROUP_TRICHOPTERA
+              #- TAXO_GROUP_MECOPTERA
+              #- TAXO_GROUP_DIPTERA
+              #- TAXO_GROUP_PHASMATODEA
+              #- TAXO_GROUP_ARACHNIDA
+              #- TAXO_GROUP_SCORPIONES
+              #- TAXO_GROUP_FISH
+              #- TAXO_GROUP_MALACOSTRACA
+              #- TAXO_GROUP_GASTROPODA
+              #- TAXO_GROUP_BIVALVIA
+              #- TAXO_GROUP_BRANCHIOPODA
+              - TAXO_GROUP_ALIEN_PLANTS
+          # Use short (recommended) or long JSON data
+          # json_format: short
+          # Optional start and end dates
+          # start_date: 2019-09-01
+          # end_date: 2019-08-01
+
+  (`#93 <https://framagit.org/lpo/Client_API_VN/issues/93>`_)
+
+
+Misc
+----
+
+- `#36 <https://framagit.org/lpo/Client_API_VN/issues/36>`_, `#84 <https://framagit.org/lpo/Client_API_VN/issues/84>`_
+
+
 Client-API-VN v2.4.4 (2019-08-22)
 =================================
 
