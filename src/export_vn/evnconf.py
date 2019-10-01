@@ -8,11 +8,14 @@ parameters are then available as properties of EvnCtrlConf and EvnSiteConf.
 
 """
 import logging
+import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, cast
 
 from strictyaml import (
     Bool,
+    Datetime,
     Email,
     Enum,
     Float,
@@ -51,23 +54,167 @@ _ConfSchema = Map(
         "main": Map({"admin_mail": Email()}),
         "controler": Map(
             {
-                "entities": Map({"enabled": Bool()}),
-                "fields": Map({"enabled": Bool()}),
-                "local_admin_units": Map({"enabled": Bool()}),
+                "entities": Map(
+                    {
+                        "enabled": Bool(),
+                        "schedule": Map(
+                            {
+                                Optional("year"): Str(),
+                                Optional("month"): Str(),
+                                Optional("day"): Str(),
+                                Optional("week"): Str(),
+                                Optional("day_of_week"): Str(),
+                                Optional("hour"): Str(),
+                                Optional("minute"): Str(),
+                                Optional("second"): Str(),
+                            }
+                        ),
+                    }
+                ),
+                "fields": Map(
+                    {
+                        "enabled": Bool(),
+                        "schedule": Map(
+                            {
+                                Optional("year"): Str(),
+                                Optional("month"): Str(),
+                                Optional("day"): Str(),
+                                Optional("week"): Str(),
+                                Optional("day_of_week"): Str(),
+                                Optional("hour"): Str(),
+                                Optional("minute"): Str(),
+                                Optional("second"): Str(),
+                            }
+                        ),
+                    }
+                ),
+                "local_admin_units": Map(
+                    {
+                        "enabled": Bool(),
+                        "schedule": Map(
+                            {
+                                Optional("year"): Str(),
+                                Optional("month"): Str(),
+                                Optional("day"): Str(),
+                                Optional("week"): Str(),
+                                Optional("day_of_week"): Str(),
+                                Optional("hour"): Str(),
+                                Optional("minute"): Str(),
+                                Optional("second"): Str(),
+                            }
+                        ),
+                    }
+                ),
                 "observations": Map(
                     {
                         "enabled": Bool(),
-                        Optional("json_format", default="short"): Enum(
-                            ["short", "long"]
+                        "schedule": Map(
+                            {
+                                Optional("year"): Str(),
+                                Optional("month"): Str(),
+                                Optional("day"): Str(),
+                                Optional("week"): Str(),
+                                Optional("day_of_week"): Str(),
+                                Optional("hour"): Str(),
+                                Optional("minute"): Str(),
+                                Optional("second"): Str(),
+                            }
                         ),
-                        "taxo_exclude": Seq(Str()),
                     }
                 ),
-                "observers": Map({"enabled": Bool()}),
-                "places": Map({"enabled": Bool()}),
-                "species": Map({"enabled": Bool()}),
-                "taxo_groups": Map({"enabled": Bool()}),
-                "territorial_units": Map({"enabled": Bool()}),
+                "observers": Map(
+                    {
+                        "enabled": Bool(),
+                        "schedule": Map(
+                            {
+                                Optional("year"): Str(),
+                                Optional("month"): Str(),
+                                Optional("day"): Str(),
+                                Optional("week"): Str(),
+                                Optional("day_of_week"): Str(),
+                                Optional("hour"): Str(),
+                                Optional("minute"): Str(),
+                                Optional("second"): Str(),
+                            }
+                        ),
+                    }
+                ),
+                "places": Map(
+                    {
+                        "enabled": Bool(),
+                        "schedule": Map(
+                            {
+                                Optional("year"): Str(),
+                                Optional("month"): Str(),
+                                Optional("day"): Str(),
+                                Optional("week"): Str(),
+                                Optional("day_of_week"): Str(),
+                                Optional("hour"): Str(),
+                                Optional("minute"): Str(),
+                                Optional("second"): Str(),
+                            }
+                        ),
+                    }
+                ),
+                "species": Map(
+                    {
+                        "enabled": Bool(),
+                        "schedule": Map(
+                            {
+                                Optional("year"): Str(),
+                                Optional("month"): Str(),
+                                Optional("day"): Str(),
+                                Optional("week"): Str(),
+                                Optional("day_of_week"): Str(),
+                                Optional("hour"): Str(),
+                                Optional("minute"): Str(),
+                                Optional("second"): Str(),
+                            }
+                        ),
+                    }
+                ),
+                "taxo_groups": Map(
+                    {
+                        "enabled": Bool(),
+                        "schedule": Map(
+                            {
+                                Optional("year"): Str(),
+                                Optional("month"): Str(),
+                                Optional("day"): Str(),
+                                Optional("week"): Str(),
+                                Optional("day_of_week"): Str(),
+                                Optional("hour"): Str(),
+                                Optional("minute"): Str(),
+                                Optional("second"): Str(),
+                            }
+                        ),
+                    }
+                ),
+                "territorial_units": Map(
+                    {
+                        "enabled": Bool(),
+                        "schedule": Map(
+                            {
+                                Optional("year"): Str(),
+                                Optional("month"): Str(),
+                                Optional("day"): Str(),
+                                Optional("week"): Str(),
+                                Optional("day_of_week"): Str(),
+                                Optional("hour"): Str(),
+                                Optional("minute"): Str(),
+                                Optional("second"): Str(),
+                            }
+                        ),
+                    }
+                ),
+            }
+        ),
+        Optional("filter"): Map(
+            {
+                Optional("taxo_exclude"): Seq(Str()),
+                Optional("json_format", default="short"): Enum(["short", "long"]),
+                Optional("start_date"): Datetime(),
+                Optional("end_date"): Datetime(),
             }
         ),
         "site": MapPattern(
@@ -105,7 +252,6 @@ _ConfSchema = Map(
                 Optional("max_requests", default=0): Int(),
                 Optional("retry_delay", default=5): Int(),
                 Optional("lru_maxsize", default=32): Int(),
-                Optional("min_year", default=1901): Int(),
                 Optional("pid_kp", default=0.0): Float(),
                 Optional("pid_ki", default=0.003): Float(),
                 Optional("pid_kd", default=0.0): Float(),
@@ -115,6 +261,7 @@ _ConfSchema = Map(
                 Optional("pid_delta_days", default=15): Int(),
                 Optional("db_worker_threads", default=2): Int(),
                 Optional("db_worker_queue", default=100000): Int(),
+                Optional("sched_executors", default=1): Int(),
             }
         ),
     }
@@ -125,16 +272,50 @@ class EvnCtrlConf:
     """Expose controler configuration as properties.
     """
 
+    @staticmethod
+    def _schedule_param(cfg: Dict, param: str) -> str:
+        return (
+            None
+            if ("schedule" not in cfg)
+            else None
+            if (param not in cfg["schedule"])
+            else cfg["schedule"][param]
+        )
+
     def __init__(self, ctrl: str, config: _CtrlType) -> None:
         self._ctrl = ctrl
 
         # Import parameters in properties
-        self._enabled = True
-        if "enabled" in config["controler"][ctrl]:
-            self._enabled = config["controler"][ctrl]["enabled"]
-        self._taxo_exclude = []  # type: List[str]
-        if "taxo_exclude" in config["controler"][ctrl]:
-            self._taxo_exclude = config["controler"][ctrl]["taxo_exclude"]
+        self._enabled = (
+            True
+            if "enabled" not in config["controler"][ctrl]
+            else config["controler"][ctrl]["enabled"]
+        )  # type: bool
+
+        self._schedule_year = self._schedule_param(
+            config["controler"][ctrl], "year"
+        )  # type: str
+        self._schedule_month = self._schedule_param(
+            config["controler"][ctrl], "month"
+        )  # type: str
+        self._schedule_day = self._schedule_param(
+            config["controler"][ctrl], "day"
+        )  # type: str
+        self._schedule_week = self._schedule_param(
+            config["controler"][ctrl], "week"
+        )  # type: str
+        self._schedule_day_of_week = self._schedule_param(
+            config["controler"][ctrl], "day_of_week"
+        )  # type: str
+        self._schedule_hour = self._schedule_param(
+            config["controler"][ctrl], "hour"
+        )  # type: str
+        self._schedule_minute = self._schedule_param(
+            config["controler"][ctrl], "minute"
+        )  # type: str
+        self._schedule_second = self._schedule_param(
+            config["controler"][ctrl], "second"
+        )  # type: str
 
     @property
     def enabled(self) -> bool:
@@ -142,9 +323,44 @@ class EvnCtrlConf:
         return self._enabled
 
     @property
-    def taxo_exclude(self) -> List[str]:
-        """Return list of taxo_groups excluded from download."""
-        return self._taxo_exclude
+    def schedule_year(self) -> int:
+        """Return scheduling parameter."""
+        return self._schedule_year
+
+    @property
+    def schedule_month(self) -> int:
+        """Return scheduling parameter."""
+        return self._schedule_month
+
+    @property
+    def schedule_day(self) -> int:
+        """Return scheduling parameter."""
+        return self._schedule_day
+
+    @property
+    def schedule_week(self) -> int:
+        """Return scheduling parameter."""
+        return self._schedule_week
+
+    @property
+    def schedule_day_of_week(self) -> int:
+        """Return scheduling parameter."""
+        return self._schedule_day_of_week
+
+    @property
+    def schedule_hour(self) -> int:
+        """Return scheduling parameter."""
+        return self._schedule_hour
+
+    @property
+    def schedule_minute(self) -> int:
+        """Return scheduling parameter."""
+        return self._schedule_minute
+
+    @property
+    def schedule_second(self) -> int:
+        """Return scheduling parameter."""
+        return self._schedule_second
 
 
 class EvnSiteConf:
@@ -155,20 +371,39 @@ class EvnSiteConf:
         self._site = site
         # Import parameters in properties
         try:
-            self._enabled = True
-            if "enabled" in config["site"][site]:
-                self._enabled = config["site"][site]["enabled"]
+            self._enabled = (
+                True
+                if "enabled" not in config["site"][site]
+                else config["site"][site]["enabled"]
+            )
             self._client_key = config["site"][site]["client_key"]  # type: str
             self._client_secret = config["site"][site]["client_secret"]  # type: str
             self._user_email = config["site"][site]["user_email"]  # type: str
             self._user_pw = config["site"][site]["user_pw"]  # type: str
             self._base_url = config["site"][site]["site"]  # type: str
 
-            self._file_enabled = False
-            self._file_store = ""
+            self._taxo_exclude = []  # type: List[str]
+            self._json_format = "short"  # type: str
+            self._start_date = None  # type: datetime
+            self._end_date = None  # type: datetime
+            if "filter" in config:
+                if "taxo_exclude" in config["filter"]:
+                    self._taxo_exclude = config["filter"]["taxo_exclude"]
+                if "json_format" in config["filter"]:
+                    self._json_format = config["filter"]["json_format"]
+                if "start_date" in config["filter"]:
+                    self._start_date = config["filter"]["start_date"]
+                if "end_date" in config["filter"]:
+                    self._end_date = config["filter"]["end_date"]
+
+            self._file_enabled = False  # type: bool
+            self._file_store = ""  # type: str
             if "file" in config:
-                if "enabled" in config["file"]:
-                    self._file_enabled = config["file"]["enabled"]
+                self._file_enabled = (
+                    False
+                    if "enabled" not in config["file"]
+                    else config["file"]["enabled"]
+                )
                 if self._file_enabled:
                     if "file_store" in config["file"]:
                         self._file_store = (
@@ -195,7 +430,6 @@ class EvnSiteConf:
                 self._max_requests = config["tuning"]["max_requests"]  # type: int
                 self._retry_delay = config["tuning"]["retry_delay"]  # type: int
                 self._lru_maxsize = config["tuning"]["lru_maxsize"]  # type: int
-                self._min_year = config["tuning"]["min_year"]  # type: int
                 self._pid_kp = config["tuning"]["pid_kp"]  # type: float
                 self._pid_ki = config["tuning"]["pid_ki"]  # type: float
                 self._pid_kd = config["tuning"]["pid_kd"]  # type: float
@@ -203,8 +437,11 @@ class EvnSiteConf:
                 self._pid_limit_min = config["tuning"]["pid_limit_min"]  # type: float
                 self._pid_limit_max = config["tuning"]["pid_limit_max"]  # type: float
                 self._pid_delta_days = config["tuning"]["pid_delta_days"]  # type: int
-                self._db_worker_threads = config["tuning"]["db_worker_threads"]  # type: int
+                self._db_worker_threads = config["tuning"][
+                    "db_worker_threads"
+                ]  # type: int
                 self._db_worker_queue = config["tuning"]["db_worker_queue"]  # type: int
+                self._sched_executors = config["tuning"]["sched_executors"]  # type: int
             else:
                 # Provide default values
                 self._max_chunks = 10  # type: int
@@ -212,18 +449,18 @@ class EvnSiteConf:
                 self._max_requests = 0  # type: int
                 self._retry_delay = 5  # type: int
                 self._lru_maxsize = 32  # type: int
-                self._min_year = 1901  # type: int
                 self._pid_kp = 0.0  # type: float
                 self._pid_ki = 0.003  # type: float
                 self._pid_kd = 0.0  # type: float
                 self._pid_setpoint = 10000  # type: float
-                self._pid_limit_min = 5  # type: float
+                self._pid_limit_min = 1  # type: float
                 self._pid_limit_max = 2000  # type: float
                 self._pid_delta_days = 15  # type: int
                 self._db_worker_threads = 2  # type:int
                 self._db_worker_queue = 100000  # type:int
+                self._sched_executors = 1  # type:int
 
-        except Exception as e:
+        except Exception:  # pragma: no cover
             logger.exception(_("Error creating %s configuration"), site)
             raise
         return None
@@ -263,6 +500,26 @@ class EvnSiteConf:
         """Return base URL of VisioNature site,
         used as prefix for API calls."""
         return self._base_url
+
+    @property
+    def taxo_exclude(self) -> List[str]:
+        """Return list of taxo_groups excluded from download."""
+        return self._taxo_exclude
+
+    @property
+    def json_format(self) -> str:
+        """Return json format (short/long) for download."""
+        return self._json_format
+
+    @property
+    def start_date(self) -> datetime:
+        """Return earliest date for download."""
+        return self._start_date
+
+    @property
+    def end_date(self) -> datetime:
+        """Return latest date for download."""
+        return self._end_date
 
     @property
     def file_enabled(self) -> bool:
@@ -351,11 +608,6 @@ class EvnSiteConf:
         return self._lru_maxsize
 
     @property
-    def tuning_min_year(self) -> int:
-        """Return tuning parameter."""
-        return self._min_year
-
-    @property
     def tuning_pid_kp(self) -> float:
         """Return tuning parameter."""
         return self._pid_kp
@@ -400,6 +652,11 @@ class EvnSiteConf:
         """Return tuning parameter."""
         return self._db_worker_queue
 
+    @property
+    def tuning_sched_executors(self) -> int:
+        """Return tuning parameter."""
+        return self._sched_executors
+
 
 class EvnConf:
     """
@@ -414,10 +671,13 @@ class EvnConf:
         try:
             logger.info(_("Loading YAML configuration %s"), file)
             self._config = load(yaml_text, _ConfSchema).data
-        except YAMLValidationError as error:
-            logger.exception(_("Incorrect content in YAML configuration %s"), file)
-        except YAMLError as error:
-            logger.exception(_("Error while reading YAML configuration %s"), file)
+        except YAMLValidationError:
+            logger.critical(_("Incorrect content in YAML configuration %s"), file)
+            logger.critical(_("%s"), sys.exc_info()[1])
+            raise
+        except YAMLError:  # pragma: no cover
+            logger.critical(_("Error while reading YAML configuration %s"), file)
+            raise
 
         self._ctrl_list = {}  # type: _CtrlType
         for ctrl in self._config["controler"]:

@@ -1,6 +1,7 @@
 """
 Test each API call of biolovision_api module.
 """
+import json
 import logging
 import time
 from datetime import datetime, timedelta
@@ -9,7 +10,7 @@ from pathlib import Path
 import pytest
 import requests
 
-from export_vn.biolovision_api import (
+from biolovision.api import (
     EntitiesAPI,
     FieldsAPI,
     LocalAdminUnitsAPI,
@@ -56,7 +57,12 @@ def test_entities_get():
     """Get an entity."""
     entity = ENTITIES_API.api_get("2")
     assert ENTITIES_API.transfer_errors == 0
-    assert entity["data"][0]["short_name"] == "LPO 07"
+    if SITE == "t38":
+        entity["data"][0]["short_name"] == "LPO ISERE"
+    elif SITE == "t07":
+        entity["data"][0]["short_name"] == "LPO 07"
+    else:
+        assert False
 
 
 def test_entities_list():
@@ -88,13 +94,13 @@ def test_fields_list():
 # ------------------------------------
 #  Local admin units controler methods
 # ------------------------------------
-def test_controler(capsys):
+def test_controler():
     """Check controler name."""
     ctrl = LOCAL_ADMIN_UNITS_API.controler
     assert ctrl == "local_admin_units"
 
 
-def test_local_admin_units_get(capsys):
+def test_local_admin_units_get():
     """Get a single local admin unit."""
     if SITE == "t38":
         a = "14693"
@@ -102,7 +108,7 @@ def test_local_admin_units_get(capsys):
         a = "2096"
     else:
         assert False
-    logging.debug("Getting local admin unit #s", a)
+    logging.debug("Getting local admin unit %s", a)
     local_admin_unit = LOCAL_ADMIN_UNITS_API.api_get(a)
     assert LOCAL_ADMIN_UNITS_API.transfer_errors == 0
     if SITE == "t38":
@@ -133,14 +139,11 @@ def test_local_admin_units_get(capsys):
         }
 
 
-def test_local_admin_units_list_all(capsys):
+def test_local_admin_units_list_all():
     """Get list of all local admin units."""
     logging.debug("Getting all local admin unit")
     local_admin_units_list = LOCAL_ADMIN_UNITS_API.api_list()
-    with capsys.disabled():
-        logging.debug(
-            "Received %d local admin units", len(local_admin_units_list["data"])
-        )
+    logging.debug("Received %d local admin units", len(local_admin_units_list["data"]))
     assert LOCAL_ADMIN_UNITS_API.transfer_errors == 0
     if SITE == "t38":
         assert len(local_admin_units_list["data"]) >= 534
@@ -148,7 +151,7 @@ def test_local_admin_units_list_all(capsys):
         assert len(local_admin_units_list["data"]) >= 340
 
 
-def test_local_admin_units_list_1(capsys):
+def test_local_admin_units_list_1():
     """Get a list of local_admin_units from territorial unit 39 (Isère)."""
     if SITE == "t38":
         logging.debug("Getting local admin unit from {id_canton: 39}")
@@ -160,12 +163,11 @@ def test_local_admin_units_list_1(capsys):
         local_admin_units_list = LOCAL_ADMIN_UNITS_API.api_list(
             opt_params={"id_canton": "07"}
         )
-    with capsys.disabled():
-        logging.debug(
-            "territorial unit ==> {} local admin unit ".format(
-                len(local_admin_units_list["data"])
-            )
+    logging.debug(
+        "territorial unit ==> {} local admin unit ".format(
+            len(local_admin_units_list["data"])
         )
+    )
     assert LOCAL_ADMIN_UNITS_API.transfer_errors == 0
     if SITE == "t38":
         assert len(local_admin_units_list["data"]) >= 534
@@ -178,11 +180,10 @@ def test_local_admin_units_list_1(capsys):
 # ------------------------------
 # Observations controler methods
 # ------------------------------
-def test_observations_diff(capsys):
+def test_observations_diff():
     """Get list of diffs from last day."""
     since = (datetime.now() - timedelta(days=1)).strftime("%H:%M:%S %d.%m.%Y")
-    with capsys.disabled():
-        logging.debug("Getting updates since {}".format(since))
+    logging.debug("Getting updates since {}".format(since))
     diff = OBSERVATIONS_API.api_diff("1", since)
     assert OBSERVATIONS_API.transfer_errors == 0
     assert len(diff) > 0
@@ -192,7 +193,7 @@ def test_observations_diff(capsys):
     assert OBSERVATIONS_API.transfer_errors == 0
 
 
-def test_observations_list_1(capsys):
+def test_observations_list_1():
     """Get the list of sightings, from taxo_group 18: Mantodea."""
     list = OBSERVATIONS_API.api_list("18")
     assert OBSERVATIONS_API.transfer_errors == 0
@@ -200,64 +201,59 @@ def test_observations_list_1(capsys):
 
 
 @pytest.mark.slow
-def test_observations_list_2_1(capsys):
+def test_observations_list_2_1():
     """Get the list of sightings, from taxo_group 1, specie 518."""
-    file_json = (
-        str(Path.home()) + "/" + CFG.file_store + "test_observations_list_2_1.json.gz"
+    file_json = Path.home() / CFG.file_store / "test_observations_list_2_1.json.gz"
+    if file_json.is_file():
+        file_json.unlink()
+    list = OBSERVATIONS_API.api_list("1", id_species="518", short_version="1")
+    logging.debug(
+        "local test_observations_list_3_0 unit {} sightings/forms ".format(len(list))
     )
-    if Path(file_json).is_file():
-        Path(file_json).unlink()
-    with capsys.disabled():
-        list = OBSERVATIONS_API.api_list("1", id_species="518", short_version="1")
-        logging.debug(
-            "local test_observations_list_3_0 unit {} sightings/forms ".format(
-                len(list)
-            )
-        )
     assert OBSERVATIONS_API.transfer_errors == 0
     assert len(list) > 0
     STORE_FILE.store("test_observations_list_2", str(1), list)
+    assert file_json.is_file()
 
 
-def test_observations_list_3_0(capsys):
+def test_observations_list_3_0():
     """Get the list of sightings, from taxo_group 1, specie 382."""
-    file_json = (
-        str(Path.home()) + "/" + CFG.file_store + "test_observations_list_3_0.json.gz"
+    file_json = Path.home() / CFG.file_store / "test_observations_list_3_0.json.gz"
+    if file_json.is_file():
+        file_json.unlink()
+    list = OBSERVATIONS_API.api_list("1", id_species="382")
+    logging.debug(
+        "local test_observations_list_3_0 unit {} sightings/forms ".format(len(list))
     )
-    if Path(file_json).is_file():
-        Path(file_json).unlink()
-    with capsys.disabled():
-        list = OBSERVATIONS_API.api_list("1", id_species="382")
-        logging.debug(
-            "local test_observations_list_3_0 unit {} sightings/forms ".format(
-                len(list)
-            )
-        )
     assert OBSERVATIONS_API.transfer_errors == 0
     assert len(list) > 0
     STORE_FILE.store("test_observations_list_3", str(0), list)
+    assert file_json.is_file()
 
 
-def test_observations_list_3_1(capsys):
+def test_observations_list_3_1():
     """Get the list of sightings, from taxo_group 1, specie 382."""
-    file_json = (
-        str(Path.home()) + "/" + CFG.file_store + "test_observations_list_3_1.json.gz"
+    file_json = Path.home() / CFG.file_store / "test_observations_list_3_1.json.gz"
+    if file_json.is_file():
+        file_json.unlink()
+    list = OBSERVATIONS_API.api_list("1", id_species="382", short_version="1")
+    logging.debug(
+        "local test_observations_list_3_0 unit {} sightings/forms ".format(len(list))
     )
-    if Path(file_json).is_file():
-        Path(file_json).unlink()
-    with capsys.disabled():
-        list = OBSERVATIONS_API.api_list("1", id_species="382", short_version="1")
-        logging.debug(
-            "local test_observations_list_3_0 unit {} sightings/forms ".format(
-                len(list)
-            )
-        )
     assert OBSERVATIONS_API.transfer_errors == 0
     assert len(list) > 0
     STORE_FILE.store("test_observations_list_3", str(1), list)
 
 
-def test_observations_get(capsys):
+def test_observations_list_list():
+    """Get the list of sightings, from taxo_group 1 523219."""
+    list = OBSERVATIONS_API.api_list(
+        "1", id_sightings_list="523219,523550", short_version="1"
+    )
+    logging.debug(json.dumps(list, sort_keys=True, indent=4))
+
+
+def test_observations_get():
     """Get a specific sighting."""
     if SITE == "t38":
         sighting = OBSERVATIONS_API.api_get("2246086")
@@ -276,7 +272,7 @@ def test_observations_get(capsys):
                             "coord_lon": "5.735372035327",
                             "@id": "100197",
                             "loc_precision": "0",
-                            "place_type": "precise",
+                            "place_type": "place",
                         },
                         "date": {
                             "@notime": "1",
@@ -314,10 +310,10 @@ def test_observations_get(capsys):
                                         "path": "http://media.biolovision.net/data.biolovision.net/2018-09",  # noqa: E501
                                         "insert_date": {
                                             "@notime": "0",
-                                            "@offset": "3600",
-                                            "@ISO8601": "1970-01-01T01:33:38+01:00",
-                                            "@timestamp": "2018",
-                                            "#text": "jeudi 1 janvier 1970, 01:33:38",
+                                            "@offset": "7200",
+                                            "@ISO8601": "2018-09-15T19:45:01+02:00",
+                                            "@timestamp": "1537033501",
+                                            "#text": "samedi 15 septembre 2018, 19:45:01",  # noqa: E501
                                         },
                                         "metadata": "",
                                         "type": "PHOTO",
@@ -415,7 +411,7 @@ def test_observations_get(capsys):
                             "loc_precision": "0",
                             "municipality": "Vallon-Pont-d'Arc",
                             "name": "Rapide des Trois Eaux",
-                            "place_type": "precise",
+                            "place_type": "place",
                         },
                         "species": {
                             "@id": "19703",
@@ -431,7 +427,130 @@ def test_observations_get(capsys):
         }
 
 
-def test_observations_search_1(capsys):
+def test_observations_get_short():
+    """Get a specific sighting."""
+    if SITE == "t38":
+        sighting = OBSERVATIONS_API.api_get("2246086", short_version="1")
+        assert sighting == {
+            "data": {
+                "sightings": [
+                    {
+                        "date": {
+                            "@notime": "1",
+                            "@offset": "7200",
+                            "@timestamp": "1536962400",
+                        },
+                        "observers": [
+                            {
+                                "estimation_code": "MINIMUM",
+                                "count": "15",
+                                "id_sighting": "2246086",
+                                "insert_date": "1537033501",
+                                "medias": [
+                                    {
+                                        "media_is_hidden": "0",
+                                        "filename": "3_1537024802877-15194452-5272.jpg",
+                                        "path": "http://media.biolovision.net/data.biolovision.net/2018-09",  # noqa: E501
+                                        "insert_date": "1537033501",
+                                        "type": "PHOTO",
+                                        "@id": "49174",
+                                    }
+                                ],
+                                "@uid": "11675",
+                                "precision": "precise",
+                                "id_universal": "65_71846872",
+                                "traid": "33",
+                                "timing": {
+                                    "@notime": "0",
+                                    "@offset": "7200",
+                                    "@timestamp": "1537024756",
+                                },
+                                "altitude": "215",
+                                "source": "WEB",
+                                "coord_lat": "45.18724",
+                                "flight_number": "1",
+                                "coord_lon": "5.735458",
+                                "@id": "33",
+                                "version": "0",
+                            }
+                        ],
+                        "place": {
+                            "@id": "100197",
+                            "id_universal": "65_71846872",
+                            "lat": "45.187677239404",
+                            "lon": "5.735372035327",
+                            "loc_precision": "0",
+                            "name": "Museum (Parc du Museum)",
+                            "place_type": "place",
+                        },
+                        "species": {
+                            "@id": "86",
+                            "rarity": "verycommon",
+                            "taxonomy": "1",
+                        },
+                    }
+                ]
+            }
+        }
+    if SITE == "t07":
+        sighting = OBSERVATIONS_API.api_get("274830", short_version="1")
+        assert sighting == {
+            "data": {
+                "sightings": [
+                    {
+                        "date": {
+                            "@notime": "1",
+                            "@offset": "7200",
+                            "@timestamp": "1430258400",
+                        },
+                        "observers": [
+                            {
+                                "@id": "104",
+                                "@uid": "4040",
+                                "altitude": "99",
+                                "comment": "juv",
+                                "coord_lat": "44.373198",
+                                "coord_lon": "4.428607",
+                                "count": "1",
+                                "estimation_code": "MINIMUM",
+                                "flight_number": "1",
+                                "hidden_comment": "RNNGA",
+                                "id_sighting": "274830",
+                                "id_universal": "30_274830",
+                                "insert_date": "1446413437",
+                                "precision": "precise",
+                                "source": "WEB",
+                                "timing": {
+                                    "@notime": "1",
+                                    "@offset": "7200",
+                                    "@timestamp": "1430258400",
+                                },
+                                "traid": "104",
+                                "update_date": "1522080083",
+                                "version": "0",
+                            }
+                        ],
+                        "place": {
+                            "@id": "122870",
+                            "id_universal": "30_274830",
+                            "lat": "44.371928319497",
+                            "lon": "4.4273367833997",
+                            "loc_precision": "0",
+                            "name": "Rapide des Trois Eaux",
+                            "place_type": "place",
+                        },
+                        "species": {
+                            "@id": "19703",
+                            "rarity": "unusual",
+                            "taxonomy": "18",
+                        },
+                    }
+                ]
+            }
+        }
+
+
+def test_observations_search_1():
     """Query sightings, from taxo_group 18: Mantodea and date range."""
     q_param = {
         "period_choice": "range",
@@ -450,7 +569,7 @@ def test_observations_search_1(capsys):
         assert False
 
 
-def test_observations_search_2(capsys):
+def test_observations_search_2():
     """Query sightings, from taxo_group 18: Mantodea and date range."""
     q_param = {
         "period_choice": "range",
@@ -472,7 +591,7 @@ def test_observations_search_2(capsys):
 # ----------------------------
 #  Observers controler methods
 # ----------------------------
-def test_observers_get(capsys):
+def test_observers_get():
     """Get a single observer."""
     if SITE == "t38":
         o = "33"
@@ -480,148 +599,57 @@ def test_observers_get(capsys):
         o = "1084"
     else:
         assert False
-    logging.debug("Getting observer #s", o)
+    logging.debug("Getting observer %s", o)
     observer = OBSERVERS_API.api_get(o)
     assert OBSERVERS_API.transfer_errors == 0
-    if SITE == "t38":
-        assert observer == {
-            "data": [
-                {
-                    "anonymous": "0",
-                    "archive_account": "0",
-                    "atlas_list": "16",
-                    "birth_year": "1959",
-                    "bypass_purchase": "0",
-                    "collectif": "0",
-                    "debug_file_upload": "0",
-                    "default_hidden": "0",
-                    "display_order": "DATE_PLACE_SPECIES",
-                    "email": "d.thonon9@gmail.com",
-                    "external_id": "0",
-                    "has_search_access": "0",
-                    "hide_email": "0",
-                    "id": "1084",
-                    "id_entity": "1",
-                    "id_universal": "11675",
-                    "item_per_page_gallery": "12",
-                    "item_per_page_obs": "20",
-                    "langu": "fr",
-                    "last_inserted_data": {
-                        "#text": "mardi 1 novembre 2016, 17:03:06",
-                        "@ISO8601": "2016-11-01T17:03:06+01:00",
-                        "@notime": "0",
-                        "@offset": "3600",
-                        "@timestamp": "1478016186",
-                    },
-                    "last_login": {
-                        "#text": "dimanche 6 janvier 2019, 21:32:23",
-                        "@ISO8601": "2019-01-06T21:32:23+01:00",
-                        "@notime": "0",
-                        "@offset": "3600",
-                        "@timestamp": "1546806743",
-                    },
-                    "lat": "44.7221149943671",
-                    "lon": "4.59373711385036",
-                    "mobile_phone": "0675291894",
-                    "mobile_use_form": "0",
-                    "mobile_use_mortality": "0",
-                    "mobile_use_protocol": "0",
-                    "mobile_use_trace": "0",
-                    "municipality": "Meylan",
-                    "name": "Thonon",
-                    "number": "",
-                    "photo": "",
-                    "postcode": "38240",
-                    "presentation": "",
-                    "private_phone": "09 53 74 56 59",
-                    "private_website": "",
-                    "registration_date": {
-                        "#text": "vendredi 1 mai 2015",
-                        "@ISO8601": "2015-05-01T19:11:31+02:00",
-                        "@notime": "1",
-                        "@offset": "7200",
-                        "@timestamp": "1430500291",
-                    },
-                    "show_precise": "0",
-                    "species_order": "ALPHA",
-                    "street": "13, Av. du Vercors",
-                    "surname": "Daniel",
-                    "use_latin_search": "N",
-                    "work_phone": "",
-                }
-            ]
-        }
-    elif SITE == "t07":
-        assert observer == {
-            "data": [
-                {
-                    "anonymous": "0",
-                    "archive_account": "0",
-                    "atlas_list": "16",
-                    "birth_year": "1959",
-                    "bypass_purchase": "0",
-                    "collectif": "0",
-                    "debug_file_upload": "0",
-                    "default_hidden": "0",
-                    "display_order": "DATE_PLACE_SPECIES",
-                    "email": "d.thonon9@gmail.com",
-                    "external_id": "0",
-                    "has_search_access": "0",
-                    "hide_email": "0",
-                    "id": "1084",
-                    "id_entity": "1",
-                    "id_universal": "11675",
-                    "item_per_page_gallery": "12",
-                    "item_per_page_obs": "20",
-                    "langu": "fr",
-                    "last_inserted_data": {
-                        "#text": "mardi 1 novembre 2016, 17:03:06",
-                        "@ISO8601": "2016-11-01T17:03:06+01:00",
-                        "@notime": "0",
-                        "@offset": "3600",
-                        "@timestamp": "1478016186",
-                    },
-                    "last_login": {
-                        "#text": "dimanche 6 janvier 2019, 21:32:23",
-                        "@ISO8601": "2019-01-06T21:32:23+01:00",
-                        "@notime": "0",
-                        "@offset": "3600",
-                        "@timestamp": "1546806743",
-                    },
-                    "lat": "44.7221149943671",
-                    "lon": "4.59373711385036",
-                    "mobile_phone": "0675291894",
-                    "mobile_use_form": "0",
-                    "mobile_use_mortality": "0",
-                    "mobile_use_protocol": "0",
-                    "mobile_use_trace": "0",
-                    "municipality": "Meylan",
-                    "name": "Thonon",
-                    "number": "",
-                    "photo": "",
-                    "postcode": "38240",
-                    "presentation": "",
-                    "private_phone": "09 53 74 56 59",
-                    "private_website": "",
-                    "registration_date": {
-                        "#text": "vendredi 1 mai 2015",
-                        "@ISO8601": "2015-05-01T19:11:31+02:00",
-                        "@notime": "1",
-                        "@offset": "7200",
-                        "@timestamp": "1430500291",
-                    },
-                    "show_precise": "0",
-                    "species_order": "ALPHA",
-                    "street": "13, Av. du Vercors",
-                    "surname": "Daniel",
-                    "use_latin_search": "N",
-                    "work_phone": "",
-                }
-            ]
-        }
+    assert observer["data"][0]["id_universal"] == "11675"
+    assert observer["data"][0]["email"] == "d.thonon9@gmail.com"
+    assert "anonymous" in observer["data"][0]
+    assert "archive_account" in observer["data"][0]
+    assert "atlas_list" in observer["data"][0]
+    assert "birth_year" in observer["data"][0]
+    assert "bypass_purchase" in observer["data"][0]
+    assert "collectif" in observer["data"][0]
+    assert "debug_file_upload" in observer["data"][0]
+    assert "default_hidden" in observer["data"][0]
+    assert "display_order" in observer["data"][0]
+    assert "email" in observer["data"][0]
+    assert "external_id" in observer["data"][0]
+    assert "has_search_access" in observer["data"][0]
+    assert "hide_email" in observer["data"][0]
+    assert "id" in observer["data"][0]
+    assert "id_entity" in observer["data"][0]
+    assert "id_universal" in observer["data"][0]
+    assert "item_per_page_gallery" in observer["data"][0]
+    assert "item_per_page_obs" in observer["data"][0]
+    assert "langu" in observer["data"][0]
+    assert "last_inserted_data" in observer["data"][0]
+    assert "last_login" in observer["data"][0]
+    assert "lat" in observer["data"][0]
+    assert "lon" in observer["data"][0]
+    assert "mobile_phone" in observer["data"][0]
+    assert "mobile_use_form" in observer["data"][0]
+    assert "mobile_use_mortality" in observer["data"][0]
+    assert "mobile_use_protocol" in observer["data"][0]
+    assert "mobile_use_trace" in observer["data"][0]
+    assert "municipality" in observer["data"][0]
+    assert "name" in observer["data"][0]
+    assert "number" in observer["data"][0]
+    assert "photo" in observer["data"][0]
+    assert "postcode" in observer["data"][0]
+    assert "presentation" in observer["data"][0]
+    assert "private_phone" in observer["data"][0]
+    assert "private_website" in observer["data"][0]
+    assert "registration_date" in observer["data"][0]
+    assert "show_precise" in observer["data"][0]
+    assert "species_order" in observer["data"][0]
+    assert "street" in observer["data"][0]
+    assert "surname" in observer["data"][0]
+    assert "use_latin_search" in observer["data"][0]
+    assert "work_phone" in observer["data"][0]
 
 
-def test_observers_list_all(capsys):
+def test_observers_list_all():
     """Get list of all observers."""
     observers_list = OBSERVERS_API.api_list()
     logging.debug("Received %d observers", len(observers_list["data"]))
@@ -630,14 +658,33 @@ def test_observers_list_all(capsys):
         assert len(observers_list["data"]) >= 4500
         assert observers_list["data"][0]["name"] == "Biolovision"
     elif SITE == "t07":
-        assert len(observers_list["data"]) >= 2400
+        assert len(observers_list["data"]) >= 2500
+        assert observers_list["data"][0]["name"] == "Biolovision"
+
+
+def test_observers_list_diff():
+    """Get list of all observers."""
+    observers_list = OBSERVERS_API.api_list(
+        optional_headers={
+            "If-Modified-Since": datetime(2019, 2, 1).strftime(
+                "%a, %d %b %Y %H:%M:%S GMT"
+            )
+        }
+    )
+    logging.debug("Received %d observers", len(observers_list["data"]))
+    assert OBSERVERS_API.transfer_errors == 0
+    if SITE == "t38":
+        assert len(observers_list["data"]) >= 4500
+        assert observers_list["data"][0]["name"] == "Biolovision"
+    elif SITE == "t07":
+        assert len(observers_list["data"]) >= 2500
         assert observers_list["data"][0]["name"] == "Biolovision"
 
 
 # -------------------------
 #  Places controler methods
 # -------------------------
-def test_places_get(capsys):
+def test_places_get():
     """Get a single place."""
     if SITE == "t38":
         p = "14693"
@@ -645,7 +692,7 @@ def test_places_get(capsys):
         p = "100694"
     else:
         assert False
-    logging.debug("Getting place #s", p)
+    logging.debug("Getting place %s", p)
     place = PLACES_API.api_get(p)
     assert PLACES_API.transfer_errors == 0
     if SITE == "t38":
@@ -687,7 +734,7 @@ def test_places_get(capsys):
 
 
 @pytest.mark.slow
-def test_places_list_all(capsys):
+def test_places_list_all():
     """Get list of all places."""
     places_list = PLACES_API.api_list()
     logging.debug("Received %d places", len(places_list["data"]))
@@ -700,7 +747,20 @@ def test_places_list_all(capsys):
         assert places_list["data"][0]["name"] == "Accons - sans lieu-dit défini"
 
 
-def test_places_list_1(capsys):
+def test_places_list_diff():
+    """Get list of all places."""
+    places_list = PLACES_API.api_list(
+        optional_headers={
+            "If-Modified-Since": datetime(2019, 2, 1).strftime(
+                "%a, %d %b %Y %H:%M:%S GMT"
+            )
+        }
+    )
+    logging.debug("Received %d places", len(places_list["data"]))
+    assert PLACES_API.transfer_errors == 0
+
+
+def test_places_list_1():
     """Get a list of places from a single local admin unit."""
     if SITE == "t38":
         place = "14693"
@@ -708,11 +768,10 @@ def test_places_list_1(capsys):
         place = "2096"
     else:
         assert False
-    with capsys.disabled():
-        places_list = PLACES_API.api_list({"id_commune": place})
-        logging.debug(
-            "local admin unit {} ==> {} place ".format(place, len(places_list["data"]))
-        )
+    places_list = PLACES_API.api_list({"id_commune": place})
+    logging.debug(
+        "local admin unit {} ==> {} place ".format(place, len(places_list["data"]))
+    )
     assert PLACES_API.transfer_errors == 0
     if SITE == "t38":
         assert len(places_list["data"]) >= 164
@@ -727,16 +786,16 @@ def test_places_list_1(capsys):
 # -------------------------
 # Species controler methods
 # -------------------------
-def test_species_get(capsys):
+def test_species_get():
     """Get a single specie."""
-    logging.debug("Getting species from taxo_group #s", "2")
+    logging.debug("Getting species from taxo_group %s", "2")
     specie = SPECIES_API.api_get("2")
     assert SPECIES_API.transfer_errors == 0
     assert specie["data"][0]["french_name"] == "Plongeon arctique"
 
 
 @pytest.mark.slow
-def test_species_list_all(capsys):
+def test_species_list_all():
     """Get list of all species."""
     species_list = SPECIES_API.api_list()
     logging.debug("Received %d species", len(species_list["data"]))
@@ -744,26 +803,39 @@ def test_species_list_all(capsys):
     assert len(species_list["data"]) >= 38820
 
 
-def test_species_list_1(capsys):
+def test_species_list_1():
     """Get a list of species from taxo_group 1."""
     species_list = SPECIES_API.api_list({"id_taxo_group": "1"})
-    with capsys.disabled():
-        logging.debug("Taxo_group 1 ==> {} species".format(len(species_list["data"])))
+    logging.debug("Taxo_group 1 ==> {} species".format(len(species_list["data"])))
     assert SPECIES_API.transfer_errors == 0
     assert len(species_list["data"]) >= 11150
     assert species_list["data"][0]["french_name"] == "Plongeon catmarin"
 
 
-def test_species_list_30(capsys):
+def test_species_list_30():
     """Get a list of species from taxo_group 30."""
     species_list = SPECIES_API.api_list({"id_taxo_group": "30"})
-    with capsys.disabled():
-        logging.debug("Taxo_group 30 ==> {} species".format(len(species_list["data"])))
+    logging.debug("Taxo_group 30 ==> {} species".format(len(species_list["data"])))
     assert SPECIES_API.transfer_errors == 0
     assert species_list["data"][0]["french_name"] == "Aucune espèce"
 
 
-def test_species_list_error(capsys):
+def test_species_list_30_diff():
+    """Get a list of updated species from taxo_group 30."""
+    species_list = SPECIES_API.api_list(
+        {"id_taxo_group": "30"},
+        optional_headers={
+            "If-Modified-Since": datetime(2019, 2, 1).strftime(
+                "%a, %d %b %Y %H:%M:%S GMT"
+            )
+        },
+        # optional_headers={"If-Modified-Since": "Sun, 01 Sep 2019 00:00:00 GMT"},
+    )
+    logging.debug("Taxo_group 30 ==> {} species".format(len(species_list["data"])))
+    assert SPECIES_API.transfer_errors == 0
+
+
+def test_species_list_error():
     """Get a list of species from taxo_group 1, limited to 1 chunk."""
     with pytest.raises(MaxChunksError) as excinfo:  # noqa: F841
         species_list = SPECIES_API_ERR.api_list({"id_taxo_group": "1"})  # noqa: F841

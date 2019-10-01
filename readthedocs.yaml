@@ -21,4 +21,5 @@ python:
             - SQLAlchemy
             - tabulate
             - xmltodict
-
+            - yappi
+            

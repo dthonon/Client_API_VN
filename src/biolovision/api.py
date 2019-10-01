@@ -147,7 +147,15 @@ class BiolovisionAPI:
     # ----------------
     # Internal methods
     # ----------------
-    def _url_get(self, params, scope, method="GET", body=None):
+    @staticmethod
+    def _clean_params(params: dict):
+        """Remove sensitive data from param dict."""
+        c_params = params.copy()
+        c_params["user_email"] = "***"
+        c_params["user_pw"] = "***"
+        return c_params
+
+    def _url_get(self, params, scope, method="GET", body=None, optional_headers=None):
         """Internal function used to request from Biolovision API.
 
         Prepare the URL header, perform HTTP request and get json content.
@@ -156,7 +164,7 @@ class BiolovisionAPI:
 
         Parameters
         ----------
-        params : dict of 'parameter name': 'parameter value'.
+        params : dict of 'parameter name': 'parameter value'
             params is used to build URL GET string.
         scope : str
             scope is the api to be queried, for example 'taxo_groups/'.
@@ -164,6 +172,8 @@ class BiolovisionAPI:
             HTTP method to use: GET/POST/DELETE/PUT. Default to GET
         body : str
             Optional body for POST or PUT
+        optional_headers : dict
+            Optional body for request
 
         Returns
         -------
@@ -189,6 +199,8 @@ class BiolovisionAPI:
             payload = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
             logger.debug(_("Params: %s"), payload)
             headers = {"Content-Type": "application/json;charset=UTF-8"}
+            if optional_headers is not None:
+                headers.update(optional_headers)
             protected_url = self._api_url + scope
             if method == "GET":
                 resp = requests.get(
@@ -236,7 +248,8 @@ class BiolovisionAPI:
                 try:
                     resp_chunk = resp.json()
                 except Exception:
-                    # Error during JSON decoding => Logging error and no further processing of empty chunk
+                    # Error during JSON decoding =>
+                    # Logging error and no further processing of empty chunk
                     resp_chunk = json.loads("{}")
                     logger.error(_("Incorrect response content: %s"), resp.text)
                     logger.exception(_("Exception raised during JSON decoding"))
@@ -331,7 +344,7 @@ class BiolovisionAPI:
 
         return data_rec
 
-    def _api_list(self, opt_params=None):
+    def _api_list(self, opt_params=None, optional_headers=None):
         """Query for a list of entities of the given controler.
 
         Calls /ctrl API.
@@ -339,7 +352,10 @@ class BiolovisionAPI:
         Parameters
         ----------
         opt_params : HashableDict (to enable lru_cache)
-            optional URL parameters, empty by default. See Biolovision API documentation.
+            optional URL parameters, empty by default.
+            See Biolovision API documentation.
+        optional_headers : dict
+            Optional body for GET request
 
         Returns
         -------
@@ -353,9 +369,16 @@ class BiolovisionAPI:
         }
         if opt_params is not None:
             params.update(opt_params)
-        logger.debug(_("List from %s, with option %s"), self._ctrl, params)
+        logger.debug(
+            _("List from:%s, with options:%s, optional_headers:%s"),
+            self._ctrl,
+            self._clean_params(params),
+            optional_headers,
+        )
         # GET from API
-        entities = self._url_get(params, self._ctrl)["data"]
+        entities = self._url_get(params, self._ctrl, optional_headers=optional_headers)[
+            "data"
+        ]
         logger.debug(_("Number of entities = %i"), len(entities))
         return {"data": entities}
 
@@ -373,7 +396,8 @@ class BiolovisionAPI:
         id_entity : str
             entity to retrieve.
         **kwargs :
-            optional URL parameters, empty by default. See Biolovision API documentation.
+            optional URL parameters, empty by default.
+            See Biolovision API documentation.
 
         Returns
         -------
@@ -387,11 +411,15 @@ class BiolovisionAPI:
         }
         for key, value in kwargs.items():
             params[key] = value
-        logger.debug(_("In api_get, with parameters %s"), params)
+        logger.debug(
+            _("In api_get for controler:%s, with parameters:%s"),
+            id_entity,
+            self._clean_params(params),
+        )
         # GET from API
         return self._url_get(params, self._ctrl + "/" + str(id_entity))
 
-    def api_list(self, opt_params=None):
+    def api_list(self, opt_params=None, optional_headers=None):
         """Query for a list of entities of the given controler.
 
         Calls /ctrl API.
@@ -399,18 +427,19 @@ class BiolovisionAPI:
         Parameters
         ----------
         opt_params : dict
-            optional URL parameters, empty by default. See Biolovision API documentation.
+            optional URL parameters, empty by default.
+            See Biolovision API documentation.
+        optional_headers : dict
+            Optional body for GET request
 
         Returns
         -------
         json : dict or None
             dict decoded from json if status OK, else None
         """
-        if opt_params is None:
-            lst = self._api_list()
-        else:
-            lst = self._api_list(HashableDict(opt_params))
-        return lst
+        h_params = None if opt_params is None else HashableDict(opt_params)
+        h_headers = None if optional_headers is None else HashableDict(optional_headers)
+        return self._api_list(opt_params=h_params, optional_headers=h_headers)
 
     # -------------------------
     # Exception testing methods
@@ -494,7 +523,8 @@ class ObservationsAPI(BiolovisionAPI):
         id_taxo_group : integer
             taxo_group to query for observations
         **kwargs :
-            optional URL parameters, empty by default. See Biolovision API documentation.
+            optional URL parameters, empty by default.
+            See Biolovision API documentation.
 
         Returns
         -------
@@ -557,7 +587,8 @@ class ObservationsAPI(BiolovisionAPI):
         json : dict or None
             dict decoded from json if status OK, else None
         **kwargs :
-            optional URL parameters, empty by default. See Biolovision API documentation.
+            optional URL parameters, empty by default.
+            See Biolovision API documentation.
         """
         # Mandatory parameters.
         params = {
@@ -572,7 +603,10 @@ class ObservationsAPI(BiolovisionAPI):
         else:
             raise IncorrectParameter
         logger.debug(
-            _("Search from %s, with option %s and body %s"), self._ctrl, params, body
+            _("Search from %s, with option %s and body %s"),
+            self._ctrl,
+            self._clean_params(params),
+            body,
         )
         # GET from API
         return super()._url_get(params, "observations/search/", "POST", body)

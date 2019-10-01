@@ -13,7 +13,7 @@ Properties
 import logging
 import queue
 import threading
-from datetime import datetime
+from datetime import datetime, date
 from uuid import uuid4
 
 from pyproj import Transformer
@@ -983,9 +983,14 @@ class StorePostgresql:
                     id_form_universal = None
                 for (k, v) in items_dict["data"]["forms"][f].items():
                     if k == "sightings":
+                        dates = []
                         nb_s = len(v)
                         logger.debug("Storing %d observations in form %d", nb_s, f)
                         for i in range(0, nb_s):
+                            # Find max and min dates
+                            dates.append(
+                                date.fromtimestamp(int(v[i]["date"]["@timestamp"]))
+                            )
                             # Create UUID
                             self._store_uuid(
                                 v[i]["observers"][0]["id_sighting"],
@@ -1001,6 +1006,11 @@ class StorePostgresql:
                             )
                             self._observations_queue.put(obs)
                             nb_obs += 1
+                        # Add presumed start and stop date from observations
+                        forms_data["date_start"] = min(dates).isoformat()
+                        forms_data["date_stop"] = max(dates).isoformat()
+                        # Add presumed observer from first observation
+                        forms_data["@uid"] = v[0]["observers"][0]["@uid"]
                     else:
                         # Put anything except sightings in forms data
                         forms_data[k] = v
@@ -1033,9 +1043,8 @@ class StorePostgresql:
 
         # Loop on data array to store each element to database
         logger.info(
-            _("Storing observers %d items from %s of site %s"),
+            _("Storing %d observers from site %s"),
             len(items_dict["data"]),
-            controler,
             self._config.site,
         )
         metadata = self._table_defs[controler]["metadata"]
