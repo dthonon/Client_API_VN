@@ -21,7 +21,9 @@ from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED, EVENT_JOB_SU
 from apscheduler.executors.pool import ProcessPoolExecutor
 from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+from apscheduler.schedulers import SchedulerNotRunningError
 from apscheduler.schedulers.background import BackgroundScheduler
+
 from bs4 import BeautifulSoup
 from export_vn.download_vn import (
     Entities,
@@ -107,6 +109,16 @@ class Jobs:
             self._listener, EVENT_JOB_SUBMITTED | EVENT_JOB_EXECUTED | EVENT_JOB_ERROR
         )
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        logger.info("Shutting down scheduler in __atexit__, if still running")
+        try:
+            self._scheduler.shutdown(wait=False)
+        except SchedulerNotRunningError:
+            pass
+
     def start(self):
         logger.debug("Starting scheduler")
         self._scheduler.start()
@@ -177,7 +189,10 @@ class Jobs:
 
     def shutdown(self):
         logger.info("Shutting down scheduler")
-        self._scheduler.shutdown()
+        try:
+            self._scheduler.shutdown()
+        except SchedulerNotRunningError:
+            pass
 
     def print_jobs(self):
         jobs = self._scheduler.get_jobs()
@@ -371,46 +386,49 @@ def full_download(cfg_ctrl):
         "port": cfg.db_port,
         "database": "postgres",
     }
-    jobs = Jobs(url=URL(**db_url), nb_executors=cfg.tuning_sched_executors)
-    jobs.remove_all_jobs()
-    jobs.print_jobs()
-    # Download field only once
-    jobs.add_job_once(job_fn=full_download_1, args=[Fields, cfg_crtl_list, cfg])
-    # Looping on sites for other controlers
-    for site, cfg in cfg_site_list.items():
-        if cfg.enabled:
-            logger.info(_("Scheduling work for site %s"), cfg.site)
-            jobs.add_job_once(
-                job_fn=full_download_1, args=[TaxoGroup, cfg_crtl_list, cfg]
-            )
-            jobs.add_job_once(
-                job_fn=full_download_1, args=[Entities, cfg_crtl_list, cfg]
-            )
-            jobs.add_job_once(
-                job_fn=full_download_1, args=[TerritorialUnits, cfg_crtl_list, cfg]
-            )
-            jobs.add_job_once(
-                job_fn=full_download_1, args=[LocalAdminUnits, cfg_crtl_list, cfg]
-            )
-            jobs.add_job_once(job_fn=full_download_1, args=[Places, cfg_crtl_list, cfg])
-            jobs.add_job_once(
-                job_fn=full_download_1, args=[Species, cfg_crtl_list, cfg]
-            )
-            jobs.add_job_once(
-                job_fn=full_download_1, args=[Observers, cfg_crtl_list, cfg]
-            )
-            jobs.add_job_once(
-                job_fn=full_download_1, args=[Observations, cfg_crtl_list, cfg]
-            )
-        else:
-            logger.info(_("Skipping site %s"), site)
+    jobs_o = Jobs(url=URL(**db_url), nb_executors=cfg.tuning_sched_executors)
+    with jobs_o as jobs:
+        jobs.remove_all_jobs()
+        jobs.print_jobs()
+        # Download field only once
+        jobs.add_job_once(job_fn=full_download_1, args=[Fields, cfg_crtl_list, cfg])
+        # Looping on sites for other controlers
+        for site, cfg in cfg_site_list.items():
+            if cfg.enabled:
+                logger.info(_("Scheduling work for site %s"), cfg.site)
+                jobs.add_job_once(
+                    job_fn=full_download_1, args=[TaxoGroup, cfg_crtl_list, cfg]
+                )
+                jobs.add_job_once(
+                    job_fn=full_download_1, args=[Entities, cfg_crtl_list, cfg]
+                )
+                jobs.add_job_once(
+                    job_fn=full_download_1, args=[TerritorialUnits, cfg_crtl_list, cfg]
+                )
+                jobs.add_job_once(
+                    job_fn=full_download_1, args=[LocalAdminUnits, cfg_crtl_list, cfg]
+                )
+                jobs.add_job_once(
+                    job_fn=full_download_1, args=[Places, cfg_crtl_list, cfg]
+                )
+                jobs.add_job_once(
+                    job_fn=full_download_1, args=[Species, cfg_crtl_list, cfg]
+                )
+                jobs.add_job_once(
+                    job_fn=full_download_1, args=[Observers, cfg_crtl_list, cfg]
+                )
+                jobs.add_job_once(
+                    job_fn=full_download_1, args=[Observations, cfg_crtl_list, cfg]
+                )
+            else:
+                logger.info(_("Skipping site %s"), site)
 
-    # Start scheduler and wait for jobs to finish
-    jobs.start()
-    time.sleep(1)
-    while jobs.count_jobs() > 0:
+        # Start scheduler and wait for jobs to finish
+        jobs.start()
         time.sleep(1)
-    jobs.shutdown()
+        while jobs.count_jobs() > 0:
+            time.sleep(1)
+        jobs.shutdown()
 
     return None
 
@@ -455,14 +473,15 @@ def increment_download(cfg_ctrl):
         "port": cfg.db_port,
         "database": "postgres",
     }
-    jobs = Jobs(url=URL(**db_url), nb_executors=cfg.tuning_sched_executors)
 
-    # Start scheduler and wait for jobs to finish
-    jobs.start()
-    time.sleep(1)
-    while jobs.count_jobs() > 0:
+    jobs_o = Jobs(url=URL(**db_url), nb_executors=cfg.tuning_sched_executors)
+    with jobs_o as jobs:
+        # Start scheduler and wait for jobs to finish
+        jobs.start()
         time.sleep(1)
-    jobs.shutdown()
+        while jobs.count_jobs() > 0:
+            time.sleep(1)
+        jobs.shutdown()
 
     return None
 
@@ -523,7 +542,7 @@ def status(cfg_ctrl):
     cfg_site_list = cfg_ctrl.site_list
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
-    
+
     logger.info(_("Download jobs status"))
     db_url = {
         "drivername": "postgresql+psycopg2",

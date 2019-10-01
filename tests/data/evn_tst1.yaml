@@ -204,3 +204,5 @@ tuning:
     # Postgresql DB tuning parameters
     db_worker_threads: 2
     db_worker_queue: 100000
+    # Scheduler tuning parameters
+    sched_executors: 2
