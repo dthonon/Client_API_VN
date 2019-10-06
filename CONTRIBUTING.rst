@@ -116,3 +116,9 @@ Upload to pypi::
 
     twine upload dist/*
 
+Building docker localy
+----------------------
+
+To build a local container::
+
+    docker build --tag client-api-vn - < Dockerfile
