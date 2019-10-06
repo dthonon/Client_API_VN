@@ -1,3 +1,13 @@
+Client-API-VN v2.5.2 (2019-10-06)
+=================================
+
+Features
+--------
+
+- Application is now available as docker container.
+  See README for installation instructions. (`#95 <https://framagit.org/lpo/Client_API_VN/issues/95>`_)
+
+
 Client-API-VN v2.5.0 (2019-10-01)
 =================================
 
