@@ -14,6 +14,12 @@ Description
 Getting Started
 ---------------
 
+Installation - Python
+---------------------
+
+These instructions present the steps required to install the
+Python application.
+
 Create a python virtual environment, activate it and update basic tools::
 
     python3 -m venv VN_env
@@ -23,6 +29,23 @@ Create a python virtual environment, activate it and update basic tools::
 Install from PyPI::
 
     pip install Client-API-VN
+
+Installation - Docker
+---------------------
+
+These instructions present the steps required to install the
+Docker application.
+
+    docker run --name xfer_vn \
+               --mount source=xfer_vn,target=/root \
+               --workdir /root \
+               --tty --interactive \
+               client-api-vn bash
+
+Getting Started - Common
+------------------------
+
+The following steps are the common to both Python and Docker installation.
 
 Initialize the sample YAML file in your HOME directory and edit with
 your local details. The YAML file is self documented::
@@ -55,6 +78,7 @@ Once this is done, you can update the database with new observations::
 
 Note: this script should run hourly or dayly in a cron job.
 It must run at least every week.
+
 
 Prerequisites
 -------------
