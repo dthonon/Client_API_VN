@@ -34,13 +34,14 @@ Installation - Docker
 ---------------------
 
 These instructions present the steps required to install the
-Docker application.
+Docker application::
 
+    docker pull dthonon/client-api-vn
     docker run --name xfer_vn \
                --mount source=xfer_vn,target=/root \
                --workdir /root \
                --tty --interactive \
-               client-api-vn bash
+               dthonon/client-api-vn bash
 
 Getting Started - Common
 ------------------------
