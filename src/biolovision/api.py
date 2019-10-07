@@ -63,6 +63,7 @@ import time
 import urllib
 from functools import lru_cache
 
+from typing import Dict, List
 import requests
 from requests_oauthlib import OAuth1
 
@@ -193,7 +194,7 @@ class BiolovisionAPI:
         while nb_chunks < self._limits["max_chunks"]:
             # Remove DEBUG logging level to avoid too many details
             level = logging.getLogger().level
-            logging.getLogger().setLevel(logging.INFO)
+            # logging.getLogger().setLevel(logging.INFO)
 
             # Prepare call to API
             payload = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
@@ -208,6 +209,14 @@ class BiolovisionAPI:
                 )
             elif method == "POST":
                 resp = requests.post(
+                    url=protected_url,
+                    auth=self._oauth,
+                    params=payload,
+                    headers=headers,
+                    data=body,
+                )
+            elif method == "PUT":
+                resp = requests.put(
                     url=protected_url,
                     auth=self._oauth,
                     params=payload,
@@ -244,23 +253,27 @@ class BiolovisionAPI:
                     )
                     raise HTTPError(resp.status_code)
             else:
-                # No error from request: processing response
-                try:
-                    resp_chunk = resp.json()
-                except Exception:
-                    # Error during JSON decoding =>
-                    # Logging error and no further processing of empty chunk
+                # No error from request: processing response if needed
+                if method == "PUT":
+                    # No response expected
                     resp_chunk = json.loads("{}")
-                    logger.error(_("Incorrect response content: %s"), resp.text)
-                    logger.exception(_("Exception raised during JSON decoding"))
-                    self._transfer_errors += 1
-                    if self._transfer_errors > self._limits["max_retry"]:
-                        # Too many retries. Raising exception
-                        logger.critical(
-                            _("Too many error %s, raising exception"),
-                            self._transfer_errors,
-                        )
-                        raise HTTPError("resp.json exception")
+                else:
+                    try:
+                        resp_chunk = resp.json()
+                    except Exception:
+                        # Error during JSON decoding =>
+                        # Logging error and no further processing of empty chunk
+                        resp_chunk = json.loads("{}")
+                        logger.error(_("Incorrect response content: %s"), resp.text)
+                        logger.exception(_("Exception raised during JSON decoding"))
+                        self._transfer_errors += 1
+                        if self._transfer_errors > self._limits["max_retry"]:
+                            # Too many retries. Raising exception
+                            logger.critical(
+                                _("Too many error %s, raising exception"),
+                                self._transfer_errors,
+                            )
+                            raise HTTPError("resp.json exception")
 
                 # Initialize or append to response dict, depending on content
                 if "data" in resp_chunk:
@@ -508,6 +521,9 @@ class ObservationsAPI(BiolovisionAPI):
     - api_list     - Return a list of observations from the controler
     - api_diff     - Return all changes in observations since a given date
     - api_search   - Search for observations based on parameter value
+    - api_create   - Create a single observation
+    - api_update   - Update an existing observation
+    - api_delete   - Delete an observation
     """
 
     def __init__(self, config, max_retry=None, max_requests=None, max_chunks=None):
@@ -581,14 +597,14 @@ class ObservationsAPI(BiolovisionAPI):
         ----------
         q_params : dict
             Query parameters, same as online version.
+        **kwargs :
+            optional URL parameters, empty by default.
+            See Biolovision API documentation.
 
         Returns
         -------
         json : dict or None
             dict decoded from json if status OK, else None
-        **kwargs :
-            optional URL parameters, empty by default.
-            See Biolovision API documentation.
         """
         # Mandatory parameters.
         params = {
@@ -610,6 +626,30 @@ class ObservationsAPI(BiolovisionAPI):
         )
         # GET from API
         return super()._url_get(params, "observations/search/", "POST", body)
+
+    def api_update(self, id: str, data: Dict) -> None:
+        """Updates an observation.
+
+        Calls PUT on /observations/%id% to update the observation.
+
+        Parameters
+        ----------
+        id: str
+            Id of observation to update
+        data: json
+            Body containing observation in JSON format
+
+        """
+        # Mandatory parameters.
+        params = {
+            "user_email": self._config.user_email,
+            "user_pw": self._config.user_pw,
+        }
+        logger.debug(_("Update observation %s, with data %s"), id, data)
+        # GET from API
+        return super()._url_get(
+            params, "observations/" + id, "PUT", body=json.dumps(data)
+        )
 
 
 class ObserversAPI(BiolovisionAPI):

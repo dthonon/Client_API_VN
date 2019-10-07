@@ -26,8 +26,8 @@ from export_vn.evnconf import EvnConf
 from export_vn.store_file import StoreFile
 
 # Using faune-ardeche or faune-isere site, that needs to be created first
-SITE = "t07"
-# SITE = 't38'
+# SITE = "t07"
+SITE = "t38"
 FILE = ".evn_test.yaml"
 
 # Get configuration for test site
@@ -450,8 +450,8 @@ def test_observations_get_short():
                                     {
                                         "media_is_hidden": "0",
                                         "filename": "3_1537024802877-15194452-5272.jpg",
-                                        "path": "http://media.biolovision.net/data.biolovision.net/2018-09",  # noqa: E501
-                                        "insert_date": "1537033501",
+                                        "path": "https://cdnmedia3.biolovision.net/data.biolovision.net/2018-09",  # noqa: E501
+                                        "insert_date": "2018-09-15 ",
                                         "type": "PHOTO",
                                         "@id": "49174",
                                     }
@@ -586,6 +586,134 @@ def test_observations_search_2():
         assert len(list["data"]["sightings"]) >= 3
     else:
         assert False
+
+
+def test_observations_update():
+    """Update a specific sighting."""
+    if SITE == "t38":
+        sighting = OBSERVATIONS_API.api_get("2246086", short_version="1")
+        assert sighting == {
+            "data": {
+                "sightings": [
+                    {
+                        "date": {
+                            "@notime": "1",
+                            "@offset": "7200",
+                            "@timestamp": "1536962400",
+                        },
+                        "observers": [
+                            {
+                                "estimation_code": "MINIMUM",
+                                "count": "15",
+                                "id_sighting": "2246086",
+                                "insert_date": "1537033501",
+                                "medias": [
+                                    {
+                                        "media_is_hidden": "0",
+                                        "filename": "3_1537024802877-15194452-5272.jpg",
+                                        "path": "https://cdnmedia3.biolovision.net/data.biolovision.net/2018-09",  # noqa: E501
+                                        "insert_date": "2018-09-15 19:45:01",
+                                        "type": "PHOTO",
+                                        "@id": "49174",
+                                    }
+                                ],
+                                "@uid": "11675",
+                                "precision": "precise",
+                                "id_universal": "65_71846872",
+                                "traid": "33",
+                                "timing": {
+                                    "@notime": "0",
+                                    "@offset": "7200",
+                                    "@timestamp": "1537024740",
+                                },
+                                'update_date': "1570489430",
+                                "altitude": "215",
+                                "source": "WEB",
+                                "coord_lat": "45.18724",
+                                "flight_number": "1",
+                                "coord_lon": "5.735458",
+                                "@id": "33",
+                                "version": "0",
+                            }
+                        ],
+                        "place": {
+                            "@id": "100197",
+                            "id_universal": "65_71846872",
+                            "lat": "45.187677239404",
+                            "lon": "5.735372035327",
+                            "loc_precision": "0",
+                            "name": "Museum (Parc du Museum)",
+                            "place_type": "place",
+                        },
+                        "species": {
+                            "@id": "86",
+                            "rarity": "verycommon",
+                            "taxonomy": "1",
+                        },
+                    }
+                ]
+            }
+        }
+        sighting["data"]["sightings"][0]["observers"][0][
+            "hidden_comment"
+        ] = "API update test"
+        OBSERVATIONS_API.api_update("274830", sighting)
+    if SITE == "t07":
+        sighting = OBSERVATIONS_API.api_get("274830", short_version="1")
+        assert sighting == {
+            "data": {
+                "sightings": [
+                    {
+                        "date": {
+                            "@notime": "1",
+                            "@offset": "7200",
+                            "@timestamp": "1430258400",
+                        },
+                        "observers": [
+                            {
+                                "@id": "104",
+                                "@uid": "4040",
+                                "altitude": "99",
+                                "comment": "juv",
+                                "coord_lat": "44.373198",
+                                "coord_lon": "4.428607",
+                                "count": "1",
+                                "estimation_code": "MINIMUM",
+                                "flight_number": "1",
+                                "hidden_comment": "RNNGA",
+                                "id_sighting": "274830",
+                                "id_universal": "30_274830",
+                                "insert_date": "1446413437",
+                                "precision": "precise",
+                                "source": "WEB",
+                                "timing": {
+                                    "@notime": "1",
+                                    "@offset": "7200",
+                                    "@timestamp": "1430258400",
+                                },
+                                "traid": "104",
+                                "update_date": "1522080083",
+                                "version": "0",
+                            }
+                        ],
+                        "place": {
+                            "@id": "122870",
+                            "id_universal": "30_274830",
+                            "lat": "44.371928319497",
+                            "lon": "4.4273367833997",
+                            "loc_precision": "0",
+                            "name": "Rapide des Trois Eaux",
+                            "place_type": "place",
+                        },
+                        "species": {
+                            "@id": "19703",
+                            "rarity": "unusual",
+                            "taxonomy": "18",
+                        },
+                    }
+                ]
+            }
+        }
 
 
 # ----------------------------
