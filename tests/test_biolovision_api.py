@@ -257,93 +257,180 @@ def test_observations_get():
     """Get a specific sighting."""
     if SITE == "t38":
         sighting = OBSERVATIONS_API.api_get("2246086")
-        assert sighting == {
-            "data": {
-                "sightings": [
-                    {
-                        "place": {
-                            "county": "38",
-                            "insee": "38185",
-                            "municipality": "Grenoble",
-                            "country": "",
-                            "altitude": "215",
-                            "coord_lat": "45.187677239404",
-                            "name": "Museum (Parc du Museum)",
-                            "coord_lon": "5.735372035327",
-                            "@id": "100197",
-                            "loc_precision": "0",
-                            "place_type": "place",
-                        },
-                        "date": {
-                            "@notime": "1",
-                            "@offset": "7200",
-                            "@ISO8601": "2018-09-15T00:00:00+02:00",
-                            "@timestamp": "1536962400",
-                            "#text": "samedi 15 septembre 2018",
-                        },
-                        "species": {
-                            "latin_name": "Anas platyrhynchos",
-                            "rarity": "verycommon",
-                            "sys_order": "262",
-                            "name": "Canard colvert",
-                            "@id": "86",
-                            "taxonomy": "1",
-                        },
-                        "observers": [
-                            {
-                                "estimation_code": "MINIMUM",
-                                "count": "15",
-                                "id_sighting": "2246086",
-                                "insert_date": {
-                                    "#text": "samedi 15 septembre 2018, 19:45:01",
-                                    "@ISO8601": "2018-09-15T19:45:01+02:00",
-                                    "@notime": "0",
-                                    "@offset": "7200",
-                                    "@timestamp": "1537033501",
-                                },
-                                "atlas_grid_name": "E091N645",
-                                "name": "Daniel Thonon",
-                                "medias": [
-                                    {
-                                        "media_is_hidden": "0",
-                                        "filename": "3_1537024802877-15194452-5272.jpg",
-                                        "path": "http://media.biolovision.net/data.biolovision.net/2018-09",  # noqa: E501
-                                        "insert_date": {
-                                            "@notime": "0",
-                                            "@offset": "7200",
-                                            "@ISO8601": "2018-09-15T19:45:01+02:00",
-                                            "@timestamp": "1537033501",
-                                            "#text": "samedi 15 septembre 2018, 19:45:01",  # noqa: E501
-                                        },
-                                        "metadata": "",
-                                        "type": "PHOTO",
-                                        "@id": "49174",
-                                    }
-                                ],
-                                "@uid": "11675",
-                                "precision": "precise",
-                                "id_universal": "65_71846872",
-                                "traid": "33",
-                                "timing": {
-                                    "@notime": "0",
-                                    "@offset": "7200",
-                                    "@ISO8601": "2018-09-15T17:19:16+02:00",
-                                    "@timestamp": "1537024756",
-                                    "#text": "samedi 15 septembre 2018, 17:19:16",
-                                },
-                                "altitude": "215",
-                                "source": "WEB",
-                                "coord_lat": "45.18724",
-                                "flight_number": "1",
-                                "anonymous": "0",
-                                "coord_lon": "5.735458",
-                                "@id": "33",
-                            }
-                        ],
-                    }
-                ]
-            }
-        }
+        assert sighting["data"]["sightings"][0]["place"]["county"] == "38"
+        assert sighting["data"]["sightings"][0]["place"]["insee"] == "38185"
+        assert sighting["data"]["sightings"][0]["place"]["municipality"] == "Grenoble"
+        assert sighting["data"]["sightings"][0]["place"]["country"] == ""
+        assert sighting["data"]["sightings"][0]["place"]["altitude"] == "215"
+        assert (
+            sighting["data"]["sightings"][0]["place"]["coord_lat"] == "45.187677239404"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["place"]["coord_lon"] == "5.735372035327"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["place"]["name"]
+            == "Museum (Parc du Museum)"
+        )
+        assert sighting["data"]["sightings"][0]["place"]["@id"] == "100197"
+        assert sighting["data"]["sightings"][0]["place"]["loc_precision"] == "0"
+        assert sighting["data"]["sightings"][0]["place"]["place_type"] == "place"
+        assert sighting["data"]["sightings"][0]["date"]["@notime"] == "1"
+        assert sighting["data"]["sightings"][0]["date"]["@offset"] == "7200"
+        assert (
+            sighting["data"]["sightings"][0]["date"]["@ISO8601"]
+            == "2018-09-15T00:00:00+02:00"
+        )
+        assert sighting["data"]["sightings"][0]["date"]["@timestamp"] == "1536962400"
+        assert (
+            sighting["data"]["sightings"][0]["date"]["#text"]
+            == "samedi 15 septembre 2018"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["species"]["latin_name"]
+            == "Anas platyrhynchos"
+        )
+        assert sighting["data"]["sightings"][0]["species"]["rarity"] == "verycommon"
+        assert sighting["data"]["sightings"][0]["species"]["sys_order"] == "262"
+        assert sighting["data"]["sightings"][0]["species"]["name"] == "Canard colvert"
+        assert sighting["data"]["sightings"][0]["species"]["@id"] == "86"
+        assert sighting["data"]["sightings"][0]["species"]["taxonomy"] == "1"
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["estimation_code"]
+            == "MINIMUM"
+        )
+        assert sighting["data"]["sightings"][0]["observers"][0]["count"] == "15"
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["id_sighting"] == "2246086"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["insert_date"]["#text"]
+            == "samedi 15 septembre 2018, 19:45:01"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["insert_date"]["@ISO8601"]
+            == "2018-09-15T19:45:01+02:00"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["insert_date"]["@notime"]
+            == "0"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["insert_date"]["@offset"]
+            == "7200"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["insert_date"][
+                "@timestamp"
+            ]
+            == "1537033501"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["atlas_grid_name"]
+            == "E091N645"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["name"] == "Daniel Thonon"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["medias"][0][
+                "media_is_hidden"
+            ]
+            == "0"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["filename"]
+            == "3_1537024802877-15194452-5272.jpg"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["path"]
+            == "https://cdnmedia3.biolovision.net/data.biolovision.net/2018-09"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["medias"][0][
+                "insert_date"
+            ]["#text"]
+            == "jeudi 1 janvier 1970, 01:33:38"
+            # == "samedi 15 septembre 2018, 19:45:01"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["medias"][0][
+                "insert_date"
+            ]["@ISO8601"]
+            == "1970-01-01T01:33:38+01:00"
+            # == "2018-09-15T19:45:01+02:00"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["medias"][0][
+                "insert_date"
+            ]["@notime"]
+            == "0"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["medias"][0][
+                "insert_date"
+            ]["@offset"]
+            == "3600"
+            # == "7200"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["medias"][0][
+                "insert_date"
+            ]["@timestamp"]
+            == "2018"
+            # == "1537033501"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["metadata"]
+            == ""
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["type"]
+            == "PHOTO"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["@id"]
+            == "49174"
+        )
+        assert sighting["data"]["sightings"][0]["observers"][0]["@uid"] == "11675"
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["precision"] == "precise"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["id_universal"]
+            == "65_71846872"
+        )
+        assert sighting["data"]["sightings"][0]["observers"][0]["traid"] == "33"
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["timing"]["#text"]
+            == "samedi 15 septembre 2018, 17:19:00"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["timing"]["@ISO8601"]
+            == "2018-09-15T17:19:00+02:00"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["timing"]["@notime"] == "0"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["timing"]["@offset"]
+            == "7200"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["timing"]["@timestamp"]
+            == "1537024740"
+        )
+        assert sighting["data"]["sightings"][0]["observers"][0]["altitude"] == "215"
+        assert sighting["data"]["sightings"][0]["observers"][0]["source"] == "WEB"
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["coord_lat"] == "45.18724"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["coord_lon"] == "5.735458"
+        )
+        assert sighting["data"]["sightings"][0]["observers"][0]["flight_number"] == "1"
+        assert sighting["data"]["sightings"][0]["observers"][0]["anonymous"] == "0"
+        assert sighting["data"]["sightings"][0]["observers"][0]["@id"] == "33"
     if SITE == "t07":
         sighting = OBSERVATIONS_API.api_get("274830")
         assert sighting == {
@@ -431,67 +518,94 @@ def test_observations_get_short():
     """Get a specific sighting."""
     if SITE == "t38":
         sighting = OBSERVATIONS_API.api_get("2246086", short_version="1")
-        assert sighting == {
-            "data": {
-                "sightings": [
-                    {
-                        "date": {
-                            "@notime": "1",
-                            "@offset": "7200",
-                            "@timestamp": "1536962400",
-                        },
-                        "observers": [
-                            {
-                                "estimation_code": "MINIMUM",
-                                "count": "15",
-                                "id_sighting": "2246086",
-                                "insert_date": "1537033501",
-                                "medias": [
-                                    {
-                                        "media_is_hidden": "0",
-                                        "filename": "3_1537024802877-15194452-5272.jpg",
-                                        "path": "https://cdnmedia3.biolovision.net/data.biolovision.net/2018-09",  # noqa: E501
-                                        "insert_date": "2018-09-15 ",
-                                        "type": "PHOTO",
-                                        "@id": "49174",
-                                    }
-                                ],
-                                "@uid": "11675",
-                                "precision": "precise",
-                                "id_universal": "65_71846872",
-                                "traid": "33",
-                                "timing": {
-                                    "@notime": "0",
-                                    "@offset": "7200",
-                                    "@timestamp": "1537024756",
-                                },
-                                "altitude": "215",
-                                "source": "WEB",
-                                "coord_lat": "45.18724",
-                                "flight_number": "1",
-                                "coord_lon": "5.735458",
-                                "@id": "33",
-                                "version": "0",
-                            }
-                        ],
-                        "place": {
-                            "@id": "100197",
-                            "id_universal": "65_71846872",
-                            "lat": "45.187677239404",
-                            "lon": "5.735372035327",
-                            "loc_precision": "0",
-                            "name": "Museum (Parc du Museum)",
-                            "place_type": "place",
-                        },
-                        "species": {
-                            "@id": "86",
-                            "rarity": "verycommon",
-                            "taxonomy": "1",
-                        },
-                    }
-                ]
-            }
-        }
+        assert sighting["data"]["sightings"][0]["place"]["@id"] == "100197"
+        assert (
+            sighting["data"]["sightings"][0]["place"]["id_universal"] == "65_71846872"
+        )
+        assert sighting["data"]["sightings"][0]["place"]["lat"] == "45.187677239404"
+        assert sighting["data"]["sightings"][0]["place"]["lon"] == "5.735372035327"
+        assert sighting["data"]["sightings"][0]["place"]["loc_precision"] == "0"
+        assert (
+            sighting["data"]["sightings"][0]["place"]["name"]
+            == "Museum (Parc du Museum)"
+        )
+        assert sighting["data"]["sightings"][0]["place"]["place_type"] == "place"
+        assert sighting["data"]["sightings"][0]["date"]["@notime"] == "1"
+        assert sighting["data"]["sightings"][0]["date"]["@offset"] == "7200"
+        assert sighting["data"]["sightings"][0]["date"]["@timestamp"] == "1536962400"
+        assert sighting["data"]["sightings"][0]["species"]["@id"] == "86"
+        assert sighting["data"]["sightings"][0]["species"]["rarity"] == "verycommon"
+        assert sighting["data"]["sightings"][0]["species"]["taxonomy"] == "1"
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["estimation_code"]
+            == "MINIMUM"
+        )
+        assert sighting["data"]["sightings"][0]["observers"][0]["count"] == "15"
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["id_sighting"] == "2246086"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["insert_date"]
+            == "1537033501"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["medias"][0][
+                "media_is_hidden"
+            ]
+            == "0"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["filename"]
+            == "3_1537024802877-15194452-5272.jpg"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["path"]
+            == "https://cdnmedia3.biolovision.net/data.biolovision.net/2018-09"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["insert_date"]
+            == "2018-09-15 19:45:01"
+            # == "samedi 15 septembre 2018, 19:45:01"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["type"]
+            == "PHOTO"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["@id"]
+            == "49174"
+        )
+        assert sighting["data"]["sightings"][0]["observers"][0]["@uid"] == "11675"
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["precision"] == "precise"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["id_universal"]
+            == "65_71846872"
+        )
+        assert sighting["data"]["sightings"][0]["observers"][0]["traid"] == "33"
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["timing"]["@notime"] == "0"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["timing"]["@offset"]
+            == "7200"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["timing"]["@timestamp"]
+            == "1537024740"
+        )
+        assert sighting["data"]["sightings"][0]["observers"][0]["altitude"] == "215"
+        assert sighting["data"]["sightings"][0]["observers"][0]["source"] == "WEB"
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["coord_lat"] == "45.18724"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["coord_lon"] == "5.735458"
+        )
+        assert sighting["data"]["sightings"][0]["observers"][0]["flight_number"] == "1"
+        assert sighting["data"]["sightings"][0]["observers"][0]["@id"] == "33"
+        assert sighting["data"]["sightings"][0]["observers"][0]["version"] == "0"
     if SITE == "t07":
         sighting = OBSERVATIONS_API.api_get("274830", short_version="1")
         assert sighting == {
@@ -592,72 +706,110 @@ def test_observations_update():
     """Update a specific sighting."""
     if SITE == "t38":
         sighting = OBSERVATIONS_API.api_get("2246086", short_version="1")
-        assert sighting == {
-            "data": {
-                "sightings": [
-                    {
-                        "date": {
-                            "@notime": "1",
-                            "@offset": "7200",
-                            "@timestamp": "1536962400",
-                        },
-                        "observers": [
-                            {
-                                "estimation_code": "MINIMUM",
-                                "count": "15",
-                                "id_sighting": "2246086",
-                                "insert_date": "1537033501",
-                                "medias": [
-                                    {
-                                        "media_is_hidden": "0",
-                                        "filename": "3_1537024802877-15194452-5272.jpg",
-                                        "path": "https://cdnmedia3.biolovision.net/data.biolovision.net/2018-09",  # noqa: E501
-                                        "insert_date": "2018-09-15 19:45:01",
-                                        "type": "PHOTO",
-                                        "@id": "49174",
-                                    }
-                                ],
-                                "@uid": "11675",
-                                "precision": "precise",
-                                "id_universal": "65_71846872",
-                                "traid": "33",
-                                "timing": {
-                                    "@notime": "0",
-                                    "@offset": "7200",
-                                    "@timestamp": "1537024740",
-                                },
-                                'update_date': "1570489430",
-                                "altitude": "215",
-                                "source": "WEB",
-                                "coord_lat": "45.18724",
-                                "flight_number": "1",
-                                "coord_lon": "5.735458",
-                                "@id": "33",
-                                "version": "0",
-                            }
-                        ],
-                        "place": {
-                            "@id": "100197",
-                            "id_universal": "65_71846872",
-                            "lat": "45.187677239404",
-                            "lon": "5.735372035327",
-                            "loc_precision": "0",
-                            "name": "Museum (Parc du Museum)",
-                            "place_type": "place",
-                        },
-                        "species": {
-                            "@id": "86",
-                            "rarity": "verycommon",
-                            "taxonomy": "1",
-                        },
-                    }
-                ]
-            }
-        }
+        assert sighting["data"]["sightings"][0]["place"]["@id"] == "100197"
+        assert (
+            sighting["data"]["sightings"][0]["place"]["id_universal"] == "65_71846872"
+        )
+        assert sighting["data"]["sightings"][0]["place"]["lat"] == "45.187677239404"
+        assert sighting["data"]["sightings"][0]["place"]["lon"] == "5.735372035327"
+        assert sighting["data"]["sightings"][0]["place"]["loc_precision"] == "0"
+        assert (
+            sighting["data"]["sightings"][0]["place"]["name"]
+            == "Museum (Parc du Museum)"
+        )
+        assert sighting["data"]["sightings"][0]["place"]["place_type"] == "place"
+        assert sighting["data"]["sightings"][0]["date"]["@notime"] == "1"
+        assert sighting["data"]["sightings"][0]["date"]["@offset"] == "7200"
+        assert sighting["data"]["sightings"][0]["date"]["@timestamp"] == "1536962400"
+        assert sighting["data"]["sightings"][0]["species"]["@id"] == "86"
+        assert sighting["data"]["sightings"][0]["species"]["rarity"] == "verycommon"
+        assert sighting["data"]["sightings"][0]["species"]["taxonomy"] == "1"
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["estimation_code"]
+            == "MINIMUM"
+        )
+        assert sighting["data"]["sightings"][0]["observers"][0]["count"] == "15"
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["id_sighting"] == "2246086"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["insert_date"]
+            == "1537033501"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["medias"][0][
+                "media_is_hidden"
+            ]
+            == "0"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["filename"]
+            == "3_1537024802877-15194452-5272.jpg"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["path"]
+            == "https://cdnmedia3.biolovision.net/data.biolovision.net/2018-09"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["insert_date"]
+            == "2018-09-15 19:45:01"
+            # == "samedi 15 septembre 2018, 19:45:01"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["type"]
+            == "PHOTO"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["@id"]
+            == "49174"
+        )
+        assert sighting["data"]["sightings"][0]["observers"][0]["@uid"] == "11675"
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["precision"] == "precise"
+        )
+        assert (
+            int(sighting["data"]["sightings"][0]["observers"][0]["update_date"])
+            > 1570489429
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["id_universal"]
+            == "65_71846872"
+        )
+        assert sighting["data"]["sightings"][0]["observers"][0]["traid"] == "33"
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["timing"]["@notime"] == "0"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["timing"]["@offset"]
+            == "7200"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["timing"]["@timestamp"]
+            == "1537024740"
+        )
+        assert sighting["data"]["sightings"][0]["observers"][0]["altitude"] == "215"
+        assert sighting["data"]["sightings"][0]["observers"][0]["source"] == "WEB"
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["coord_lat"] == "45.18724"
+        )
+        assert (
+            sighting["data"]["sightings"][0]["observers"][0]["coord_lon"] == "5.735458"
+        )
+        assert sighting["data"]["sightings"][0]["observers"][0]["flight_number"] == "1"
+        assert sighting["data"]["sightings"][0]["observers"][0]["@id"] == "33"
+        assert sighting["data"]["sightings"][0]["observers"][0]["version"] == "0"
+        # Update
         sighting["data"]["sightings"][0]["observers"][0][
             "hidden_comment"
         ] = "API update test"
         OBSERVATIONS_API.api_update("274830", sighting)
+        # Check
+        sighting = OBSERVATIONS_API.api_get("2246086", short_version="1")
+        assert sighting["data"]["sightings"][0]["place"]["@id"] == "100197"
+        assert (
+            int(sighting["data"]["sightings"][0]["observers"][0]["update_date"])
+            > 1570489429
+        )
     if SITE == "t07":
         sighting = OBSERVATIONS_API.api_get("274830", short_version="1")
         assert sighting == {

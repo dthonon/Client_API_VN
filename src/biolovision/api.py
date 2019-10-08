@@ -627,8 +627,27 @@ class ObservationsAPI(BiolovisionAPI):
         # GET from API
         return super()._url_get(params, "observations/search/", "POST", body)
 
+    def api_create(self, data: Dict) -> None:
+        """Create an observation.
+
+        Calls POST on /observations to create a new observation.
+
+        Parameters
+        ----------
+        data: json
+            Body containing observation in JSON format
+        """
+        # Mandatory parameters.
+        params = {
+            "user_email": self._config.user_email,
+            "user_pw": self._config.user_pw,
+        }
+        logger.debug(_("Create observation, with data %s"), data)
+        # POST to API
+        return super()._url_get(params, "observations/", "POST", body=json.dumps(data))
+
     def api_update(self, id: str, data: Dict) -> None:
-        """Updates an observation.
+        """Update an observation.
 
         Calls PUT on /observations/%id% to update the observation.
 
@@ -638,7 +657,6 @@ class ObservationsAPI(BiolovisionAPI):
             Id of observation to update
         data: json
             Body containing observation in JSON format
-
         """
         # Mandatory parameters.
         params = {
@@ -646,10 +664,29 @@ class ObservationsAPI(BiolovisionAPI):
             "user_pw": self._config.user_pw,
         }
         logger.debug(_("Update observation %s, with data %s"), id, data)
-        # GET from API
+        # PUT to API
         return super()._url_get(
             params, "observations/" + id, "PUT", body=json.dumps(data)
         )
+
+    def api_delete(self, id: str) -> None:
+        """Deleta an observation.
+
+        Calls DELETE on /observations/%id% to delete the observation.
+
+        Parameters
+        ----------
+        id: str
+            Id of observation to delete
+        """
+        # Mandatory parameters.
+        params = {
+            "user_email": self._config.user_email,
+            "user_pw": self._config.user_pw,
+        }
+        logger.debug(_("Delete observation %s"), id)
+        # DELETE to API
+        return super()._url_get(params, "observations/" + id, "DELETE")
 
 
 class ObserversAPI(BiolovisionAPI):
