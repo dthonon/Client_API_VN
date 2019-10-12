@@ -4,6 +4,12 @@ Client_API_VN
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
+.. image:: https://img.shields.io/pypi/status/Client-API-VN
+    :alt: PyPI - Status
+.. image:: https://img.shields.io/pypi/pyversions/Client-API-VN
+    :alt: PyPI - Python Version
+.. image:: https://img.shields.io/pypi/l/Client-API-VN
+    :alt: PyPI - License
 
 Python application that transfers data from Biolovision/VisoNature
 web sites and stores them to a Postgresql database.

@@ -868,6 +868,40 @@ def test_observations_update():
         }
 
 
+def test_observations_create():
+    """Update a specific sighting."""
+    data = {
+            "data": {
+                "sightings": [
+                    {
+                        "date": {
+                            "@timestamp": "1430258400",
+                        },
+                        "species": {
+                            "@id": "19703",
+                        },
+                        "observers": [
+                            {
+                                "@id": "33",
+                                "altitude": "99",
+                                "comment": "juv",
+                                "coord_lat": "45.18724",
+                                "coord_lon": "5.735458",
+                                "precision": "precise",
+                                "count": "1",
+                                "estimation_code": "MINIMUM",
+                            }
+                        ],
+                    }
+                ]
+            }
+        }
+    if SITE == "t38":
+        sighting = OBSERVATIONS_API.api_create(data)
+    # if SITE == "t07":
+    #     sighting = OBSERVATIONS_API.api_create(data)
+
+
 # ----------------------------
 #  Observers controler methods
 # ----------------------------

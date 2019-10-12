@@ -235,7 +235,7 @@ class BiolovisionAPI:
                 protected_url,
             )
             self._http_status = resp.status_code
-            if self._http_status != 200:
+            if self._http_status >= 300:
                 # Request returned an error.
                 # Logging and checking if not too many errors to continue
                 logger.error(
@@ -244,6 +244,13 @@ class BiolovisionAPI:
                     resp.status_code,
                     protected_url,
                 )
+                if self._http_status == 422:
+                    # Unreceverable error
+                    logger.critical(
+                        _("Unreceverable error %s, raising exception"),
+                        self._http_status,
+                    )
+                    raise HTTPError(resp.status_code)
                 self._transfer_errors += 1
                 time.sleep(self._config.tuning_retry_delay)
                 if self._transfer_errors > self._limits["max_retry"]:
@@ -254,7 +261,7 @@ class BiolovisionAPI:
                     raise HTTPError(resp.status_code)
             else:
                 # No error from request: processing response if needed
-                if method == "PUT":
+                if method in ["PUT", "POST"]:
                     # No response expected
                     resp_chunk = json.loads("{}")
                 else:
