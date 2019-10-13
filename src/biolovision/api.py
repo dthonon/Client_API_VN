@@ -194,7 +194,7 @@ class BiolovisionAPI:
         while nb_chunks < self._limits["max_chunks"]:
             # Remove DEBUG logging level to avoid too many details
             level = logging.getLogger().level
-            # logging.getLogger().setLevel(logging.INFO)
+            logging.getLogger().setLevel(logging.INFO)
 
             # Prepare call to API
             payload = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)

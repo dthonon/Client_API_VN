@@ -23,7 +23,6 @@ from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers import SchedulerNotRunningError
 from apscheduler.schedulers.background import BackgroundScheduler
-
 from bs4 import BeautifulSoup
 from export_vn.download_vn import (
     Entities,
