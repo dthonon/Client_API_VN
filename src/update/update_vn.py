@@ -1,22 +1,34 @@
 #!/usr/bin/env python3
 """
-Sample application: skeleton for new applications
+Update sightings attributes in Biolovision database.
+
+Application that reads a CSV file and updates the observations in Biolovision database.
+CSV file must contain:
+
+- id_universal of the sighting to modify
+- path to the attribute to modify, in JSONPath syntax
+- value: new value inserted or updated
+
+Modification are tracked in hidden_comment.
 
 """
 import argparse
+import csv
 import logging
 import shutil
+import sys
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
-import sys
 
 import pkg_resources
-from export_vn.evnconf import EvnConf
 from strictyaml import YAMLValidationError
+
+from biolovision.api import ObservationsAPI
+from export_vn.evnconf import EvnConf
 
 from . import _, __version__
 
-APP_NAME = "sample_app"
+APP_NAME = "update_vn"
 
 logger = logging.getLogger(APP_NAME)
 
@@ -51,6 +63,7 @@ def arguments(args):
         "--init", help=_("Initialize the YAML configuration file"), action="store_true"
     )
     parser.add_argument("config", help=_("Configuration file name"))
+    parser.add_argument("input", help=_("Update list file name, in CSV format"))
 
     return parser.parse_args(args)
 
@@ -63,6 +76,44 @@ def init(config: str):
     logger.info(_("Creating YAML configuration file %s, from %s"), yaml_dst, yaml_src)
     shutil.copyfile(yaml_src, yaml_dst)
     logger.info(_("Please edit %s before running the script"), yaml_dst)
+
+
+def update(cfg_ctrl, input: str):
+    """Update Biolovision database."""
+    logger = logging.getLogger(APP_NAME + ".update")
+    cfg_crtl_list = cfg_ctrl.ctrl_list
+    cfg_site_list = cfg_ctrl.site_list
+
+    obs_api = dict()
+    for site, cfg in cfg_site_list.items():
+        if cfg.enabled:
+            logger.info(_("Preparing update for site %s"), site)
+            obs_api[site] = ObservationsAPI(cfg)
+
+    with open(input, newline="") as csvfile:
+        reader = csv.reader(csvfile, delimiter=";")
+        nb_row = 0
+        for row in reader:
+            nb_row += 1
+            logger.debug(row)
+            if nb_row == 1:
+                assert row[0] == "site"
+                assert row[1] == "id_universal"
+                assert row[2] == "path"
+                assert row[3] == "operation"
+                assert row[4] == "value"
+            else:
+                logger.info(
+                    _("Site %s: updating sighting %s, operation %s"),
+                    row[0],
+                    row[1],
+                    row[3],
+                )
+                sighting = obs_api[row[0]].api_get(row[1], short_version="1")
+                logger.debug(sighting)
+                repl = row[2].replace("$", "sighting")
+                old_attr = eval(repl)
+                logger.debug(_("Replacing %s by %s"), old_attr, row[4])
 
 
 def main(args):
@@ -115,7 +166,9 @@ def main(args):
 
     # Get configuration from file
     if not (Path.home() / args.config).is_file():
-        logger.critical(_("Configuration file %s does not exist"), str(Path.home() / args.config))
+        logger.critical(
+            _("Configuration file %s does not exist"), str(Path.home() / args.config)
+        )
         return None
     logger.info(_("Getting configuration data from %s"), args.config)
     try:
@@ -123,7 +176,12 @@ def main(args):
     except YAMLValidationError as error:
         logger.critical(_("Incorrect content in YAML configuration %s"), args.config)
         sys.exit(0)
-    cfg_site_list = cfg_ctrl.site_list
+
+    # Update Biolovision site from update file
+    if not Path(args.input).is_file():
+        logger.critical(_("Input file %s does not exist"), str(Path(args.input)))
+        return None
+    update(cfg_ctrl, args.input)
 
     return None
 

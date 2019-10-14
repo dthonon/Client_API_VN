@@ -688,7 +688,6 @@ def main(args):
     except YAMLValidationError as error:
         logger.critical(_("Incorrect content in YAML configuration %s"), args.file)
         sys.exit(0)
-
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
 
