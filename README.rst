@@ -173,6 +173,6 @@ CSV input file must contain the followin columns:
 
 For example::
 
-site;id_universal;path;operation;value
-Isère;2246086;$['data']['sightings'][0]['observers'][0]['atlas_code'];replace;4
+    site;id_universal;path;operation;value
+    Isère;2246086;$['data']['sightings'][0]['observers'][0]['atlas_code'];replace;4
 
