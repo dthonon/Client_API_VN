@@ -14,12 +14,12 @@ Client_API_VN
 Description
 ===========
 
-Python applications that use Biolovision/VisoNature (VN) API to:
+Python applications that use Biolovision/VisioNature (VN) API to:
 
 - download data from VN sites and stores it to a Postgresql database.
 - update sightings directly in VN site
 
-Applications are available either as
+Applications are available either as:
 
 - Python modules from PyPI
 - Docker images from Docker Hub
