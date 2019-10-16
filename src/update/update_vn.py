@@ -5,8 +5,10 @@ Update sightings attributes in Biolovision database.
 Application that reads a CSV file and updates the observations in Biolovision database.
 CSV file must contain:
 
+- site, as defined in YAML site section
 - id_universal of the sighting to modify
 - path to the attribute to modify, in JSONPath syntax
+- operation: update or replace
 - value: new value inserted or updated
 
 Modification are tracked in hidden_comment.
@@ -19,6 +21,7 @@ import shutil
 import sys
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
+import json
 
 import pkg_resources
 from strictyaml import YAMLValidationError
@@ -81,7 +84,6 @@ def init(config: str):
 def update(cfg_ctrl, input: str):
     """Update Biolovision database."""
     logger = logging.getLogger(APP_NAME + ".update")
-    cfg_crtl_list = cfg_ctrl.ctrl_list
     cfg_site_list = cfg_ctrl.site_list
 
     obs_api = dict()
@@ -110,10 +112,33 @@ def update(cfg_ctrl, input: str):
                     row[3],
                 )
                 sighting = obs_api[row[0]].api_get(row[1], short_version="1")
-                logger.debug(sighting)
+                logger.debug(
+                    _("Before: %s"), sighting["data"]["sightings"][0]["observers"][0]
+                )
                 repl = row[2].replace("$", "sighting")
-                old_attr = eval(repl)
-                logger.debug(_("Replacing %s by %s"), old_attr, row[4])
+                try:
+                    old_attr = eval(repl)
+                except KeyError:
+                    old_attr = None
+                try:
+                    msg = sighting["data"]["sightings"][0]["observers"][0][
+                        "hidden_comment"
+                    ]
+                except KeyError:
+                    msg = ""
+                msg = msg + json.dumps(
+                    {"op": row[3], "path": row[2], "old": old_attr, "new": row[4]}
+                )
+                exec("{} = {}".format(repl, row[4]))
+                exec(
+                    """sighting['data']['sightings'][0]['observers'][0]['hidden_comment'] = '{}'""".format(
+                        msg.replace('"', '\\"').replace("'", "\\'")
+                    )
+                )
+                logger.debug(
+                    _("After: %s"), sighting["data"]["sightings"][0]["observers"][0]
+                )
+                obs_api[row[0]].api_update(row[1], sighting)
 
 
 def main(args):
