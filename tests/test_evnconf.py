@@ -391,4 +391,7 @@ def test_tuning_db_worker_threads(create_file):
 def test_tuning_sched_executors(create_file):
     """ Test property."""
     cfg, c_cfg, s_cfg, cfg_file, params = create_file
-    assert s_cfg.tuning_sched_executors == 1
+    if params["site"] in ["tst1", "tst2"]:
+        assert s_cfg.tuning_sched_executors == 2
+    else:
+        assert s_cfg.tuning_sched_executors == 1

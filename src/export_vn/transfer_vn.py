@@ -23,7 +23,6 @@ from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers import SchedulerNotRunningError
 from apscheduler.schedulers.background import BackgroundScheduler
-
 from bs4 import BeautifulSoup
 from export_vn.download_vn import (
     Entities,
@@ -689,7 +688,6 @@ def main(args):
     except YAMLValidationError as error:
         logger.critical(_("Incorrect content in YAML configuration %s"), args.file)
         sys.exit(0)
-
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
 

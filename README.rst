@@ -4,21 +4,35 @@ Client_API_VN
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
-
-Python application that transfers data from Biolovision/VisoNature
-web sites and stores them to a Postgresql database.
+.. image:: https://img.shields.io/pypi/status/Client-API-VN
+    :alt: PyPI - Status
+.. image:: https://img.shields.io/pypi/pyversions/Client-API-VN
+    :alt: PyPI - Python Version
+.. image:: https://img.shields.io/pypi/l/Client-API-VN
+    :alt: PyPI - License
 
 Description
 ===========
 
-Getting Started
----------------
+Python applications that use Biolovision/VisioNature (VN) API to:
+
+- download data from VN sites and stores it to a Postgresql database.
+- update sightings directly in VN site
+
+Applications are available either as:
+
+- Python modules from PyPI
+- Docker images from Docker Hub
+
+They are tested under Linux Ubuntu or Debian. Other Linux
+distributions could work. Windows is not tested at all and will
+probably not work.
 
 Installation - Python
 ---------------------
 
 These instructions present the steps required to install the
-Python application.
+Python applications.
 
 Create a python virtual environment, activate it and update basic tools::
 
@@ -34,7 +48,7 @@ Installation - Docker
 ---------------------
 
 These instructions present the steps required to install the
-Docker application::
+Docker applications::
 
     docker pull dthonon/client-api-vn
     docker run --name xfer_vn \
@@ -43,10 +57,10 @@ Docker application::
                --tty --interactive \
                dthonon/client-api-vn bash
 
-Getting Started - Common
-------------------------
-
 The following steps are the common to both Python and Docker installation.
+
+Getting Started - transfer_vn
+-----------------------------
 
 Initialize the sample YAML file in your HOME directory and edit with
 your local details. The YAML file is self documented::
@@ -80,30 +94,40 @@ Once this is done, you can update the database with new observations::
 Note: this script should run hourly or dayly in a cron job.
 It must run at least every week.
 
+Getting Started - update_vn
+----------------------------
+
+Initialize the sample YAML file in your HOME directory and edit with
+your local details. The YAML file is self documented::
+
+    update_vn --init .evn_your_site.yaml
+    editor $HOME/.evn_your_site.yaml
+
 
 Prerequisites
 -------------
+
+For Linux and Postgresql installation, refer to `Server installation`_
+
+.. _Server installation: _server_install
 
 Installation requires the following python module::
 
     pip
 
-All other dependencies are managed by pip install.
+All other python dependencies are managed by pip install.
 
-Running the application
------------------------
+Command-line options - transfer_vn
+----------------------------------
 
 The application runs as::
 
-    transfer_vn options file
+    transfer_vn options config
 
 where:
 
 - options  command line options described below
-- file     YAML file, located in $HOME directory, described in sample file
-
-Command-line options
---------------------
+- config   YAML file, located in $HOME directory, described in sample file
 
 -h, --help             Prints help and exits
 --version              Print version number
@@ -121,9 +145,36 @@ Command-line options
 --count                Count observations by site and taxo_group
 --profile              Gather and print profiling times
 
+Command-line options - update_vn
+----------------------------------
 
-Note
-====
+The application runs as::
 
-This project has been set up using PyScaffold 3.1. For details and usage
-information on PyScaffold see https://pyscaffold.org/.
+    update_vn options config input
+
+where:
+
+- options  command line options described below
+- config   YAML file, located in $HOME directory, described in sample file
+- input    CSV file listing sightings to be updated
+
+-h, --help             Prints help and exits
+--version              Print version number
+--verbose              Increase output verbosity
+--quiet                Reduce output verbosity
+--init                 Initialize the YAML configuration file
+
+CSV input file must contain the followin columns:
+
+- site, as defined in YAML site section
+- id_universal of the sighting to modify
+- path to the attribute to modify, in JSONPath syntax
+- operation:
+  - replace: add if not present or update a sighting attribute
+- value: new value inserted or updated
+
+For example::
+
+    site;id_universal;path;operation;value
+    Isère;2246086;$['data']['sightings'][0]['observers'][0]['atlas_code'];replace;4
+
