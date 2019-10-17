@@ -18,7 +18,7 @@ update basic tools::
     python3 -m venv VN_env
     source VN_env/bin/activate
     python -m pip install --upgrade pip
-    pip install --upgrade setuptools wheel twine babel tox
+    pip install --upgrade --user setuptools wheel twine babel tox
 
 Downloading source
 ------------------
@@ -34,9 +34,9 @@ Installing the application
 
 Run::
 
+    ./setup.py develop
     ./setup.py install
 
-Note: maybe ./setup.py develop is sufficient.
 
 Code changes
 ------------
