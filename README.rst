@@ -109,7 +109,7 @@ Prerequisites
 
 For Linux and Postgresql installation, refer to `server installation`_
 
-.. _server installation: _docs/server_install
+.. _server installation: docs/server_install
 
 Installation requires the following python module::
 
