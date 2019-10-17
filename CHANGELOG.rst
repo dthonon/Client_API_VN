@@ -1,3 +1,15 @@
+Client-API-VN v2.6.0 (2019-10-17)
+=================================
+
+Features
+--------
+
+- A sample application is available in src/template. Copy sample_app.py
+  and __init__.py to a new directory to start creating a new application. (`#100 <https://framagit.org/lpo/Client_API_VN/issues/100>`_)
+- update_vn application is available for field test.
+  See README for details on how to use it. (`#101 <https://framagit.org/lpo/Client_API_VN/issues/101>`_)
+
+
 Client-API-VN v2.5.2 (2019-10-06)
 =================================
 
