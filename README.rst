@@ -107,7 +107,9 @@ your local details. The YAML file is self documented::
 Prerequisites
 -------------
 
-For Linux and Postgresql installation, refer to :doc:`server_install`.
+For Linux and Postgresql installation, refer to `Server installation`_
+
+.. _Server installation: _server_install
 
 Installation requires the following python module::
 

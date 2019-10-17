@@ -16,7 +16,8 @@ Contents
    License <license>
    Authors <authors>
    Changelog <changelog>
-   Module Reference <api/modules>
+   API Reference <api/modules>
+   Applications Reference <api/export_vn>
    Server Installation Guide <server_install>
 
 
