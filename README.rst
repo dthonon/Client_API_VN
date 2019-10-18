@@ -107,9 +107,9 @@ your local details. The YAML file is self documented::
 Prerequisites
 -------------
 
-For Linux and Postgresql installation, refer to `Server installation`_
+For Linux and Postgresql installation, refer to `server installation`_
 
-.. _Server installation: _server_install
+.. _server installation: docs/server_install.rst
 
 Installation requires the following python module::
 
@@ -164,7 +164,7 @@ where:
 --quiet                Reduce output verbosity
 --init                 Initialize the YAML configuration file
 
-CSV input file must contain the followin columns:
+CSV input file must contain the following columns:
 
 - site, as defined in YAML site section
 - id_universal of the sighting to modify
