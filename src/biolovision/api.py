@@ -18,39 +18,62 @@ must be avoided, as memory could be insufficient.
 max_chunks __init__ parameter controls the maximum number of chunks
 allowed and raises an exception if it exceeds.
 
-Biolovision API to Classes mapping
-- BiolovisionAPI         - Top class, not for direct use
+Biolovision API to Classes mapping:
 
-Controler | Class
-----------|------
-Taxo groups | TaxoGroupsAPI
-Families controller | NA
-Species Controller | SpeciesAPI
-Territorial Units Controller | TerritorialUnitsAPI
-Local admin units controller | LocalAdminUnitsAPI
-Places controller | PlacesAPI
-Observers | ObserversAPI
-Entities | EntitiesAPI
-Export organizations controller | NA
-Observations Controller | ObservationsAPI
-Fields controller | FieldsAPI
-Media Controller | NA
-Import files controller | NA
-Import files/Observations controller |
-Validations controller | NA
-Mortality informations controller | NA
-Bearded Vulture Birds controller | NA
-Bearded Vulture informations controller | NA
-Grids controller | NA
-Grid-Commune controller | NA
-Atlas documents | NA
++-------------------------------+---------------------+
+| Controler                     | Class               |
++===============================|=====================+
+| Taxo groups                   | TaxoGroupsAPI       |
++-------------------------------|---------------------+
+| Families                      | NA                  |
++-------------------------------|---------------------+
+| Species                       | SpeciesAPI          |
++-------------------------------|---------------------+
+| Territorial Units             | TerritorialUnitsAPI |
++-------------------------------|---------------------+
+| Local admin units             | LocalAdminUnitsAPI  |
++-------------------------------|---------------------+
+| Places                        | PlacesAPI           |
++-------------------------------|---------------------+
+| Observers                     | ObserversAPI        |
++-------------------------------|---------------------+
+| Entities                      | EntitiesAPI         |
++-------------------------------|---------------------+
+| Export organizations          | NA                  |
++-------------------------------|---------------------+
+| Observations                  | ObservationsAPI     |
++-------------------------------|---------------------+
+| Fields                        | FieldsAPI           |
++-------------------------------|---------------------+
+| Media                         | NA                  |
++-------------------------------|---------------------+
+| Import files                  | NA                  |
++-------------------------------|---------------------+
+| Import files/Observations     | NA                  |
++-------------------------------|---------------------+
+| Validations                   | NA                  |
++-------------------------------|---------------------+
+| Mortality informations        | NA                  |
++-------------------------------|---------------------+
+| Bearded Vulture Birds         | NA                  |
++-------------------------------|---------------------+
+| Bearded Vulture informations  | NA                  |
++-------------------------------|---------------------+
+| Grids                         | NA                  |
++-------------------------------|---------------------+
+| Grid-Commune                  | NA                  |
++-------------------------------|---------------------+
+| Atlas documents               | NA                  |
++-------------------------------|---------------------+
 
 Methods, see each class
 
-Properties
+Properties:
+
 - transfer_errors            - Return number of HTTP errors
 
-Exceptions
+Exceptions:
+
 - BiolovisionApiException    - General exception
 - HTTPError                  - HTTP protocol error
 - MaxChunksError             - Too many chunks returned from API calls
