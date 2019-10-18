@@ -261,7 +261,7 @@ class BiolovisionAPI:
                     raise HTTPError(resp.status_code)
             else:
                 # No error from request: processing response if needed
-                if method in ["PUT", "POST"]:
+                if method in ["PUT"]:
                     # No response expected
                     resp_chunk = json.loads("{}")
                 else:
