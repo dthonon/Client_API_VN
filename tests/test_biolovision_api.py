@@ -883,8 +883,8 @@ def test_observations_create():
                         "observers": [
                             {
                                 "@id": "33",
-                                "altitude": "99",
-                                "comment": "juv",
+                                "altitude": "230",
+                                "comment": "TEST API !!! à supprimer !!!",
                                 "coord_lat": "45.18724",
                                 "coord_lon": "5.735458",
                                 "precision": "precise",

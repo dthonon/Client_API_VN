@@ -290,20 +290,13 @@ class BiolovisionAPI:
                 else:
                     try:
                         resp_chunk = resp.json()
-                    except Exception:
+                    except json.decoder.JSONDecodeError:
                         # Error during JSON decoding =>
                         # Logging error and no further processing of empty chunk
                         resp_chunk = json.loads("{}")
                         logger.error(_("Incorrect response content: %s"), resp.text)
                         logger.exception(_("Exception raised during JSON decoding"))
-                        self._transfer_errors += 1
-                        if self._transfer_errors > self._limits["max_retry"]:
-                            # Too many retries. Raising exception
-                            logger.critical(
-                                _("Too many error %s, raising exception"),
-                                self._transfer_errors,
-                            )
-                            raise HTTPError("resp.json exception")
+                        raise HTTPError("resp.json exception")
 
                 # Initialize or append to response dict, depending on content
                 if "data" in resp_chunk:
@@ -353,9 +346,8 @@ class BiolovisionAPI:
                             data_rec["data"] += resp_chunk["data"]
                 else:
                     logger.debug(
-                        _("Received %d items without data in chunk %d"),
-                        len(resp_chunk),
-                        nb_chunks,
+                        _("Received non-data response: %s"),
+                        resp_chunk
                     )
                     if nb_chunks == 0:
                         data_rec = resp_chunk
