@@ -35,7 +35,6 @@ except ImportError:
     from sphinx import apidoc
 
 output_dir = os.path.join(__location__, "api")
-module_dir = os.path.join(__location__, "../src/export_vn")
 module_dir = os.path.join(__location__, "../src/biolovision")
 try:
     shutil.rmtree(output_dir)
