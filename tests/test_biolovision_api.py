@@ -21,6 +21,7 @@ from biolovision.api import (
     SpeciesAPI,
     TaxoGroupsAPI,
     TerritorialUnitsAPI,
+    HTTPError,
 )
 from export_vn.evnconf import EvnConf
 from export_vn.store_file import StoreFile
@@ -897,7 +898,18 @@ def test_observations_create():
             }
         }
     if SITE == "t38":
+        # First creation should succeed
         sighting = OBSERVATIONS_API.api_create(data)
+        logging.debug(sighting)
+        assert sighting["status"] == "saved"
+        obs_1 = sighting["id"][0]
+        assert isinstance(obs_1, int)
+        # Second creation should fail
+        with pytest.raises(HTTPError) as excinfo:
+            sighting = OBSERVATIONS_API.api_create(data)
+            logging.debug(sighting)
+        res = OBSERVATIONS_API.api_delete(str(obs_1))
+
     # if SITE == "t07":
     #     sighting = OBSERVATIONS_API.api_create(data)
 

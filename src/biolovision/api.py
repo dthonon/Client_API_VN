@@ -246,6 +246,13 @@ class BiolovisionAPI:
                     headers=headers,
                     data=body,
                 )
+            elif method == "DELETE":
+                resp = requests.delete(
+                    url=protected_url,
+                    auth=self._oauth,
+                    params=payload,
+                    headers=headers
+                )
             else:
                 raise NotImplementedException
 
@@ -284,7 +291,7 @@ class BiolovisionAPI:
                     raise HTTPError(resp.status_code)
             else:
                 # No error from request: processing response if needed
-                if method in ["PUT"]:
+                if method in ["PUT", "DELETE"]:
                     # No response expected
                     resp_chunk = json.loads("{}")
                 else:
@@ -666,7 +673,12 @@ class ObservationsAPI(BiolovisionAPI):
         }
         logger.debug(_("Create observation, with data %s"), data)
         # POST to API
-        return super()._url_get(params, "observations/", "POST", body=json.dumps(data))
+        resp = super()._url_get(params, "observations/", "POST", body=json.dumps(data))
+        if self._http_status == 201:
+            # Successful creation
+            return resp
+        else:
+            raise HTTPError(self._http_status)
 
     def api_update(self, id: str, data: Dict) -> None:
         """Update an observation.
