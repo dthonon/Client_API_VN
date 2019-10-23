@@ -909,8 +909,8 @@ def test_observations_create():
             sighting = OBSERVATIONS_API.api_create(data)
             logging.debug(sighting)
         res = OBSERVATIONS_API.api_delete(str(obs_1))
-        logging.debug(sighting)
-        
+        logging.debug(res)
+
     # if SITE == "t07":
     #     sighting = OBSERVATIONS_API.api_create(data)
 
