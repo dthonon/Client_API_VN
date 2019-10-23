@@ -905,11 +905,12 @@ def test_observations_create():
         obs_1 = sighting["id"][0]
         assert isinstance(obs_1, int)
         # Second creation should fail
-        with pytest.raises(HTTPError) as excinfo:
+        with pytest.raises(HTTPError):
             sighting = OBSERVATIONS_API.api_create(data)
             logging.debug(sighting)
         res = OBSERVATIONS_API.api_delete(str(obs_1))
-
+        logging.debug(sighting)
+        
     # if SITE == "t07":
     #     sighting = OBSERVATIONS_API.api_create(data)
 
