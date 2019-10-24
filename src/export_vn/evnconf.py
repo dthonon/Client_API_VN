@@ -264,6 +264,11 @@ _ConfSchema = Map(
                 Optional("sched_executors", default=1): Int(),
             }
         ),
+        Optional("pne"): Map(
+            {
+                "data_url": Url(),
+            }
+        ),
     }
 )
 
@@ -459,6 +464,11 @@ class EvnSiteConf:
                 self._db_worker_threads = 2  # type:int
                 self._db_worker_queue = 100000  # type:int
                 self._sched_executors = 1  # type:int
+            if "pne" in config:
+                self._pne_data_url = config["pne"]["data_url"]  # type: int
+            else:
+                # Provide default values
+                self._pne_data_url = ""  # type: str
 
         except Exception:  # pragma: no cover
             logger.exception(_("Error creating %s configuration"), site)
@@ -656,6 +666,11 @@ class EvnSiteConf:
     def tuning_sched_executors(self) -> int:
         """Return tuning parameter."""
         return self._sched_executors
+
+    @property
+    def pne_data_url(self) -> int:
+        """Return tuning parameter."""
+        return self._pne_data_url
 
 
 class EvnConf:

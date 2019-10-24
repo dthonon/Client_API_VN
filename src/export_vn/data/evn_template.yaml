@@ -208,3 +208,8 @@ tuning:
     db_worker_queue: 100000
     # Scheduler tuning parameters
     sched_executors: 2
+
+# Optional parameters for sync_pne
+pne:
+    # URL providing data file
+    data_url: https://portail.ecrins-parcnational.fr/xxx/admin/xportcsv.php
