@@ -7,11 +7,11 @@ Synchronize Parc National de Ecrins database to faune-xxx.
 import argparse
 import csv
 import json
-import subprocess
-import urllib
 import logging
 import shutil
+import subprocess
 import sys
+import urllib
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
@@ -20,6 +20,23 @@ import requests
 from biolovision.api import ObservationsAPI
 from export_vn.evnconf import EvnConf
 from strictyaml import YAMLValidationError
+
+import petl as etl
+from sqlalchemy import (
+    Column,
+    DateTime,
+    Integer,
+    MetaData,
+    PrimaryKeyConstraint,
+    String,
+    Table,
+    create_engine,
+    func,
+    select,
+)
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB, insert
+from sqlalchemy.engine.url import URL
+from sqlalchemy.sql import and_
 
 from . import _, __version__
 
@@ -94,8 +111,121 @@ def fetch_data(cfg_ctrl):
             check=True,
             shell=True,
         )
+        subprocess.run(
+            "unzip -p $HOME/tmp/pne.zip > $HOME/tmp/pne.csv", check=True, shell=True
+        )
+
     except subprocess.CalledProcessError as err:
         logger.error(err)
+
+
+def _create_table(cfg, metadata, db, name, *cols):
+    """Check if table exists, and create it if not
+
+    Parameters
+    ----------
+    cfg : dict
+        configuration parameters
+    metadata :
+        sqlalchemy metadata
+    db :
+        sqlalchemy database engine
+    name : str
+        Table name.
+    cols : list
+        Data returned from API call.
+
+    """
+    if (cfg.pne_db_schema + "." + name) not in metadata.tables:
+        logger.info(_("Table %s not found => Creating it"), name)
+        table = Table(name, metadata, *cols)
+        table.create(db)
+    else:
+        logger.info(_("Table %s already exists => Keeping it"), name)
+    return None
+
+
+def store_data(cfg_ctrl):
+    """Store PNE data in Postgresql table."""
+    logger = logging.getLogger(APP_NAME + ".fetch_data")
+    cfg_site_list = cfg_ctrl.site_list
+    cfg = list(cfg_site_list.values())[0]
+    logger.info(_("Storing data to %s"), "tbd")
+    # Initialize interface to Postgresql DB
+    db_url = {
+        "drivername": "postgresql+psycopg2",
+        "username": cfg.db_user,
+        "password": cfg.db_pw,
+        "host": cfg.db_host,
+        "port": cfg.db_port,
+        "database": cfg.db_name,
+    }
+    # Connect to database
+    logger.info(_("Connecting to %s database"), cfg.db_name)
+    db = create_engine(URL(**db_url), echo=False)
+    conn = db.connect()
+    # Create import schema
+    text = "CREATE SCHEMA IF NOT EXISTS {} AUTHORIZATION {}".format(
+        cfg.pne_db_schema, cfg.db_group
+    )
+    conn.execute(text)
+    # Drop input table, if exists
+    text = "DROP TABLE IF EXISTS {}.{}".format(cfg.pne_db_schema, cfg.pne_db_in_table)
+    conn.execute(text)
+    # Set path to include PNE import schema
+    dbschema = cfg.pne_db_schema
+    metadata = MetaData(schema=dbschema)
+    metadata.reflect(db)
+
+    # Check if tables exist or else create them
+    _create_table(
+        cfg,
+        metadata,
+        db,
+        cfg.pne_db_in_table,
+        Column("id_synthese", Integer, nullable=False, index=True),
+        Column("nom_lot", String, nullable=False, index=True),
+        Column("protocole_new", String, nullable=False, index=True),
+        Column("protocole_old", String, nullable=False, index=True),
+        Column("nom_precision", String, nullable=False, index=True),
+        Column("cd_nom", Integer, nullable=False, index=True),
+        Column("nom_latin", String, nullable=False, index=True),
+        Column("nom_francais", String, nullable=False, index=True),
+        Column("insee", Integer, nullable=False, index=True),
+        Column("dateobs", DateTime, nullable=False, index=True),
+        Column("observateurs", String, nullable=False, index=True),
+        Column("altitude", Integer, nullable=False, index=True),
+        Column("critere", String, nullable=False, index=True),
+        Column("effectif_total", String, nullable=False, index=True),
+        Column("remarques", String, nullable=False, index=True),
+        Column("derniere_action", String, nullable=False, index=True),
+        Column("date_insert", DateTime, nullable=False, index=True),
+        Column("date_update", DateTime, nullable=False, index=True),
+        Column("supprime", String, nullable=False, index=True),
+        Column("x", Integer, nullable=False, index=True),
+        Column("y", Integer, nullable=False, index=True),
+        PrimaryKeyConstraint("id_synthese"),
+    )
+
+    # Open CSV file stream
+    tbl_0 = etl.fromcsv("../tmp/pne.csv", encoding="latin_1", delimiter=";")
+    logger.debug(tbl_0)
+    # Sort for faster deduplication
+    tbl_1 = etl.head(tbl_0, 1000)
+    tbl_2 = etl.sort(tbl_1, key="id_synthese")
+    # Print and remove conflicting rows
+    tbl_3 = etl.conflicts(tbl_2, "id_synthese", presorted=True)
+    nb_dup = etl.nrows(tbl_3)
+    if nb_dup > 0:
+        dup_file = "../tmp/pne_conflicts.csv"
+        logger.error(_("Input data contains %s conflicting rows. See %s"), nb_dup, dup_file)
+        etl.tocsv(tbl_3, dup_file)
+    tbl_f = etl.unique(tbl_2, key="id_synthese", presorted=True)
+    # Push to database
+    etl.todb(tbl_f, conn, cfg.pne_db_in_table, schema=cfg.pne_db_schema)
+
+    conn.close()
+    db.dispose()
 
 
 def main(args):
@@ -159,8 +289,11 @@ def main(args):
         logger.critical(_("Incorrect content in YAML configuration %s"), args.config)
         sys.exit(0)
 
-    # Fetch data from PNE site and store to file
-    fetch_data(cfg_ctrl)
+    # # Fetch data from PNE site and store to file
+    # fetch_data(cfg_ctrl)
+
+    # Store data to Postgresql database
+    store_data(cfg_ctrl)
 
     return None
 

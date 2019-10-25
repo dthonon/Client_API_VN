@@ -211,3 +211,9 @@ tuning:
 pne:
     # URL providing data file
     data_url: https://portail.ecrins-parcnational.fr/xxx/admin/xportcsv.php
+    # Postgresql schema name, in database:db_name
+    db_schema: import_pne
+    # Table name for raw PNE data import
+    db_in_table: in_pne
+    # Table name for cross reference with VN observations
+    db_xref_table: xref_pne

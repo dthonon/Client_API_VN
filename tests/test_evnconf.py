@@ -400,6 +400,30 @@ def test_pne_data_url(create_file):
     """ Test property."""
     cfg, c_cfg, s_cfg, cfg_file, params = create_file
     if params["site"] in ["tst1", "tst2"]:
-        assert s_cfg.pne_data_url == "https://portail.ecrins-parcnational.fr/xxx/admin/xportcsv.php?id=1"
+        assert s_cfg.pne_data_url == "https://portail.ecrins-parcnational.fr/xxx/admin/xportcsv.php"
     else:
         assert s_cfg.pne_data_url == ""
+
+def test_pne_db_schema(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, cfg_file, params = create_file
+    if params["site"] in ["tst1", "tst2"]:
+        assert s_cfg.pne_db_schema == "import_pne"
+    else:
+        assert s_cfg.pne_db_schema == ""
+
+def test_pne_db_in_table(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, cfg_file, params = create_file
+    if params["site"] in ["tst1", "tst2"]:
+        assert s_cfg.pne_db_in_table == "in_pne"
+    else:
+        assert s_cfg.pne_db_in_table == ""
+
+def test_pne_db_xref_table(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, cfg_file, params = create_file
+    if params["site"] in ["tst1", "tst2"]:
+        assert s_cfg.pne_db_xref_table == "xref_pne"
+    else:
+        assert s_cfg.pne_db_xref_table == ""
