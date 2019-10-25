@@ -150,7 +150,12 @@ def store_data(cfg_ctrl):
     logger = logging.getLogger(APP_NAME + ".fetch_data")
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
-    logger.info(_("Storing data to %s"), "tbd")
+    logger.info(
+        _("Storing data to %s.%s.%s"),
+        cfg.db_name,
+        cfg.pne_db_schema,
+        cfg.pne_db_in_table,
+    )
     # Initialize interface to Postgresql DB
     db_url = {
         "drivername": "postgresql+psycopg2",
@@ -184,24 +189,24 @@ def store_data(cfg_ctrl):
         db,
         cfg.pne_db_in_table,
         Column("id_synthese", Integer, nullable=False, index=True),
-        Column("nom_lot", String, nullable=False, index=True),
-        Column("protocole_new", String, nullable=False, index=True),
-        Column("protocole_old", String, nullable=False, index=True),
-        Column("nom_precision", String, nullable=False, index=True),
+        Column("nom_lot", String, nullable=True, index=True),
+        Column("protocole_new", String, nullable=True, index=True),
+        Column("protocole_old", String, nullable=True, index=True),
+        Column("nom_precision", String, nullable=True, index=True),
         Column("cd_nom", Integer, nullable=False, index=True),
-        Column("nom_latin", String, nullable=False, index=True),
-        Column("nom_francais", String, nullable=False, index=True),
-        Column("insee", Integer, nullable=False, index=True),
+        Column("nom_latin", String, nullable=True, index=True),
+        Column("nom_francais", String, nullable=True, index=True),
+        Column("insee", Integer, nullable=True, index=True),
         Column("dateobs", DateTime, nullable=False, index=True),
         Column("observateurs", String, nullable=False, index=True),
         Column("altitude", Integer, nullable=False, index=True),
-        Column("critere", String, nullable=False, index=True),
+        Column("critere", String, nullable=True, index=True),
         Column("effectif_total", String, nullable=False, index=True),
-        Column("remarques", String, nullable=False, index=True),
+        Column("remarques", String, nullable=True, index=True),
         Column("derniere_action", String, nullable=False, index=True),
-        Column("date_insert", DateTime, nullable=False, index=True),
-        Column("date_update", DateTime, nullable=False, index=True),
-        Column("supprime", String, nullable=False, index=True),
+        Column("date_insert", DateTime, nullable=True, index=True),
+        Column("date_update", DateTime, nullable=True, index=True),
+        Column("supprime", String, nullable=True, index=True),
         Column("x", Integer, nullable=False, index=True),
         Column("y", Integer, nullable=False, index=True),
         PrimaryKeyConstraint("id_synthese"),
@@ -209,16 +214,65 @@ def store_data(cfg_ctrl):
 
     # Open CSV file stream
     tbl_0 = etl.fromcsv("../tmp/pne.csv", encoding="latin_1", delimiter=";")
-    logger.debug(tbl_0)
+    # logger.debug(tbl_0)
+    tbl_1 = etl.head(tbl_0, 100000000)
+    logger.debug("%s%s", "\n", etl.rowlengths(tbl_1))
+    # Find rows without date_insert
+    tbl_1a = etl.selecteq(tbl_1, "date_insert", "")
+    nb_ins = etl.nrows(tbl_1a)
+    if nb_ins > 0:
+        ins_file = "../tmp/pne_no_date_insert.csv"
+        logger.error(
+            _("Input data contains %s rows without insert_date. See %s"),
+            nb_ins,
+            ins_file,
+        )
+        etl.tocsv(tbl_1a, ins_file)
+    # Replace empty date_insert with date_update
+    tbl_1b = etl.convert(
+        tbl_1,
+        "date_insert",
+        lambda v, row: row.update_date if v == "" else v,
+        pass_row=True,
+    )
+    logger.debug(
+        _("Remaining rows with date_insert empty %s"),
+        etl.nrows(etl.selecteq(tbl_1b, "date_insert", "")),
+    )
+    # Find and remove rows with too many columns
+    tbl_1c = etl.rowlenselect(tbl_1b, 21, complement=True)
+    nb_len = etl.nrows(tbl_1c)
+    if nb_len > 0:
+        len_file = "../tmp/pne_too_long.csv"
+        logger.error(
+            _("Input data contains %s rows with more than 21 columns. See %s"),
+            nb_len,
+            len_file,
+        )
+        etl.tocsv(tbl_1c, len_file)
+    tbl_1d = etl.rowlenselect(tbl_1b, 21)
+    # Find and remove rows without altitude
+    tbl_1e = etl.selecteq(tbl_1d, "altitude", "")
+    nb_alt = etl.nrows(tbl_1e)
+    if nb_alt > 0:
+        alt_file = "../tmp/pne_no_altitude.csv"
+        logger.error(
+            _("Input data contains %s rows without altitude. See %s"),
+            nb_alt,
+            alt_file,
+        )
+        etl.tocsv(tbl_1e, alt_file)
+    tbl_1f = etl.selectne(tbl_1d, "altitude", "")
     # Sort for faster deduplication
-    tbl_1 = etl.head(tbl_0, 1000)
-    tbl_2 = etl.sort(tbl_1, key="id_synthese")
+    tbl_2 = etl.sort(tbl_1f, key="id_synthese")
     # Print and remove conflicting rows
     tbl_3 = etl.conflicts(tbl_2, "id_synthese", presorted=True)
     nb_dup = etl.nrows(tbl_3)
     if nb_dup > 0:
         dup_file = "../tmp/pne_conflicts.csv"
-        logger.error(_("Input data contains %s conflicting rows. See %s"), nb_dup, dup_file)
+        logger.error(
+            _("Input data contains %s conflicting rows. See %s"), nb_dup, dup_file
+        )
         etl.tocsv(tbl_3, dup_file)
     tbl_f = etl.unique(tbl_2, key="id_synthese", presorted=True)
     # Push to database
