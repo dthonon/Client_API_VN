@@ -5,13 +5,10 @@ Synchronize Parc National de Ecrins database to faune-xxx.
 
 """
 import argparse
-import csv
-import json
 import logging
 import shutil
 import subprocess
 import sys
-import urllib
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
@@ -215,7 +212,7 @@ def store_data(cfg_ctrl):
     # Open CSV file stream
     tbl_0 = etl.fromcsv("../tmp/pne.csv", encoding="latin_1", delimiter=";")
     # logger.debug(tbl_0)
-    tbl_1 = etl.head(tbl_0, 100000000)
+    tbl_1 = etl.head(tbl_0, 100000)
     logger.debug("%s%s", "\n", etl.rowlengths(tbl_1))
     # Find rows without date_insert
     tbl_1a = etl.selecteq(tbl_1, "date_insert", "")
@@ -257,26 +254,32 @@ def store_data(cfg_ctrl):
     if nb_alt > 0:
         alt_file = "../tmp/pne_no_altitude.csv"
         logger.error(
-            _("Input data contains %s rows without altitude. See %s"),
-            nb_alt,
-            alt_file,
+            _("Input data contains %s rows without altitude. See %s"), nb_alt, alt_file
         )
         etl.tocsv(tbl_1e, alt_file)
     tbl_1f = etl.selectne(tbl_1d, "altitude", "")
     # Sort for faster deduplication
     tbl_2 = etl.sort(tbl_1f, key="id_synthese")
+    # Modify conflicting CD_NOM
+    # Get CD_NOM mapping from CSV file
+    cd_x_0 = etl.fromcsv("../tmp/cd_nom_x.csv", encoding="latin_1", delimiter=";")
+    cd_x = dict(etl.records(cd_x_0))
+    tbl_3 = etl.convert(tbl_2, "cd_nom", cd_x)
+
     # Print and remove conflicting rows
-    tbl_3 = etl.conflicts(tbl_2, "id_synthese", presorted=True)
-    nb_dup = etl.nrows(tbl_3)
+    tbl_c = etl.conflicts(
+        tbl_3, "id_synthese", presorted=True, exclude=("nom_latin", "nom_francais")
+    )
+    nb_dup = etl.nrows(tbl_c)
     if nb_dup > 0:
         dup_file = "../tmp/pne_conflicts.csv"
         logger.error(
             _("Input data contains %s conflicting rows. See %s"), nb_dup, dup_file
         )
-        etl.tocsv(tbl_3, dup_file)
-    tbl_f = etl.unique(tbl_2, key="id_synthese", presorted=True)
+        etl.tocsv(tbl_c, dup_file)
+    # tbl_f = etl.unique(tbl_3, key="id_synthese", presorted=True)
     # Push to database
-    etl.todb(tbl_f, conn, cfg.pne_db_in_table, schema=cfg.pne_db_schema)
+    # etl.todb(tbl_f, conn, cfg.pne_db_in_table, schema=cfg.pne_db_schema)
 
     conn.close()
     db.dispose()
