@@ -270,6 +270,7 @@ _ConfSchema = Map(
                 "db_schema": Str(),
                 "db_in_table": Str(),
                 "db_xref_table": Str(),
+                "observer_uid": Int(),
             }
         ),
     }
@@ -464,20 +465,22 @@ class EvnSiteConf:
                 self._pid_limit_min = 1  # type: float
                 self._pid_limit_max = 2000  # type: float
                 self._pid_delta_days = 15  # type: int
-                self._db_worker_threads = 2  # type:int
-                self._db_worker_queue = 100000  # type:int
-                self._sched_executors = 1  # type:int
+                self._db_worker_threads = 2  # type: int
+                self._db_worker_queue = 100000  # type: int
+                self._sched_executors = 1  # type: int
             if "pne" in config:
                 self._pne_data_url = config["pne"]["data_url"]  # type: str
                 self._pne_db_schema = config["pne"]["db_schema"]  # type: str
                 self._pne_db_in_table = config["pne"]["db_in_table"]  # type: str
                 self._pne_db_xref_table = config["pne"]["db_xref_table"]  # type: str
+                self._pne_observer_uid = config["pne"]["observer_uid"]  # type: int
             else:
                 # Provide empty default values
                 self._pne_data_url = ""  # type: str
                 self._pne_db_schema = ""  # type: str
                 self._pne_db_in_table = ""  # type: str
                 self._pne_db_xref_table = ""  # type: str
+                self._pne_observer_uid = 0  # type: str
 
         except Exception:  # pragma: no cover
             logger.exception(_("Error creating %s configuration"), site)
@@ -695,6 +698,11 @@ class EvnSiteConf:
     def pne_db_xref_table(self) -> int:
         """Return PNE parameter."""
         return self._pne_db_xref_table
+
+    @property
+    def pne_observer_uid(self) -> int:
+        """Return PNE parameter."""
+        return self._pne_observer_uid
 
 
 class EvnConf:

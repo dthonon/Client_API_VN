@@ -219,3 +219,5 @@ pne:
     db_in_table: in_pne
     # Table name for cross reference with VN observations
     db_xref_table: xref_pne
+    # Universal Id of PNE archive account
+    observer_uid: 14250

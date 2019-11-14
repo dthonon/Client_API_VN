@@ -427,3 +427,11 @@ def test_pne_db_xref_table(create_file):
         assert s_cfg.pne_db_xref_table == "xref_pne"
     else:
         assert s_cfg.pne_db_xref_table == ""
+
+def test_pne_observer_uid(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, cfg_file, params = create_file
+    if params["site"] in ["tst1", "tst2"]:
+        assert s_cfg.pne_observer_uid == 14250
+    else:
+        assert s_cfg.pne_observer_uid == 0
