@@ -325,7 +325,7 @@ CREATE OR REPLACE FUNCTION update_forms() RETURNS TRIGGER AS \$\$
             coord_lon         = CAST(NEW.item->>'lon' AS FLOAT),
             coord_x_local     = CAST(NEW.item->>'coord_x_local' AS FLOAT),
             coord_y_local     = CAST(NEW.item->>'coord_y_local' AS FLOAT),
-            comments          = NEW.item->>'comments',
+            comments          = NEW.item->>'comment',
             protocol_name     = NEW.item #>>'{protocol,protocol_name}',
             protocol          = CAST(NEW.item->>'protocol' AS JSONB)
         WHERE id = OLD.id AND site = OLD.site ;
@@ -350,7 +350,7 @@ CREATE OR REPLACE FUNCTION update_forms() RETURNS TRIGGER AS \$\$
                 CAST(NEW.item->>'lon' AS FLOAT),
                 CAST(NEW.item->>'coord_x_local' AS FLOAT),
                 CAST(NEW.item->>'coord_y_local' AS FLOAT),
-                NEW.item->>'comments',
+                NEW.item->>'comment',
                 NEW.item #>>'{protocol,protocol_name}',
                 CAST(NEW.item->>'protocol' AS JSONB)
             );
@@ -378,7 +378,7 @@ CREATE OR REPLACE FUNCTION update_forms() RETURNS TRIGGER AS \$\$
             CAST(NEW.item->>'lon' AS FLOAT),
             CAST(NEW.item->>'coord_x_local' AS FLOAT),
             CAST(NEW.item->>'coord_y_local' AS FLOAT),
-            NEW.item->>'comments',
+            NEW.item->>'comment',
             NEW.item #>>'{protocol,protocol_name}',
             CAST(NEW.item->>'protocol' AS JSONB)
         );
