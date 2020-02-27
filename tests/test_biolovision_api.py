@@ -350,15 +350,15 @@ def test_observations_get():
             sighting["data"]["sightings"][0]["observers"][0]["medias"][0][
                 "insert_date"
             ]["#text"]
-            == "jeudi 1 janvier 1970, 01:33:38"
-            # == "samedi 15 septembre 2018, 19:45:01"
+            # == "jeudi 1 janvier 1970, 01:33:38"
+            == "samedi 15 septembre 2018, 19:45:01"
         )
         assert (
             sighting["data"]["sightings"][0]["observers"][0]["medias"][0][
                 "insert_date"
             ]["@ISO8601"]
-            == "1970-01-01T01:33:38+01:00"
-            # == "2018-09-15T19:45:01+02:00"
+            # == "1970-01-01T01:33:38+01:00"
+            == "2018-09-15T19:45:01+02:00"
         )
         assert (
             sighting["data"]["sightings"][0]["observers"][0]["medias"][0][
@@ -370,15 +370,15 @@ def test_observations_get():
             sighting["data"]["sightings"][0]["observers"][0]["medias"][0][
                 "insert_date"
             ]["@offset"]
-            == "3600"
-            # == "7200"
+            # == "3600"
+            == "7200"
         )
         assert (
             sighting["data"]["sightings"][0]["observers"][0]["medias"][0][
                 "insert_date"
             ]["@timestamp"]
-            == "2018"
-            # == "1537033501"
+            # == "2018"
+            == "1537033501"
         )
         assert (
             sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["metadata"]
@@ -564,7 +564,8 @@ def test_observations_get_short():
         )
         assert (
             sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["insert_date"]
-            == "2018-09-15 19:45:01"
+            == "1537033501"
+            # == "2018-09-15 19:45:01"
             # == "samedi 15 septembre 2018, 19:45:01"
         )
         assert (
@@ -676,6 +677,7 @@ def test_observations_search_1():
     list = OBSERVATIONS_API.api_search(q_param)
     assert OBSERVATIONS_API.transfer_errors == 0
     if SITE == "t38":
+        assert list == ""
         assert len(list["data"]["sightings"]) >= 17
     elif SITE == "t07":
         assert len(list["data"]["sightings"]) >= 3
@@ -752,7 +754,8 @@ def test_observations_update():
         )
         assert (
             sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["insert_date"]
-            == "2018-09-15 19:45:01"
+            == "1537033501"
+            # == "2018-09-15 19:45:01"
             # == "samedi 15 septembre 2018, 19:45:01"
         )
         assert (
@@ -1175,6 +1178,7 @@ def test_taxo_groups_list():
     assert TAXO_GROUPS_API.transfer_errors == 0
     assert len(taxo_groups["data"]) >= 30
     assert taxo_groups["data"][0]["name"] == "Oiseaux"
+    assert taxo_groups["data"][18]["name"] == "Coléoptères"
     # Second call, must return from cache
     start = time.perf_counter()
     taxo_groups = TAXO_GROUPS_API.api_list()
@@ -1187,6 +1191,7 @@ def test_taxo_groups_list():
     assert TAXO_GROUPS_API.transfer_errors == 0
     assert len(taxo_groups["data"]) >= 30
     assert taxo_groups["data"][0]["name"] == "Oiseaux"
+    assert taxo_groups["data"][18]["name"] == "Coléoptères"
 
 
 # -----------------------------------
