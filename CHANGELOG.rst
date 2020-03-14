@@ -1,3 +1,13 @@
+Client-API-VN v2.6.3 (2020-03-14)
+============================
+
+Bugfixes
+--------
+
+- api_search, used in full download, was returning an empty dict.
+  It is now working correctly. (`#108 <https://framagit.org/lpo/Client_API_VN/issues/108>`_)
+
+
 Client-API-VN v2.6.0 (2019-10-17)
 =================================
 
