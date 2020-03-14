@@ -1,0 +1,2 @@
+api_search, used in full download, was returning an empty dict.
+It is now working correctly.

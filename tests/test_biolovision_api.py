@@ -677,7 +677,6 @@ def test_observations_search_1():
     list = OBSERVATIONS_API.api_search(q_param)
     assert OBSERVATIONS_API.transfer_errors == 0
     if SITE == "t38":
-        assert list == ""
         assert len(list["data"]["sightings"]) >= 17
     elif SITE == "t07":
         assert len(list["data"]["sightings"]) >= 3
