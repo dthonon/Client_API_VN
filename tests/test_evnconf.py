@@ -395,3 +395,43 @@ def test_tuning_sched_executors(create_file):
         assert s_cfg.tuning_sched_executors == 2
     else:
         assert s_cfg.tuning_sched_executors == 1
+
+def test_pne_data_url(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, cfg_file, params = create_file
+    if params["site"] in ["tst1", "tst2"]:
+        assert s_cfg.pne_data_url == "https://portail.ecrins-parcnational.fr/xxx/admin/xportcsv.php"
+    else:
+        assert s_cfg.pne_data_url == ""
+
+def test_pne_db_schema(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, cfg_file, params = create_file
+    if params["site"] in ["tst1", "tst2"]:
+        assert s_cfg.pne_db_schema == "import_pne"
+    else:
+        assert s_cfg.pne_db_schema == ""
+
+def test_pne_db_in_table(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, cfg_file, params = create_file
+    if params["site"] in ["tst1", "tst2"]:
+        assert s_cfg.pne_db_in_table == "in_pne"
+    else:
+        assert s_cfg.pne_db_in_table == ""
+
+def test_pne_db_xref_table(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, cfg_file, params = create_file
+    if params["site"] in ["tst1", "tst2"]:
+        assert s_cfg.pne_db_xref_table == "xref_pne"
+    else:
+        assert s_cfg.pne_db_xref_table == ""
+
+def test_pne_observer_uid(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, cfg_file, params = create_file
+    if params["site"] in ["tst1", "tst2"]:
+        assert s_cfg.pne_observer_uid == 14250
+    else:
+        assert s_cfg.pne_observer_uid == 0

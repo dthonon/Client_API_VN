@@ -18,39 +18,62 @@ must be avoided, as memory could be insufficient.
 max_chunks __init__ parameter controls the maximum number of chunks
 allowed and raises an exception if it exceeds.
 
-Biolovision API to Classes mapping
-- BiolovisionAPI         - Top class, not for direct use
+Biolovision API to Classes mapping:
 
-Controler | Class
-----------|------
-Taxo groups | TaxoGroupsAPI
-Families controller | NA
-Species Controller | SpeciesAPI
-Territorial Units Controller | TerritorialUnitsAPI
-Local admin units controller | LocalAdminUnitsAPI
-Places controller | PlacesAPI
-Observers | ObserversAPI
-Entities | EntitiesAPI
-Export organizations controller | NA
-Observations Controller | ObservationsAPI
-Fields controller | FieldsAPI
-Media Controller | NA
-Import files controller | NA
-Import files/Observations controller |
-Validations controller | NA
-Mortality informations controller | NA
-Bearded Vulture Birds controller | NA
-Bearded Vulture informations controller | NA
-Grids controller | NA
-Grid-Commune controller | NA
-Atlas documents | NA
++-------------------------------+---------------------+
+| Controler                     | Class               |
++===============================+=====================+
+| Taxo groups                   | TaxoGroupsAPI       |
++-------------------------------+---------------------+
+| Families                      | NA                  |
++-------------------------------+---------------------+
+| Species                       | SpeciesAPI          |
++-------------------------------+---------------------+
+| Territorial Units             | TerritorialUnitsAPI |
++-------------------------------+---------------------+
+| Local admin units             | LocalAdminUnitsAPI  |
++-------------------------------+---------------------+
+| Places                        | PlacesAPI           |
++-------------------------------+---------------------+
+| Observers                     | ObserversAPI        |
++-------------------------------+---------------------+
+| Entities                      | EntitiesAPI         |
++-------------------------------+---------------------+
+| Export organizations          | NA                  |
++-------------------------------+---------------------+
+| Observations                  | ObservationsAPI     |
++-------------------------------+---------------------+
+| Fields                        | FieldsAPI           |
++-------------------------------+---------------------+
+| Media                         | NA                  |
++-------------------------------+---------------------+
+| Import files                  | NA                  |
++-------------------------------+---------------------+
+| Import files/Observations     | NA                  |
++-------------------------------+---------------------+
+| Validations                   | NA                  |
++-------------------------------+---------------------+
+| Mortality informations        | NA                  |
++-------------------------------+---------------------+
+| Bearded Vulture Birds         | NA                  |
++-------------------------------+---------------------+
+| Bearded Vulture informations  | NA                  |
++-------------------------------+---------------------+
+| Grids                         | NA                  |
++-------------------------------+---------------------+
+| Grid-Commune                  | NA                  |
++-------------------------------+---------------------+
+| Atlas documents               | NA                  |
++-------------------------------+---------------------+
 
 Methods, see each class
 
-Properties
+Properties:
+
 - transfer_errors            - Return number of HTTP errors
 
-Exceptions
+Exceptions:
+
 - BiolovisionApiException    - General exception
 - HTTPError                  - HTTP protocol error
 - MaxChunksError             - Too many chunks returned from API calls
@@ -223,6 +246,13 @@ class BiolovisionAPI:
                     headers=headers,
                     data=body,
                 )
+            elif method == "DELETE":
+                resp = requests.delete(
+                    url=protected_url,
+                    auth=self._oauth,
+                    params=payload,
+                    headers=headers
+                )
             else:
                 raise NotImplementedException
 
@@ -261,26 +291,19 @@ class BiolovisionAPI:
                     raise HTTPError(resp.status_code)
             else:
                 # No error from request: processing response if needed
-                if method in ["PUT"]:
+                if method in ["PUT", "DELETE"]:
                     # No response expected
                     resp_chunk = json.loads("{}")
                 else:
                     try:
                         resp_chunk = resp.json()
-                    except Exception:
+                    except json.decoder.JSONDecodeError:
                         # Error during JSON decoding =>
                         # Logging error and no further processing of empty chunk
                         resp_chunk = json.loads("{}")
                         logger.error(_("Incorrect response content: %s"), resp.text)
                         logger.exception(_("Exception raised during JSON decoding"))
-                        self._transfer_errors += 1
-                        if self._transfer_errors > self._limits["max_retry"]:
-                            # Too many retries. Raising exception
-                            logger.critical(
-                                _("Too many error %s, raising exception"),
-                                self._transfer_errors,
-                            )
-                            raise HTTPError("resp.json exception")
+                        raise HTTPError("resp.json exception")
 
                 # Initialize or append to response dict, depending on content
                 if "data" in resp_chunk:
@@ -330,9 +353,8 @@ class BiolovisionAPI:
                             data_rec["data"] += resp_chunk["data"]
                 else:
                     logger.debug(
-                        _("Received %d items without data in chunk %d"),
-                        len(resp_chunk),
-                        nb_chunks,
+                        _("Received non-data response: %s"),
+                        resp_chunk
                     )
                     if nb_chunks == 0:
                         data_rec = resp_chunk
@@ -651,7 +673,12 @@ class ObservationsAPI(BiolovisionAPI):
         }
         logger.debug(_("Create observation, with data %s"), data)
         # POST to API
-        return super()._url_get(params, "observations/", "POST", body=json.dumps(data))
+        resp = super()._url_get(params, "observations/", "POST", body=json.dumps(data))
+        if self._http_status == 201:
+            # Successful creation
+            return resp
+        else:
+            raise HTTPError(self._http_status)
 
     def api_update(self, id: str, data: Dict) -> None:
         """Update an observation.
