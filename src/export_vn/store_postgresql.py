@@ -453,10 +453,13 @@ class PostgresqlUtils:
             "pid_column": pid_column,
             "database": self._config.db_name,
         }
+        logger.debug(_("Dropping tables: %s"), text)
         conn.execute(text)
         text = "DROP DATABASE IF EXISTS {}".format(self._config.db_name)
+        logger.debug(_("Dropping database: %s"), text)
         conn.execute(text)
         text = "DROP ROLE IF EXISTS {}".format(self._config.db_group)
+        logger.debug(_("Dropping role: %s"), text)
         conn.execute(text)
 
         conn.close()

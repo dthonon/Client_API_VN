@@ -118,7 +118,8 @@ filter:
         #- TAXO_GROUP_BRANCHIOPODA
         - TAXO_GROUP_ALIEN_PLANTS
     json_format: short
-    start_date: 2019-09-01
+    start_date: 2019-08-01
+    end_date: 2019-09-01
 
 # VisioNature site access parameters
 site:

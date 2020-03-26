@@ -379,14 +379,14 @@ class Observations(DownloadVn):
                 )
                 end_date = (
                     datetime.now()
-                    if self._config.start_date is None
-                    else self._config.start_date
+                    if self._config.end_date is None
+                    else self._config.end_date
                 )
                 start_date = end_date
                 min_date = (
                     datetime(1900, 1, 1)
-                    if self._config.end_date is None
-                    else self._config.end_date
+                    if self._config.start_date is None
+                    else self._config.start_date
                 )
                 seq = 1
                 pid = PID(

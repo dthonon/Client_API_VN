@@ -1,0 +1,4 @@
+end_date and start_date are now correctly used, ie:
+interval starts with start_date and ends with end_date.
+Exception is raised if not in correct order.
+NOTE : if used in YAML, please check the correct order.

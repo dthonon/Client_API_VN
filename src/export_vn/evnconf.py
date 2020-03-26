@@ -404,6 +404,10 @@ class EvnSiteConf:
                     self._start_date = config["filter"]["start_date"]
                 if "end_date" in config["filter"]:
                     self._end_date = config["filter"]["end_date"]
+            if (self._start_date is not None) and (self._end_date is not None):
+                if self._start_date > self._end_date:
+                    logger.error(_("start_date must be before end_date"))
+                    raise IncorrectParameter
 
             self._file_enabled = False  # type: bool
             self._file_store = ""  # type: str
