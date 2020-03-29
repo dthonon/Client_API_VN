@@ -1,0 +1,2 @@
+When using --update, the list of new observations could get too long and return HTTP error 414.
+Update list are now chunked, and chunk size is controled by YAML parameter max_list_length.

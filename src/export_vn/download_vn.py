@@ -296,9 +296,7 @@ class Observations(DownloadVn):
                     for specie in species:
                         if specie["is_used"] == "1":
                             logger.info(
-                                _(
-                                    "Getting observations from taxo_group %s, specie %s"
-                                ),
+                                _("Getting observations from taxo_group %s, specie %s"),
                                 id_taxo_group,
                                 specie["id"],
                             )
@@ -591,11 +589,24 @@ class Observations(DownloadVn):
             if len(updated) > 0:
                 log_msg = _("Creating or updating {} observations").format(len(updated))
                 logger.debug(log_msg)
-                items_dict = self._api_instance.api_list(
-                    taxo,
-                    id_sightings_list=",".join(updated),
-                    short_version=short_version,
-                )
+                # Update backend store, in chunks
+                [
+                    self._api_instance.api_list(
+                        taxo,
+                        id_sightings_list=",".join(
+                            updated[
+                                i
+                                * self._config.max_list_size : (i + 1)
+                                * self._config.max_list_size
+                            ]
+                        ),
+                        short_version=short_version,
+                    )
+                    for i in range(
+                        (len(updated) + self._config.max_list_size - 1)
+                        // self._config.max_list_size
+                    )
+                ]
                 # Call backend to store log
                 self._backend.log(
                     self._config.site,

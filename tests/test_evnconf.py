@@ -320,6 +320,12 @@ def test_db_secret_key(create_file):
     assert s_cfg.db_secret_key == "mySecretKey"
 
 
+def test_tuning_max_list_length(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, cfg_file, params = create_file
+    assert s_cfg.tuning_max_list_length == 100
+
+
 def test_tuning_max_chunks(create_file):
     """ Test property."""
     cfg, c_cfg, s_cfg, cfg_file, params = create_file

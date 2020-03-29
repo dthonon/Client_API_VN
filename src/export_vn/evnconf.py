@@ -247,6 +247,7 @@ _ConfSchema = Map(
         ),
         Optional("tuning"): Map(
             {
+                Optional("max_list_length", default=100): Int(),
                 Optional("max_chunks", default=10): Int(),
                 Optional("max_retry", default=5): Int(),
                 Optional("max_requests", default=0): Int(),
@@ -438,6 +439,7 @@ class EvnSiteConf:
             self._db_out_proj = config["database"]["db_out_proj"]  # type: str
 
             if "tuning" in config:
+                self._max_list_length = config["tuning"]["max_list_length"]  # type: int
                 self._max_chunks = config["tuning"]["max_chunks"]  # type: int
                 self._max_retry = config["tuning"]["max_retry"]  # type: int
                 self._max_requests = config["tuning"]["max_requests"]  # type: int
@@ -457,6 +459,7 @@ class EvnSiteConf:
                 self._sched_executors = config["tuning"]["sched_executors"]  # type: int
             else:
                 # Provide default values
+                self._max_list_length = 100  # type: int
                 self._max_chunks = 10  # type: int
                 self._max_retry = 5  # type: int
                 self._max_requests = 0  # type: int
@@ -607,6 +610,11 @@ class EvnSiteConf:
     def db_out_proj(self) -> str:
         """Return local EPSG coordinate system."""
         return self._db_out_proj
+
+    @property
+    def tuning_max_list_length(self) -> int:
+        """Return tuning parameter."""
+        return self._max_list_length
 
     @property
     def tuning_max_chunks(self) -> int:
