@@ -1,1 +1,0 @@
-In biolovision.api, api_create and api_delete are implemented.

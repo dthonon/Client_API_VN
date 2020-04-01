@@ -387,8 +387,9 @@ def full_download(cfg_ctrl):
     }
     jobs_o = Jobs(url=URL(**db_url), nb_executors=cfg.tuning_sched_executors)
     with jobs_o as jobs:
+        # Cleanup any existing job
+        jobs.start()
         jobs.remove_all_jobs()
-        jobs.print_jobs()
         # Download field only once
         jobs.add_job_once(job_fn=full_download_1, args=[Fields, cfg_crtl_list, cfg])
         # Looping on sites for other controlers
@@ -422,8 +423,7 @@ def full_download(cfg_ctrl):
             else:
                 logger.info(_("Skipping site %s"), site)
 
-        # Start scheduler and wait for jobs to finish
-        jobs.start()
+        # Wait for jobs to finish
         time.sleep(1)
         while jobs.count_jobs() > 0:
             time.sleep(1)

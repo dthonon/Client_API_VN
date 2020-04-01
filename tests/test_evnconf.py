@@ -25,14 +25,16 @@ CRTL = "observations"
             "site": "tst1",
             "site_enabled": True,
             "file_enabled": True,
-            "start_date": datetime(2019, 9, 1),
+            "start_date": datetime(2019, 8, 1),
+            "end_date": datetime(2019, 9, 1),
         },
         {
             "file": "evn_tst1.yaml",
             "site": "tst2",
             "site_enabled": False,
             "file_enabled": True,
-            "start_date": datetime(2019, 9, 1),
+            "start_date": datetime(2019, 8, 1),
+            "end_date": datetime(2019, 9, 1),
         },
         {
             "file": "evn_tst2.yaml",
@@ -40,6 +42,7 @@ CRTL = "observations"
             "site_enabled": True,
             "file_enabled": False,
             "start_date": None,
+            "end_date": None,
         },
         {
             "file": "evn_tst3.yaml",
@@ -47,6 +50,7 @@ CRTL = "observations"
             "site_enabled": True,
             "file_enabled": False,
             "start_date": None,
+            "end_date": None,
         },
     ],
 )
@@ -214,7 +218,7 @@ def test_start_date(create_file):
 def test_end_date(create_file):
     """ Test property."""
     cfg, c_cfg, s_cfg, cfg_file, params = create_file
-    assert s_cfg.end_date is None
+    assert s_cfg.end_date == params["end_date"]
 
 
 def test_base_url(create_file):
@@ -314,6 +318,12 @@ def test_db_secret_key(create_file):
     """ Test property."""
     cfg, c_cfg, s_cfg, cfg_file, params = create_file
     assert s_cfg.db_secret_key == "mySecretKey"
+
+
+def test_tuning_max_list_length(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, cfg_file, params = create_file
+    assert s_cfg.tuning_max_list_length == 100
 
 
 def test_tuning_max_chunks(create_file):

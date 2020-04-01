@@ -282,8 +282,11 @@ class Observations(DownloadVn):
         for taxo in taxo_groups:
             if taxo["access_mode"] != "none":
                 id_taxo_group = taxo["id"]
+                since = self._backend.increment_get(self._config.site, id_taxo_group)
+                if since is None:
+                    since = datetime.now()
                 self._backend.increment_log(
-                    self._config.site, id_taxo_group, datetime.now()
+                    self._config.site, id_taxo_group, max(since, datetime.now())
                 )
                 logger.info(
                     _("Getting observations from taxo_group %s, in _store_list"),
@@ -296,9 +299,7 @@ class Observations(DownloadVn):
                     for specie in species:
                         if specie["is_used"] == "1":
                             logger.info(
-                                _(
-                                    "Getting observations from taxo_group %s, specie %s"
-                                ),
+                                _("Getting observations from taxo_group %s, specie %s"),
                                 id_taxo_group,
                                 specie["id"],
                             )
@@ -374,19 +375,26 @@ class Observations(DownloadVn):
         for taxo in taxo_groups:
             if taxo["access_mode"] != "none":
                 id_taxo_group = taxo["id"]
+                # since = datetime.strptime(
+                #     self._backend.increment_get(self._config.site, id_taxo_group),
+                #     "%Y-%m-%d %H:%M:%S.%f",
+                # )
+                since = self._backend.increment_get(self._config.site, id_taxo_group)
+                if since is None:
+                    since = datetime.now()
                 self._backend.increment_log(
-                    self._config.site, id_taxo_group, datetime.now()
+                    self._config.site, id_taxo_group, max(since, datetime.now())
                 )
                 end_date = (
                     datetime.now()
-                    if self._config.start_date is None
-                    else self._config.start_date
+                    if self._config.end_date is None
+                    else self._config.end_date
                 )
                 start_date = end_date
                 min_date = (
                     datetime(1900, 1, 1)
-                    if self._config.end_date is None
-                    else self._config.end_date
+                    if self._config.start_date is None
+                    else self._config.start_date
                 )
                 seq = 1
                 pid = PID(
@@ -553,7 +561,9 @@ class Observations(DownloadVn):
                 since = self._backend.increment_get(self._config.site, taxo)
             if since is not None:
                 # Valid since date provided or found in database
-                self._backend.increment_log(self._config.site, taxo, datetime.now())
+                self._backend.increment_log(
+                    self._config.site, taxo, max(since, datetime.now()),
+                )
                 logger.info(
                     _("Getting updates for taxo_group %s since %s"), taxo, since
                 )
@@ -591,11 +601,29 @@ class Observations(DownloadVn):
             if len(updated) > 0:
                 log_msg = _("Creating or updating {} observations").format(len(updated))
                 logger.debug(log_msg)
-                items_dict = self._api_instance.api_list(
-                    taxo,
-                    id_sightings_list=",".join(updated),
-                    short_version=short_version,
-                )
+                # Update backend store, in chunks
+                [
+                    # Call backend to store results
+                    self._backend.store(
+                        self._api_instance.controler,
+                        str(id_taxo_group) + "_1",
+                        self._api_instance.api_list(
+                            taxo,
+                            id_sightings_list=",".join(
+                                updated[
+                                    i
+                                    * self._config.tuning_max_list_length : (i + 1)
+                                    * self._config.tuning_max_list_length
+                                ]
+                            ),
+                            short_version=short_version,
+                        ),
+                    )
+                    for i in range(
+                        (len(updated) + self._config.tuning_max_list_length - 1)
+                        // self._config.tuning_max_list_length
+                    )
+                ]
                 # Call backend to store log
                 self._backend.log(
                     self._config.site,
@@ -603,10 +631,6 @@ class Observations(DownloadVn):
                     self._api_instance.transfer_errors,
                     self._api_instance.http_status,
                     log_msg,
-                )
-                # Call backend to store results
-                self._backend.store(
-                    self._api_instance.controler, str(id_taxo_group) + "_1", items_dict
                 )
 
             # Process deletes

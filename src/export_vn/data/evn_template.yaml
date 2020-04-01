@@ -9,6 +9,7 @@ main:
 # Biolovision API controlers parameters
 # Enables or disables download from each Biolovision API
 # Also defines scheduling (cron-like) parameters, in UTC
+# See https://apscheduler.readthedocs.io/en/stable/modules/triggers/cron.html
 controler:
     entities:
         # Enable download from this controler
@@ -183,6 +184,9 @@ database:
 
 # Optional tuning parameters, for expert use.
 tuning:
+    # Max items in an API list request. 
+    # Longer lists are split by API in max_list_length chunks.
+    max_list_length: 100
     # Max chunks in a request before aborting.
     max_chunks: 10
     # Max retries of API calls before aborting.

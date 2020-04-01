@@ -1,3 +1,24 @@
+Client-API-VN v2.6.4 (2020-04-01)
+=================================
+
+Features
+--------
+
+- In biolovision.api, api_create and api_delete are implemented. (`#98 <https://framagit.org/lpo/Client_API_VN/issues/98>`_)
+
+
+Bugfixes
+--------
+
+- In biolovision.api, api_search works again (corrected regression). (`#102 <https://framagit.org/lpo/Client_API_VN/issues/102>`_)
+- end_date and start_date are now correctly used, ie:
+  interval starts with start_date and ends with end_date.
+  Exception is raised if not in correct order.
+  NOTE : if used in YAML, please check the correct order. (`#105 <https://framagit.org/lpo/Client_API_VN/issues/105>`_)
+- When using --update, the list of new observations could get too long and return HTTP error 414.
+  Update list are now chunked, and chunk size is controled by YAML parameter max_list_length. (`#109 <https://framagit.org/lpo/Client_API_VN/issues/109>`_)
+
+
 Client-API-VN v2.6.3 (2020-03-14)
 ============================
 
