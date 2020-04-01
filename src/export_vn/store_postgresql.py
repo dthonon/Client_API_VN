@@ -133,9 +133,10 @@ def store_1_observation(item):
         update_date = elem["observers"][0]["insert_date"]
 
     # Add Lambert x, y transform to local coordinates
-    elem["observers"][0]["coord_x_local"], elem["observers"][0][
-        "coord_y_local"
-    ] = item.transformer(
+    (
+        elem["observers"][0]["coord_x_local"],
+        elem["observers"][0]["coord_y_local"],
+    ) = item.transformer(
         elem["observers"][0]["coord_lon"], elem["observers"][0]["coord_lat"]
     )
 

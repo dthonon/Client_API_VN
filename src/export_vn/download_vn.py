@@ -603,20 +603,25 @@ class Observations(DownloadVn):
                 logger.debug(log_msg)
                 # Update backend store, in chunks
                 [
-                    self._api_instance.api_list(
-                        taxo,
-                        id_sightings_list=",".join(
-                            updated[
-                                i
-                                * self._config.max_list_length : (i + 1)
-                                * self._config.max_list_length
-                            ]
+                    # Call backend to store results
+                    self._backend.store(
+                        self._api_instance.controler,
+                        str(id_taxo_group) + "_1",
+                        self._api_instance.api_list(
+                            taxo,
+                            id_sightings_list=",".join(
+                                updated[
+                                    i
+                                    * self._config.tuning_max_list_length : (i + 1)
+                                    * self._config.tuning_max_list_length
+                                ]
+                            ),
+                            short_version=short_version,
                         ),
-                        short_version=short_version,
                     )
                     for i in range(
-                        (len(updated) + self._config.max_list_length - 1)
-                        // self._config.max_list_length
+                        (len(updated) + self._config.tuning_max_list_length - 1)
+                        // self._config.tuning_max_list_length
                     )
                 ]
                 # Call backend to store log
@@ -626,10 +631,6 @@ class Observations(DownloadVn):
                     self._api_instance.transfer_errors,
                     self._api_instance.http_status,
                     log_msg,
-                )
-                # Call backend to store results
-                self._backend.store(
-                    self._api_instance.controler, str(id_taxo_group) + "_1", items_dict
                 )
 
             # Process deletes
