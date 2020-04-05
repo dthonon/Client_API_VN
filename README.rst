@@ -173,6 +173,9 @@ CSV input file must contain the following columns:
   - replace: add if not present or update a sighting attribute
 - value: new value inserted or updated
 
+Note: each operation is logged in hidden_comment, as a JSON message.
+It is not possible to replace hidden_comment, as logging is appended.
+
 For example::
 
     site;id_universal;path;operation;value

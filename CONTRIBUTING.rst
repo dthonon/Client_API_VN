@@ -68,6 +68,10 @@ To document a change :
 Running the tests
 -----------------
 
+Create .evn_test.yaml file in your root directory, with values. 
+The tests access the active production site of biolovision and
+requires admin rights.
+
 Run tests (try one or the other, as I haven't found which one is best)::
 
     ./setup.py tests
