@@ -61,7 +61,7 @@ logger = logging.getLogger("transfer_vn")
 class Jobs:
     def _listener(self, event):
         if event.code == EVENT_JOB_SUBMITTED:
-            logger.debug("The job %s started", event.job_id)
+            logger.debug(_("The job %s started"), event.job_id)
             self._job_set.add(event.job_id)
         else:
             if event.job_id in self._job_set:
@@ -69,10 +69,10 @@ class Jobs:
             else:
                 logger.error(_("Job %s not found in job_set"), event.job_id)
             if event.exception:
-                logger.error("The job %s crashed", event.job_id)
+                logger.error(_("The job %s crashed"), event.job_id)
             else:
-                logger.debug("The job %s worked", event.job_id)
-        logger.debug("Job set: %s", self._job_set)
+                logger.debug(_("The job %s worked"), event.job_id)
+        logger.debug(_("Job set: %s"), self._job_set)
 
     def __init__(self, url="sqlite:///jobs.sqlite", nb_executors=1):
         """Initialize class.
@@ -87,7 +87,7 @@ class Jobs:
         """
         self._job_set = set()
         logger.info(
-            "Creating scheduler, %s executors, storing in %s",
+            _("Creating scheduler, %s executors, storing in %s"),
             nb_executors,
             str(url)[0 : str(url).find(":")],
         )
@@ -112,15 +112,15 @@ class Jobs:
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        logger.info("Shutting down scheduler in __atexit__, if still running")
+        logger.info(_("Shutting down scheduler in __atexit__, if still running"))
         try:
             self._scheduler.shutdown(wait=False)
         except SchedulerNotRunningError:
             pass
 
-    def start(self):
-        logger.debug("Starting scheduler")
-        self._scheduler.start()
+    def start(self, paused=False):
+        logger.debug(_("Starting scheduler, paused=%s"), paused)
+        self._scheduler.start(paused)
 
     def remove_all_jobs(self):
         logger.debug(_("Removing all scheduled jobs"))
@@ -176,18 +176,18 @@ class Jobs:
     def count_jobs(self):
         # self._scheduler.print_jobs()
         jobs = self._scheduler.get_jobs()
-        logger.debug("Number of jobs scheduled, %s", len(jobs))
+        logger.debug(_("Number of jobs scheduled, %s"), len(jobs))
         for j in jobs:
             logger.debug(
-                "Job %s, scheduled in: %s",
+                _("Job %s, scheduled in: %s"),
                 j.id,
                 j.next_run_time - datetime.now(timezone.utc),
             )
-        logger.debug("Number of jobs running, %s", len(self._job_set))
+        logger.debug(_("Number of jobs running, %s"), len(self._job_set))
         return len(self._job_set)
 
     def shutdown(self):
-        logger.info("Shutting down scheduler")
+        logger.info(_("Shutting down scheduler"))
         try:
             self._scheduler.shutdown()
         except SchedulerNotRunningError:
@@ -195,9 +195,9 @@ class Jobs:
 
     def print_jobs(self):
         jobs = self._scheduler.get_jobs()
-        logger.info("Number of jobs scheduled, %s", len(jobs))
+        logger.info(_("Number of jobs scheduled, %s"), len(jobs))
         for j in jobs:
-            logger.info("Job %s, scheduled: %s", j.id, j.trigger)
+            logger.info(_("Job %s, scheduled: %s"), j.id, j.trigger)
 
 
 def db_config(cfg):
@@ -552,9 +552,8 @@ def status(cfg_ctrl):
         "database": "postgres",
     }
     jobs = Jobs(url=URL(**db_url), nb_executors=cfg.tuning_sched_executors)
-    jobs.start()
+    jobs.start(paused=True)
     jobs.print_jobs()
-    jobs.shutdown()
 
 
 def count_observations(cfg_ctrl):
