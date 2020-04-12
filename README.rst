@@ -168,10 +168,12 @@ CSV input file must contain the following columns:
 
 - site, as defined in YAML site section
 - id_universal of the sighting to modify
-- path to the attribute to modify, in JSONPath syntax
+- path to the attribute to modify, in JSONPath syntax, unused if operation is delete_observation
 - operation:
   - replace: add if not present or update a sighting attribute
-- value: new value inserted or updated
+  - delete_attribute: to keep the observation and remove the attribute with the given path
+  - delete_observation, to remove completely the observation
+- value: if operation is replace, new value inserted or updated
 
 Note: each operation is logged in hidden_comment, as a JSON message.
 It is not possible to replace hidden_comment, as logging is appended.
@@ -180,4 +182,6 @@ For example::
 
     site;id_universal;path;operation;value
     Isère;2246086;$['data']['sightings'][0]['observers'][0]['atlas_code'];replace;4
+    Isère;2246086;$['data']['sightings'][0]['observers'][0]['atlas_code'];delete_attribute;
+    Isère;2246086;;delete_observation;
 

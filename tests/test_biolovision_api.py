@@ -24,7 +24,6 @@ from biolovision.api import (
     HTTPError,
 )
 from export_vn.evnconf import EvnConf
-from export_vn.store_file import StoreFile
 
 # Using faune-ardeche or faune-isere site, that needs to be created first
 # SITE = "t07"
@@ -33,7 +32,6 @@ FILE = ".evn_test.yaml"
 
 # Get configuration for test site
 CFG = EvnConf(FILE).site_list[SITE]
-STORE_FILE = StoreFile(CFG)
 ENTITIES_API = EntitiesAPI(CFG)
 FIELDS_API = FieldsAPI(CFG)
 LOCAL_ADMIN_UNITS_API = LocalAdminUnitsAPI(CFG)
@@ -203,47 +201,35 @@ def test_observations_list_1():
 
 @pytest.mark.slow
 def test_observations_list_2_1():
-    """Get the list of sightings, from taxo_group 1, specie 518."""
-    file_json = Path.home() / CFG.file_store / "test_observations_list_2_1.json.gz"
-    if file_json.is_file():
-        file_json.unlink()
-    list = OBSERVATIONS_API.api_list("1", id_species="518", short_version="1")
+    """Get the list of sightings, from taxo_group 1, specie 218."""
+    list = OBSERVATIONS_API.api_list("1", id_species="218", short_version="1")
     logging.debug(
         "local test_observations_list_3_0 unit {} sightings/forms ".format(len(list))
     )
     assert OBSERVATIONS_API.transfer_errors == 0
-    assert len(list) > 0
-    STORE_FILE.store("test_observations_list_2", str(1), list)
-    assert file_json.is_file()
+    assert len(list["data"]) > 1
 
 
 def test_observations_list_3_0():
-    """Get the list of sightings, from taxo_group 1, specie 382."""
-    file_json = Path.home() / CFG.file_store / "test_observations_list_3_0.json.gz"
-    if file_json.is_file():
-        file_json.unlink()
-    list = OBSERVATIONS_API.api_list("1", id_species="382")
+    """Get the list of sightings, from taxo_group 1, specie 153."""
+    list = OBSERVATIONS_API.api_list("1", id_species="153")
     logging.debug(
         "local test_observations_list_3_0 unit {} sightings/forms ".format(len(list))
     )
     assert OBSERVATIONS_API.transfer_errors == 0
-    assert len(list) > 0
-    STORE_FILE.store("test_observations_list_3", str(0), list)
-    assert file_json.is_file()
+    assert len(list["data"]) > 1
+
 
 
 def test_observations_list_3_1():
-    """Get the list of sightings, from taxo_group 1, specie 382."""
-    file_json = Path.home() / CFG.file_store / "test_observations_list_3_1.json.gz"
-    if file_json.is_file():
-        file_json.unlink()
-    list = OBSERVATIONS_API.api_list("1", id_species="382", short_version="1")
+    """Get the list of sightings, from taxo_group 1, specie 153."""
+    list = OBSERVATIONS_API.api_list("1", id_species="153", short_version="1")
     logging.debug(
         "local test_observations_list_3_0 unit {} sightings/forms ".format(len(list))
     )
     assert OBSERVATIONS_API.transfer_errors == 0
-    assert len(list) > 0
-    STORE_FILE.store("test_observations_list_3", str(1), list)
+    assert len(list["data"]) > 1
+
 
 
 def test_observations_list_list():
@@ -872,33 +858,29 @@ def test_observations_update():
 
 
 def test_observations_create():
-    """Update a specific sighting."""
+    """Create a specific sighting."""
     data = {
-            "data": {
-                "sightings": [
-                    {
-                        "date": {
-                            "@timestamp": "1430258400",
-                        },
-                        "species": {
-                            "@id": "19703",
-                        },
-                        "observers": [
-                            {
-                                "@id": "33",
-                                "altitude": "230",
-                                "comment": "TEST API !!! à supprimer !!!",
-                                "coord_lat": "45.18724",
-                                "coord_lon": "5.735458",
-                                "precision": "precise",
-                                "count": "1",
-                                "estimation_code": "MINIMUM",
-                            }
-                        ],
-                    }
-                ]
-            }
+        "data": {
+            "sightings": [
+                {
+                    "date": {"@timestamp": "1430258400",},
+                    "species": {"@id": "19703",},
+                    "observers": [
+                        {
+                            "@id": "33",
+                            "altitude": "230",
+                            "comment": "TEST API !!! à supprimer !!!",
+                            "coord_lat": "45.18724",
+                            "coord_lon": "5.735458",
+                            "precision": "precise",
+                            "count": "1",
+                            "estimation_code": "MINIMUM",
+                        }
+                    ],
+                }
+            ]
         }
+    }
     if SITE == "t38":
         # First creation should succeed
         sighting = OBSERVATIONS_API.api_create(data)
@@ -978,6 +960,7 @@ def test_observers_get():
     assert "work_phone" in observer["data"][0]
 
 
+@pytest.mark.slow
 def test_observers_list_all():
     """Get list of all observers."""
     observers_list = OBSERVERS_API.api_list()

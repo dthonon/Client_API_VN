@@ -113,40 +113,51 @@ def update(cfg_ctrl, input: str):
                     row[1],
                     row[3],
                 )
-                # Get current observation
-                sighting = obs_api[row[0]].api_get(row[1], short_version="1")
-                logger.debug(
-                    _("Before: %s"), sighting["data"]["sightings"][0]["observers"][0]
-                )
-                # JSON path relative to "sighting"
-                repl = row[2].replace("$", "sighting")
-                # Get current value, if exists
-                try:
-                    old_attr = eval(repl)
-                except KeyError:
-                    old_attr = None
-                # Get current hidden_comment, if exists
-                try:
-                    msg = sighting["data"]["sightings"][0]["observers"][0][
-                        "hidden_comment"
-                    ]
-                except KeyError:
-                    msg = ""
-                # Prepare logging message to be appended to hidden_comment
-                msg = msg + json.dumps(
-                    {"op": row[3], "path": row[2], "old": old_attr, "new": row[4]}
-                )
-                exec("{} = {}".format(repl, row[4]))
-                exec(
-                    """sighting['data']['sightings'][0]['observers'][0]['hidden_comment'] = '{}'""".format(
-                        msg.replace('"', '\\"').replace("'", "\\'")
+                if row[3] not in ["delete_observation", "delete_attribute", "replace"]:
+                    logger.error(_("Unknown operation in row, ignored %s"), row)
+                elif row[3] == "delete_observation":
+                    obs_api[row[0]].api_delete(row[1])
+                else:
+                    # Get current observation
+                    sighting = obs_api[row[0]].api_get(row[1], short_version="1")
+                    logger.debug(
+                        _("Before: %s"), sighting["data"]["sightings"][0]["observers"][0]
                     )
-                )
-                logger.debug(
-                    _("After: %s"), sighting["data"]["sightings"][0]["observers"][0]
-                )
-                # Update to remote site
-                obs_api[row[0]].api_update(row[1], sighting)
+                    # JSON path relative to "sighting"
+                    repl = row[2].replace("$", "sighting")
+                    # Get current value, if exists
+                    try:
+                        old_attr = eval(repl)
+                    except KeyError:
+                        old_attr = None
+                    # Get current hidden_comment, if exists
+                    try:
+                        msg = sighting["data"]["sightings"][0]["observers"][0][
+                            "hidden_comment"
+                        ]
+                    except KeyError:
+                        msg = ""
+                    # Prepare logging message to be appended to hidden_comment
+                    msg = msg + json.dumps(
+                        {"op": row[3], "path": row[2], "old": old_attr, "new": row[4]}
+                    )
+                    if row[3] == "replace":
+                        exec("{} = {}".format(repl, row[4]))
+                    else:
+                        try:
+                            exec("del {}".format(repl))
+                        except KeyError:
+                            pass
+                    exec(
+                        """sighting['data']['sightings'][0]['observers'][0]['hidden_comment'] = '{}'""".format(
+                            msg.replace('"', '\\"').replace("'", "\\'")
+                        )
+                    )
+                    logger.debug(
+                        _("After: %s"), sighting["data"]["sightings"][0]["observers"][0]
+                    )
+                    # Update to remote site
+                    obs_api[row[0]].api_update(row[1], sighting)
 
 
 def main(args):

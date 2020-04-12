@@ -274,7 +274,7 @@ class BiolovisionAPI:
                     resp.status_code,
                     protected_url,
                 )
-                if self._http_status == 422:
+                if (self._http_status >= 400) and (self._http_status <= 499):
                     # Unreceverable error
                     logger.critical(
                         _("Unreceverable error %s, raising exception"),

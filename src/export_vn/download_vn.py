@@ -255,7 +255,7 @@ class Observations(DownloadVn):
     def _store_list(self, id_taxo_group, by_specie, short_version="1"):
         """Download from VN by API list and store json to file.
 
-        Calls biolovision_api to get observation, convert to json and store.
+        Calls biolovision_api to get observations, convert to json and store.
         If id_taxo_group is defined, downloads only this taxo_group
         Else if id_taxo_group is None, downloads all database
         If by_specie, iterate on species
@@ -282,11 +282,8 @@ class Observations(DownloadVn):
         for taxo in taxo_groups:
             if taxo["access_mode"] != "none":
                 id_taxo_group = taxo["id"]
-                since = self._backend.increment_get(self._config.site, id_taxo_group)
-                if since is None:
-                    since = datetime.now()
                 self._backend.increment_log(
-                    self._config.site, id_taxo_group, max(since, datetime.now())
+                    self._config.site, id_taxo_group, datetime.now()
                 )
                 logger.info(
                     _("Getting observations from taxo_group %s, in _store_list"),
@@ -375,21 +372,18 @@ class Observations(DownloadVn):
         for taxo in taxo_groups:
             if taxo["access_mode"] != "none":
                 id_taxo_group = taxo["id"]
-                # since = datetime.strptime(
-                #     self._backend.increment_get(self._config.site, id_taxo_group),
-                #     "%Y-%m-%d %H:%M:%S.%f",
-                # )
+
+                # Record end of download interval
+                if self._config.end_date is None:
+                    end_date = datetime.now()
+                else:
+                    end_date = self._config.end_date
                 since = self._backend.increment_get(self._config.site, id_taxo_group)
                 if since is None:
-                    since = datetime.now()
-                self._backend.increment_log(
-                    self._config.site, id_taxo_group, max(since, datetime.now())
-                )
-                end_date = (
-                    datetime.now()
-                    if self._config.end_date is None
-                    else self._config.end_date
-                )
+                    since = end_date
+                self._backend.increment_log(self._config.site, id_taxo_group, since)
+
+                # When to start download interval
                 start_date = end_date
                 min_date = (
                     datetime(1900, 1, 1)
@@ -561,9 +555,7 @@ class Observations(DownloadVn):
                 since = self._backend.increment_get(self._config.site, taxo)
             if since is not None:
                 # Valid since date provided or found in database
-                self._backend.increment_log(
-                    self._config.site, taxo, max(since, datetime.now()),
-                )
+                self._backend.increment_log(self._config.site, taxo, datetime.now())
                 logger.info(
                     _("Getting updates for taxo_group %s since %s"), taxo, since
                 )
