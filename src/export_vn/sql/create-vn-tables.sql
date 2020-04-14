@@ -121,6 +121,7 @@ CREATE TABLE {{ cfg.db_schema_vn }}.field_details(
     value_id            INTEGER,
     order_id            INTEGER,
     name                VARCHAR(1000),
+    text_v              VARCHAR(1000),
     PRIMARY KEY (id)
 );
 
@@ -145,30 +146,33 @@ CREATE OR REPLACE FUNCTION update_field_details() RETURNS TRIGGER AS $$
             group_id = CAST(NEW.item->>'group' AS INTEGER),
             value_id = CAST(NEW.item->>'value' AS INTEGER),
             order_id = CAST(NEW.item->>'order_id' AS INTEGER),
-            name     = NEW.item->>'name'
+            name     = NEW.item->>'name',
+            text_v   = NEW.item->>'text'
         WHERE id = OLD.id;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
-            INSERT INTO {{ cfg.db_schema_vn }}.field_details(id, group_id, value_id, order_id, name)
+            INSERT INTO {{ cfg.db_schema_vn }}.field_details(id, group_id, value_id, order_id, name, text_v)
             VALUES (
                 NEW.id,
                 CAST(NEW.item->>'group' AS INTEGER),
                 CAST(NEW.item->>'value' AS INTEGER),
                 CAST(NEW.item->>'order_id' AS INTEGER),
-                NEW.item->>'name'
+                NEW.item->>'name',
+                NEW.item->>'text'
             );
             END IF;
         RETURN NEW;
 
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting row when raw data is inserted
-        INSERT INTO {{ cfg.db_schema_vn }}.field_details(id, group_id, value_id, order_id, name)
+        INSERT INTO {{ cfg.db_schema_vn }}.field_details(id, group_id, value_id, order_id, name, text_v)
         VALUES (
             NEW.id,
             CAST(NEW.item->>'group' AS INTEGER),
             CAST(NEW.item->>'value' AS INTEGER),
             CAST(NEW.item->>'order_id' AS INTEGER),
-            NEW.item->>'name'
+            NEW.item->>'name',
+            NEW.item->>'text'
         );
         RETURN NEW;
     END IF;
@@ -191,6 +195,8 @@ CREATE TABLE {{ cfg.db_schema_vn }}.field_groups(
     empty_choice        VARCHAR(500),
     mandatory           VARCHAR(500),
     name                VARCHAR(1000),
+    text_v              VARCHAR(1000),
+    group_v             VARCHAR(1000),
     PRIMARY KEY (id)
 );
 
@@ -211,30 +217,36 @@ CREATE OR REPLACE FUNCTION update_field_groups() RETURNS TRIGGER AS $$
             default_v    = NEW.item->>'default',
             empty_choice = NEW.item->>'empty_choice',
             mandatory    = NEW.item->>'mandatory',
-            name         = NEW.item->>'name'
+            name         = NEW.item->>'name',
+            text_v       = NEW.item->>'text',
+            group_v      = NEW.item->>'group'
         WHERE id = OLD.id;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
-            INSERT INTO {{ cfg.db_schema_vn }}.field_groups(id, default_v, empty_choice, mandatory, name)
+            INSERT INTO {{ cfg.db_schema_vn }}.field_groups(id, default_v, empty_choice, mandatory, name, text_v, group_v)
             VALUES (
                 NEW.id,
                 NEW.item->>'default',
                 NEW.item->>'empty_choice',
                 NEW.item->>'mandatory',
-                NEW.item->>'name'
+                NEW.item->>'name',
+                NEW.item->>'text',
+                NEW.item->>'group'
             );
             END IF;
         RETURN NEW;
 
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting row when raw data is inserted
-        INSERT INTO {{ cfg.db_schema_vn }}.field_groups(id, default_v, empty_choice, mandatory, name)
+        INSERT INTO {{ cfg.db_schema_vn }}.field_groups(id, default_v, empty_choice, mandatory, name, text_v, group_v)
         VALUES (
             NEW.id,
             NEW.item->>'default',
             NEW.item->>'empty_choice',
             NEW.item->>'mandatory',
-            NEW.item->>'name'
+            NEW.item->>'name',
+            NEW.item->>'text',
+            NEW.item->>'group'
         );
         RETURN NEW;
     END IF;
