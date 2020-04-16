@@ -252,6 +252,7 @@ _ConfSchema = Map(
                 Optional("max_retry", default=5): Int(),
                 Optional("max_requests", default=0): Int(),
                 Optional("retry_delay", default=5): Int(),
+                Optional("unavailable_delay", default=600): Int(),
                 Optional("lru_maxsize", default=32): Int(),
                 Optional("pid_kp", default=0.0): Float(),
                 Optional("pid_ki", default=0.003): Float(),
@@ -444,6 +445,7 @@ class EvnSiteConf:
                 self._max_retry = config["tuning"]["max_retry"]  # type: int
                 self._max_requests = config["tuning"]["max_requests"]  # type: int
                 self._retry_delay = config["tuning"]["retry_delay"]  # type: int
+                self._unavailable_delay = config["tuning"]["unavailable_delay"]  # type: int
                 self._lru_maxsize = config["tuning"]["lru_maxsize"]  # type: int
                 self._pid_kp = config["tuning"]["pid_kp"]  # type: float
                 self._pid_ki = config["tuning"]["pid_ki"]  # type: float
@@ -464,6 +466,7 @@ class EvnSiteConf:
                 self._max_retry = 5  # type: int
                 self._max_requests = 0  # type: int
                 self._retry_delay = 5  # type: int
+                self._unavailable_delay = 600  # type: int
                 self._lru_maxsize = 32  # type: int
                 self._pid_kp = 0.0  # type: float
                 self._pid_ki = 0.003  # type: float
@@ -630,6 +633,11 @@ class EvnSiteConf:
     def tuning_retry_delay(self) -> int:
         """Return tuning parameter."""
         return self._retry_delay
+
+    @property
+    def tuning_unavailable_delay(self) -> int:
+        """Return tuning parameter."""
+        return self._unavailable_delay
 
     @property
     def tuning_max_requests(self) -> int:

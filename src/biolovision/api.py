@@ -282,7 +282,12 @@ class BiolovisionAPI:
                     )
                     raise HTTPError(resp.status_code)
                 self._transfer_errors += 1
-                time.sleep(self._config.tuning_retry_delay)
+                if self._http_status == 503:
+                    # Service unavailable: long wait
+                    time.sleep(self._config.tuning_unavailable_delay)
+                else:
+                    # A transient error: short wait
+                    time.sleep(self._config.tuning_retry_delay)
                 if self._transfer_errors > self._limits["max_retry"]:
                     # Too many retries. Raising exception
                     logger.critical(
