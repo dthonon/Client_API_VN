@@ -704,6 +704,11 @@ class StorePostgresql:
             dbschema + ".territorial_units_json"
         ]
 
+        # Create transformation
+        self._transformer = Transformer.from_proj(
+            4326, int(self._config.db_out_proj), always_xy=True
+        )
+
         # Create parallel workers for database queries
         logger.debug(
             _("Creating %s worker threads, queue size: %s"),
@@ -804,12 +809,9 @@ class StorePostgresql:
             Count of items stored (not exact for observations, due to forms).
         """
 
-        transformer = Transformer.from_proj(
-            4326, int(self._config.db_out_proj), always_xy=True
-        )
         # Loop on data array to reproject
         for elem in items_dict["data"]:
-            elem["coord_x_local"], elem["coord_y_local"] = transformer.transform(
+            elem["coord_x_local"], elem["coord_y_local"] = self._transformer.transform(
                 elem["coord_lon"], elem["coord_lat"]
             )
         return self._store_simple(controler, items_dict)
@@ -954,10 +956,6 @@ class StorePostgresql:
         logger.debug(
             _("Storing %d single observations"), len(items_dict["data"]["sightings"])
         )
-        # Create projection transformer
-        transformer = Transformer.from_proj(
-            4326, int(self._config.db_out_proj), always_xy=True
-        )
         for i in range(0, len(items_dict["data"]["sightings"])):
             elem = items_dict["data"]["sightings"][i]
             # Create UUID
@@ -970,7 +968,7 @@ class StorePostgresql:
                 self._config.site,
                 self._table_defs[controler]["metadata"],
                 self._conn,
-                transformer.transform,
+                self._transformer.transform,
                 elem,
             )
             self._observations_queue.put(obs)
@@ -1004,7 +1002,7 @@ class StorePostgresql:
                                 self._config.site,
                                 self._table_defs[controler]["metadata"],
                                 self._conn,
-                                transformer.transform,
+                                self._transformer.transform,
                                 v[i],
                                 id_form_universal,
                             )
@@ -1018,7 +1016,7 @@ class StorePostgresql:
                     else:
                         # Put anything except sightings in forms data
                         forms_data[k] = v
-                self._store_form(forms_data, transformer.transform)
+                self._store_form(forms_data, self._transformer.transform)
 
         # Wait for threads to finish before commit
         # self._observations_queue.join()
