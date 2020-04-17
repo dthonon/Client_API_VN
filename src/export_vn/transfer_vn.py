@@ -5,7 +5,9 @@ Program managing VisioNature export to Postgresql database
 """
 import argparse
 import logging
+import os
 import shutil
+import signal
 import subprocess
 import sys
 import time
@@ -17,25 +19,19 @@ import pkg_resources
 import requests
 from pytz import utc
 
+import psutil
 import yappi
-from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED, EVENT_JOB_SUBMITTED
+from apscheduler.events import (EVENT_JOB_ERROR, EVENT_JOB_EXECUTED,
+                                EVENT_JOB_SUBMITTED)
 from apscheduler.executors.pool import ProcessPoolExecutor
 from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers import SchedulerNotRunningError
 from apscheduler.schedulers.background import BackgroundScheduler
 from bs4 import BeautifulSoup
-from export_vn.download_vn import (
-    Entities,
-    Fields,
-    LocalAdminUnits,
-    Observations,
-    Observers,
-    Places,
-    Species,
-    TaxoGroup,
-    TerritorialUnits,
-)
+from export_vn.download_vn import (Entities, Fields, LocalAdminUnits,
+                                   Observations, Observers, Places, Species,
+                                   TaxoGroup, TerritorialUnits)
 from export_vn.evnconf import EvnConf
 from export_vn.store_postgresql import PostgresqlUtils, StorePostgresql
 from jinja2 import Environment, PackageLoader, select_autoescape
@@ -116,12 +112,35 @@ class Jobs:
         logger.info(_("Shutting down scheduler in __atexit__, if still running"))
         try:
             self._scheduler.shutdown(wait=False)
+        except:
+            pass
+
+    def shutdown(self):
+        logger.info(_("Shutting down scheduler"))
+        try:
+            self._scheduler.shutdown()
         except SchedulerNotRunningError:
             pass
+
+    def _handler(self, signum, frame):
+        logger.error(_("Signal handler called with signal %s"), signum)
+        try:
+            self._scheduler.shutdown(wait=False)
+        except SchedulerNotRunningError:
+            pass
+        try:
+            parent_id = os.getpid()
+            for child in psutil.Process(parent_id).children(recursive=True):
+                child.kill()
+        except:
+            pass
+        sys.exit(1)
 
     def start(self, paused=False):
         logger.debug(_("Starting scheduler, paused=%s"), paused)
         self._scheduler.start(paused)
+        signal.signal(signal.SIGINT, self._handler)
+        # signal.signal(signal.SIGTERM, self._handler)
 
     def remove_all_jobs(self):
         logger.debug(_("Removing all scheduled jobs"))
@@ -186,13 +205,6 @@ class Jobs:
             )
         logger.debug(_("Number of jobs running, %s"), len(self._job_set))
         return len(self._job_set)
-
-    def shutdown(self):
-        logger.info(_("Shutting down scheduler"))
-        try:
-            self._scheduler.shutdown()
-        except SchedulerNotRunningError:
-            pass
 
     def print_jobs(self):
         jobs = self._scheduler.get_jobs()
