@@ -88,9 +88,8 @@ def update(cfg_ctrl, input: str):
 
     obs_api = dict()
     for site, cfg in cfg_site_list.items():
-        if cfg.enabled:
-            logger.debug(_("Preparing update for site %s"), site)
-            obs_api[site] = ObservationsAPI(cfg)
+        logger.debug(_("Preparing update for site %s"), site)
+        obs_api[site] = ObservationsAPI(cfg)
 
     with open(input, newline="") as csvfile:
         reader = csv.reader(csvfile, delimiter=";")
