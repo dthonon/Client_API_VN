@@ -11,8 +11,6 @@ Properties
 
 """
 import logging
-import queue
-import threading
 from datetime import datetime, date
 from uuid import uuid4
 
@@ -46,7 +44,7 @@ class StorePostgresqlException(Exception):
 
 
 class ObservationItem:
-    """Properties of an observation, for transmission in Queue."""
+    """Properties of an observation, for writing to DB."""
 
     def __init__(self, site, metadata, conn, transformer, elem, form=None):
         """Item elements.
@@ -157,17 +155,6 @@ def store_1_observation(item):
     )
 
     item.conn.execute(do_update_stmt)
-    return None
-
-
-def observation_worker(i, q):
-    """Workers running in parallel to update database."""
-    while True:
-        item = q.get()
-        if item is None:
-            break
-        store_1_observation(item)
-        q.task_done()
     return None
 
 
@@ -709,37 +696,14 @@ class StorePostgresql:
             4326, int(self._config.db_out_proj), always_xy=True
         )
 
-        # Create parallel workers for database queries
-        logger.debug(
-            _("Creating %s worker threads, queue size: %s"),
-            self._config.tuning_db_worker_threads,
-            self._config.tuning_db_worker_queue,
-        )
-        self._observations_queue = queue.Queue(
-            maxsize=self._config.tuning_db_worker_queue
-        )
-        self._observations_threads = []
-        for i in range(self._config.tuning_db_worker_threads):
-            t = threading.Thread(
-                target=observation_worker, args=(i, self._observations_queue)
-            )
-            t.start()
-            self._observations_threads.append(t)
-
         return None
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        """Send finish signal to workers and wait for tasks to finish."""
-        logger.debug(
-            _("Stopping %s worker threads"), self._config.tuning_db_worker_threads
-        )
-        for i in range(self._config.tuning_db_worker_threads):
-            self._observations_queue.put(None)
-        for t in self._observations_threads:
-            t.join()
+        """Finalize connections."""
+        logger.debug(_("Closing database connection"))
         self._conn.close()
 
     @property
@@ -963,15 +927,16 @@ class StorePostgresql:
                 elem["observers"][0]["id_sighting"],
                 elem["observers"][0]["id_universal"],
             )
-            # Send observation to queue
-            obs = ObservationItem(
-                self._config.site,
-                self._table_defs[controler]["metadata"],
-                self._conn,
-                self._transformer.transform,
-                elem,
+            # Write observation to database
+            store_1_observation(
+                ObservationItem(
+                    self._config.site,
+                    self._table_defs[controler]["metadata"],
+                    self._conn,
+                    self._transformer.transform,
+                    elem,
+                )
             )
-            self._observations_queue.put(obs)
             nb_obs += 1
 
         if "forms" in items_dict["data"]:
@@ -998,15 +963,16 @@ class StorePostgresql:
                                 v[i]["observers"][0]["id_sighting"],
                                 v[i]["observers"][0]["id_universal"],
                             )
-                            obs = ObservationItem(
-                                self._config.site,
-                                self._table_defs[controler]["metadata"],
-                                self._conn,
-                                self._transformer.transform,
-                                v[i],
-                                id_form_universal,
+                            store_1_observation(
+                                ObservationItem(
+                                    self._config.site,
+                                    self._table_defs[controler]["metadata"],
+                                    self._conn,
+                                    self._transformer.transform,
+                                    v[i],
+                                    id_form_universal,
+                                )
                             )
-                            self._observations_queue.put(obs)
                             nb_obs += 1
                         # Add presumed start and stop date from observations
                         forms_data["date_start"] = min(dates).isoformat()
@@ -1017,9 +983,6 @@ class StorePostgresql:
                         # Put anything except sightings in forms data
                         forms_data[k] = v
                 self._store_form(forms_data, self._transformer.transform)
-
-        # Wait for threads to finish before commit
-        # self._observations_queue.join()
 
         logger.debug(_("Stored %d observations or forms to database"), nb_obs)
         return nb_obs

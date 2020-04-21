@@ -261,8 +261,6 @@ _ConfSchema = Map(
                 Optional("pid_limit_min", default=5): Float(),
                 Optional("pid_limit_max", default=2000): Float(),
                 Optional("pid_delta_days", default=15): Int(),
-                Optional("db_worker_threads", default=2): Int(),
-                Optional("db_worker_queue", default=100000): Int(),
                 Optional("sched_executors", default=1): Int(),
             }
         ),
@@ -454,10 +452,6 @@ class EvnSiteConf:
                 self._pid_limit_min = config["tuning"]["pid_limit_min"]  # type: float
                 self._pid_limit_max = config["tuning"]["pid_limit_max"]  # type: float
                 self._pid_delta_days = config["tuning"]["pid_delta_days"]  # type: int
-                self._db_worker_threads = config["tuning"][
-                    "db_worker_threads"
-                ]  # type: int
-                self._db_worker_queue = config["tuning"]["db_worker_queue"]  # type: int
                 self._sched_executors = config["tuning"]["sched_executors"]  # type: int
             else:
                 # Provide default values
@@ -475,8 +469,6 @@ class EvnSiteConf:
                 self._pid_limit_min = 1  # type: float
                 self._pid_limit_max = 2000  # type: float
                 self._pid_delta_days = 15  # type: int
-                self._db_worker_threads = 2  # type: int
-                self._db_worker_queue = 100000  # type: int
                 self._sched_executors = 1  # type: int
             if "pne" in config:
                 self._pne_data_url = config["pne"]["data_url"]  # type: str
@@ -683,16 +675,6 @@ class EvnSiteConf:
     def tuning_pid_delta_days(self) -> int:
         """Return tuning parameter."""
         return self._pid_delta_days
-
-    @property
-    def tuning_db_worker_threads(self) -> int:
-        """Return tuning parameter."""
-        return self._db_worker_threads
-
-    @property
-    def tuning_db_worker_queue(self) -> int:
-        """Return tuning parameter."""
-        return self._db_worker_queue
 
     @property
     def tuning_sched_executors(self) -> int:

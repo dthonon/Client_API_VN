@@ -209,9 +209,6 @@ tuning:
     pid_limit_min: 5
     pid_limit_max: 2000
     pid_delta_days: 10
-    # Postgresql interface tuning parameters
-    db_worker_threads: 2
-    db_worker_queue: 100000
     # Scheduler tuning parameters
     sched_executors: 2
 

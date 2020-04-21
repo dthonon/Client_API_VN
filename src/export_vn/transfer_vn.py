@@ -142,6 +142,14 @@ class Jobs:
         signal.signal(signal.SIGINT, self._handler)
         # signal.signal(signal.SIGTERM, self._handler)
 
+    def pause(self):
+        logger.debug(_("Pausing scheduler"))
+        self._scheduler.pause()
+
+    def resume(self):
+        logger.debug(_("Resuming scheduler"))
+        self._scheduler.resume()
+
     def remove_all_jobs(self):
         logger.debug(_("Removing all scheduled jobs"))
         self._scheduler.remove_all_jobs()
@@ -402,8 +410,9 @@ def full_download(cfg_ctrl):
     jobs_o = Jobs(url=URL(**db_url), nb_executors=cfg.tuning_sched_executors)
     with jobs_o as jobs:
         # Cleanup any existing job
-        jobs.start()
+        jobs.start(paused=True)
         jobs.remove_all_jobs()
+        jobs.resume()
         # Download field only once
         jobs.add_job_once(job_fn=full_download_1, args=[Fields, cfg_crtl_list, cfg])
         # Looping on sites for other controlers
@@ -541,8 +550,8 @@ def increment_schedule(cfg_ctrl):
         else:
             logger.info(_("Skipping site %s"), site)
 
-    # Start scheduler and wait for jobs to finish
-    jobs.start()
+    # Print status
+    jobs.start(paused=True)
     jobs.print_jobs()
     jobs.shutdown()
 

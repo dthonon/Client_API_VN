@@ -1,0 +1,6 @@
+Multi-tasking has been simplified, which could lead to increased --full
+dowload duration. Increasing sched_executors to 3 could help.
+The following [tuning] parameters have been deleted and must be removed
+from .YAML configuration files:
+* db_worker_threads
+* db_worker_queue
