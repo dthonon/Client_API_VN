@@ -10,6 +10,9 @@ Client_API_VN
     :alt: PyPI - Python Version
 .. image:: https://img.shields.io/pypi/l/Client-API-VN
     :alt: PyPI - License
+.. image:: https://codecov.io/gh/dthonon/Client_API_VN/branch/develop/graph/badge.svg
+  :target: https://codecov.io/gh/dthonon/Client_API_VN
+
 
 Description
 ===========
