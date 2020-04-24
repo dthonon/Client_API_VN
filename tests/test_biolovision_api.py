@@ -5,14 +5,12 @@ import json
 import logging
 import time
 from datetime import datetime, timedelta
-from pathlib import Path
 
-import pytest
 import requests
-
 from biolovision.api import (
     EntitiesAPI,
     FieldsAPI,
+    HTTPError,
     LocalAdminUnitsAPI,
     MaxChunksError,
     ObservationsAPI,
@@ -21,9 +19,10 @@ from biolovision.api import (
     SpeciesAPI,
     TaxoGroupsAPI,
     TerritorialUnitsAPI,
-    HTTPError,
 )
 from export_vn.evnconf import EvnConf
+
+import pytest
 
 # Using faune-ardeche or faune-isere site, that needs to be created first
 # SITE = "t07"
@@ -220,7 +219,6 @@ def test_observations_list_3_0():
     assert len(list["data"]) > 1
 
 
-
 def test_observations_list_3_1():
     """Get the list of sightings, from taxo_group 1, specie 153."""
     list = OBSERVATIONS_API.api_list("1", id_species="153", short_version="1")
@@ -229,7 +227,6 @@ def test_observations_list_3_1():
     )
     assert OBSERVATIONS_API.transfer_errors == 0
     assert len(list["data"]) > 1
-
 
 
 def test_observations_list_list():
@@ -863,8 +860,8 @@ def test_observations_create():
         "data": {
             "sightings": [
                 {
-                    "date": {"@timestamp": "1430258400",},
-                    "species": {"@id": "19703",},
+                    "date": {"@timestamp": "1430258400"},
+                    "species": {"@id": "19703"},
                     "observers": [
                         {
                             "@id": "33",

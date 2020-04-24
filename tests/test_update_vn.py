@@ -6,15 +6,11 @@ import logging
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
+from biolovision.api import HTTPError, ObservationsAPI
+from export_vn.evnconf import EvnConf
 from update import update_vn
 
-from biolovision.api import (
-    ObservationsAPI,
-    HTTPError,
-)
-from export_vn.evnconf import EvnConf
-from export_vn.store_file import StoreFile
+import pytest
 
 # Using faune-ardeche or faune-isere site, that needs to be created first
 # SITE = "t07"
@@ -56,8 +52,8 @@ def sighting_for_test():
         "data": {
             "sightings": [
                 {
-                    "date": {"@timestamp": "1577905620",},
-                    "species": {"@id": "312",},
+                    "date": {"@timestamp": "1577905620"},
+                    "species": {"@id": "312"},
                     "observers": [
                         {
                             "@id": "33",
@@ -78,7 +74,7 @@ def sighting_for_test():
     yield sighting
     # Finaly, check that sighting is deleted
     with pytest.raises(HTTPError):
-        res = OBSERVATIONS_API.api_delete(str(sighting["id"][0]))
+        OBSERVATIONS_API.api_delete(str(sighting["id"][0]))
 
 
 @pytest.mark.slow
@@ -178,14 +174,7 @@ def test_update(sighting_for_test):
         inwriter = csv.writer(csvfile, delimiter=";", quoting=csv.QUOTE_MINIMAL)
         inwriter.writerow(["site", "id_universal", "path", "operation", "value"])
         inwriter.writerow(
-            [
-                "Isère",
-                str(obs_1),
-                "",
-                "delete_observation",
-                "",
-            ]
+            ["Isère", str(obs_1), "", "delete_observation", ""]
         )
     with patch("sys.argv", ["py.test", name_yaml, "../" + name_input]):
         update_vn.run()
-
