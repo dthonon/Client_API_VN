@@ -86,7 +86,7 @@ import time
 import urllib
 from functools import lru_cache
 
-from typing import Dict, List
+from typing import Dict
 import requests
 from requests_oauthlib import OAuth1
 
@@ -248,10 +248,7 @@ class BiolovisionAPI:
                 )
             elif method == "DELETE":
                 resp = requests.delete(
-                    url=protected_url,
-                    auth=self._oauth,
-                    params=payload,
-                    headers=headers
+                    url=protected_url, auth=self._oauth, params=payload, headers=headers
                 )
             else:
                 raise NotImplementedException
@@ -328,9 +325,15 @@ class BiolovisionAPI:
                                     "sightings"
                                 ]
                             else:
-                                data_rec["data"]["sightings"] = resp_chunk["data"][
-                                    "sightings"
-                                ]
+                                logger.error(
+                                    _(
+                                        "No 'sightings' in previous data"
+                                    )
+                                )
+                                logger.error(data_rec)
+                                logger.error(resp_chunk)
+                                # data_rec["data"]["sightings"] =
+                                #     resp_chunk["data"]["sightings"]
                     if "forms" in resp_chunk["data"]:
                         observations = True
                         logger.debug(
@@ -344,7 +347,13 @@ class BiolovisionAPI:
                             if "forms" in data_rec["data"]:
                                 data_rec["data"]["forms"] += resp_chunk["data"]["forms"]
                             else:
-                                data_rec["data"]["forms"] = resp_chunk["data"]["forms"]
+                                logger.error(
+                                    _("Trying to add 'forms' to another data stream")
+                                )
+                                logger.error(data_rec)
+                                logger.error(resp_chunk)
+                                # data_rec["data"]["forms"] =
+                                #     resp_chunk["data"]["forms"]
 
                     if not observations:
                         logger.debug(
@@ -357,10 +366,7 @@ class BiolovisionAPI:
                         else:
                             data_rec["data"] += resp_chunk["data"]
                 else:
-                    logger.debug(
-                        _("Received non-data response: %s"),
-                        resp_chunk
-                    )
+                    logger.debug(_("Received non-data response: %s"), resp_chunk)
                     if nb_chunks == 0:
                         data_rec = resp_chunk
                     else:

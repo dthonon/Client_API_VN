@@ -120,7 +120,8 @@ def update(cfg_ctrl, input: str):
                     # Get current observation
                     sighting = obs_api[row[0]].api_get(row[1], short_version="1")
                     logger.debug(
-                        _("Before: %s"), sighting["data"]["sightings"][0]["observers"][0]
+                        _("Before: %s"),
+                        sighting["data"]["sightings"][0]["observers"][0],
                     )
                     # JSON path relative to "sighting"
                     repl = row[2].replace("$", "sighting")
@@ -216,7 +217,7 @@ def main(args):
     logger.info(_("Getting configuration data from %s"), args.config)
     try:
         cfg_ctrl = EvnConf(args.config)
-    except YAMLValidationError as error:
+    except YAMLValidationError:
         logger.critical(_("Incorrect content in YAML configuration %s"), args.config)
         raise FileNotFoundError
 

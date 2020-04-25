@@ -6,11 +6,11 @@ import logging
 import time
 from datetime import datetime, timedelta
 
-import requests
 from biolovision.api import (
     EntitiesAPI,
     FieldsAPI,
     HTTPError,
+    IncorrectParameter,
     LocalAdminUnitsAPI,
     MaxChunksError,
     ObservationsAPI,
@@ -651,6 +651,11 @@ def test_observations_get_short():
 
 def test_observations_search_1():
     """Query sightings, from taxo_group 18: Mantodea and date range."""
+    # Testing incorrect parameter
+    q_param = None
+    with pytest.raises(IncorrectParameter) as excinfo:  # noqa: F841
+        list = OBSERVATIONS_API.api_search(q_param)
+    # Testing real search
     q_param = {
         "period_choice": "range",
         "date_from": "01.09.2017",
@@ -1226,10 +1231,8 @@ def test_territorial_units_list():
 # -------------
 # Error testing
 # -------------
-@pytest.mark.skip
 def test_wrong_api():
     """Raise an exception."""
-    with pytest.raises(requests.HTTPError) as excinfo:  # noqa: F841
+    with pytest.raises(HTTPError) as excinfo:  # noqa: F841
         error = PLACES_API.wrong_api()  # noqa: F841
-    assert PLACES_API.transfer_errors != 0
     logging.debug("HTTPError code %s", excinfo)

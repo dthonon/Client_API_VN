@@ -13,8 +13,6 @@ from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
 import pkg_resources
-import requests
-from biolovision.api import ObservationsAPI
 from export_vn.evnconf import EvnConf
 from strictyaml import YAMLValidationError
 
@@ -28,12 +26,8 @@ from sqlalchemy import (
     String,
     Table,
     create_engine,
-    func,
-    select,
 )
-from sqlalchemy.dialects.postgresql import ARRAY, JSONB, insert
 from sqlalchemy.engine.url import URL
-from sqlalchemy.sql import and_
 
 from . import _, __version__
 
@@ -342,7 +336,7 @@ def main(args):
     logger.info(_("Getting configuration data from %s"), args.config)
     try:
         cfg_ctrl = EvnConf(args.config)
-    except YAMLValidationError as error:
+    except YAMLValidationError:
         logger.critical(_("Incorrect content in YAML configuration %s"), args.config)
         sys.exit(0)
 
