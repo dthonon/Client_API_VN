@@ -6,11 +6,11 @@ import logging
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
 from biolovision.api import HTTPError, ObservationsAPI
 from export_vn.evnconf import EvnConf
+from strictyaml import YAMLValidationError
 from update import update_vn
-
-import pytest
 
 # Using faune-ardeche or faune-isere site, that needs to be created first
 # SITE = "t07"
@@ -38,11 +38,48 @@ def test_init():
     name_input = ".evn_pytest.csv"
     file_input = str(Path.home()) + "/" + name_input
     Path(file_input).touch()
-    with patch("sys.argv", ["py.test", "--init", name_yaml, name_input]):
+    with patch("sys.argv", ["py.test", "--init", "--verbose", name_yaml, name_input]):
         update_vn.run()
     assert Path(file_yaml).is_file()
     Path(file_yaml).unlink()
     Path(file_input).unlink()
+
+
+def test_files():
+    """Check errors if files missing or incorrect."""
+    # Missing YAML file
+    name_yaml = ".evn_missing.yaml"
+    file_yaml = str(Path.home()) + "/" + name_yaml
+    if Path(file_yaml).is_file():
+        Path(file_yaml).unlink()
+    name_input = ".evn_missing.csv"
+    file_input = str(Path.home()) + "/" + name_input
+    Path(file_input).touch()
+    with patch("sys.argv", ["py.test", "--verbose", name_yaml, name_input]):
+        with pytest.raises(FileNotFoundError) as excinfo:  # noqa: F841
+            update_vn.run()
+    # Missing CSV file
+    name_yaml = ".evn_tst1.yaml"
+    file_yaml = str(Path.home()) + "/" + name_yaml
+    name_input = ".evn_missing.csv"
+    file_input = str(Path.home()) + "/" + name_input
+    if Path(file_input).is_file():
+        Path(file_input).unlink()
+    with patch("sys.argv", ["py.test", "--verbose", name_yaml, name_input]):
+        with pytest.raises(FileNotFoundError) as excinfo:  # noqa: F841
+            update_vn.run()
+    # Incorrect YAML file
+    name_yaml = ".evn_tst3.yaml"
+    file_yaml = str(Path.home()) + "/" + name_yaml
+    name_input = ".evn_missing.csv"
+    file_input = str(Path.home()) + "/" + name_input
+    Path(file_input).touch()
+    with patch("sys.argv", ["py.test", "--verbose", name_yaml, name_input]):
+        with pytest.raises(YAMLValidationError) as excinfo:  # noqa: F841
+            update_vn.run()
+    # Cleanup
+    if Path(file_input).is_file():
+        Path(file_input).unlink()
 
 
 @pytest.fixture(scope="function")
@@ -90,6 +127,22 @@ def test_update(sighting_for_test):
     assert sighting_for_test["status"] == "saved"
     obs_1 = sighting_for_test["id"][0]
     assert isinstance(obs_1, int)
+
+    # Check with incorrect operation
+    with open(file_input, "w", newline="") as csvfile:
+        inwriter = csv.writer(csvfile, delimiter=";", quoting=csv.QUOTE_MINIMAL)
+        inwriter.writerow(["site", "id_universal", "path", "operation", "value"])
+        inwriter.writerow(
+            [
+                "Isère",
+                str(obs_1),
+                "$['data']['sightings'][0]['observers'][0]['atlas_code']",
+                "unknown",
+                "2",
+            ]
+        )
+    with patch("sys.argv", ["py.test", name_yaml, "../" + name_input]):
+        update_vn.run()
 
     # Update atlas_code
     with open(file_input, "w", newline="") as csvfile:
@@ -173,8 +226,7 @@ def test_update(sighting_for_test):
     with open(file_input, "w", newline="") as csvfile:
         inwriter = csv.writer(csvfile, delimiter=";", quoting=csv.QUOTE_MINIMAL)
         inwriter.writerow(["site", "id_universal", "path", "operation", "value"])
-        inwriter.writerow(
-            ["Isère", str(obs_1), "", "delete_observation", ""]
-        )
+        inwriter.writerow(["Isère", str(obs_1), "", "delete_observation", ""])
     with patch("sys.argv", ["py.test", name_yaml, "../" + name_input]):
         update_vn.run()
+

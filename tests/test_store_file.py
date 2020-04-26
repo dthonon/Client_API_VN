@@ -58,3 +58,4 @@ def test_general_data_file_store():
     with gzip.open(file_json, "rb") as gziped:
         items_dict = json.loads(gziped.read().decode("utf-8"))
     assert len(items_dict["data"]) == 2
+    STORE_FILE.delete_obs(None)

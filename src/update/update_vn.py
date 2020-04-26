@@ -135,7 +135,7 @@ def update(cfg_ctrl, input: str):
                         msg = sighting["data"]["sightings"][0]["observers"][0][
                             "hidden_comment"
                         ]
-                    except KeyError:
+                    except KeyError: # pragma: no cover
                         msg = ""
                     # Prepare logging message to be appended to hidden_comment
                     msg = msg + json.dumps(
@@ -146,7 +146,7 @@ def update(cfg_ctrl, input: str):
                     else:
                         try:
                             exec("del {}".format(repl))
-                        except KeyError:
+                        except KeyError: # pragma: no cover
                             pass
                     exec(
                         """sighting['data']['sightings'][0]['observers'][0]['hidden_comment'] = '{}'""".format(
@@ -213,13 +213,13 @@ def main(args):
         logger.critical(
             _("Configuration file %s does not exist"), str(Path.home() / args.config)
         )
-        return None
+        raise FileNotFoundError
     logger.info(_("Getting configuration data from %s"), args.config)
     try:
         cfg_ctrl = EvnConf(args.config)
     except YAMLValidationError:
         logger.critical(_("Incorrect content in YAML configuration %s"), args.config)
-        raise FileNotFoundError
+        raise
 
     # Update Biolovision site from update file
     if not Path(args.input).is_file():

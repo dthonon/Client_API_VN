@@ -71,9 +71,11 @@ class Jobs:
             if event.job_id in self._job_set:
                 self._job_set.remove(event.job_id)
             else:
-                logger.error(_("Job %s not found in job_set"), event.job_id)
+                logger.error(
+                    _("Job %s not found in job_set"), event.job_id
+                )  # pragma: no cover
             if event.exception:
-                logger.error(_("The job %s crashed"), event.job_id)
+                logger.error(_("The job %s crashed"), event.job_id)  # pragma: no cover
             else:
                 logger.debug(_("The job %s worked"), event.job_id)
         logger.debug(_("Job set: %s"), self._job_set)
@@ -126,10 +128,10 @@ class Jobs:
         logger.info(_("Shutting down scheduler"))
         try:
             self._scheduler.shutdown()
-        except SchedulerNotRunningError:
+        except SchedulerNotRunningError:  # pragma: no cover
             pass
 
-    def _handler(self, signum, frame):
+    def _handler(self, signum, frame):  # pragma: no cover
         logger.error(_("Signal handler called with signal %s"), signum)
         try:
             self._scheduler.shutdown(wait=False)
@@ -149,9 +151,9 @@ class Jobs:
         signal.signal(signal.SIGINT, self._handler)
         # signal.signal(signal.SIGTERM, self._handler)
 
-    def pause(self):
-        logger.debug(_("Pausing scheduler"))
-        self._scheduler.pause()
+    # def pause(self):
+    #     logger.debug(_("Pausing scheduler"))
+    #     self._scheduler.pause()
 
     def resume(self):
         logger.debug(_("Resuming scheduler"))
@@ -362,7 +364,7 @@ def col_table_create(cfg, sql_quiet, client_min_message):
             check=True,
             shell=True,
         )
-    except subprocess.CalledProcessError as err:
+    except subprocess.CalledProcessError as err:  # pragma: no cover
         logger.error(err)
 
     return None
@@ -643,7 +645,7 @@ def count_observations(cfg_ctrl):
                         tablefmt="psql",
                     )
                 )
-        except Exception:
+        except Exception:  # pragma: no cover
             logger.error(_("Can not retrieve informations from %s"), cfg.site)
 
     return None
