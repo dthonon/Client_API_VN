@@ -24,7 +24,7 @@ update basic tools::
     python3 -m venv VN_env
     source VN_env/bin/activate
     python -m pip install --upgrade pip
-    pip install --upgrade setuptools wheel twine babel tox
+    pip install --upgrade setuptools wheel twine babel tox coverage
 
 Add the following lines to .bashrc, to enable pyenv and venv::
 
