@@ -21,20 +21,27 @@ from pytz import utc
 
 import psutil
 import yappi
-from apscheduler.events import (EVENT_JOB_ERROR, EVENT_JOB_EXECUTED,
-                                EVENT_JOB_SUBMITTED)
+from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED, EVENT_JOB_SUBMITTED
 from apscheduler.executors.pool import ProcessPoolExecutor
 from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers import SchedulerNotRunningError
 from apscheduler.schedulers.background import BackgroundScheduler
 from bs4 import BeautifulSoup
-from export_vn.download_vn import (Entities, Fields, LocalAdminUnits,
-                                   Observations, Observers, Places, Species,
-                                   TaxoGroup, TerritorialUnits)
+from export_vn.download_vn import (
+    Entities,
+    Fields,
+    LocalAdminUnits,
+    Observations,
+    Observers,
+    Places,
+    Species,
+    TaxoGroup,
+    TerritorialUnits,
+)
 from export_vn.evnconf import EvnConf
 from export_vn.store_postgresql import PostgresqlUtils, StorePostgresql
-from jinja2 import Environment, PackageLoader, select_autoescape
+from jinja2 import Environment, PackageLoader
 from sqlalchemy.engine.url import URL
 from strictyaml import YAMLValidationError
 from tabulate import tabulate
@@ -64,9 +71,11 @@ class Jobs:
             if event.job_id in self._job_set:
                 self._job_set.remove(event.job_id)
             else:
-                logger.error(_("Job %s not found in job_set"), event.job_id)
+                logger.error(
+                    _("Job %s not found in job_set"), event.job_id
+                )  # pragma: no cover
             if event.exception:
-                logger.error(_("The job %s crashed"), event.job_id)
+                logger.error(_("The job %s crashed"), event.job_id)  # pragma: no cover
             else:
                 logger.debug(_("The job %s worked"), event.job_id)
         logger.debug(_("Job set: %s"), self._job_set)
@@ -112,17 +121,17 @@ class Jobs:
         logger.info(_("Shutting down scheduler in __atexit__, if still running"))
         try:
             self._scheduler.shutdown(wait=False)
-        except:
+        except Exception:
             pass
 
     def shutdown(self):
         logger.info(_("Shutting down scheduler"))
         try:
             self._scheduler.shutdown()
-        except SchedulerNotRunningError:
+        except SchedulerNotRunningError:  # pragma: no cover
             pass
 
-    def _handler(self, signum, frame):
+    def _handler(self, signum, frame):  # pragma: no cover
         logger.error(_("Signal handler called with signal %s"), signum)
         try:
             self._scheduler.shutdown(wait=False)
@@ -132,7 +141,7 @@ class Jobs:
             parent_id = os.getpid()
             for child in psutil.Process(parent_id).children(recursive=True):
                 child.kill()
-        except:
+        except Exception:
             pass
         sys.exit(1)
 
@@ -142,9 +151,9 @@ class Jobs:
         signal.signal(signal.SIGINT, self._handler)
         # signal.signal(signal.SIGTERM, self._handler)
 
-    def pause(self):
-        logger.debug(_("Pausing scheduler"))
-        self._scheduler.pause()
+    # def pause(self):
+    #     logger.debug(_("Pausing scheduler"))
+    #     self._scheduler.pause()
 
     def resume(self):
         logger.debug(_("Resuming scheduler"))
@@ -355,7 +364,7 @@ def col_table_create(cfg, sql_quiet, client_min_message):
             check=True,
             shell=True,
         )
-    except subprocess.CalledProcessError as err:
+    except subprocess.CalledProcessError as err:  # pragma: no cover
         logger.error(err)
 
     return None
@@ -636,7 +645,7 @@ def count_observations(cfg_ctrl):
                         tablefmt="psql",
                     )
                 )
-        except:
+        except Exception:  # pragma: no cover
             logger.error(_("Can not retrieve informations from %s"), cfg.site)
 
     return None
@@ -707,7 +716,7 @@ def main(args):
     logger.info(_("Getting configuration data from %s"), args.file)
     try:
         cfg_ctrl = EvnConf(args.file)
-    except YAMLValidationError as error:
+    except YAMLValidationError:
         logger.critical(_("Incorrect content in YAML configuration %s"), args.file)
         sys.exit(0)
     cfg_site_list = cfg_ctrl.site_list

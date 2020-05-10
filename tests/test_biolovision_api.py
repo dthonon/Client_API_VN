@@ -5,14 +5,12 @@ import json
 import logging
 import time
 from datetime import datetime, timedelta
-from pathlib import Path
-
-import pytest
-import requests
 
 from biolovision.api import (
     EntitiesAPI,
     FieldsAPI,
+    HTTPError,
+    IncorrectParameter,
     LocalAdminUnitsAPI,
     MaxChunksError,
     ObservationsAPI,
@@ -21,10 +19,15 @@ from biolovision.api import (
     SpeciesAPI,
     TaxoGroupsAPI,
     TerritorialUnitsAPI,
+<<<<<<< HEAD
     ValidationsAPI,
     HTTPError,
+=======
+>>>>>>> 88f99c415938fcb3ba32d3297d5c4ac3d62467cc
 )
 from export_vn.evnconf import EvnConf
+
+import pytest
 
 # Using faune-ardeche or faune-isere site, that needs to be created first
 # SITE = "t07"
@@ -239,7 +242,6 @@ def test_observations_list_3_0():
     assert len(list["data"]) > 1
 
 
-
 def test_observations_list_3_1():
     """Get the list of sightings, from taxo_group 1, specie 153."""
     list = OBSERVATIONS_API.api_list("1", id_species="153", short_version="1")
@@ -248,7 +250,6 @@ def test_observations_list_3_1():
     )
     assert OBSERVATIONS_API.transfer_errors == 0
     assert len(list["data"]) > 1
-
 
 
 def test_observations_list_list():
@@ -673,6 +674,11 @@ def test_observations_get_short():
 
 def test_observations_search_1():
     """Query sightings, from taxo_group 18: Mantodea and date range."""
+    # Testing incorrect parameter
+    q_param = None
+    with pytest.raises(IncorrectParameter) as excinfo:  # noqa: F841
+        list = OBSERVATIONS_API.api_search(q_param)
+    # Testing real search
     q_param = {
         "period_choice": "range",
         "date_from": "01.09.2017",
@@ -882,8 +888,8 @@ def test_observations_create():
         "data": {
             "sightings": [
                 {
-                    "date": {"@timestamp": "1430258400",},
-                    "species": {"@id": "19703",},
+                    "date": {"@timestamp": "1430258400"},
+                    "species": {"@id": "19703"},
                     "observers": [
                         {
                             "@id": "33",
@@ -1313,10 +1319,8 @@ def test_validations_list():
 # -------------
 # Error testing
 # -------------
-@pytest.mark.skip
 def test_wrong_api():
     """Raise an exception."""
-    with pytest.raises(requests.HTTPError) as excinfo:  # noqa: F841
+    with pytest.raises(HTTPError) as excinfo:  # noqa: F841
         error = PLACES_API.wrong_api()  # noqa: F841
-    assert PLACES_API.transfer_errors != 0
     logging.debug("HTTPError code %s", excinfo)

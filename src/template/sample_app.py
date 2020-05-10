@@ -115,15 +115,18 @@ def main(args):
 
     # Get configuration from file
     if not (Path.home() / args.config).is_file():
-        logger.critical(_("Configuration file %s does not exist"), str(Path.home() / args.config))
+        logger.critical(
+            _("Configuration file %s does not exist"), str(Path.home() / args.config)
+        )
         return None
     logger.info(_("Getting configuration data from %s"), args.config)
     try:
         cfg_ctrl = EvnConf(args.config)
-    except YAMLValidationError as error:
+    except YAMLValidationError:
         logger.critical(_("Incorrect content in YAML configuration %s"), args.config)
         sys.exit(0)
     cfg_site_list = cfg_ctrl.site_list
+    logger.debug(cfg_site_list)
 
     return None
 

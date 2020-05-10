@@ -5,10 +5,26 @@ import logging
 
 from export_vn.regulator import PID
 
+import pytest
+
 
 def test_version():
     """Check if version is defined."""
     logging.debug("package version: %s", PID().version)
+
+
+def test_tunings():
+    """Check tunings property and setter."""
+    pid = PID(1, 2, 3, output_limits=(0, 10))
+    assert pid.tunings == (1, 2, 3)
+    assert pid.output_limits == (0, 10)
+    pid.tunings = (4, 5, 6)
+    assert pid.tunings == (4, 5, 6)
+    pid.output_limits = (20, 30)
+    assert pid.output_limits == (20, 30)
+    with pytest.raises(ValueError) as excinfo:
+        pid.output_limits = (30, 0)
+
 
 
 def test_zero():

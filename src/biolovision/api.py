@@ -88,7 +88,7 @@ import time
 import urllib
 from functools import lru_cache
 
-from typing import Dict, List
+from typing import Dict
 import requests
 from requests_oauthlib import OAuth1
 
@@ -250,10 +250,7 @@ class BiolovisionAPI:
                 )
             elif method == "DELETE":
                 resp = requests.delete(
-                    url=protected_url,
-                    auth=self._oauth,
-                    params=payload,
-                    headers=headers
+                    url=protected_url, auth=self._oauth, params=payload, headers=headers
                 )
             else:
                 raise NotImplementedException
@@ -276,21 +273,25 @@ class BiolovisionAPI:
                     resp.status_code,
                     protected_url,
                 )
-                if (self._http_status >= 400) and (self._http_status <= 499):
+                if (self._http_status >= 400) and (
+                    self._http_status <= 499
+                ):  # pragma: no cover
                     # Unreceverable error
                     logger.critical(
                         _("Unreceverable error %s, raising exception"),
                         self._http_status,
                     )
                     raise HTTPError(resp.status_code)
-                self._transfer_errors += 1
-                if self._http_status == 503:
+                self._transfer_errors += 1  # pragma: no cover
+                if self._http_status == 503:  # pragma: no cover
                     # Service unavailable: long wait
                     time.sleep(self._config.tuning_unavailable_delay)
                 else:
                     # A transient error: short wait
                     time.sleep(self._config.tuning_retry_delay)
-                if self._transfer_errors > self._limits["max_retry"]:
+                if (
+                    self._transfer_errors > self._limits["max_retry"]
+                ):  # pragma: no cover
                     # Too many retries. Raising exception
                     logger.critical(
                         _("Too many error %s, raising exception"), self._transfer_errors
@@ -304,7 +305,7 @@ class BiolovisionAPI:
                 else:
                     try:
                         resp_chunk = resp.json()
-                    except json.decoder.JSONDecodeError:
+                    except json.decoder.JSONDecodeError:  # pragma: no cover
                         # Error during JSON decoding =>
                         # Logging error and no further processing of empty chunk
                         resp_chunk = json.loads("{}")
@@ -329,10 +330,12 @@ class BiolovisionAPI:
                                 data_rec["data"]["sightings"] += resp_chunk["data"][
                                     "sightings"
                                 ]
-                            else:
-                                data_rec["data"]["sightings"] = resp_chunk["data"][
-                                    "sightings"
-                                ]
+                            else:  # pragma: no cover
+                                logger.error(_("No 'sightings' in previous data"))
+                                logger.error(data_rec)
+                                logger.error(resp_chunk)
+                                # data_rec["data"]["sightings"] =
+                                #     resp_chunk["data"]["sightings"]
                     if "forms" in resp_chunk["data"]:
                         observations = True
                         logger.debug(
@@ -345,8 +348,14 @@ class BiolovisionAPI:
                         else:
                             if "forms" in data_rec["data"]:
                                 data_rec["data"]["forms"] += resp_chunk["data"]["forms"]
-                            else:
-                                data_rec["data"]["forms"] = resp_chunk["data"]["forms"]
+                            else:  # pragma: no cover
+                                logger.error(
+                                    _("Trying to add 'forms' to another data stream")
+                                )
+                                logger.error(data_rec)
+                                logger.error(resp_chunk)
+                                # data_rec["data"]["forms"] =
+                                #     resp_chunk["data"]["forms"]
 
                     if not observations:
                         logger.debug(
@@ -359,10 +368,7 @@ class BiolovisionAPI:
                         else:
                             data_rec["data"] += resp_chunk["data"]
                 else:
-                    logger.debug(
-                        _("Received non-data response: %s"),
-                        resp_chunk
-                    )
+                    logger.debug(_("Received non-data response: %s"), resp_chunk)
                     if nb_chunks == 0:
                         data_rec = resp_chunk
                     else:
