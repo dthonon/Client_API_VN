@@ -19,11 +19,8 @@ from biolovision.api import (
     SpeciesAPI,
     TaxoGroupsAPI,
     TerritorialUnitsAPI,
-<<<<<<< HEAD
     ValidationsAPI,
     HTTPError,
-=======
->>>>>>> 88f99c415938fcb3ba32d3297d5c4ac3d62467cc
 )
 from export_vn.evnconf import EvnConf
 
