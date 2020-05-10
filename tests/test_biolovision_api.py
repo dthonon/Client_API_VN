@@ -21,6 +21,7 @@ from biolovision.api import (
     SpeciesAPI,
     TaxoGroupsAPI,
     TerritorialUnitsAPI,
+    ValidationsAPI,
     HTTPError,
 )
 from export_vn.evnconf import EvnConf
@@ -42,7 +43,7 @@ SPECIES_API = SpeciesAPI(CFG)
 SPECIES_API_ERR = SpeciesAPI(CFG, max_retry=1, max_requests=1, max_chunks=1)
 TAXO_GROUPS_API = TaxoGroupsAPI(CFG)
 TERRITORIAL_UNITS_API = TerritorialUnitsAPI(CFG)
-
+VALIDATIONS_API = ValidationsAPI(CFG)
 
 def test_version():
     """Check if version is defined."""
@@ -52,6 +53,12 @@ def test_version():
 # --------------------------
 # Entities controler methods
 # --------------------------
+def test_entities_controler():
+    """Check controler name."""
+    ctrl = ENTITIES_API.controler
+    assert ctrl == "entities"
+
+
 def test_entities_get():
     """Get an entity."""
     entity = ENTITIES_API.api_get("2")
@@ -75,6 +82,12 @@ def test_entities_list():
 # --------------------------
 # Fields controler methods
 # --------------------------
+def test_fields_controler():
+    """Check controler name."""
+    ctrl = FIELDS_API.controler
+    assert ctrl == "fields"
+
+
 def test_fields_get():
     """Get a field."""
     field = FIELDS_API.api_get("0")
@@ -93,7 +106,7 @@ def test_fields_list():
 # ------------------------------------
 #  Local admin units controler methods
 # ------------------------------------
-def test_controler():
+def test_local_admin_units_controler():
     """Check controler name."""
     ctrl = LOCAL_ADMIN_UNITS_API.controler
     assert ctrl == "local_admin_units"
@@ -179,6 +192,12 @@ def test_local_admin_units_list_1():
 # ------------------------------
 # Observations controler methods
 # ------------------------------
+def test_observations_controler():
+    """Check controler name."""
+    ctrl = OBSERVATIONS_API.controler
+    assert ctrl == "observations"
+
+
 def test_observations_diff():
     """Get list of diffs from last day."""
     since = (datetime.now() - timedelta(days=1)).strftime("%H:%M:%S %d.%m.%Y")
@@ -902,6 +921,12 @@ def test_observations_create():
 # ----------------------------
 #  Observers controler methods
 # ----------------------------
+def test_observers_controler():
+    """Check controler name."""
+    ctrl = OBSERVERS_API.controler
+    assert ctrl == "observers"
+
+
 def test_observers_get():
     """Get a single observer."""
     if SITE == "t38":
@@ -913,6 +938,7 @@ def test_observers_get():
     logging.debug("Getting observer %s", o)
     observer = OBSERVERS_API.api_get(o)
     assert OBSERVERS_API.transfer_errors == 0
+    assert "data" in observer
     assert observer["data"][0]["id_universal"] == "11675"
     assert observer["data"][0]["email"] == "d.thonon9@gmail.com"
     assert "anonymous" in observer["data"][0]
@@ -996,6 +1022,12 @@ def test_observers_list_diff():
 # -------------------------
 #  Places controler methods
 # -------------------------
+def test_places_controler():
+    """Check controler name."""
+    ctrl = PLACES_API.controler
+    assert ctrl == "places"
+
+
 def test_places_get():
     """Get a single place."""
     if SITE == "t38":
@@ -1098,6 +1130,12 @@ def test_places_list_1():
 # -------------------------
 # Species controler methods
 # -------------------------
+def test_species_controler():
+    """Check controler name."""
+    ctrl = SPECIES_API.controler
+    assert ctrl == "species"
+
+
 def test_species_get():
     """Get a single specie."""
     logging.debug("Getting species from taxo_group %s", "2")
@@ -1156,6 +1194,12 @@ def test_species_list_error():
 # ----------------------------
 # Taxo_group controler methods
 # ----------------------------
+def test_taxo_groups_controler():
+    """Check controler name."""
+    ctrl = TAXO_GROUPS_API.controler
+    assert ctrl == "taxo_groups"
+
+
 def test_taxo_groups_get():
     """Get a taxo_groups."""
     taxo_group = TAXO_GROUPS_API.api_get("2")
@@ -1192,6 +1236,12 @@ def test_taxo_groups_list():
 # -----------------------------------
 # Territorial_units controler methods
 # -----------------------------------
+def test_territorial_units_controler():
+    """Check controler name."""
+    ctrl = TERRITORIAL_UNITS_API.controler
+    assert ctrl == "territorial_units"
+
+
 def test_territorial_units_get():
     """Get a territorial_units."""
     if SITE == "t38":
@@ -1225,6 +1275,40 @@ def test_territorial_units_list():
     logging.debug("territorial_units_list, call 2 took: " + str(took) + " ms")
     assert TERRITORIAL_UNITS_API.transfer_errors == 0
 
+
+# -----------------------------
+# Validations controler methods
+# -----------------------------
+def test_validations_controler():
+    """Check controler name."""
+    ctrl = VALIDATIONS_API.controler
+    assert ctrl == "validations"
+
+
+def test_validations_get():
+    """Get a validation."""
+    validation = VALIDATIONS_API.api_get("2")
+    assert VALIDATIONS_API.transfer_errors == 0
+    logging.debug("Validation 2:")
+    logging.debug(validation)
+    assert "data" in validation
+    assert len(validation["data"]) == 1
+    assert validation["data"][0]["id"] == "2"
+    assert isinstance(validation["data"][0]["committee"], str)
+    assert int(validation["data"][0]["date_start"]) >= 1
+    assert int(validation["data"][0]["date_start"]) <= 366
+    assert int(validation["data"][0]["date_stop"]) >= 1
+    assert int(validation["data"][0]["date_stop"]) <= 366
+    assert int(validation["data"][0]["id_species"]) >= 1
+
+
+def test_validations_list():
+    """Get list of validations."""
+    # Validations for the last days
+    validations = VALIDATIONS_API.api_list()
+    assert VALIDATIONS_API.transfer_errors == 0
+    assert len(validations["data"]) >= 1
+    logging.debug(f"Number of validations : {len(validations['data'])}")
 
 # -------------
 # Error testing

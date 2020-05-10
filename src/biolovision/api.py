@@ -39,6 +39,8 @@ Biolovision API to Classes mapping:
 +-------------------------------+---------------------+
 | Entities                      | EntitiesAPI         |
 +-------------------------------+---------------------+
+| Protocols                     | NA                  |
++-------------------------------+---------------------+
 | Export organizations          | NA                  |
 +-------------------------------+---------------------+
 | Observations                  | ObservationsAPI     |
@@ -51,7 +53,7 @@ Biolovision API to Classes mapping:
 +-------------------------------+---------------------+
 | Import files/Observations     | NA                  |
 +-------------------------------+---------------------+
-| Validations                   | NA                  |
+| Validations                   | ValidationsAPI      |
 +-------------------------------+---------------------+
 | Mortality informations        | NA                  |
 +-------------------------------+---------------------+
@@ -803,3 +805,16 @@ class TerritorialUnitsAPI(BiolovisionAPI):
     def api_list(self, opt_params=None):
         """Return list of taxo groups, from cache or site."""
         return super().api_list()
+
+class ValidationsAPI(BiolovisionAPI):
+    """ Implement api calls to validations controler.
+
+    Methods
+    - api_get                - Return a single validation from the controler
+    - api_list               - Return the list of validations from the controler
+
+    """
+
+    def __init__(self, config, max_retry=None, max_requests=None, max_chunks=None):
+        super().__init__(config, "validations", max_retry, max_requests, max_chunks)
+
