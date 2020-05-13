@@ -131,7 +131,7 @@ def test_update(sighting_for_test):
     # Check with incorrect operation
     with open(file_input, "w", newline="") as csvfile:
         inwriter = csv.writer(csvfile, delimiter=";", quoting=csv.QUOTE_MINIMAL)
-        inwriter.writerow(["site", "id_universal", "path", "operation", "value"])
+        inwriter.writerow([" site", "id_universal ", "path", "operation", " value "])
         inwriter.writerow(
             [
                 "Isère",
