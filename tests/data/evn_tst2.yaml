@@ -119,6 +119,8 @@ file:
 
 # Postgresql backend related parameters
 database:
+    # Enable storing to database
+    enabled: false
     # Database host
     db_host: localhost
     # Database IP port

@@ -25,6 +25,7 @@ CRTL = "observations"
             "site": "tst1",
             "site_enabled": True,
             "file_enabled": True,
+            "db_enabled": True,
             "start_date": datetime(2019, 8, 1),
             "end_date": datetime(2019, 9, 1),
         },
@@ -33,6 +34,7 @@ CRTL = "observations"
             "site": "tst2",
             "site_enabled": False,
             "file_enabled": True,
+            "db_enabled": True,
             "start_date": datetime(2019, 8, 1),
             "end_date": datetime(2019, 9, 1),
         },
@@ -41,6 +43,7 @@ CRTL = "observations"
             "site": "tst3",
             "site_enabled": True,
             "file_enabled": False,
+            "db_enabled": False,
             "start_date": None,
             "end_date": None,
         },
@@ -49,6 +52,7 @@ CRTL = "observations"
             "site": "tst4",
             "site_enabled": True,
             "file_enabled": False,
+            "db_enabled": False,
             "start_date": None,
             "end_date": None,
         },
@@ -264,6 +268,12 @@ def test_file_store(create_file):
         assert s_cfg.file_store == "test_files" + "/" + params["site"] + "/"
     else:
         assert s_cfg.file_store == ""
+
+
+def test_db_enabled(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, cfg_file, params = create_file
+    assert s_cfg.db_enabled == params["db_enabled"]
 
 
 def test_db_host(create_file):

@@ -75,7 +75,8 @@ def test_increment_log_pg_store():
 def test_increment_get_pg_store():
     """Get an increment entry."""
     last_ts = STORE_PG.increment_get(SITE, 1)
-    assert last_ts < datetime.now()
+    if last_ts is not None:
+        assert last_ts < datetime.now()
 
 
 # --------

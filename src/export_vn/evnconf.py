@@ -231,8 +231,9 @@ _ConfSchema = Map(
             ),
         ),
         Optional("file"): Map({"enabled": Bool(), "file_store": Str()}),
-        "database": Map(
+        Optional("database"): Map(
             {
+                "enabled": Bool(),
                 Optional("db_host", default="localhost"): Str(),
                 Optional("db_port", default=5432): Int(),
                 "db_name": Str(),
@@ -426,16 +427,33 @@ class EvnSiteConf:
                         logger.error(_("file:file_store must be defined"))
                         raise IncorrectParameter
 
-            self._db_host = config["database"]["db_host"]  # type: str
-            self._db_port = str(config["database"]["db_port"])  # type: str
-            self._db_name = config["database"]["db_name"]  # type: str
-            self._db_schema_import = config["database"]["db_schema_import"]  # type: str
-            self._db_schema_vn = config["database"]["db_schema_vn"]  # type: str
-            self._db_group = config["database"]["db_group"]  # type: str
-            self._db_user = config["database"]["db_user"]  # type: str
-            self._db_pw = config["database"]["db_pw"]  # type: str
-            self._db_secret_key = config["database"]["db_secret_key"]  # type: str
-            self._db_out_proj = config["database"]["db_out_proj"]  # type: str
+            self._database_enabled = False  # type: bool
+            self._db_host = ""  # type: str
+            self._db_port = ""  # type: str
+            self._db_name = ""  # type: str
+            self._db_schema_import = ""  # type: str
+            self._db_schema_vn = ""  # type: str
+            self._db_group = ""  # type: str
+            self._db_user = ""  # type: str
+            self._db_pw = ""  # type: str
+            self._db_secret_key = ""  # type: str
+            self._db_out_proj = ""  # type: str
+            if "database" in config:
+                self._database_enabled = (
+                    False
+                    if "enabled" not in config["database"]
+                    else config["database"]["enabled"]
+                )
+                self._db_host = config["database"]["db_host"]  # type: str
+                self._db_port = str(config["database"]["db_port"])  # type: str
+                self._db_name = config["database"]["db_name"]  # type: str
+                self._db_schema_import = config["database"]["db_schema_import"]  # type: str
+                self._db_schema_vn = config["database"]["db_schema_vn"]  # type: str
+                self._db_group = config["database"]["db_group"]  # type: str
+                self._db_user = config["database"]["db_user"]  # type: str
+                self._db_pw = config["database"]["db_pw"]  # type: str
+                self._db_secret_key = config["database"]["db_secret_key"]  # type: str
+                self._db_out_proj = config["database"]["db_out_proj"]  # type: str
 
             if "tuning" in config:
                 self._max_list_length = config["tuning"]["max_list_length"]  # type: int
@@ -443,7 +461,9 @@ class EvnSiteConf:
                 self._max_retry = config["tuning"]["max_retry"]  # type: int
                 self._max_requests = config["tuning"]["max_requests"]  # type: int
                 self._retry_delay = config["tuning"]["retry_delay"]  # type: int
-                self._unavailable_delay = config["tuning"]["unavailable_delay"]  # type: int
+                self._unavailable_delay = config["tuning"][
+                    "unavailable_delay"
+                ]  # type: int
                 self._lru_maxsize = config["tuning"]["lru_maxsize"]  # type: int
                 self._pid_kp = config["tuning"]["pid_kp"]  # type: float
                 self._pid_ki = config["tuning"]["pid_ki"]  # type: float
@@ -555,6 +575,12 @@ class EvnSiteConf:
     def file_store(self) -> str:
         """Return directory, under $HOME, where downloaded files are stored."""
         return self._file_store
+
+    @property
+    def db_enabled(self) -> bool:
+        """Return flag to enable or not database storage
+        on top of Postgresql storage."""
+        return self._database_enabled
 
     @property
     def db_host(self) -> str:

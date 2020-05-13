@@ -161,6 +161,8 @@ file:
 
 # Postgresql backend related parameters
 database:
+    # Enable storing to database
+    enabled: true
     # Database host
     db_host: localhost
     # Database IP port
