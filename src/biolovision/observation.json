@@ -1,0 +1,1507 @@
+{
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "$ref": "#/definitions/Welcome",
+    "definitions": {
+        "Welcome": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/Data"
+                }
+            },
+            "required": [
+                "data"
+            ],
+            "title": "Welcome"
+        },
+        "Data": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "sightings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/DataSighting"
+                    }
+                },
+                "forms": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Form"
+                    }
+                }
+            },
+            "required": [
+                "forms",
+                "sightings"
+            ],
+            "title": "Data"
+        },
+        "Form": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "@id": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "id_form_universal": {
+                    "type": "string"
+                },
+                "time_start": {
+                    "type": "string",
+                    "format": "time"
+                },
+                "time_stop": {
+                    "type": "string",
+                    "format": "time"
+                },
+                "full_form": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "version": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "lat": {
+                    "type": "string"
+                },
+                "lon": {
+                    "type": "string"
+                },
+                "id_form_mobile": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "sightings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/FormSighting"
+                    }
+                },
+                "protocol": {
+                    "$ref": "#/definitions/Protocol"
+                }
+            },
+            "required": [
+                "@id",
+                "full_form",
+                "id_form_universal",
+                "lat",
+                "lon",
+                "sightings",
+                "time_start",
+                "time_stop",
+                "version"
+            ],
+            "title": "Form"
+        },
+        "Protocol": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "protocol_name": {
+                    "$ref": "#/definitions/ProtocolName"
+                },
+                "site_code": {
+                    "$ref": "#/definitions/SiteCodeUnion"
+                },
+                "local_site_code": {
+                    "type": "string"
+                },
+                "advanced": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "visit_number": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "sequence_number": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "habitat": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/StocCloud"
+                    }
+                },
+                "stoc_rain": {
+                    "$ref": "#/definitions/StocCloud"
+                },
+                "stoc_wind": {
+                    "$ref": "#/definitions/StocCloud"
+                },
+                "stoc_visibility": {
+                    "$ref": "#/definitions/StocCloud"
+                },
+                "stoc_cloud": {
+                    "$ref": "#/definitions/StocCloud"
+                },
+                "stoc_snow": {
+                    "$ref": "#/definitions/StocCloud"
+                },
+                "list_type": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "advanced",
+                "local_site_code",
+                "protocol_name",
+                "sequence_number",
+                "site_code",
+                "visit_number"
+            ],
+            "title": "Protocol"
+        },
+        "StocCloud": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "@id": {
+                    "$ref": "#/definitions/IDUnion"
+                },
+                "#text": {
+                    "$ref": "#/definitions/TextUnion"
+                }
+            },
+            "required": [
+                "#text"
+            ],
+            "title": "StocCloud"
+        },
+        "FormSighting": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "date": {
+                    "$ref": "#/definitions/Date"
+                },
+                "species": {
+                    "$ref": "#/definitions/PurpleSpecies"
+                },
+                "place": {
+                    "$ref": "#/definitions/Place"
+                },
+                "observers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PurpleObserver"
+                    }
+                }
+            },
+            "required": [
+                "date",
+                "observers",
+                "place",
+                "species"
+            ],
+            "title": "FormSighting"
+        },
+        "Date": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "@timestamp": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "@notime": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "@offset": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "@ISO8601": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "#text": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "#text",
+                "@ISO8601",
+                "@notime",
+                "@offset",
+                "@timestamp"
+            ],
+            "title": "Date"
+        },
+        "PurpleObserver": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "@id": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "@uid": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "anonymous": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "second_hand": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "traid": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "id_sighting": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "id_universal": {
+                    "type": "string"
+                },
+                "timing": {
+                    "$ref": "#/definitions/Date"
+                },
+                "coord_lat": {
+                    "type": "string"
+                },
+                "coord_lon": {
+                    "type": "string"
+                },
+                "altitude": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "atlas_grid_name": {
+                    "$ref": "#/definitions/AtlasGridName"
+                },
+                "id_form": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "id_form_universal": {
+                    "type": "string"
+                },
+                "precision": {
+                    "$ref": "#/definitions/PlaceType"
+                },
+                "estimation_code": {
+                    "$ref": "#/definitions/EstimationCode"
+                },
+                "count": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "flight_number": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "source": {
+                    "$ref": "#/definitions/PurpleSource"
+                },
+                "project": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "project_name": {
+                    "$ref": "#/definitions/PurpleProjectName"
+                },
+                "project_code": {
+                    "$ref": "#/definitions/PurpleProjectCode"
+                },
+                "insert_date": {
+                    "$ref": "#/definitions/Date"
+                },
+                "update_date": {
+                    "$ref": "#/definitions/Date"
+                },
+                "atlas_code": {
+                    "$ref": "#/definitions/StocCloud"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "details": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Detail"
+                    }
+                },
+                "admin_hidden": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "admin_hidden_type": {
+                    "$ref": "#/definitions/AdminHiddenType"
+                },
+                "medias": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Media"
+                    }
+                },
+                "behaviours": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Behaviour"
+                    }
+                },
+                "entity": {
+                    "$ref": "#/definitions/PurpleEntity"
+                },
+                "entity_fullname": {
+                    "$ref": "#/definitions/PurpleEntityFullname"
+                },
+                "hidden": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "extended_info": {
+                    "$ref": "#/definitions/PurpleExtendedInfo"
+                }
+            },
+            "required": [
+                "@id",
+                "@uid",
+                "altitude",
+                "anonymous",
+                "atlas_grid_name",
+                "coord_lat",
+                "coord_lon",
+                "count",
+                "estimation_code",
+                "flight_number",
+                "id_form",
+                "id_form_universal",
+                "id_sighting",
+                "id_universal",
+                "insert_date",
+                "name",
+                "precision",
+                "second_hand",
+                "source",
+                "timing",
+                "traid"
+            ],
+            "title": "PurpleObserver"
+        },
+        "Behaviour": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "@id": {
+                    "$ref": "#/definitions/BehaviourID"
+                },
+                "name": {
+                    "$ref": "#/definitions/Name"
+                },
+                "#text": {
+                    "$ref": "#/definitions/BehaviourText"
+                }
+            },
+            "required": [
+                "#text",
+                "@id",
+                "name"
+            ],
+            "title": "Behaviour"
+        },
+        "Detail": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "count": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "sex": {
+                    "$ref": "#/definitions/StocCloud"
+                },
+                "age": {
+                    "$ref": "#/definitions/StocCloud"
+                },
+                "condition": {
+                    "$ref": "#/definitions/StocCloud"
+                },
+                "distance": {
+                    "$ref": "#/definitions/StocCloud"
+                }
+            },
+            "required": [
+                "age",
+                "condition",
+                "count",
+                "sex"
+            ],
+            "title": "Detail"
+        },
+        "PurpleExtendedInfo": {
+            "type": "object",
+            "additionalProperties": false,
+            "title": "PurpleExtendedInfo"
+        },
+        "Media": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "@id": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "type": {
+                    "$ref": "#/definitions/Type"
+                },
+                "media_is_hidden": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "path": {
+                    "type": "string",
+                    "format": "uri",
+                    "qt-uri-protocols": [
+                        "https"
+                    ]
+                },
+                "filename": {
+                    "type": "string"
+                },
+                "metadata": {
+                    "type": "string"
+                },
+                "insert_date": {
+                    "$ref": "#/definitions/Date"
+                }
+            },
+            "required": [
+                "@id",
+                "filename",
+                "insert_date",
+                "media_is_hidden",
+                "metadata",
+                "path",
+                "type"
+            ],
+            "title": "Media"
+        },
+        "Place": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "@id": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "altitude": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "place_type": {
+                    "$ref": "#/definitions/PlaceType"
+                },
+                "loc_precision": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "coord_lat": {
+                    "type": "string"
+                },
+                "coord_lon": {
+                    "type": "string"
+                },
+                "insee": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "municipality": {
+                    "type": "string"
+                },
+                "county": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "country": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "@id",
+                "altitude",
+                "coord_lat",
+                "coord_lon",
+                "country",
+                "county",
+                "insee",
+                "loc_precision",
+                "municipality",
+                "name",
+                "place_type"
+            ],
+            "title": "Place"
+        },
+        "PurpleSpecies": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "@id": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "sys_order": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "taxonomy": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "rarity": {
+                    "$ref": "#/definitions/Rarity"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "latin_name": {
+                    "type": "string"
+                },
+                "category": {
+                    "$ref": "#/definitions/Category"
+                },
+                "dir_oiseaux": {
+                    "$ref": "#/definitions/ProtectionNat"
+                },
+                "protection_nat": {
+                    "$ref": "#/definitions/ProtectionNat"
+                },
+                "dir_habitat": {
+                    "$ref": "#/definitions/ProtectionNat"
+                },
+                "uicn": {
+                    "$ref": "#/definitions/StocCloud"
+                },
+                "lr_nat": {
+                    "$ref": "#/definitions/ProtectionNat"
+                },
+                "znieff": {
+                    "$ref": "#/definitions/ProtectionNat"
+                }
+            },
+            "required": [
+                "@id",
+                "category",
+                "latin_name",
+                "name",
+                "rarity",
+                "sys_order",
+                "taxonomy"
+            ],
+            "title": "PurpleSpecies"
+        },
+        "ProtectionNat": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "#text": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "#text"
+            ],
+            "title": "ProtectionNat"
+        },
+        "DataSighting": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "date": {
+                    "$ref": "#/definitions/Date"
+                },
+                "species": {
+                    "$ref": "#/definitions/FluffySpecies"
+                },
+                "place": {
+                    "$ref": "#/definitions/Place"
+                },
+                "observers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/FluffyObserver"
+                    }
+                }
+            },
+            "required": [
+                "date",
+                "observers",
+                "place",
+                "species"
+            ],
+            "title": "DataSighting"
+        },
+        "FluffyObserver": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "@id": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "@uid": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "anonymous": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "second_hand": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "traid": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "id_sighting": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "id_universal": {
+                    "type": "string"
+                },
+                "timing": {
+                    "$ref": "#/definitions/Date"
+                },
+                "coord_lat": {
+                    "type": "string"
+                },
+                "coord_lon": {
+                    "type": "string"
+                },
+                "altitude": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "atlas_grid_name": {
+                    "$ref": "#/definitions/AtlasGridName"
+                },
+                "precision": {
+                    "$ref": "#/definitions/PlaceType"
+                },
+                "estimation_code": {
+                    "$ref": "#/definitions/EstimationCode"
+                },
+                "count": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "flight_number": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "source": {
+                    "$ref": "#/definitions/FluffySource"
+                },
+                "insert_date": {
+                    "$ref": "#/definitions/Date"
+                },
+                "atlas_code": {
+                    "$ref": "#/definitions/StocCloud"
+                },
+                "details": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Detail"
+                    }
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "hidden": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "project": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "project_name": {
+                    "$ref": "#/definitions/FluffyProjectName"
+                },
+                "project_code": {
+                    "$ref": "#/definitions/FluffyProjectCode"
+                },
+                "update_date": {
+                    "$ref": "#/definitions/Date"
+                },
+                "behaviours": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Behaviour"
+                    }
+                },
+                "medias": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Media"
+                    }
+                },
+                "entity": {
+                    "$ref": "#/definitions/FluffyEntity"
+                },
+                "entity_fullname": {
+                    "$ref": "#/definitions/FluffyEntityFullname"
+                },
+                "extended_info": {
+                    "$ref": "#/definitions/FluffyExtendedInfo"
+                },
+                "hidden_comment": {
+                    "type": "string"
+                },
+                "committees_validation": {
+                    "$ref": "#/definitions/CommitteesValidation"
+                },
+                "admin_hidden": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "admin_hidden_type": {
+                    "$ref": "#/definitions/AdminHiddenType"
+                }
+            },
+            "required": [
+                "@id",
+                "@uid",
+                "altitude",
+                "anonymous",
+                "atlas_grid_name",
+                "coord_lat",
+                "coord_lon",
+                "count",
+                "estimation_code",
+                "flight_number",
+                "id_sighting",
+                "id_universal",
+                "insert_date",
+                "name",
+                "precision",
+                "second_hand",
+                "source",
+                "timing",
+                "traid"
+            ],
+            "title": "FluffyObserver"
+        },
+        "CommitteesValidation": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "chr": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "chr"
+            ],
+            "title": "CommitteesValidation"
+        },
+        "FluffyExtendedInfo": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "mortality": {
+                    "$ref": "#/definitions/Mortality"
+                },
+                "colony": {
+                    "$ref": "#/definitions/Colony"
+                },
+                "colony_extended": {
+                    "$ref": "#/definitions/ColonyExtended"
+                }
+            },
+            "required": [],
+            "title": "FluffyExtendedInfo"
+        },
+        "Colony": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "nests": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "nests_is_min": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "couples": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "occupied_nests": {
+                    "type": "string",
+                    "format": "integer"
+                }
+            },
+            "required": [],
+            "title": "Colony"
+        },
+        "ColonyExtended": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "nb_natural_nests": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "nb_natural_nests_is_min": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "couples": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "nb_natural_occup_nests": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "nb_artificial_nests": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "nb_artificial_nests_is_min": {
+                    "type": "string",
+                    "format": "integer"
+                }
+            },
+            "required": [],
+            "title": "ColonyExtended"
+        },
+        "Mortality": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "death_cause2": {
+                    "type": "string"
+                },
+                "wounded": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "predation2": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "track_number": {
+                    "type": "string"
+                },
+                "road_type2": {
+                    "type": "string"
+                },
+                "collected": {
+                    "type": "string"
+                },
+                "response": {
+                    "type": "string"
+                },
+                "weather": {
+                    "type": "string"
+                },
+                "recipient": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "death_cause2",
+                "wounded"
+            ],
+            "title": "Mortality"
+        },
+        "FluffySpecies": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "@id": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "sys_order": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "taxonomy": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "rarity": {
+                    "$ref": "#/definitions/Rarity"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "latin_name": {
+                    "type": "string"
+                },
+                "category": {
+                    "$ref": "#/definitions/Category"
+                },
+                "dir_oiseaux": {
+                    "$ref": "#/definitions/StocCloud"
+                },
+                "protection_nat": {
+                    "$ref": "#/definitions/ProtectionNat"
+                },
+                "uicn": {
+                    "$ref": "#/definitions/StocCloud"
+                },
+                "lr_nat": {
+                    "$ref": "#/definitions/StocCloud"
+                },
+                "znieff": {
+                    "$ref": "#/definitions/ProtectionNat"
+                }
+            },
+            "required": [
+                "@id",
+                "category",
+                "latin_name",
+                "name",
+                "rarity",
+                "sys_order",
+                "taxonomy"
+            ],
+            "title": "FluffySpecies"
+        },
+        "TextUnion": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/TextText"
+                },
+                {
+                    "type": "string",
+                    "format": "integer"
+                }
+            ],
+            "title": "TextUnion"
+        },
+        "IDUnion": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/IDID"
+                },
+                {
+                    "type": "string",
+                    "format": "integer"
+                }
+            ],
+            "title": "IDUnion"
+        },
+        "SiteCodeUnion": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/SiteCodeEnum"
+                },
+                {
+                    "type": "string",
+                    "format": "integer"
+                }
+            ],
+            "title": "SiteCodeUnion"
+        },
+        "TextText": {
+            "type": "string",
+            "enum": [
+                "Forêt (arbres > 5m de hauteur)",
+                "Milieux agricoles",
+                "Milieux bâtis ou urbanisés",
+                "Buissons (ou jeune forêt < 5m de hauteur)",
+                "Feuillus",
+                "Grandes cultures",
+                "Rural",
+                "Prairie non cultivée",
+                "Mixité prairie / cultures",
+                "Buissons calcicoles",
+                "Suburbain",
+                "Mixte (> 10% de chaque)",
+                "Conifères",
+                "Autres types de cultures",
+                "Urbain",
+                "Semi-naturelle ou âges mélangés",
+                "Haies avec arbres",
+                "Bâtiments",
+                "Groupes isolés de 1-10 arbres",
+                "Jardins",
+                "Plantation non-équienne",
+                "Sous-bois éparse",
+                "Plantation équienne",
+                "Autre limite de terrain",
+                "Jeune plantation (5-10m)",
+                "Parcs municipaux, zones de loisirs",
+                "Sous-bois modéré",
+                "Cour de ferme, basse-cour",
+                "Haies sans arbres",
+                "Sous-bois dense",
+                "Beaucoup d’arbres",
+                "Autre essence feuillue",
+                "Peu d’arbres",
+                "Non pâturé",
+                "Pâturé",
+                "Epicéa",
+                "Autre essence conifère",
+                "Céréales",
+                "Pin",
+                "Hêtre",
+                "Moyenne surface de jardins (100 - 450 m2)",
+                "Beaucoup de buissons",
+                "Pelouses, marais et landes",
+                "Milieux aquatiques",
+                "Autres marais ouverts",
+                "Petit étang (50 - 450 m2)",
+                "Prairie cultivée",
+                "Pas de haie",
+                "Traitements d’eaux usées",
+                "Non utilisé/non perturbé",
+                "Maïs",
+                "Dystrophique (eau noire)",
+                "Rives nues",
+                "0 – 33%",
+                "66 – 100%",
+                "Absente",
+                "Averses",
+                "Pas de neige",
+                "Bonne",
+                "Absent",
+                "inconnu",
+                "adulte",
+                "immature",
+                "poussin",
+                "1ère année",
+                "Inconnu",
+                "posé",
+                "en vol",
+                "contact auditif",
+                "< 25m",
+                "< 100m",
+                "< 200m",
+                "Distance plus de 200m",
+                "En transit",
+                "mâle",
+                "femelle",
+                "type femelle",
+                "",
+                "LC",
+                "2ème année",
+                "en main",
+                "2.1",
+                "VN"
+            ],
+            "title": "TextText"
+        },
+        "IDID": {
+            "type": "string",
+            "enum": [
+                "A0_A",
+                "D0_D",
+                "E0_E",
+                "B0_B",
+                "A1_1",
+                "D1_4",
+                "E1_3",
+                "D1_2",
+                "D1_3",
+                "B1_2",
+                "E1_2",
+                "A1_3",
+                "A1_2",
+                "D1_6",
+                "E1_1",
+                "A2_1",
+                "D2_1",
+                "E2_1",
+                "D2_5",
+                "E2_2",
+                "A2_3",
+                "A2_9",
+                "A2_2",
+                "D2_4",
+                "A2_5",
+                "E2_3",
+                "A2_8",
+                "D2_6",
+                "D2_2",
+                "A2_7",
+                "E3_3",
+                "A3_5",
+                "E3_4",
+                "D3_1",
+                "D3_2",
+                "A3_7",
+                "A3_10",
+                "D3_3",
+                "A3_8",
+                "A3_2",
+                "E3_6",
+                "E3_8",
+                "C0_C",
+                "F0_F",
+                "C1_8",
+                "F1_2",
+                "D1_1",
+                "D2_7",
+                "F2_5",
+                "F2_1",
+                "D3_4",
+                "F3_3",
+                "F3_9",
+                "ONE_THIRD",
+                "THREE_THIRD",
+                "NO_RAIN",
+                "STRONG_RAIN",
+                "NO_SNOW",
+                "GOOD_VISIBILITY",
+                "NO_WIND",
+                "3_3",
+                "3_4",
+                "3_14",
+                "3_2",
+                "3_10",
+                "3_6",
+                "3_5",
+                "3_16",
+                "3_13",
+                "3_7",
+                "3_8",
+                "3_19",
+                "U",
+                "AD",
+                "IMM",
+                "PULL",
+                "1Y",
+                "LAID",
+                "FLY",
+                "AUDIO",
+                "LESS25",
+                "LESS100",
+                "LESS200",
+                "MORE200",
+                "TRANSIT",
+                "M",
+                "F",
+                "FT",
+                "LC",
+                "3_18",
+                "3_99",
+                "3_12",
+                "3_15",
+                "3_11",
+                "3_17",
+                "3_9",
+                "2Y",
+                "HAND",
+                "2.1",
+                "VN"
+            ],
+            "title": "IDID"
+        },
+        "ProtocolName": {
+            "type": "string",
+            "enum": [
+                "STOC_EPS",
+                "STOC_SITES",
+                "GENERIC_BIRD"
+            ],
+            "title": "ProtocolName"
+        },
+        "SiteCodeEnum": {
+            "type": "string",
+            "enum": [
+                "POINT STOC COMMUNAUX TREPT",
+                "Points d'écoute FDT - Montmiral",
+                "campus refuge"
+            ],
+            "title": "SiteCodeEnum"
+        },
+        "AdminHiddenType": {
+            "type": "string",
+            "enum": [
+                "incomplete",
+                "question"
+            ],
+            "title": "AdminHiddenType"
+        },
+        "AtlasGridName": {
+            "type": "string",
+            "enum": [
+                "E091N643",
+                "E090N645",
+                "E084N649",
+                "E091N645",
+                "E092N646",
+                "E086N649",
+                "E084N647",
+                "E089N645",
+                "E090N647",
+                "E087N647",
+                "E091N646",
+                "E092N645",
+                "E089N647",
+                "E086N650",
+                "E089N649",
+                "E091N644",
+                "E084N648",
+                "E090N644",
+                "E084N650",
+                "E089N648",
+                "E090N648",
+                "E091N642",
+                "E088N645",
+                "E090N646",
+                "E085N650",
+                "E087N650",
+                "E088N651",
+                "E087N651",
+                "E093N646",
+                "E089N646",
+                "E087N648",
+                "E092N642",
+                "E092N647",
+                "E094N648",
+                "E093N648",
+                "E090N650",
+                "E087N652",
+                "E088N650",
+                "E090N642",
+                "E086N651",
+                "E091N648",
+                "E087N644",
+                "E088N647",
+                "E093N644",
+                "E088N649",
+                "E090N649",
+                "E089N651",
+                "E088N648",
+                "E093N647",
+                "E087N649",
+                "E085N647",
+                "E093N645",
+                "E087N645",
+                "E090N643",
+                "E088N646",
+                "E088N652",
+                "E092N643",
+                "E085N649",
+                "E089N650",
+                "E091N641",
+                "E086N648",
+                "E092N644",
+                "E083N647",
+                "E093N642",
+                "E083N648",
+                "E087N646",
+                "E092N641",
+                "E091N647",
+                "E094N647",
+                "E086N647",
+                "E090N641",
+                "E088N653",
+                "E084N646",
+                "E088N644",
+                "E086N644",
+                "E094N644",
+                "E089N644",
+                "E089N643",
+                "E086N652",
+                "E094N646",
+                "E093N641"
+            ],
+            "title": "AtlasGridName"
+        },
+        "BehaviourText": {
+            "type": "string",
+            "enum": [
+                "Dortoir / reposoir",
+                "Se nourrit",
+                "Migration active"
+            ],
+            "title": "BehaviourText"
+        },
+        "BehaviourID": {
+            "type": "string",
+            "enum": [
+                "134_11",
+                "134_10",
+                "134_8"
+            ],
+            "title": "BehaviourID"
+        },
+        "Name": {
+            "type": "string",
+            "enum": [
+                "SLEEP",
+                "FOOD",
+                "MIGRATION_ACTIV"
+            ],
+            "title": "Name"
+        },
+        "PurpleEntity": {
+            "type": "string",
+            "enum": [
+                "LPO ISERE",
+                "LO PARVI"
+            ],
+            "title": "PurpleEntity"
+        },
+        "PurpleEntityFullname": {
+            "type": "string",
+            "enum": [
+                "Ligue pour la protection des oiseaux délégation Isère",
+                "Lo Parvi"
+            ],
+            "title": "PurpleEntityFullname"
+        },
+        "EstimationCode": {
+            "type": "string",
+            "enum": [
+                "EXACT_VALUE",
+                "MINIMUM",
+                "ESTIMATION",
+                "NO_VALUE"
+            ],
+            "title": "EstimationCode"
+        },
+        "Type": {
+            "type": "string",
+            "enum": [
+                "PHOTO",
+                "SOUND"
+            ],
+            "title": "Type"
+        },
+        "PlaceType": {
+            "type": "string",
+            "enum": [
+                "precise",
+                "garden",
+                "place",
+                "subplace",
+                "municipality"
+            ],
+            "title": "PlaceType"
+        },
+        "PurpleProjectCode": {
+            "type": "string",
+            "enum": [
+                "ACasa",
+                "NocMig"
+            ],
+            "title": "PurpleProjectCode"
+        },
+        "PurpleProjectName": {
+            "type": "string",
+            "enum": [
+                "Confinés mais aux aguets",
+                "NocMig"
+            ],
+            "title": "PurpleProjectName"
+        },
+        "PurpleSource": {
+            "type": "string",
+            "enum": [
+                "MOBILE_FORM_LIVE",
+                "WEB",
+                "MOBILE_FORM_DELAYED"
+            ],
+            "title": "PurpleSource"
+        },
+        "Category": {
+            "type": "string",
+            "enum": [
+                "C",
+                "H",
+                "A",
+                "B",
+                "BH"
+            ],
+            "title": "Category"
+        },
+        "Rarity": {
+            "type": "string",
+            "enum": [
+                "verycommon",
+                "common",
+                "unusual",
+                "rare",
+                "escaped",
+                "veryrare"
+            ],
+            "title": "Rarity"
+        },
+        "FluffyEntity": {
+            "type": "string",
+            "enum": [
+                "LPO ISERE",
+                "CD38",
+                "SIGREDA",
+                "CEN38"
+            ],
+            "title": "FluffyEntity"
+        },
+        "FluffyEntityFullname": {
+            "type": "string",
+            "enum": [
+                "Ligue pour la protection des oiseaux délégation Isère",
+                "DEPARTEMENT 38",
+                "SIGREDA-RNR Isles du Drac",
+                "Conservatoire d'espaces naturels Isère - AVENIR"
+            ],
+            "title": "FluffyEntityFullname"
+        },
+        "FluffyProjectCode": {
+            "type": "string",
+            "enum": [
+                "ACasa",
+                "PRIVE"
+            ],
+            "title": "FluffyProjectCode"
+        },
+        "FluffyProjectName": {
+            "type": "string",
+            "enum": [
+                "Confinés mais aux aguets",
+                "Etude privée"
+            ],
+            "title": "FluffyProjectName"
+        },
+        "FluffySource": {
+            "type": "string",
+            "enum": [
+                "WEB",
+                "MOBILE_LIVE",
+                "MOBILE_LIVE_IOS",
+                "MOBILE_DELAYED",
+                "MOBILE_DELAYED_IOS"
+            ],
+            "title": "FluffySource"
+        }
+    }
+}
