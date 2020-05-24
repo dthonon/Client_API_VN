@@ -54,14 +54,14 @@ de la manière suivante.
     wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | \
     sudo apt-key add -
     sudo apt-get update
-    sudo apt -y install postgresql postgresql-contrib postgis postgresql-11-postgis-2.5 postgresql-11-postgis-2.5-scripts
-    sudo nano /etc/postgresql/11/main/postgresql.conf
+    sudo apt -y install postgresql postgresql-contrib postgis postgresql-12-postgis-3 postgresql-12-postgis-3-scripts
+    sudo nano /etc/postgresql/12/main/postgresql.conf
 
 => changer `#listen_addresses='localhost'` en `listen_addresses='*'`
 
 .. code:: bash
 
-    sudo nano /etc/postgresql/11/main/pg_hba.conf
+    sudo nano /etc/postgresql/12/main/pg_hba.conf
 
 => ajouter la ligne suivante pour autoriser l'accès exterieur à postgresql.
 `host all all  0.0.0.0/0   md5`

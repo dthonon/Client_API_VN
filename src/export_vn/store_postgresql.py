@@ -180,7 +180,9 @@ class PostgresqlUtils:
         """
         # Store to database, if enabled
         if self._config.db_enabled:
-            if (self._config.db_schema_import + "." + name) not in self._metadata.tables:
+            if (
+                self._config.db_schema_import + "." + name
+            ) not in self._metadata.tables:
                 logger.info(_("Table %s not found => Creating it"), name)
                 table = Table(name, self._metadata, *cols)
                 table.create(self._db)
@@ -477,7 +479,8 @@ class PostgresqlUtils:
 
             # Connect to database
             logger.info(
-                _("Connecting to %s database, to finalize creation"), self._config.db_name
+                _("Connecting to %s database, to finalize creation"),
+                self._config.db_name,
             )
             self._db = create_engine(URL(**db_url), echo=False)
             conn = self._db.connect()
@@ -714,11 +717,12 @@ class StorePostgresql:
         return None
 
     def __enter__(self):
+        logger.debug(_("Entry into StorePostgresql"))
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         """Finalize connections."""
-        logger.debug(_("Closing database connection"))
+        logger.debug(_("Closing database connection at exit from StorePostgresql"))
         self._conn.close()
 
     @property

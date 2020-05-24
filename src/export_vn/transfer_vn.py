@@ -16,10 +16,13 @@ from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
 import pkg_resources
-import requests
-from pytz import utc
-
 import psutil
+import requests
+from bs4 import BeautifulSoup
+from jinja2 import Environment, PackageLoader
+from pytz import utc
+from sqlalchemy.engine.url import URL
+
 import yappi
 from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED, EVENT_JOB_SUBMITTED
 from apscheduler.executors.pool import ProcessPoolExecutor
@@ -27,7 +30,6 @@ from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers import SchedulerNotRunningError
 from apscheduler.schedulers.background import BackgroundScheduler
-from bs4 import BeautifulSoup
 from export_vn.download_vn import (
     Entities,
     Fields,
@@ -40,9 +42,9 @@ from export_vn.download_vn import (
     TerritorialUnits,
 )
 from export_vn.evnconf import EvnConf
+from export_vn.store_all import StoreAll
+from export_vn.store_file import StoreFile
 from export_vn.store_postgresql import PostgresqlUtils, StorePostgresql
-from jinja2 import Environment, PackageLoader
-from sqlalchemy.engine.url import URL
 from strictyaml import YAMLValidationError
 from tabulate import tabulate
 
@@ -374,8 +376,9 @@ def full_download_1(ctrl, cfg_crtl_list, cfg):
     """Downloads from a single controler."""
     logger = logging.getLogger("transfer_vn")
     logger.debug(_("Enter full_download_1: {}").format(ctrl.__name__))
-    with StorePostgresql(cfg) as store_pg:
-        downloader = ctrl(cfg, store_pg)
+    with StorePostgresql(cfg) as store_pg, StoreFile(cfg) as store_f:
+        store_all = StoreAll(cfg, db_backend = store_pg, file_backend = store_f)
+        downloader = ctrl(cfg, store_all)
         if cfg_crtl_list[downloader.name].enabled:
             logger.info(
                 _("%s => Starting download using controler %s"),
@@ -468,8 +471,9 @@ def increment_download_1(ctrl, cfg_crtl_list, cfg):
     """Download incremental updates from one site."""
     logger = logging.getLogger("transfer_vn")
     logger.debug("Enter increment_download_1: {}".format(ctrl.__name__))
-    with StorePostgresql(cfg) as store_pg:
-        downloader = ctrl(cfg, store_pg)
+    with StorePostgresql(cfg) as store_pg, StoreFile(cfg) as store_f:
+        store_all = StoreAll(cfg, db_backend = store_pg, file_backend = store_f)
+        downloader = ctrl(cfg, store_all)
         if cfg_crtl_list[downloader.name].enabled:
             logger.info(
                 _("%s => Starting incremental download using controler %s"),
