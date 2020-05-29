@@ -10,9 +10,6 @@
                     "$ref": "#/definitions/Data"
                 }
             },
-            "required": [
-                "data"
-            ],
             "title": "Welcome"
         },
         "Data": {
@@ -22,7 +19,7 @@
                 "sightings": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/DataSighting"
+                        "$ref": "#/definitions/Sighting"
                     }
                 },
                 "forms": {
@@ -32,10 +29,6 @@
                     }
                 }
             },
-            "required": [
-                "forms",
-                "sightings"
-            ],
             "title": "Data"
         },
         "Form": {
@@ -80,24 +73,13 @@
                 "sightings": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/FormSighting"
+                        "$ref": "#/definitions/Sighting"
                     }
                 },
                 "protocol": {
                     "$ref": "#/definitions/Protocol"
                 }
             },
-            "required": [
-                "@id",
-                "full_form",
-                "id_form_universal",
-                "lat",
-                "lon",
-                "sightings",
-                "time_start",
-                "time_stop",
-                "version"
-            ],
             "title": "Form"
         },
         "Protocol": {
@@ -150,14 +132,6 @@
                     "type": "string"
                 }
             },
-            "required": [
-                "advanced",
-                "local_site_code",
-                "protocol_name",
-                "sequence_number",
-                "site_code",
-                "visit_number"
-            ],
             "title": "Protocol"
         },
         "StocCloud": {
@@ -171,12 +145,9 @@
                     "$ref": "#/definitions/TextUnion"
                 }
             },
-            "required": [
-                "#text"
-            ],
             "title": "StocCloud"
         },
-        "FormSighting": {
+        "Sighting": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -184,7 +155,7 @@
                     "$ref": "#/definitions/Date"
                 },
                 "species": {
-                    "$ref": "#/definitions/PurpleSpecies"
+                    "$ref": "#/definitions/Species"
                 },
                 "place": {
                     "$ref": "#/definitions/Place"
@@ -192,210 +163,45 @@
                 "observers": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/PurpleObserver"
+                        "$ref": "#/definitions/Observer"
                     }
                 }
             },
-            "required": [
-                "date",
-                "observers",
-                "place",
-                "species"
-            ],
-            "title": "FormSighting"
+            "title": "Sighting"
         },
         "Date": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "@timestamp": {
+            "oneOf": [
+                {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "@timestamp": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "@notime": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "@offset": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "@ISO8601": {
+                            "type": "string",
+                            "format": "date-time"
+                        },
+                        "#text": {
+                            "type": "string"
+                        }
+                    }
+                },
+                {
                     "type": "string",
                     "format": "integer"
-                },
-                "@notime": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "@offset": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "@ISO8601": {
-                    "type": "string",
-                    "format": "date-time"
-                },
-                "#text": {
-                    "type": "string"
                 }
-            },
-            "required": [
-                "#text",
-                "@ISO8601",
-                "@notime",
-                "@offset",
-                "@timestamp"
             ],
             "title": "Date"
-        },
-        "PurpleObserver": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "@id": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "@uid": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "anonymous": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "second_hand": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "traid": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "id_sighting": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "id_universal": {
-                    "type": "string"
-                },
-                "timing": {
-                    "$ref": "#/definitions/Date"
-                },
-                "coord_lat": {
-                    "type": "string"
-                },
-                "coord_lon": {
-                    "type": "string"
-                },
-                "altitude": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "atlas_grid_name": {
-                    "$ref": "#/definitions/AtlasGridName"
-                },
-                "id_form": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "id_form_universal": {
-                    "type": "string"
-                },
-                "precision": {
-                    "$ref": "#/definitions/PlaceType"
-                },
-                "estimation_code": {
-                    "$ref": "#/definitions/EstimationCode"
-                },
-                "count": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "flight_number": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "source": {
-                    "$ref": "#/definitions/PurpleSource"
-                },
-                "project": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "project_name": {
-                    "$ref": "#/definitions/PurpleProjectName"
-                },
-                "project_code": {
-                    "$ref": "#/definitions/PurpleProjectCode"
-                },
-                "insert_date": {
-                    "$ref": "#/definitions/Date"
-                },
-                "update_date": {
-                    "$ref": "#/definitions/Date"
-                },
-                "atlas_code": {
-                    "$ref": "#/definitions/StocCloud"
-                },
-                "comment": {
-                    "type": "string"
-                },
-                "details": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/Detail"
-                    }
-                },
-                "admin_hidden": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "admin_hidden_type": {
-                    "$ref": "#/definitions/AdminHiddenType"
-                },
-                "medias": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/Media"
-                    }
-                },
-                "behaviours": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/Behaviour"
-                    }
-                },
-                "entity": {
-                    "$ref": "#/definitions/PurpleEntity"
-                },
-                "entity_fullname": {
-                    "$ref": "#/definitions/PurpleEntityFullname"
-                },
-                "hidden": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "extended_info": {
-                    "$ref": "#/definitions/PurpleExtendedInfo"
-                }
-            },
-            "required": [
-                "@id",
-                "@uid",
-                "altitude",
-                "anonymous",
-                "atlas_grid_name",
-                "coord_lat",
-                "coord_lon",
-                "count",
-                "estimation_code",
-                "flight_number",
-                "id_form",
-                "id_form_universal",
-                "id_sighting",
-                "id_universal",
-                "insert_date",
-                "name",
-                "precision",
-                "second_hand",
-                "source",
-                "timing",
-                "traid"
-            ],
-            "title": "PurpleObserver"
         },
         "Behaviour": {
             "type": "object",
@@ -411,11 +217,6 @@
                     "$ref": "#/definitions/BehaviourText"
                 }
             },
-            "required": [
-                "#text",
-                "@id",
-                "name"
-            ],
             "title": "Behaviour"
         },
         "Detail": {
@@ -427,30 +228,22 @@
                     "format": "integer"
                 },
                 "sex": {
-                    "$ref": "#/definitions/StocCloud"
+                    "$ref": "#/definitions/Sex"
                 },
                 "age": {
-                    "$ref": "#/definitions/StocCloud"
+                    "$ref": "#/definitions/Age"
                 },
                 "condition": {
-                    "$ref": "#/definitions/StocCloud"
+                    "$ref": "#/definitions/Condition"
                 },
                 "distance": {
-                    "$ref": "#/definitions/StocCloud"
+                    "$ref": "#/definitions/Distance"
+                },
+                "section": {
+                    "$ref": "#/definitions/Section"
                 }
             },
-            "required": [
-                "age",
-                "condition",
-                "count",
-                "sex"
-            ],
             "title": "Detail"
-        },
-        "PurpleExtendedInfo": {
-            "type": "object",
-            "additionalProperties": false,
-            "title": "PurpleExtendedInfo"
         },
         "Media": {
             "type": "object",
@@ -484,15 +277,6 @@
                     "$ref": "#/definitions/Date"
                 }
             },
-            "required": [
-                "@id",
-                "filename",
-                "insert_date",
-                "media_is_hidden",
-                "metadata",
-                "path",
-                "type"
-            ],
             "title": "Media"
         },
         "Place": {
@@ -502,6 +286,9 @@
                 "@id": {
                     "type": "string",
                     "format": "integer"
+                },
+                "id_universal": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"
@@ -516,6 +303,12 @@
                 "loc_precision": {
                     "type": "string",
                     "format": "integer"
+                },
+                "lat": {
+                    "type": "string"
+                },
+                "lon": {
+                    "type": "string"
                 },
                 "coord_lat": {
                     "type": "string"
@@ -538,78 +331,7 @@
                     "type": "string"
                 }
             },
-            "required": [
-                "@id",
-                "altitude",
-                "coord_lat",
-                "coord_lon",
-                "country",
-                "county",
-                "insee",
-                "loc_precision",
-                "municipality",
-                "name",
-                "place_type"
-            ],
             "title": "Place"
-        },
-        "PurpleSpecies": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "@id": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "sys_order": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "taxonomy": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "rarity": {
-                    "$ref": "#/definitions/Rarity"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "latin_name": {
-                    "type": "string"
-                },
-                "category": {
-                    "$ref": "#/definitions/Category"
-                },
-                "dir_oiseaux": {
-                    "$ref": "#/definitions/ProtectionNat"
-                },
-                "protection_nat": {
-                    "$ref": "#/definitions/ProtectionNat"
-                },
-                "dir_habitat": {
-                    "$ref": "#/definitions/ProtectionNat"
-                },
-                "uicn": {
-                    "$ref": "#/definitions/StocCloud"
-                },
-                "lr_nat": {
-                    "$ref": "#/definitions/ProtectionNat"
-                },
-                "znieff": {
-                    "$ref": "#/definitions/ProtectionNat"
-                }
-            },
-            "required": [
-                "@id",
-                "category",
-                "latin_name",
-                "name",
-                "rarity",
-                "sys_order",
-                "taxonomy"
-            ],
-            "title": "PurpleSpecies"
         },
         "ProtectionNat": {
             "type": "object",
@@ -619,40 +341,9 @@
                     "type": "string"
                 }
             },
-            "required": [
-                "#text"
-            ],
             "title": "ProtectionNat"
         },
-        "DataSighting": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "date": {
-                    "$ref": "#/definitions/Date"
-                },
-                "species": {
-                    "$ref": "#/definitions/FluffySpecies"
-                },
-                "place": {
-                    "$ref": "#/definitions/Place"
-                },
-                "observers": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/FluffyObserver"
-                    }
-                }
-            },
-            "required": [
-                "date",
-                "observers",
-                "place",
-                "species"
-            ],
-            "title": "DataSighting"
-        },
-        "FluffyObserver": {
+        "Observer": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -663,6 +354,13 @@
                 "@uid": {
                     "type": "string",
                     "format": "integer"
+                },
+                "id_form": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "id_form_universal": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"
@@ -676,6 +374,10 @@
                     "format": "integer"
                 },
                 "traid": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "version": {
                     "type": "string",
                     "format": "integer"
                 },
@@ -716,8 +418,12 @@
                     "type": "string",
                     "format": "integer"
                 },
+                "has_death": {
+                    "type": "string",
+                    "format": "integer"
+                },
                 "source": {
-                    "$ref": "#/definitions/FluffySource"
+                    "$ref": "#/definitions/Source"
                 },
                 "insert_date": {
                     "$ref": "#/definitions/Date"
@@ -743,10 +449,10 @@
                     "format": "integer"
                 },
                 "project_name": {
-                    "$ref": "#/definitions/FluffyProjectName"
+                    "$ref": "#/definitions/ProjectName"
                 },
                 "project_code": {
-                    "$ref": "#/definitions/FluffyProjectCode"
+                    "$ref": "#/definitions/ProjectCode"
                 },
                 "update_date": {
                     "$ref": "#/definitions/Date"
@@ -764,13 +470,13 @@
                     }
                 },
                 "entity": {
-                    "$ref": "#/definitions/FluffyEntity"
+                    "$ref": "#/definitions/Entity"
                 },
                 "entity_fullname": {
-                    "$ref": "#/definitions/FluffyEntityFullname"
+                    "$ref": "#/definitions/EntityFullname"
                 },
                 "extended_info": {
-                    "$ref": "#/definitions/FluffyExtendedInfo"
+                    "$ref": "#/definitions/ExtendedInfo"
                 },
                 "hidden_comment": {
                     "type": "string"
@@ -786,28 +492,7 @@
                     "$ref": "#/definitions/AdminHiddenType"
                 }
             },
-            "required": [
-                "@id",
-                "@uid",
-                "altitude",
-                "anonymous",
-                "atlas_grid_name",
-                "coord_lat",
-                "coord_lon",
-                "count",
-                "estimation_code",
-                "flight_number",
-                "id_sighting",
-                "id_universal",
-                "insert_date",
-                "name",
-                "precision",
-                "second_hand",
-                "source",
-                "timing",
-                "traid"
-            ],
-            "title": "FluffyObserver"
+            "title": "Observer"
         },
         "CommitteesValidation": {
             "type": "object",
@@ -817,12 +502,9 @@
                     "type": "string"
                 }
             },
-            "required": [
-                "chr"
-            ],
             "title": "CommitteesValidation"
         },
-        "FluffyExtendedInfo": {
+        "ExtendedInfo": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -836,8 +518,7 @@
                     "$ref": "#/definitions/ColonyExtended"
                 }
             },
-            "required": [],
-            "title": "FluffyExtendedInfo"
+            "title": "ExtendedInfo"
         },
         "Colony": {
             "type": "object",
@@ -860,7 +541,6 @@
                     "format": "integer"
                 }
             },
-            "required": [],
             "title": "Colony"
         },
         "ColonyExtended": {
@@ -892,7 +572,6 @@
                     "format": "integer"
                 }
             },
-            "required": [],
             "title": "ColonyExtended"
         },
         "Mortality": {
@@ -900,7 +579,10 @@
             "additionalProperties": false,
             "properties": {
                 "death_cause2": {
-                    "type": "string"
+                    "$ref": "#/definitions/DeathCause2"
+                },
+                "hunting": {
+                    "$ref": "#/definitions/Hunting"
                 },
                 "wounded": {
                     "type": "string",
@@ -931,13 +613,9 @@
                     "type": "string"
                 }
             },
-            "required": [
-                "death_cause2",
-                "wounded"
-            ],
             "title": "Mortality"
         },
-        "FluffySpecies": {
+        "Species": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -981,16 +659,7 @@
                     "$ref": "#/definitions/ProtectionNat"
                 }
             },
-            "required": [
-                "@id",
-                "category",
-                "latin_name",
-                "name",
-                "rarity",
-                "sys_order",
-                "taxonomy"
-            ],
-            "title": "FluffySpecies"
+            "title": "Species"
         },
         "TextUnion": {
             "anyOf": [
@@ -1117,6 +786,90 @@
             ],
             "title": "TextText"
         },
+        "DeathCause2": {
+            "type": "string",
+            "enum": [
+                "HUNTING",
+                "ROAD_VEHICLE",
+                "PREDATION",
+                "OTHER_INTENT",
+                "WEATHER",
+                "UNKNOWN"
+            ],
+            "title" : "DeathCause2",
+            "description": ""
+
+        },
+        "Hunting": {
+            "type": "string",
+            "enum": [
+                "SHOOTING"
+            ],
+            "title" : "Hunting",
+            "description": ""
+
+        },
+        "Sex": {
+            "type": "string",
+            "enum": [
+                "U",
+                "M",
+                "F"
+            ],
+            "title" : "Sex",
+            "description": ""
+
+        },
+        "Age": {
+            "type": "string",
+            "enum": [
+                "AD",
+                "MATURE",
+                "SUBAD",
+                "JUVENILE",
+                "IMM",
+                "EMERGENT",
+                "PULL",
+                "YOUNGDEP",
+                "EXUVIE",
+                "U"
+            ],
+            "title" : "Age",
+            "description": ""
+
+        },
+        "Condition": {
+            "type": "string",
+            "enum": [
+                "VIEW",
+                "FLY",
+                "LAID",
+                "HAND",
+                "OBSIND",
+                "AUDIO",
+                "U"
+            ],
+            "title" : "Condition",
+            "description": ""
+        },
+        "Distance": {
+            "type": "string",
+            "enum": [
+                "U"
+            ],
+            "title" : "Distance",
+            "description": ""
+
+        },
+        "Section": {
+            "type": "string",
+            "enum": [
+                "U"
+            ],
+            "title" : "Section",
+            "description": ""
+
+        },
         "IDID": {
             "type": "string",
             "enum": [
@@ -1192,10 +945,6 @@
                 "3_7",
                 "3_8",
                 "3_19",
-                "U",
-                "AD",
-                "IMM",
-                "PULL",
                 "1Y",
                 "LAID",
                 "FLY",
@@ -1205,8 +954,6 @@
                 "LESS200",
                 "MORE200",
                 "TRANSIT",
-                "M",
-                "F",
                 "FT",
                 "LC",
                 "3_18",
@@ -1234,11 +981,6 @@
         },
         "SiteCodeEnum": {
             "type": "string",
-            "enum": [
-                "POINT STOC COMMUNAUX TREPT",
-                "Points d'écoute FDT - Montmiral",
-                "campus refuge"
-            ],
             "title": "SiteCodeEnum"
         },
         "AdminHiddenType": {
@@ -1251,89 +993,6 @@
         },
         "AtlasGridName": {
             "type": "string",
-            "enum": [
-                "E091N643",
-                "E090N645",
-                "E084N649",
-                "E091N645",
-                "E092N646",
-                "E086N649",
-                "E084N647",
-                "E089N645",
-                "E090N647",
-                "E087N647",
-                "E091N646",
-                "E092N645",
-                "E089N647",
-                "E086N650",
-                "E089N649",
-                "E091N644",
-                "E084N648",
-                "E090N644",
-                "E084N650",
-                "E089N648",
-                "E090N648",
-                "E091N642",
-                "E088N645",
-                "E090N646",
-                "E085N650",
-                "E087N650",
-                "E088N651",
-                "E087N651",
-                "E093N646",
-                "E089N646",
-                "E087N648",
-                "E092N642",
-                "E092N647",
-                "E094N648",
-                "E093N648",
-                "E090N650",
-                "E087N652",
-                "E088N650",
-                "E090N642",
-                "E086N651",
-                "E091N648",
-                "E087N644",
-                "E088N647",
-                "E093N644",
-                "E088N649",
-                "E090N649",
-                "E089N651",
-                "E088N648",
-                "E093N647",
-                "E087N649",
-                "E085N647",
-                "E093N645",
-                "E087N645",
-                "E090N643",
-                "E088N646",
-                "E088N652",
-                "E092N643",
-                "E085N649",
-                "E089N650",
-                "E091N641",
-                "E086N648",
-                "E092N644",
-                "E083N647",
-                "E093N642",
-                "E083N648",
-                "E087N646",
-                "E092N641",
-                "E091N647",
-                "E094N647",
-                "E086N647",
-                "E090N641",
-                "E088N653",
-                "E084N646",
-                "E088N644",
-                "E086N644",
-                "E094N644",
-                "E089N644",
-                "E089N643",
-                "E086N652",
-                "E094N646",
-                "E093N641"
-            ],
             "title": "AtlasGridName"
         },
         "BehaviourText": {
@@ -1347,11 +1006,6 @@
         },
         "BehaviourID": {
             "type": "string",
-            "enum": [
-                "134_11",
-                "134_10",
-                "134_8"
-            ],
             "title": "BehaviourID"
         },
         "Name": {
@@ -1363,21 +1017,13 @@
             ],
             "title": "Name"
         },
-        "PurpleEntity": {
+        "Entity": {
             "type": "string",
-            "enum": [
-                "LPO ISERE",
-                "LO PARVI"
-            ],
-            "title": "PurpleEntity"
+            "title": "Entity"
         },
-        "PurpleEntityFullname": {
+        "EntityFullname": {
             "type": "string",
-            "enum": [
-                "Ligue pour la protection des oiseaux délégation Isère",
-                "Lo Parvi"
-            ],
-            "title": "PurpleEntityFullname"
+            "title": "EntityFullname"
         },
         "EstimationCode": {
             "type": "string",
@@ -1408,31 +1054,6 @@
             ],
             "title": "PlaceType"
         },
-        "PurpleProjectCode": {
-            "type": "string",
-            "enum": [
-                "ACasa",
-                "NocMig"
-            ],
-            "title": "PurpleProjectCode"
-        },
-        "PurpleProjectName": {
-            "type": "string",
-            "enum": [
-                "Confinés mais aux aguets",
-                "NocMig"
-            ],
-            "title": "PurpleProjectName"
-        },
-        "PurpleSource": {
-            "type": "string",
-            "enum": [
-                "MOBILE_FORM_LIVE",
-                "WEB",
-                "MOBILE_FORM_DELAYED"
-            ],
-            "title": "PurpleSource"
-        },
         "Category": {
             "type": "string",
             "enum": [
@@ -1452,47 +1073,20 @@
                 "unusual",
                 "rare",
                 "escaped",
-                "veryrare"
+                "veryrare",
+                "never"
             ],
             "title": "Rarity"
         },
-        "FluffyEntity": {
+        "ProjectCode": {
             "type": "string",
-            "enum": [
-                "LPO ISERE",
-                "CD38",
-                "SIGREDA",
-                "CEN38"
-            ],
-            "title": "FluffyEntity"
+            "title": "ProjectCode"
         },
-        "FluffyEntityFullname": {
+        "ProjectName": {
             "type": "string",
-            "enum": [
-                "Ligue pour la protection des oiseaux délégation Isère",
-                "DEPARTEMENT 38",
-                "SIGREDA-RNR Isles du Drac",
-                "Conservatoire d'espaces naturels Isère - AVENIR"
-            ],
-            "title": "FluffyEntityFullname"
+            "title": "ProjectName"
         },
-        "FluffyProjectCode": {
-            "type": "string",
-            "enum": [
-                "ACasa",
-                "PRIVE"
-            ],
-            "title": "FluffyProjectCode"
-        },
-        "FluffyProjectName": {
-            "type": "string",
-            "enum": [
-                "Confinés mais aux aguets",
-                "Etude privée"
-            ],
-            "title": "FluffyProjectName"
-        },
-        "FluffySource": {
+        "Source": {
             "type": "string",
             "enum": [
                 "WEB",
@@ -1501,7 +1095,7 @@
                 "MOBILE_DELAYED",
                 "MOBILE_DELAYED_IOS"
             ],
-            "title": "FluffySource"
+            "title": "Source"
         }
     }
 }
