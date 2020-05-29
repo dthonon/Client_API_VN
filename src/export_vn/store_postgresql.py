@@ -31,7 +31,6 @@ from sqlalchemy.dialects.postgresql import ARRAY, JSONB, insert
 from sqlalchemy.engine.url import URL
 from sqlalchemy.sql import and_
 
-from export_vn.store_file import StoreFile
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 from . import _, __version__
@@ -555,7 +554,7 @@ class PostgresqlUtils:
         result = None
         # Store to database, if enabled
         if self._config.db_enabled:
-            logger.info("Counting observations in database for all sites")
+            logger.info(_("Counting observations in database for all sites"))
             db_url = {
                 "drivername": "postgresql+psycopg2",
                 "username": self._config.db_user,
@@ -634,85 +633,85 @@ class StorePostgresql:
 
     def __init__(self, config):
         self._config = config
-        self._file_store = StoreFile(config)
 
-        # Initialize interface to Postgresql DB
-        db_url = {
-            "drivername": "postgresql+psycopg2",
-            "username": self._config.db_user,
-            "password": self._config.db_pw,
-            "host": self._config.db_host,
-            "port": self._config.db_port,
-            "database": self._config.db_name,
-        }
+        if self._config.db_enabled:
+            # Initialize interface to Postgresql DB
+            db_url = {
+                "drivername": "postgresql+psycopg2",
+                "username": self._config.db_user,
+                "password": self._config.db_pw,
+                "host": self._config.db_host,
+                "port": self._config.db_port,
+                "database": self._config.db_name,
+            }
 
-        dbschema = self._config.db_schema_import
-        self._metadata = MetaData(schema=dbschema)
-        logger.info(_("Connecting to database %s"), self._config.db_name)
+            dbschema = self._config.db_schema_import
+            self._metadata = MetaData(schema=dbschema)
+            logger.info(_("Connecting to database %s"), self._config.db_name)
 
-        # Connect and set path to include VN import schema
-        self._db = create_engine(URL(**db_url), echo=False)
-        self._conn = self._db.connect()
+            # Connect and set path to include VN import schema
+            self._db = create_engine(URL(**db_url), echo=False)
+            self._conn = self._db.connect()
 
-        # Get dbtable definition
-        self._metadata.reflect(bind=self._db, schema=dbschema)
+            # Get dbtable definition
+            self._metadata.reflect(bind=self._db, schema=dbschema)
 
-        # Map Biolovision tables in a single dict for easy reference
-        self._table_defs = {
-            "entities": {"type": "simple", "metadata": None},
-            "field_groups": {"type": "fields", "metadata": None},
-            "field_details": {"type": "fields", "metadata": None},
-            "forms": {"type": "others", "metadata": None},
-            "local_admin_units": {"type": "geometry", "metadata": None},
-            "uuid_xref": {"type": "others", "metadata": None},
-            "observations": {"type": "observation", "metadata": None},
-            "observers": {"type": "observers", "metadata": None},
-            "places": {"type": "geometry", "metadata": None},
-            "species": {"type": "simple", "metadata": None},
-            "taxo_groups": {"type": "simple", "metadata": None},
-            "territorial_units": {"type": "simple", "metadata": None},
-        }
-        self._table_defs["entities"]["metadata"] = self._metadata.tables[
-            dbschema + ".entities_json"
-        ]
-        self._table_defs["field_groups"]["metadata"] = self._metadata.tables[
-            dbschema + ".field_groups_json"
-        ]
-        self._table_defs["field_details"]["metadata"] = self._metadata.tables[
-            dbschema + ".field_details_json"
-        ]
-        self._table_defs["forms"]["metadata"] = self._metadata.tables[
-            dbschema + ".forms_json"
-        ]
-        self._table_defs["local_admin_units"]["metadata"] = self._metadata.tables[
-            dbschema + ".local_admin_units_json"
-        ]
-        self._table_defs["uuid_xref"]["metadata"] = self._metadata.tables[
-            dbschema + ".uuid_xref"
-        ]
-        self._table_defs["observations"]["metadata"] = self._metadata.tables[
-            dbschema + ".observations_json"
-        ]
-        self._table_defs["observers"]["metadata"] = self._metadata.tables[
-            dbschema + ".observers_json"
-        ]
-        self._table_defs["places"]["metadata"] = self._metadata.tables[
-            dbschema + ".places_json"
-        ]
-        self._table_defs["species"]["metadata"] = self._metadata.tables[
-            dbschema + ".species_json"
-        ]
-        self._table_defs["taxo_groups"]["metadata"] = self._metadata.tables[
-            dbschema + ".taxo_groups_json"
-        ]
-        self._table_defs["territorial_units"]["metadata"] = self._metadata.tables[
-            dbschema + ".territorial_units_json"
-        ]
+            # Map Biolovision tables in a single dict for easy reference
+            self._table_defs = {
+                "entities": {"type": "simple", "metadata": None},
+                "field_groups": {"type": "fields", "metadata": None},
+                "field_details": {"type": "fields", "metadata": None},
+                "forms": {"type": "others", "metadata": None},
+                "local_admin_units": {"type": "geometry", "metadata": None},
+                "uuid_xref": {"type": "others", "metadata": None},
+                "observations": {"type": "observation", "metadata": None},
+                "observers": {"type": "observers", "metadata": None},
+                "places": {"type": "geometry", "metadata": None},
+                "species": {"type": "simple", "metadata": None},
+                "taxo_groups": {"type": "simple", "metadata": None},
+                "territorial_units": {"type": "simple", "metadata": None},
+            }
+            self._table_defs["entities"]["metadata"] = self._metadata.tables[
+                dbschema + ".entities_json"
+            ]
+            self._table_defs["field_groups"]["metadata"] = self._metadata.tables[
+                dbschema + ".field_groups_json"
+            ]
+            self._table_defs["field_details"]["metadata"] = self._metadata.tables[
+                dbschema + ".field_details_json"
+            ]
+            self._table_defs["forms"]["metadata"] = self._metadata.tables[
+                dbschema + ".forms_json"
+            ]
+            self._table_defs["local_admin_units"]["metadata"] = self._metadata.tables[
+                dbschema + ".local_admin_units_json"
+            ]
+            self._table_defs["uuid_xref"]["metadata"] = self._metadata.tables[
+                dbschema + ".uuid_xref"
+            ]
+            self._table_defs["observations"]["metadata"] = self._metadata.tables[
+                dbschema + ".observations_json"
+            ]
+            self._table_defs["observers"]["metadata"] = self._metadata.tables[
+                dbschema + ".observers_json"
+            ]
+            self._table_defs["places"]["metadata"] = self._metadata.tables[
+                dbschema + ".places_json"
+            ]
+            self._table_defs["species"]["metadata"] = self._metadata.tables[
+                dbschema + ".species_json"
+            ]
+            self._table_defs["taxo_groups"]["metadata"] = self._metadata.tables[
+                dbschema + ".taxo_groups_json"
+            ]
+            self._table_defs["territorial_units"]["metadata"] = self._metadata.tables[
+                dbschema + ".territorial_units_json"
+            ]
 
-        # Create transformation
-        self._transformer = Transformer.from_proj(
-            4326, int(self._config.db_out_proj), always_xy=True
-        )
+            # Create transformation
+            self._transformer = Transformer.from_proj(
+                4326, int(self._config.db_out_proj), always_xy=True
+            )
 
         return None
 
@@ -722,8 +721,9 @@ class StorePostgresql:
 
     def __exit__(self, exc_type, exc_value, traceback):
         """Finalize connections."""
-        logger.debug(_("Closing database connection at exit from StorePostgresql"))
-        self._conn.close()
+        if self._config.db_enabled:
+            logger.debug(_("Closing database connection at exit from StorePostgresql"))
+            self._conn.close()
 
     @property
     def version(self):
@@ -1076,7 +1076,6 @@ class StorePostgresql:
         nb_item = 0
         # Store to database, if enabled
         if self._config.db_enabled:
-            self._file_store.store(controler, seq, items_dict)
             if self._table_defs[controler]["type"] == "observation":
                 nb_item = self._store_observation(controler, items_dict)
             elif self._table_defs[controler]["type"] == "simple":
