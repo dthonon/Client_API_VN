@@ -394,6 +394,7 @@ def full_download_1(ctrl, cfg_crtl_list, cfg):
                     method="search",
                     by_specie=False,
                     taxo_groups_ex=cfg.taxo_exclude,
+                    short_version= (1 if cfg.json_format == "short" else 0),
                 )
             else:
                 downloader.store()
