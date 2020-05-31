@@ -168,17 +168,20 @@
                 "category": {
                     "$ref": "#/definitions/Category"
                 },
+                "dir_habitat": {
+                    "$ref": "#/definitions/ProtectionNat"
+                },
                 "dir_oiseaux": {
-                    "$ref": "#/definitions/StocCloud"
+                    "$ref": "#/definitions/ProtectionNat"
                 },
                 "protection_nat": {
                     "$ref": "#/definitions/ProtectionNat"
                 },
                 "uicn": {
-                    "$ref": "#/definitions/StocCloud"
+                    "$ref": "#/definitions/ProtectionNat"
                 },
                 "lr_nat": {
-                    "$ref": "#/definitions/StocCloud"
+                    "$ref": "#/definitions/ProtectionNat"
                 },
                 "znieff": {
                     "$ref": "#/definitions/ProtectionNat"
@@ -395,35 +398,6 @@
             },
             "title": "Observer"
         },
-        "Rarity": {
-            "type": "string",
-            "enum": [
-                "verycommon",
-                "common",
-                "unusual",
-                "rare",
-                "escaped",
-                "veryrare",
-                "never"
-            ],
-            "title": "Rarity"
-        },
-        "Behaviour": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "@id": {
-                    "$ref": "#/definitions/BehaviourID"
-                },
-                "name": {
-                    "$ref": "#/definitions/Name"
-                },
-                "#text": {
-                    "$ref": "#/definitions/BehaviourText"
-                }
-            },
-            "title": "Behaviour"
-        },
         "Detail": {
             "type": "object",
             "additionalProperties": false,
@@ -484,26 +458,6 @@
             },
             "title": "Media"
         },
-        "ProtectionNat": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "#text": {
-                    "type": "string"
-                }
-            },
-            "title": "ProtectionNat"
-        },
-        "CommitteesValidation": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "chr": {
-                    "type": "string"
-                }
-            },
-            "title": "CommitteesValidation"
-        },
         "ExtendedInfo": {
             "type": "object",
             "additionalProperties": false,
@@ -546,10 +500,7 @@
                     "format": "integer"
                 },
                 "behaviour": {
-                    "type": "string",
-                    "enum": [
-                        "UNKNOWN"
-                    ]
+                    "$ref": "#/definitions/Behaviour"
                 },
                 "bird_interaction": {
                     "type": "array",
@@ -700,6 +651,83 @@
                 }
             },
             "title": "Mortality"
+        },
+        "Rarity": {
+            "type": "string",
+            "enum": [
+                "verycommon",
+                "common",
+                "unusual",
+                "rare",
+                "escaped",
+                "veryrare",
+                "never"
+            ],
+            "title": "Rarity"
+        },
+        "Behaviour": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "@id": {
+                    "$ref": "#/definitions/BehaviourId"
+                },
+                "name": {
+                    "$ref": "#/definitions/Name"
+                },
+                "#text": {
+                    "$ref": "#/definitions/BehaviourText"
+                }
+            },
+            "title": "Behaviour"
+        },
+        "BehaviourId": {
+            "type": "string",
+            "enum": [
+                "134_1",
+                "134_2",
+                "134_3",
+                "134_4",
+                "134_5",
+                "134_6",
+                "134_7",
+                "134_8",
+                "134_9",
+                "134_10",
+                "134_11",
+                "UNKNOWN"
+            ],
+            "title": "BehaviourId"
+        },
+        "BehaviourText": {
+            "type": "string",
+            "enum": [
+                "Dortoir / reposoir",
+                "Se nourrit",
+                "Migration active",
+                "inconnu"
+            ],
+            "title": "BehaviourText"
+        },
+        "ProtectionNat": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "#text": {
+                    "type": "string"
+                }
+            },
+            "title": "ProtectionNat"
+        },
+        "CommitteesValidation": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "chr": {
+                    "type": "string"
+                }
+            },
+            "title": "CommitteesValidation"
         },
         "TextUnion": {
             "anyOf": [
@@ -875,6 +903,25 @@
             "description": ""
         },
         "Sex": {
+            "OneOf": [
+                {
+                    "$ref": "#/definitions/SexId"
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "@id": {
+                            "$ref": "#/definitions/SexId"
+                        },
+                        "#text": {
+                            "type": "string"
+                        }
+                    }
+                }
+            ]
+        },
+        "SexId": {
             "type": "string",
             "enum": [
                 "U",
@@ -886,6 +933,25 @@
             "description": ""
         },
         "Age": {
+            "OneOf": [
+                {
+                    "$ref": "#/definitions/AgeId"
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "@id": {
+                            "$ref": "#/definitions/AgeId"
+                        },
+                        "#text": {
+                            "type": "string"
+                        }
+                    }
+                }
+            ]
+        },
+        "AgeId": {
             "type": "string",
             "enum": [
                 "AD",
@@ -911,6 +977,25 @@
             "description": ""
         },
         "Condition": {
+            "OneOf": [
+                {
+                    "$ref": "#/definitions/ConditionId"
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "@id": {
+                            "$ref": "#/definitions/ConditionId"
+                        },
+                        "#text": {
+                            "type": "string"
+                        }
+                    }
+                }
+            ]
+        },
+        "ConditionId": {
             "type": "string",
             "enum": [
                 "VIEW",
@@ -926,6 +1011,25 @@
             "description": ""
         },
         "Distance": {
+            "OneOf": [
+                {
+                    "$ref": "#/definitions/DistanceId"
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "@id": {
+                            "$ref": "#/definitions/DistanceId"
+                        },
+                        "#text": {
+                            "type": "string"
+                        }
+                    }
+                }
+            ]
+        },
+        "DistanceId": {
             "type": "string",
             "enum": [
                 "LESS25",
@@ -939,6 +1043,25 @@
             "description": ""
         },
         "Section": {
+            "OneOf": [
+                {
+                    "$ref": "#/definitions/SectionId"
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "@id": {
+                            "$ref": "#/definitions/SectionId"
+                        },
+                        "#text": {
+                            "type": "string"
+                        }
+                    }
+                }
+            ]
+        },
+        "SectionId": {
             "type": "string",
             "enum": [
                 "U"
@@ -947,6 +1070,25 @@
             "description": ""
         },
         "Habitat": {
+            "OneOf": [
+                {
+                    "$ref": "#/definitions/HabitatId"
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "@id": {
+                            "$ref": "#/definitions/HabitatId"
+                        },
+                        "#text": {
+                            "type": "string"
+                        }
+                    }
+                }
+            ]
+        },
+        "HabitatId": {
             "type": "string",
             "enum": [
                 "A0_A",
@@ -1056,12 +1198,50 @@
             ]
         },
         "StocSnow": {
+            "OneOf": [
+                {
+                    "$ref": "#/definitions/StocSnowId"
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "@id": {
+                            "$ref": "#/definitions/StocSnowId"
+                        },
+                        "#text": {
+                            "type": "string"
+                        }
+                    }
+                }
+            ]
+        },
+        "StocSnowId": {
             "type": "string",
             "enum": [
                 "NO_SNOW"
             ]
         },
         "StocRain": {
+            "OneOf": [
+                {
+                    "$ref": "#/definitions/StocRainId"
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "@id": {
+                            "$ref": "#/definitions/StocRainId"
+                        },
+                        "#text": {
+                            "type": "string"
+                        }
+                    }
+                }
+            ]
+        },
+        "StocRainId": {
             "type": "string",
             "enum": [
                 "NO_RAIN",
@@ -1069,6 +1249,25 @@
             ]
         },
         "StocWind": {
+            "OneOf": [
+                {
+                    "$ref": "#/definitions/StocWindId"
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "@id": {
+                            "$ref": "#/definitions/StocWindId"
+                        },
+                        "#text": {
+                            "type": "string"
+                        }
+                    }
+                }
+            ]
+        },
+        "StocWindId": {
             "type": "string",
             "enum": [
                 "NO_WIND",
@@ -1076,12 +1275,50 @@
             ]
         },
         "StocVisibility": {
+            "OneOf": [
+                {
+                    "$ref": "#/definitions/StocVisibilityId"
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "@id": {
+                            "$ref": "#/definitions/StocVisibilityId"
+                        },
+                        "#text": {
+                            "type": "string"
+                        }
+                    }
+                }
+            ]
+        },
+        "StocVisibilityId": {
             "type": "string",
             "enum": [
                 "GOOD_VISIBILITY"
             ]
         },
         "StocCloud": {
+            "OneOf": [
+                {
+                    "$ref": "#/definitions/StocCloudId"
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "@id": {
+                            "$ref": "#/definitions/StocCloudId"
+                        },
+                        "#text": {
+                            "type": "string"
+                        }
+                    }
+                }
+            ]
+        },
+        "StocCloudId": {
             "type": "string",
             "enum": [
                 "ONE_THIRD",
@@ -1089,35 +1326,6 @@
                 "THREE_THIRD"
             ],
             "title": "StocCloud"
-        },
-        "IDID": {
-            "type": "string",
-            "enum": [
-                "3_3",
-                "3_4",
-                "3_14",
-                "3_2",
-                "3_10",
-                "3_6",
-                "3_5",
-                "3_16",
-                "3_13",
-                "3_7",
-                "3_8",
-                "3_19",
-                "FT",
-                "LC",
-                "3_18",
-                "3_99",
-                "3_12",
-                "3_15",
-                "3_11",
-                "3_17",
-                "3_9",
-                "2.1",
-                "VN"
-            ],
-            "title": "IDID"
         },
         "Protocol": {
             "type": "object",
@@ -1213,19 +1421,6 @@
             ],
             "title": "AdminHiddenType"
         },
-        "BehaviourText": {
-            "type": "string",
-            "enum": [
-                "Dortoir / reposoir",
-                "Se nourrit",
-                "Migration active"
-            ],
-            "title": "BehaviourText"
-        },
-        "BehaviourID": {
-            "type": "string",
-            "title": "BehaviourID"
-        },
         "Name": {
             "type": "string",
             "enum": [
@@ -1236,6 +1431,25 @@
             "title": "Name"
         },
         "Direction": {
+            "OneOf": [
+                {
+                    "$ref": "#/definitions/DirectionId"
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "@id": {
+                            "$ref": "#/definitions/DirectionId"
+                        },
+                        "#text": {
+                            "type": "string"
+                        }
+                    }
+                }
+            ]
+        },
+        "DirectionId": {
             "type": "string",
             "enum": [
                 "N",
@@ -1250,6 +1464,25 @@
             "title": "Direction"
         },
         "Interaction": {
+            "OneOf": [
+                {
+                    "$ref": "#/definitions/InteractionId"
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "@id": {
+                            "$ref": "#/definitions/InteractionId"
+                        },
+                        "#text": {
+                            "type": "string"
+                        }
+                    }
+                }
+            ]
+        },
+        "InteractionId": {
             "type": "string",
             "enum": [
                 "MOBBING"
@@ -1257,6 +1490,25 @@
             "title": "Category"
         },
         "InteractionBenefit": {
+            "OneOf": [
+                {
+                    "$ref": "#/definitions/InteractionBenefitId"
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "@id": {
+                            "$ref": "#/definitions/InteractionBenefitId"
+                        },
+                        "#text": {
+                            "type": "string"
+                        }
+                    }
+                }
+            ]
+        },
+        "InteractionBenefitId": {
             "type": "string",
             "enum": [
                 "OTHER"
@@ -1290,6 +1542,25 @@
             "title": "Type"
         },
         "Weather": {
+            "OneOf": [
+                {
+                    "$ref": "#/definitions/WeatherId"
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "@id": {
+                            "$ref": "#/definitions/WeatherId"
+                        },
+                        "#text": {
+                            "type": "string"
+                        }
+                    }
+                }
+            ]
+        },
+        "WeatherId": {
             "type": "string",
             "enum": [
                 "SUNNY"
@@ -1338,6 +1609,35 @@
                 "MOBILE_FORM_DELAYED"
             ],
             "title": "Source"
+        },
+        "IDID": {
+            "type": "string",
+            "enum": [
+                "3_3",
+                "3_4",
+                "3_14",
+                "3_2",
+                "3_10",
+                "3_6",
+                "3_5",
+                "3_16",
+                "3_13",
+                "3_7",
+                "3_8",
+                "3_19",
+                "FT",
+                "LC",
+                "3_18",
+                "3_99",
+                "3_12",
+                "3_15",
+                "3_11",
+                "3_17",
+                "3_9",
+                "2.1",
+                "VN"
+            ],
+            "title": "IDID"
         }
     }
 }
