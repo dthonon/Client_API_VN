@@ -1,0 +1,4 @@
+Long json_format was not enforced by transfer_vn. 
+When json_format: long is defined in YAML file and file storage is enablesd,
+files are now correctly containing long JSON data.
+Note: long json_format is not compatible with PostgreSQL storage.

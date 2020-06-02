@@ -717,7 +717,6 @@ def main(args):
     if not (Path.home() / args.file).is_file():
         logger.critical(_("File %s does not exist"), str(Path.home() / args.file))
         return None
-
     logger.info(_("Getting configuration data from %s"), args.file)
     try:
         cfg_ctrl = EvnConf(args.file)
@@ -726,6 +725,12 @@ def main(args):
         sys.exit(0)
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
+    # Check configuration consistency
+    if cfg.db_enabled and cfg.json_format != "short":
+        logger.critical(_("Storing to Postgresql cannot use long json_format."))
+        logger.critical(_("Please modify YAML configuration and restart."))
+        sys.exit(0)
+
 
     manage_pg = PostgresqlUtils(cfg)
 
