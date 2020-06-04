@@ -1,18 +1,22 @@
 #!/usr/bin/env python3
 """
-Sample application: skeleton for new applications
+Validate schema and downloaded JSON files.
+Generate property reports from schema.
 
 """
 import argparse
 import logging
+import re
 import shutil
+import sys
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
-import sys
+from typing import Any
 
 import pkg_resources
-from export_vn.evnconf import EvnConf
 from strictyaml import YAMLValidationError
+
+from export_vn.evnconf import EvnConf
 
 from . import _, __version__
 
@@ -30,7 +34,7 @@ def arguments(args):
     """
     # Get options
     parser = argparse.ArgumentParser(
-        description="Sample Biolovision API client application."
+        description="JSON schemas validation and reporting."
     )
     parser.add_argument(
         "--version",
@@ -46,20 +50,45 @@ def arguments(args):
         "--quiet", help=_("Reduce output verbosity"), action="store_true"
     )
     parser.add_argument(
-        "--init", help=_("Initialize the YAML configuration file"), action="store_true"
+        "--validate",
+        help=_("Validate the schemas against downloaded JSON files"),
+        action="store_true",
+    )
+    parser.add_argument(
+        "--samples",
+        help=_(
+            (
+                "If float in range [0.0, 1.0], the parameter represents a "
+                "proportion of files, else integer absolute counts."
+            )
+        ),
+        default=0.1,
     )
     parser.add_argument("config", help=_("Configuration file name"))
 
     return parser.parse_args(args)
 
 
-def init(config: str):
-    """Copy template YAML file to home directory."""
-    yaml_src = pkg_resources.resource_filename(__name__, "data/evn_template.yaml")
-    yaml_dst = str(Path.home() / config)
-    logger.info(_("Creating YAML configuration file %s, from %s"), yaml_dst, yaml_src)
-    shutil.copyfile(yaml_src, yaml_dst)
-    logger.info(_("Please edit %s before running the script"), yaml_dst)
+def validate(cfg_site_list: Any, samples: float) -> None:
+    """Validate schemas against downloaded files."""
+    # Iterate over schema list
+    js_list = [
+        f
+        for f in pkg_resources.resource_listdir(__name__, "")
+        if re.match(r".*\.json", f)
+    ]
+    for js_f in js_list:
+        schema = js_f.split(".")[0]
+        logger.info(_(f"Validating schema {schema}"))
+        # Gathering files to validate
+        f_list = list()
+        for site, cfg in cfg_site_list.items():
+            p = Path.home() / cfg.file_store
+            for tst_f in p.glob(f"{schema}*.gz"):
+                f_list.append(tst_f)
+        print(f_list)
+
+    return None
 
 
 def main(args):
@@ -104,10 +133,22 @@ def main(args):
     logger.info(_("%s, version %s"), sys.argv[0], __version__)
     logger.info(_("Arguments: %s"), sys.argv[1:])
 
+    # Get configuration from file
+    if not (Path.home() / args.config).is_file():
+        logger.critical(_("File %s does not exist"), str(Path.home() / args.config))
+        return None
+    logger.info(_("Getting configuration data from %s"), args.config)
+    try:
+        cfg_ctrl = EvnConf(args.config)
+    except YAMLValidationError:
+        logger.critical(_("Incorrect content in YAML configuration %s"), args.config)
+        sys.exit(0)
+    cfg_site_list = cfg_ctrl.site_list
+
     # If required, first create YAML file
-    if args.init:
-        logger.info(_("Creating YAML configuration file"))
-        init(args.config)
+    if args.validate:
+        logger.info(_("Validating schemas"))
+        validate(cfg_site_list, args.samples)
         return None
 
     # Get configuration from file
@@ -123,7 +164,6 @@ def main(args):
         logger.critical(_("Incorrect content in YAML configuration %s"), args.config)
         sys.exit(0)
     cfg_site_list = cfg_ctrl.site_list
-    logger.debug(cfg_site_list)
 
     return None
 

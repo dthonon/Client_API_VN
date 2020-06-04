@@ -1,39 +1,39 @@
 {
-    "$schema": "http://json-schema.org/draft/2019-09/schema#",
-    "$ref": "#/definitions/Observation",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "data": {
+            "$ref": "#/definitions/_data"
+        }
+    },
+    "required": [
+        "data"
+    ],
+    "title": "_observation",
+    "description": "Root of observation schema.",
     "definitions": {
-        "Observation": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "data": {
-                    "$ref": "#/definitions/Data"
-                }
-            },
-            "title": "Observation",
-            "description": "Root of observation schema."
-        },
-        "Data": {
+        "_data": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
                 "sightings": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/Sighting"
+                        "$ref": "#/definitions/_sighting"
                     }
                 },
                 "forms": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/Form"
+                        "$ref": "#/definitions/_form"
                     }
                 }
             },
-            "title": "Data",
+            "title": "_data",
             "description": "Top level element of observation/sighting data."
         },
-        "Form": {
+        "_form": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -41,8 +41,30 @@
                     "type": "string",
                     "format": "integer"
                 },
+                "comment": {
+                    "type": "string"
+                },
+                "full_form": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "id_form_mobile": {
+                    "type": "string"
+                },
                 "id_form_universal": {
                     "type": "string"
+                },
+                "lat": {
+                    "type": "string"
+                },
+                "lon": {
+                    "type": "string"
+                },
+                "sightings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Sighting"
+                    }
                 },
                 "time_start": {
                     "type": "string",
@@ -52,39 +74,17 @@
                     "type": "string",
                     "format": "time"
                 },
-                "full_form": {
-                    "type": "string",
-                    "format": "integer"
-                },
                 "version": {
                     "type": "string",
                     "format": "integer"
-                },
-                "lat": {
-                    "type": "string"
-                },
-                "lon": {
-                    "type": "string"
-                },
-                "id_form_mobile": {
-                    "type": "string"
-                },
-                "comment": {
-                    "type": "string"
-                },
-                "sightings": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/Sighting"
-                    }
                 },
                 "protocol": {
                     "$ref": "#/definitions/Protocol"
                 }
             },
-            "title": "Form"
+            "title": "_form"
         },
-        "Sighting": {
+        "_sighting": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
