@@ -5,7 +5,11 @@ Generate property reports from schema.
 
 """
 import argparse
+import gzip
+import json
 import logging
+import pprint
+import random
 import re
 import shutil
 import sys
@@ -14,6 +18,8 @@ from pathlib import Path
 from typing import Any
 
 import pkg_resources
+from jsonschema import ValidationError, validate
+from jsonschema.validators import validator_for
 from strictyaml import YAMLValidationError
 
 from export_vn.evnconf import EvnConf
@@ -62,15 +68,23 @@ def arguments(args):
                 "proportion of files, else integer absolute counts."
             )
         ),
-        default=0.1,
+        default="0.1",
     )
     parser.add_argument("config", help=_("Configuration file name"))
 
     return parser.parse_args(args)
 
 
+def _get_int_or_float(v):
+    """Convert str to int or float."""
+    number_as_float = float(v)
+    number_as_int = int(number_as_float)
+    return number_as_int if number_as_float == number_as_int else number_as_float
+
+
 def validate(cfg_site_list: Any, samples: float) -> None:
     """Validate schemas against downloaded files."""
+    pp = pprint.PrettyPrinter(indent=2)
     # Iterate over schema list
     js_list = [
         f
@@ -79,14 +93,30 @@ def validate(cfg_site_list: Any, samples: float) -> None:
     ]
     for js_f in js_list:
         schema = js_f.split(".")[0]
-        logger.info(_(f"Validating schema {schema}"))
+        file = pkg_resources.resource_filename(__name__, js_f)
+        logger.info(_(f"Validating schema {schema}, in file {file}"))
+        with open(file) as f:
+            schema_js = json.load(f)
+        cls = validator_for(schema_js)
+        cls.check_schema(schema_js)
+        instance = cls(schema_js)
         # Gathering files to validate
         f_list = list()
         for site, cfg in cfg_site_list.items():
             p = Path.home() / cfg.file_store
             for tst_f in p.glob(f"{schema}*.gz"):
                 f_list.append(tst_f)
-        print(f_list)
+        if isinstance(samples, float):
+            samples = round(samples * len(f_list))
+        samples = min(samples, len(f_list))
+        logger.debug(_(f"Sampling {samples} out of {len(f_list)} files"))
+        f_list = random.sample(f_list, samples)
+        for fj in f_list:
+            logger.debug(_(f"Validating {schema} schema with {fj}"))
+            with gzip.open(fj) as f:
+                js = json.load(f)
+            instance.validate(js)
+
 
     return None
 
@@ -148,7 +178,24 @@ def main(args):
     # If required, first create YAML file
     if args.validate:
         logger.info(_("Validating schemas"))
-        validate(cfg_site_list, args.samples)
+        samples = _get_int_or_float(args.samples)
+        if isinstance(samples, float) and (samples < 0 or samples > 1):
+            logger.error(
+                _(
+                    f"--samples float parameter: {samples} "
+                    f"must be between 0.0 and 1.0. Coerced to 0.1"
+                )
+            )
+            samples = 0.1
+        if isinstance(samples, int) and (samples < 0):
+            logger.error(
+                _(
+                    f"--samples int parameter: {samples} "
+                    f"must be positive. Coerced to 0.1"
+                )
+            )
+            samples = 0.1
+        validate(cfg_site_list, samples)
         return None
 
     # Get configuration from file

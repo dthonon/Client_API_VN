@@ -63,7 +63,7 @@
                 "sightings": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/Sighting"
+                        "$ref": "#/definitions/_sighting"
                     }
                 },
                 "time_start": {
@@ -695,6 +695,18 @@
                 "134_9",
                 "134_10",
                 "134_11",
+                "134_12",
+                "134_13",
+                "134_14",
+                "134_15",
+                "134_16",
+                "134_17",
+                "134_18",
+                "134_19",
+                "134_20",
+                "134_21",
+                "134_22",
+                "134_23",
                 "UNKNOWN"
             ],
             "title": "BehaviourId"
@@ -854,19 +866,7 @@
             "title": "TextText"
         },
         "DeathCause2": {
-            "type": "string",
-            "enum": [
-                "HUNTING",
-                "ROAD_VEHICLE",
-                "PREDATION",
-                "DROWNING",
-                "OTHER_INTENT",
-                "WEATHER",
-                "ELECTRIC",
-                "OTHER_NATURAL",
-                "OTHER_INDIRECT",
-                "UNKNOWN"
-            ],
+            "$ref": "#/definitions/Drowning",
             "title": "DeathCause2",
             "description": ""
         },
@@ -897,7 +897,18 @@
         "Drowning": {
             "type": "string",
             "enum": [
-                "OTHER"
+                "DROWNING",
+                "ELECTRIC",
+                "HUNTING",
+                "PREDATION",
+                "OTHER",
+                "OTHER_INDIRECT",
+                "OTHER_INTENT",
+                "OTHER_NATURAL",
+                "OTHER_TRANSPORT",
+                "ROAD_VEHICLE",
+                "UNKNOWN",
+                "WEATHER"
             ],
             "title": "Drowning",
             "description": ""
