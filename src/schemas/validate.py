@@ -18,8 +18,8 @@ from pathlib import Path
 from typing import Any
 
 import pkg_resources
-from jsonschema import ValidationError, validate
-from jsonschema.validators import validator_for
+from jsonschema import Draft7Validator, ValidationError, validate, validators
+from jsonschema.validators import validator_for, extend
 from strictyaml import YAMLValidationError
 
 from export_vn.evnconf import EvnConf
@@ -61,6 +61,11 @@ def arguments(args):
         action="store_true",
     )
     parser.add_argument(
+        "--report",
+        help=_("Report of the properties in the schemas"),
+        action="store_true",
+    )
+    parser.add_argument(
         "--samples",
         help=_(
             (
@@ -80,7 +85,6 @@ def _get_int_or_float(v):
     number_as_float = float(v)
     number_as_int = int(number_as_float)
     return number_as_int if number_as_float == number_as_int else number_as_float
-
 
 def validate(cfg_site_list: Any, samples: float) -> None:
     """Validate schemas against downloaded files."""
@@ -117,8 +121,29 @@ def validate(cfg_site_list: Any, samples: float) -> None:
                 js = json.load(f)
             instance.validate(js)
 
-
     return None
+
+def report(cfg_site_list: Any) -> None:
+    """Print of list of properties in the schemas."""
+    pp = pprint.PrettyPrinter(indent=2)
+    # Iterate over schema list
+    js_list = [
+        f
+        for f in pkg_resources.resource_listdir(__name__, "")
+        if re.match(r".*\.json", f)
+    ]
+    for js_f in js_list:
+        schema = js_f.split(".")[0]
+        file = pkg_resources.resource_filename(__name__, js_f)
+        logger.info(_(f"Validating schema {schema}, in file {file}"))
+        with open(file) as f:
+            schema_js = json.load(f)
+        for defs in schema_js["definitions"]:
+            if "properties" in schema_js["definitions"][defs]:
+                for key, props in schema_js["definitions"][defs]["properties"].items():
+                    if "title" in props:
+                        pp.pprint(props)
+
 
 
 def main(args):
@@ -175,7 +200,7 @@ def main(args):
         sys.exit(0)
     cfg_site_list = cfg_ctrl.site_list
 
-    # If required, first create YAML file
+    # Schema validation
     if args.validate:
         logger.info(_("Validating schemas"))
         samples = _get_int_or_float(args.samples)
@@ -198,19 +223,10 @@ def main(args):
         validate(cfg_site_list, samples)
         return None
 
-    # Get configuration from file
-    if not (Path.home() / args.config).is_file():
-        logger.critical(
-            _("Configuration file %s does not exist"), str(Path.home() / args.config)
-        )
-        return None
-    logger.info(_("Getting configuration data from %s"), args.config)
-    try:
-        cfg_ctrl = EvnConf(args.config)
-    except YAMLValidationError:
-        logger.critical(_("Incorrect content in YAML configuration %s"), args.config)
-        sys.exit(0)
-    cfg_site_list = cfg_ctrl.site_list
+    # Schema reporting
+    if args.report:
+        logger.info(_("Reporting on schemas"))
+        report(cfg_site_list)
 
     return None
 

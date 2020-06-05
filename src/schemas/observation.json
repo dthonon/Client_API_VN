@@ -283,7 +283,9 @@
                 },
                 "id_sighting": {
                     "type": "string",
-                    "format": "integer"
+                    "format": "integer",
+                    "title": "ID_SIGHTING",
+                    "description": "Sighting reference within the Biolivision site"
                 },
                 "id_universal": {
                     "type": "string"
@@ -292,10 +294,14 @@
                     "$ref": "#/definitions/Date"
                 },
                 "coord_lat": {
-                    "type": "string"
+                    "type": "string",
+                    "title": "COORD_LAT",
+                    "description": "Latitude (WGS84)"
                 },
                 "coord_lon": {
-                    "type": "string"
+                    "type": "string",
+                    "title": "COORD_LON",
+                    "description": "Longitude (WGS84)"
                 },
                 "altitude": {
                     "type": "string",
@@ -1152,7 +1158,6 @@
                 "D1_4",
                 "D1_5",
                 "D1_6",
-                "D1_1",
                 "D2_1",
                 "D2_2",
                 "D2_3",
@@ -1186,7 +1191,6 @@
                 "F1_4",
                 "F1_5",
                 "F1_6",
-                "F2_1",
                 "F2_1",
                 "F2_2",
                 "F2_3",
