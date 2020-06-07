@@ -330,12 +330,11 @@ class BiolovisionAPI:
                                 data_rec["data"]["sightings"] += resp_chunk["data"][
                                     "sightings"
                                 ]
-                            else:  # pragma: no cover
-                                logger.error(_("No 'sightings' in previous data"))
-                                logger.error(data_rec)
-                                logger.error(resp_chunk)
-                                # data_rec["data"]["sightings"] =
-                                #     resp_chunk["data"]["sightings"]
+                            else:
+                                # logger.error(_("No 'sightings' in previous data"))
+                                # logger.error(data_rec)
+                                # logger.error(resp_chunk)
+                                data_rec["data"]["sightings"] = resp_chunk["data"]["sightings"]
                     if "forms" in resp_chunk["data"]:
                         observations = True
                         logger.debug(
@@ -349,13 +348,12 @@ class BiolovisionAPI:
                             if "forms" in data_rec["data"]:
                                 data_rec["data"]["forms"] += resp_chunk["data"]["forms"]
                             else:  # pragma: no cover
-                                logger.error(
-                                    _("Trying to add 'forms' to another data stream")
-                                )
-                                logger.error(data_rec)
-                                logger.error(resp_chunk)
-                                # data_rec["data"]["forms"] =
-                                #     resp_chunk["data"]["forms"]
+                                # logger.error(
+                                #     _("Trying to add 'forms' to another data stream")
+                                # )
+                                # logger.error(data_rec)
+                                # logger.error(resp_chunk)
+                                data_rec["data"]["forms"] = resp_chunk["data"]["forms"]
 
                     if not observations:
                         logger.debug(
