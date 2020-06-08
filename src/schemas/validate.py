@@ -66,6 +66,11 @@ def arguments(args):
         action="store_true",
     )
     parser.add_argument(
+        "--restore",
+        help=_("Rename processed files back to their original name"),
+        action="store_true",
+    )
+    parser.add_argument(
         "--samples",
         help=_(
             (
@@ -87,8 +92,8 @@ def _get_int_or_float(v):
     return number_as_int if number_as_float == number_as_int else number_as_float
 
 def validate(cfg_site_list: Any, samples: float) -> None:
-    """Validate schemas against downloaded files."""
-    pp = pprint.PrettyPrinter(indent=2)
+    """Validate schemas against downloaded files.
+    Files are renamed *.done after successful processing."""
     # Iterate over schema list
     js_list = [
         f
@@ -120,6 +125,32 @@ def validate(cfg_site_list: Any, samples: float) -> None:
             with gzip.open(fj) as f:
                 js = json.load(f)
             instance.validate(js)
+            shutil.move(fj, str(fj) + ".done")
+
+    return None
+
+def restore(cfg_site_list: Any) -> None:
+    """Restore file names."""
+    # Iterate over schema list
+    js_list = [
+        f
+        for f in pkg_resources.resource_listdir(__name__, "")
+        if re.match(r".*\.json", f)
+    ]
+    for js_f in js_list:
+        schema = js_f.split(".")[0]
+        file = pkg_resources.resource_filename(__name__, js_f)
+        logger.info(_(f"Restoring files for schema {schema}"))
+        # Gathering files to rename
+        f_list = list()
+        for site, cfg in cfg_site_list.items():
+            p = Path.home() / cfg.file_store
+            for tst_f in p.glob(f"{schema}*.gz.done"):
+                f_list.append(tst_f)
+        for fj in f_list:
+            fjr = str(fj)[:-5]
+            logger.debug(_(f"Renaming {fj} to {fjr}"))
+            shutil.move(fj, fjr)
 
     return None
 
@@ -222,6 +253,11 @@ def main(args):
             samples = 0.1
         validate(cfg_site_list, samples)
         return None
+
+    # Restoring file names
+    if args.restore:
+        logger.info(_("Restoring file names"))
+        restore(cfg_site_list)
 
     # Schema reporting
     if args.report:

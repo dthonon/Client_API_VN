@@ -92,15 +92,15 @@
                     "$ref": "#/definitions/Date"
                 },
                 "species": {
-                    "$ref": "#/definitions/Species"
+                    "$ref": "#/definitions/_species"
                 },
                 "place": {
-                    "$ref": "#/definitions/Place"
+                    "$ref": "#/definitions/_place"
                 },
                 "observers": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/Observer"
+                        "$ref": "#/definitions/_observer"
                     }
                 }
             },
@@ -140,7 +140,7 @@
             ],
             "title": "Date"
         },
-        "Species": {
+        "_species": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -166,7 +166,15 @@
                     "type": "string"
                 },
                 "category": {
-                    "$ref": "#/definitions/Category"
+                    "type": "string",
+                    "enum": [
+                        "C",
+                        "H",
+                        "A",
+                        "B",
+                        "BH"
+                    ],
+                    "title": "category"
                 },
                 "dir_habitat": {
                     "$ref": "#/definitions/ProtectionNat"
@@ -187,9 +195,9 @@
                     "$ref": "#/definitions/ProtectionNat"
                 }
             },
-            "title": "Species"
+            "title": "_species"
         },
-        "Place": {
+        "_place": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -241,9 +249,9 @@
                     "type": "string"
                 }
             },
-            "title": "Place"
+            "title": "_place"
         },
-        "Observer": {
+        "_observer": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -260,6 +268,9 @@
                     "format": "integer"
                 },
                 "id_form_universal": {
+                    "type": "string"
+                },
+                "chiro_identify": {
                     "type": "string"
                 },
                 "name": {
@@ -314,13 +325,31 @@
                     "$ref": "#/definitions/PlaceType"
                 },
                 "estimation_code": {
-                    "$ref": "#/definitions/EstimationCode"
+                    "type": "string",
+                    "enum": [
+                        "EXACT_VALUE",
+                        "MINIMUM",
+                        "ESTIMATION",
+                        "NO_VALUE"
+                    ],
+                    "title": "EstimationCode"
                 },
                 "count": {
                     "type": "string",
                     "format": "integer"
                 },
+                "count_string": {
+                    "type": "string"
+                },
                 "flight_number": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "has_colony": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "has_colony_extended": {
                     "type": "string",
                     "format": "integer"
                 },
@@ -359,10 +388,12 @@
                     "format": "integer"
                 },
                 "project_name": {
-                    "$ref": "#/definitions/ProjectName"
+                    "type": "string",
+                    "title": "project_name"
                 },
                 "project_code": {
-                    "$ref": "#/definitions/ProjectCode"
+                    "type": "string",
+                    "title": "project_code"
                 },
                 "update_date": {
                     "$ref": "#/definitions/Date"
@@ -380,10 +411,12 @@
                     }
                 },
                 "entity": {
-                    "$ref": "#/definitions/Entity"
+                    "type": "string",
+                    "title": "Entity"
                 },
                 "entity_fullname": {
-                    "$ref": "#/definitions/EntityFullname"
+                    "type": "string",
+                    "title": "EntityFullname"
                 },
                 "extended_info": {
                     "$ref": "#/definitions/ExtendedInfo"
@@ -392,17 +425,39 @@
                     "type": "string"
                 },
                 "committees_validation": {
-                    "$ref": "#/definitions/CommitteesValidation"
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "chr": {
+                            "$ref": "#/definitions/CommitteeValidation"
+                        },
+                        "chn": {
+                            "$ref": "#/definitions/CommitteeValidation"
+                        }
+                    }
                 },
                 "admin_hidden": {
                     "type": "string",
                     "format": "integer"
                 },
                 "admin_hidden_type": {
-                    "$ref": "#/definitions/AdminHiddenType"
+                    "type": "string",
+                    "enum": [
+                        "incomplete",
+                        "question",
+                        "refused"
+                    ],
+                    "title": "AdminHiddenType"
                 }
             },
-            "title": "Observer"
+            "title": "_observer"
+        },
+        "CommitteeValidation": {
+            "type": "string",
+            "enum": [
+                "ACCEPTED",
+                "REQUESTED"
+            ]
         },
         "Detail": {
             "type": "object",
@@ -439,7 +494,12 @@
                     "format": "integer"
                 },
                 "type": {
-                    "$ref": "#/definitions/Type"
+                    "type": "string",
+                    "enum": [
+                        "PHOTO",
+                        "SOUND"
+                    ],
+                    "title": "Type"
                 },
                 "media_is_hidden": {
                     "type": "string",
@@ -469,194 +529,396 @@
             "additionalProperties": false,
             "properties": {
                 "mortality": {
-                    "$ref": "#/definitions/Mortality"
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "collected": {
+                            "$ref": "#/definitions/YesNo",
+                            "title": "collected",
+                            "description": ""
+                        },
+                        "comment": {
+                            "type": "string",
+                            "title": "comment",
+                            "description": ""
+                        },
+                        "crash_object": {
+                            "type": "string",
+                            "enum": [
+                                "UNKNOWN",
+                                "WINDOW"
+                            ],
+                            "title": "crash_object",
+                            "description": ""
+                        },
+                        "death_cause2": {
+                            "type": "string",
+                            "enum": [
+                                "AGRICULTURAL_NET",
+                                "AIRCRAFT",
+                                "BOAT",
+                                "CRASH",
+                                "DESTRUCTION",
+                                "DISEASE_PARASITE",
+                                "DROWNING",
+                                "ELECTRIC",
+                                "EXHAUSTION",
+                                "FISHING",
+                                "HUNTING",
+                                "NATURAL_DISASTER",
+                                "NEST_FALL",
+                                "PREDATION",
+                                "OTHER",
+                                "OTHER_INDIRECT",
+                                "OTHER_INTENT",
+                                "OTHER_NATURAL",
+                                "OTHER_TRANSPORT",
+                                "POISONING",
+                                "ROAD_VEHICLE",
+                                "TRAIN",
+                                "TRAP",
+                                "UNKNOWN",
+                                "UNKNOWN_INDIRECT",
+                                "UNKNOWN_INTENT",
+                                "UNKNOWN_NATURAL",
+                                "UNKNOWN_TRANSPORT",
+                                "WEATHER",
+                                "WORK",
+                                "WORK_VEGETAL"
+                            ],
+                            "title": "death_cause2",
+                            "description": ""
+                        },
+                        "drowning": {
+                            "type": "string",
+                            "enum": [
+                                "BASIN",
+                                "NATURAL_WATER",
+                                "OTHER",
+                                "TROUGH",
+                                "UNKNOWN"
+                            ],
+                            "title": "drowning",
+                            "description": ""
+                        },
+                        "destruction_capture": {
+                            "type": "string",
+                            "enum": [
+                                "OTHER",
+                                "SCIENTIFIC_SAMPLE",
+                                "UNKNOWN"
+                            ],
+                            "title": "destruction_capture",
+                            "description": ""
+                        },
+                        "electric_cause": {
+                            "type": "string",
+                            "enum": [
+                                "COLLISION",
+                                "ELECTROCUTION"
+                            ],
+                            "title": "electric_cause",
+                            "description": ""
+                        },
+                        "electric_object": {
+                            "type": "string",
+                            "enum": [
+                                "PYLON",
+                                "LINE",
+                                "OTHER"
+                            ],
+                            "title": "electric_object",
+                            "description": ""
+                        },
+                        "fishing_cause": {
+                            "type": "string",
+                            "enum": [
+                                "OTHER"
+                            ],
+                            "title": "fishing_cause",
+                            "description": ""
+                        },
+                        "hunting": {
+                            "type": "string",
+                            "enum": [
+                                "SHOOTING",
+                                "UNKNOWN"
+                            ],
+                            "title": "hunting",
+                            "description": ""
+                        },
+                        "natural_disaster": {
+                            "type": "string",
+                            "enum": [
+                                "ROCK_FALL",
+                                "UNKNOWN"
+                            ],
+                            "title": "natural_disaster",
+                            "description": ""
+                        },
+                        "predation2": {
+                            "type": "string",
+                            "enum": [
+                                "BIRD",
+                                "CAT",
+                                "DOG",
+                                "MAMMAL",
+                                "OTHER",
+                                "UNKNOWN"
+                            ],
+                            "title": "predation2",
+                            "description": ""
+                        },
+                        "radio": {
+                            "$ref": "#/definitions/YesNo",
+                            "title": "radio",
+                            "description": ""
+                        },
+                        "recipient": {
+                            "type": "string",
+                            "enum": [
+                                "HEALTH_CENTER",
+                                "OTHER",
+                                "VETERINAIRE"
+                            ],
+                            "title": "recipient",
+                            "description": ""
+                        },
+                        "response": {
+                            "type": "string",
+                            "enum": [
+                                "DISCUTION",
+                                "NOTHING"
+                            ],
+                            "title": "response",
+                            "description": ""
+                        },
+                        "road_type2": {
+                            "type": "string",
+                            "enum": [
+                                "HIGHWAY",
+                                "OTHER",
+                                "PARKING",
+                                "PRINCIPAL_ROAD",
+                                "SECONDARY_ROAD",
+                                "TRACK",
+                                "UNKNOWN"
+                            ],
+                            "title": "road_type2",
+                            "description": ""
+                        },
+                        "track_number": {
+                            "type": "string",
+                            "title": "track_number",
+                            "description": ""
+                        },
+                        "trap2": {
+                            "type": "string",
+                            "enum": [
+                                "INSECT_TRAP",
+                                "LETAL",
+                                "OTHER",
+                                "TRAP",
+                                "UNKNOWN"
+                            ],
+                            "title": "trap2",
+                            "description": ""
+                        },
+                        "work": {
+                            "type": "string",
+                            "enum": [
+                                "OTHER",
+                                "TRANS_INFRA"
+                            ],
+                            "title": "work",
+                            "description": ""
+                        },
+                        "work_vegetal": {
+                            "type": "string",
+                            "enum": [
+                                "MOWING"
+                            ],
+                            "title": "work_vegetal",
+                            "description": ""
+                        },
+                        "weather": {
+                            "$ref": "#/definitions/Weather",
+                            "title": "weather",
+                            "description": ""
+                        },
+                        "wounded": {
+                            "type": "string",
+                            "format": "integer",
+                            "title": "wounded",
+                            "description": ""
+                        }
+                    },
+                    "title": "Mortality",
+                    "description": ""
                 },
                 "gypaetus_barbatus": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/GypaetusBarbatus"
-                    }
-                },
-                "colony": {
-                    "$ref": "#/definitions/Colony"
-                },
-                "colony_extended": {
-                    "$ref": "#/definitions/ColonyExtended"
-                }
-            },
-            "title": "ExtendedInfo"
-        },
-        "GypaetusBarbatus": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "@id": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "age": {
-                    "$ref": "#/definitions/Age"
-                },
-                "altitude_max": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "altitude_min": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "behaviour": {
-                    "$ref": "#/definitions/Behaviour"
-                },
-                "bird_interaction": {
-                    "type": "array",
-                    "items": {
                         "type": "object",
-                        "additionalProperties": true,
+                        "additionalProperties": false,
                         "properties": {
                             "@id": {
                                 "type": "string",
                                 "format": "integer"
+                            },
+                            "age": {
+                                "$ref": "#/definitions/Age"
+                            },
+                            "altitude_max": {
+                                "type": "string",
+                                "format": "integer"
+                            },
+                            "altitude_min": {
+                                "type": "string",
+                                "format": "integer"
+                            },
+                            "behaviour": {
+                                "type": "string",
+                                "enum": [
+                                    "BONE_BREAKING",
+                                    "CARRYING_BONES",
+                                    "CARRYING_MATERIAL_IN_BEAK",
+                                    "CARRYING_MATERIAL_IN_CLAWS",
+                                    "CIRCLING",
+                                    "FEEDING",
+                                    "FLYING_STRAIT",
+                                    "SLEEPING",
+                                    "SOCIAL_CONTACT",
+                                    "UNKNOWN"
+                                ]
+                            },
+                            "bird_interaction": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "additionalProperties": true,
+                                    "properties": {
+                                        "@id": {
+                                            "type": "string",
+                                            "format": "integer"
+                                        }
+                                    }
+                                }
+                            },
+                            "distance_min": {
+                                "type": "string",
+                                "format": "integer"
+                            },
+                            "flight_direction": {
+                                "$ref": "#/definitions/Direction"
+                            },
+                            "interaction": {
+                                "$ref": "#/definitions/Interaction"
+                            },
+                            "interaction_benefit": {
+                                "$ref": "#/definitions/InteractionBenefit"
+                            },
+                            "signs": {
+                                "type": "string"
+                            },
+                            "time_start": {
+                                "type": "string",
+                                "format": "time"
+                            },
+                            "time_stop": {
+                                "type": "string",
+                                "format": "time"
+                            },
+                            "time_unknown": {
+                                "type": "string",
+                                "format": "integer"
+                            },
+                            "weather": {
+                                "$ref": "#/definitions/Weather"
                             }
                         }
                     }
                 },
-                "distance_min": {
-                    "type": "string",
-                    "format": "integer"
+                "colony": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "nests": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "nests_is_min": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "couples": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "occupied_nests": {
+                            "type": "string",
+                            "format": "integer"
+                        }
+                    },
+                    "title": "Colony"
                 },
-                "flight_direction": {
-                    "$ref": "#/definitions/Direction"
-                },
-                "interaction": {
-                    "$ref": "#/definitions/Interaction"
-                },
-                "interaction_benefit": {
-                    "$ref": "#/definitions/InteractionBenefit"
-                },
-                "signs": {
-                    "type": "string"
-                },
-                "time_start": {
-                    "type": "string",
-                    "format": "time"
-                },
-                "time_stop": {
-                    "type": "string",
-                    "format": "time"
-                },
-                "time_unknown": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "weather": {
-                    "$ref": "#/definitions/Weather"
-                }
-            }
-        },
-        "Colony": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "nests": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "nests_is_min": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "couples": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "occupied_nests": {
-                    "type": "string",
-                    "format": "integer"
-                }
-            },
-            "title": "Colony"
-        },
-        "ColonyExtended": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "nb_natural_nests": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "nb_natural_nests_is_min": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "couples": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "nb_natural_occup_nests": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "nb_artificial_nests": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "nb_artificial_nests_is_min": {
-                    "type": "string",
-                    "format": "integer"
+                "colony_extended": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "couples": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "nb_artificial_destructed_nests": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "nb_artificial_nests": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "nb_artificial_nests_is_min": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "nb_artificial_occup_nests": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "nb_artificial_other_species_nests": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "nb_construction_nests": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "nb_natural_destructed_nests": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "nb_natural_nests": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "nb_natural_nests_is_min": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "nb_natural_occup_nests": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "nb_natural_other_species_nests": {
+                            "type": "string",
+                            "format": "integer"
+                        }
+                    },
+                    "title": "ColonyExtended"
                 }
             },
-            "title": "ColonyExtended"
-        },
-        "Mortality": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "death_cause2": {
-                    "$ref": "#/definitions/DeathCause2"
-                },
-                "electric_cause": {
-                    "$ref": "#/definitions/ElectricCause"
-                },
-                "electric_object": {
-                    "$ref": "#/definitions/ElectricObject"
-                },
-                "hunting": {
-                    "$ref": "#/definitions/Hunting"
-                },
-                "drowning": {
-                    "$ref": "#/definitions/Drowning"
-                },
-                "wounded": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "predation2": {
-                    "type": "string"
-                },
-                "comment": {
-                    "type": "string"
-                },
-                "track_number": {
-                    "type": "string"
-                },
-                "road_type2": {
-                    "type": "string"
-                },
-                "collected": {
-                    "type": "string"
-                },
-                "response": {
-                    "type": "string"
-                },
-                "weather": {
-                    "$ref": "#/definitions/Weather"
-                },
-                "recipient": {
-                    "type": "string"
-                }
-            },
-            "title": "Mortality"
+            "title": "ExtendedInfo"
         },
         "Rarity": {
             "type": "string",
@@ -676,56 +938,56 @@
             "additionalProperties": false,
             "properties": {
                 "@id": {
-                    "$ref": "#/definitions/BehaviourId"
+                    "type": "string",
+                    "enum": [
+                        "134_1",
+                        "134_2",
+                        "134_3",
+                        "134_4",
+                        "134_5",
+                        "134_6",
+                        "134_7",
+                        "134_8",
+                        "134_9",
+                        "134_10",
+                        "134_11",
+                        "134_12",
+                        "134_13",
+                        "134_14",
+                        "134_15",
+                        "134_16",
+                        "134_17",
+                        "134_18",
+                        "134_19",
+                        "134_20",
+                        "134_21",
+                        "134_22",
+                        "134_23",
+                        "UNKNOWN"
+                    ],
+                    "title": "BehaviourId"
                 },
                 "name": {
-                    "$ref": "#/definitions/Name"
+                    "type": "string",
+                    "enum": [
+                        "SLEEP",
+                        "FOOD",
+                        "MIGRATION_ACTIV"
+                    ],
+                    "title": "Name"
                 },
                 "#text": {
-                    "$ref": "#/definitions/BehaviourText"
+                    "type": "string",
+                    "enum": [
+                        "Dortoir / reposoir",
+                        "Se nourrit",
+                        "Migration active",
+                        "inconnu"
+                    ],
+                    "title": "BehaviourText"
                 }
             },
             "title": "Behaviour"
-        },
-        "BehaviourId": {
-            "type": "string",
-            "enum": [
-                "134_1",
-                "134_2",
-                "134_3",
-                "134_4",
-                "134_5",
-                "134_6",
-                "134_7",
-                "134_8",
-                "134_9",
-                "134_10",
-                "134_11",
-                "134_12",
-                "134_13",
-                "134_14",
-                "134_15",
-                "134_16",
-                "134_17",
-                "134_18",
-                "134_19",
-                "134_20",
-                "134_21",
-                "134_22",
-                "134_23",
-                "UNKNOWN"
-            ],
-            "title": "BehaviourId"
-        },
-        "BehaviourText": {
-            "type": "string",
-            "enum": [
-                "Dortoir / reposoir",
-                "Se nourrit",
-                "Migration active",
-                "inconnu"
-            ],
-            "title": "BehaviourText"
         },
         "ProtectionNat": {
             "type": "object",
@@ -736,188 +998,6 @@
                 }
             },
             "title": "ProtectionNat"
-        },
-        "CommitteesValidation": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "chr": {
-                    "type": "string"
-                }
-            },
-            "title": "CommitteesValidation"
-        },
-        "TextUnion": {
-            "anyOf": [
-                {
-                    "$ref": "#/definitions/TextText"
-                },
-                {
-                    "type": "string",
-                    "format": "integer"
-                }
-            ],
-            "title": "TextUnion"
-        },
-        "IDUnion": {
-            "anyOf": [
-                {
-                    "$ref": "#/definitions/IDID"
-                },
-                {
-                    "type": "string",
-                    "format": "integer"
-                }
-            ],
-            "title": "IDUnion"
-        },
-        "SiteCodeUnion": {
-            "anyOf": [
-                {
-                    "$ref": "#/definitions/SiteCodeEnum"
-                },
-                {
-                    "type": "string",
-                    "format": "integer"
-                }
-            ],
-            "title": "SiteCodeUnion"
-        },
-        "TextText": {
-            "type": "string",
-            "enum": [
-                "Forêt (arbres > 5m de hauteur)",
-                "Milieux agricoles",
-                "Milieux bâtis ou urbanisés",
-                "Buissons (ou jeune forêt < 5m de hauteur)",
-                "Feuillus",
-                "Grandes cultures",
-                "Rural",
-                "Prairie non cultivée",
-                "Mixité prairie / cultures",
-                "Buissons calcicoles",
-                "Suburbain",
-                "Mixte (> 10% de chaque)",
-                "Conifères",
-                "Autres types de cultures",
-                "Urbain",
-                "Semi-naturelle ou âges mélangés",
-                "Haies avec arbres",
-                "Bâtiments",
-                "Groupes isolés de 1-10 arbres",
-                "Jardins",
-                "Plantation non-équienne",
-                "Sous-bois éparse",
-                "Plantation équienne",
-                "Autre limite de terrain",
-                "Jeune plantation (5-10m)",
-                "Parcs municipaux, zones de loisirs",
-                "Sous-bois modéré",
-                "Cour de ferme, basse-cour",
-                "Haies sans arbres",
-                "Sous-bois dense",
-                "Beaucoup d’arbres",
-                "Autre essence feuillue",
-                "Peu d’arbres",
-                "Non pâturé",
-                "Pâturé",
-                "Epicéa",
-                "Autre essence conifère",
-                "Céréales",
-                "Pin",
-                "Hêtre",
-                "Moyenne surface de jardins (100 - 450 m2)",
-                "Beaucoup de buissons",
-                "Pelouses, marais et landes",
-                "Milieux aquatiques",
-                "Autres marais ouverts",
-                "Petit étang (50 - 450 m2)",
-                "Prairie cultivée",
-                "Pas de haie",
-                "Traitements d’eaux usées",
-                "Non utilisé/non perturbé",
-                "Maïs",
-                "Dystrophique (eau noire)",
-                "Rives nues",
-                "0 – 33%",
-                "66 – 100%",
-                "Absente",
-                "Averses",
-                "Pas de neige",
-                "Bonne",
-                "Absent",
-                "inconnu",
-                "adulte",
-                "immature",
-                "poussin",
-                "1ère année",
-                "Inconnu",
-                "posé",
-                "en vol",
-                "contact auditif",
-                "< 25m",
-                "< 100m",
-                "< 200m",
-                "Distance plus de 200m",
-                "En transit",
-                "mâle",
-                "femelle",
-                "type femelle",
-                "LC",
-                "2ème année",
-                "en main",
-                "2.1",
-                "VN"
-            ],
-            "title": "TextText"
-        },
-        "DeathCause2": {
-            "$ref": "#/definitions/Drowning",
-            "title": "DeathCause2",
-            "description": ""
-        },
-        "ElectricCause": {
-            "type": "string",
-            "enum": [
-                "ELECTROCUTION"
-            ],
-            "title": "ElectricCause",
-            "description": ""
-        },
-        "ElectricObject": {
-            "type": "string",
-            "enum": [
-                "PYLON"
-            ],
-            "title": "ElectricObject",
-            "description": ""
-        },
-        "Hunting": {
-            "type": "string",
-            "enum": [
-                "SHOOTING"
-            ],
-            "title": "Hunting",
-            "description": ""
-        },
-        "Drowning": {
-            "type": "string",
-            "enum": [
-                "DROWNING",
-                "ELECTRIC",
-                "HUNTING",
-                "PREDATION",
-                "OTHER",
-                "OTHER_INDIRECT",
-                "OTHER_INTENT",
-                "OTHER_NATURAL",
-                "OTHER_TRANSPORT",
-                "ROAD_VEHICLE",
-                "UNKNOWN",
-                "WEATHER"
-            ],
-            "title": "Drowning",
-            "description": ""
         },
         "Sex": {
             "OneOf": [
@@ -1212,6 +1292,31 @@
                 "G1_4"
             ]
         },
+        "StocTransport": {
+            "OneOf": [
+                {
+                    "$ref": "#/definitions/StocTransportId"
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "@id": {
+                            "$ref": "#/definitions/StocTransportId"
+                        },
+                        "#text": {
+                            "type": "string"
+                        }
+                    }
+                }
+            ]
+        },
+        "StocTransportId": {
+            "type": "string",
+            "enum": [
+                "WALK"
+            ]
+        },
         "StocSnow": {
             "OneOf": [
                 {
@@ -1346,22 +1451,34 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
-                "protocol_name": {
-                    "$ref": "#/definitions/ProtocolName"
-                },
-                "site_code": {
-                    "$ref": "#/definitions/SiteCodeUnion"
-                },
-                "local_site_code": {
-                    "type": "string"
-                },
                 "advanced": {
                     "type": "string",
                     "format": "integer"
                 },
-                "visit_number": {
+                "list_type": {
                     "type": "string",
-                    "format": "integer"
+                    "enum": [
+                        "-",
+                        "basic",
+                        "extended"
+                    ]
+                },
+                "local_site_code": {
+                    "type": "string"
+                },
+                "protocol_name": {
+                    "type": "string",
+                    "enum": [
+                        "GENERIC_BIRD",
+                        "SHOC",
+                        "STOC_EPS",
+                        "STOC_SITES",
+                        "WATERBIRD"
+                    ],
+                    "title": "protocol_name"
+                },
+                "site_code": {
+                    "type": "string"
                 },
                 "sequence_number": {
                     "type": "string",
@@ -1373,23 +1490,120 @@
                         "$ref": "#/definitions/Habitat"
                     }
                 },
-                "stoc_rain": {
-                    "$ref": "#/definitions/StocRain"
-                },
-                "stoc_wind": {
-                    "$ref": "#/definitions/StocWind"
-                },
-                "stoc_visibility": {
-                    "$ref": "#/definitions/StocVisibility"
-                },
                 "stoc_cloud": {
                     "$ref": "#/definitions/StocCloud"
+                },
+                "stoc_rain": {
+                    "$ref": "#/definitions/StocRain"
                 },
                 "stoc_snow": {
                     "$ref": "#/definitions/StocSnow"
                 },
-                "list_type": {
-                    "type": "string"
+                "stoc_transport": {
+                    "$ref": "#/definitions/StocTransport"
+                },
+                "stoc_visibility": {
+                    "$ref": "#/definitions/StocVisibility"
+                },
+                "stoc_wind": {
+                    "$ref": "#/definitions/StocWind"
+                },
+                "visit_number": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "waterbird_conditions": {
+                    "type": "string",
+                    "enum": [
+                        "BAD",
+                        "GOOD_NORMAL",
+                        "MODERATE"
+                    ]
+                },
+                "waterbird_conditions_reason": {
+                    "type": "string",
+                    "enum": [
+                        "FOG",
+                        "HUNTING",
+                        "MIXED_HUMAN",
+                        "MIXED_WEATHER",
+                        "OTHERS",
+                        "WIND"
+                    ]
+                },
+                "waterbird_count_payed": {
+                    "$ref": "#/definitions/YesNo"
+                },
+                "waterbird_countmethod": {
+                    "type": "string",
+                    "enum": [
+                        "GROUND"
+                    ]
+                },
+                "waterbird_counttype": {
+                    "type": "string",
+                    "enum": [
+                        "DAY_COUNT",
+                        "ROOST_COUNT"
+                    ]
+                },
+                "waterbird_coverage": {
+                    "type": "string",
+                    "enum": [
+                        "COMPLETE",
+                        "PARTLY",
+                        "UNKNOWN"
+                    ]
+                },
+                "waterbird_ice": {
+                    "type": "string",
+                    "enum": [
+                        "NO_ICE"
+                    ]
+                },
+                "waterbird_optical": {
+                    "type": "string",
+                    "enum": [
+                        "BINOCULARS",
+                        "NONE",
+                        "TELESCOPE"
+                    ]
+                },
+                "waterbird_snowcover": {
+                    "type": "string",
+                    "enum": [
+                        "GOOD_NORMAL",
+                        "NO_SNOW"
+                    ]
+                },
+                "waterbird_visibility": {
+                    "type": "string",
+                    "enum": [
+                        "0_100",
+                        "100_300",
+                        "300_1000",
+                        "1000",
+                        "UNKNOWN"
+                    ]
+                },
+                "waterbird_waterlevel": {
+                    "type": "string",
+                    "enum": [
+                        "DRY_EMPTY",
+                        "HIGH",
+                        "LOW",
+                        "NORMAL",
+                        "UNKNOWN"
+                    ]
+                },
+                "waterbird_waves": {
+                    "type": "string",
+                    "enum": [
+                        "MODERATE",
+                        "NONE",
+                        "SMALL",
+                        "UNKNOWN"
+                    ]
                 }
             },
             "title": "Protocol"
@@ -1398,52 +1612,68 @@
             "oneOf": [
                 {
                     "type": "string",
-                    "format": "integer"
+                    "enum": [
+                        "2",
+                        "3",
+                        "4",
+                        "5",
+                        "6",
+                        "7",
+                        "8",
+                        "9",
+                        "10",
+                        "11",
+                        "12",
+                        "13",
+                        "14",
+                        "15",
+                        "16",
+                        "17",
+                        "18",
+                        "19",
+                        "30",
+                        "40",
+                        "50",
+                        "99"
+                    ]
                 },
                 {
                     "type": "object",
                     "additionalProperties": false,
                     "properties": {
                         "@id": {
-                            "$ref": "#/definitions/IDUnion"
+                            "type": "string",
+                            "enum": [
+                                "3_2",
+                                "3_3",
+                                "3_4",
+                                "3_5",
+                                "3_6",
+                                "3_7",
+                                "3_8",
+                                "3_9",
+                                "3_10",
+                                "3_11",
+                                "3_12",
+                                "3_13",
+                                "3_14",
+                                "3_15",
+                                "3_16",
+                                "3_17",
+                                "3_18",
+                                "3_19",
+                                "3_30",
+                                "3_40",
+                                "3_50",
+                                "3_99"
+                            ]
                         },
                         "#text": {
-                            "$ref": "#/definitions/TextUnion"
+                            "type": "string"
                         }
                     }
                 }
             ]
-        },
-        "ProtocolName": {
-            "type": "string",
-            "enum": [
-                "STOC_EPS",
-                "STOC_SITES",
-                "GENERIC_BIRD"
-            ],
-            "title": "ProtocolName"
-        },
-        "SiteCodeEnum": {
-            "type": "string",
-            "title": "SiteCodeEnum"
-        },
-        "AdminHiddenType": {
-            "type": "string",
-            "enum": [
-                "incomplete",
-                "question",
-                "refused"
-            ],
-            "title": "AdminHiddenType"
-        },
-        "Name": {
-            "type": "string",
-            "enum": [
-                "SLEEP",
-                "FOOD",
-                "MIGRATION_ACTIV"
-            ],
-            "title": "Name"
         },
         "Direction": {
             "OneOf": [
@@ -1530,32 +1760,6 @@
             ],
             "title": "Category"
         },
-        "Entity": {
-            "type": "string",
-            "title": "Entity"
-        },
-        "EntityFullname": {
-            "type": "string",
-            "title": "EntityFullname"
-        },
-        "EstimationCode": {
-            "type": "string",
-            "enum": [
-                "EXACT_VALUE",
-                "MINIMUM",
-                "ESTIMATION",
-                "NO_VALUE"
-            ],
-            "title": "EstimationCode"
-        },
-        "Type": {
-            "type": "string",
-            "enum": [
-                "PHOTO",
-                "SOUND"
-            ],
-            "title": "Type"
-        },
         "Weather": {
             "OneOf": [
                 {
@@ -1585,32 +1789,20 @@
         "PlaceType": {
             "type": "string",
             "enum": [
-                "precise",
+                "",
                 "garden",
+                "municipality",
                 "place",
+                "precise",
+                "polygone",
+                "polygone_precise",
+                "square",
                 "subplace",
-                "municipality"
+                "subplace_precise",
+                "transect",
+                "transect_precise"
             ],
             "title": "PlaceType"
-        },
-        "Category": {
-            "type": "string",
-            "enum": [
-                "C",
-                "H",
-                "A",
-                "B",
-                "BH"
-            ],
-            "title": "Category"
-        },
-        "ProjectCode": {
-            "type": "string",
-            "title": "ProjectCode"
-        },
-        "ProjectName": {
-            "type": "string",
-            "title": "ProjectName"
         },
         "Source": {
             "type": "string",
@@ -1653,6 +1845,13 @@
                 "VN"
             ],
             "title": "IDID"
+        },
+        "YesNo": {
+            "type": "string",
+            "enum": [
+                "YES",
+                "NO"
+            ]
         }
     }
 }
