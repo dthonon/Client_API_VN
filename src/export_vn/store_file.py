@@ -80,7 +80,12 @@ class StoreFile:
                 else:
                     logger.info(_("Successfully created the directory %s"), json_path)
 
-            nb_obs = len(items_dict["data"])
+            nb_obs = 0
+            if "sightings" in items_dict["data"]:
+                nb_obs += len(items_dict["data"]["sightings"])
+            if "forms" in items_dict["data"]:
+                for f in range(0, len(items_dict["data"]["forms"])):
+                    nb_obs += len(items_dict["data"]["forms"][f]["sightings"])
             if nb_obs > 0:
                 # Convert to json
                 logger.debug(_("Converting to json %d items"), len(items_dict["data"]))
