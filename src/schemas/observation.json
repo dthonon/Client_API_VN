@@ -42,11 +42,14 @@
                     "format": "integer"
                 },
                 "comment": {
-                    "type": "string"
+                    "type": "string",
+                    "title": "DAILY_TEXT_COMMENT_REM",
+                    "description": "Form comment"
                 },
                 "full_form": {
-                    "type": "string",
-                    "format": "integer"
+                    "$ref": "#/definitions/ZeroOneId",
+                    "title": "FULL_FORM",
+                    "description": "Is the form complete?"
                 },
                 "id_form_mobile": {
                     "type": "string"
@@ -68,18 +71,24 @@
                 },
                 "time_start": {
                     "type": "string",
-                    "format": "time"
+                    "format": "time",
+                    "title": "TIME_START",
+                    "description": "Start time of the form"
                 },
                 "time_stop": {
                     "type": "string",
-                    "format": "time"
-                },
+                    "format": "time",
+                    "title": "TIME_STOP",
+                    "description": "Finish time of the form"
+               },
                 "version": {
                     "type": "string",
                     "format": "integer"
                 },
                 "protocol": {
-                    "$ref": "#/definitions/Protocol"
+                    "$ref": "#/definitions/_protocol",
+                    "title": "PROTOCOL",
+                    "description": "Protocol for this form"
                 }
             },
             "title": "_form"
@@ -89,7 +98,9 @@
             "additionalProperties": false,
             "properties": {
                 "date": {
-                    "$ref": "#/definitions/Date"
+                    "$ref": "#/definitions/_date",
+                    "title": "DATE",
+                    "description": "Observation date and time"
                 },
                 "species": {
                     "$ref": "#/definitions/_species"
@@ -106,7 +117,7 @@
             },
             "title": "Sighting"
         },
-        "Date": {
+        "_date": {
             "oneOf": [
                 {
                     "type": "object",
@@ -146,24 +157,44 @@
             "properties": {
                 "@id": {
                     "type": "string",
-                    "format": "integer"
+                    "format": "integer",
+                    "title": "ID_SPECIES",
+                    "description": "Biolovision species identifier"
                 },
                 "sys_order": {
                     "type": "string",
-                    "format": "integer"
+                    "format": "integer",
+                    "title": "SYS_ORDER",
+                    "description": "Biolovision species specific order"
                 },
                 "taxonomy": {
                     "type": "string",
-                    "format": "integer"
+                    "format": "integer",
+                    "title": "TAXONOMY_NAME",
+                    "description": "Biolovision taxonomic group"
                 },
                 "rarity": {
-                    "$ref": "#/definitions/Rarity"
+                    "type": "string",
+                    "enum": [
+                        "verycommon",
+                        "common",
+                        "unusual",
+                        "rare",
+                        "escaped",
+                        "veryrare",
+                        "never"
+                    ],
+                    "title": "rarity"
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "title": "NAME_SPECIES",
+                    "description": "Biolovision species common name"
                 },
                 "latin_name": {
-                    "type": "string"
+                    "type": "string",
+                    "title": "LATIN_SPECIES",
+                    "description": "Biolovision species scientific name"
                 },
                 "category": {
                     "type": "string",
@@ -177,22 +208,86 @@
                     "title": "category"
                 },
                 "dir_habitat": {
-                    "$ref": "#/definitions/ProtectionNat"
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "#text": {
+                            "type": "string"
+                        }
+                    }
                 },
                 "dir_oiseaux": {
-                    "$ref": "#/definitions/ProtectionNat"
+                    "OneOf": [
+                        {
+                            "$ref": "#/definitions/AgeId"
+                        },
+                        {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "@id": {
+                                    "$ref": "#/definitions/DirOiseauxId"
+                                },
+                                "#text": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    ]
                 },
                 "protection_nat": {
-                    "$ref": "#/definitions/ProtectionNat"
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "#text": {
+                            "type": "string"
+                        }
+                    }
                 },
                 "uicn": {
-                    "$ref": "#/definitions/ProtectionNat"
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "@id": {
+                            "$ref": "#/definitions/UICNId"
+                        },
+                        "#text": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "lr_reg": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "@id": {
+                            "$ref": "#/definitions/LRNatId"
+                        },
+                        "#text": {
+                            "type": "string"
+                        }
+                    }
                 },
                 "lr_nat": {
-                    "$ref": "#/definitions/ProtectionNat"
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "@id": {
+                            "$ref": "#/definitions/LRNatId"
+                        },
+                        "#text": {
+                            "type": "string"
+                        }
+                    }
                 },
                 "znieff": {
-                    "$ref": "#/definitions/ProtectionNat"
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "#text": {
+                            "type": "string"
+                        }
+                    }
                 }
             },
             "title": "_species"
@@ -203,50 +298,65 @@
             "properties": {
                 "@id": {
                     "type": "string",
-                    "format": "integer"
-                },
-                "id_universal": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
+                    "format": "integer",
+                    "title": "ID_PLACE",
+                    "description": "Biolovision site identifier within local database"
                 },
                 "altitude": {
                     "type": "string",
-                    "format": "integer"
+                    "format": "integer",
+                    "description": "Altitude of the site"
                 },
-                "place_type": {
-                    "$ref": "#/definitions/PlaceType"
+                "coord_lat": {
+                    "type": "string",
+                    "description": "Site latitude, in WGS84 coordinate system"
                 },
-                "loc_precision": {
+                "coord_lon": {
+                    "type": "string",
+                    "description": "Site longitude, in WGS84 coordinate system"
+                },
+                "county": {
+                    "type": "string",
+                    "format": "integer",
+                    "title": "COUNTY",
+                    "description": "County name of the site"
+                },
+                "country": {
+                    "type": "string",
+                    "title": "COUNTRY",
+                    "description": "Country name of the site"
+                },
+                "id_universal": {
+                    "type": "string",
+                    "description": "Biolovision universal site identifier"
+                },
+                "insee": {
                     "type": "string",
                     "format": "integer"
                 },
                 "lat": {
                     "type": "string"
                 },
+                "loc_precision": {
+                    "type": "string",
+                    "format": "integer"
+                },
                 "lon": {
                     "type": "string"
                 },
-                "coord_lat": {
-                    "type": "string"
-                },
-                "coord_lon": {
-                    "type": "string"
-                },
-                "insee": {
-                    "type": "string",
-                    "format": "integer"
-                },
                 "municipality": {
-                    "type": "string"
-                },
-                "county": {
                     "type": "string",
-                    "format": "integer"
+                    "title": "MUNICIPALITY",
+                    "description": "Municipality name of the site"
                 },
-                "country": {
-                    "type": "string"
+                "name": {
+                    "type": "string",
+                    "title": "PLACE",
+                    "description": "Site name"
+                },
+                "place_type": {
+                    "$ref": "#/definitions/PlaceType",
+                    "description": "Type of site"
                 }
             },
             "title": "_place"
@@ -263,66 +373,188 @@
                     "type": "string",
                     "format": "integer"
                 },
-                "id_form": {
+                "admin_hidden": {
+                    "$ref": "#/definitions/ZeroOneId",
+                    "title": "ADMIN_HIDDEN",
+                    "description": "Is the observation being verified?"
+                },
+                "admin_hidden_type": {
                     "type": "string",
-                    "format": "integer"
+                    "enum": [
+                        "incomplete",
+                        "question",
+                        "refused"
+                    ],
+                    "title": "admin_hidden_type",
+                    "description": "Status of observation status"
                 },
-                "id_form_universal": {
-                    "type": "string"
-                },
-                "chiro_identify": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "anonymous": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "second_hand": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "traid": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "version": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "id_sighting": {
+                "altitude": {
                     "type": "string",
                     "format": "integer",
-                    "title": "ID_SIGHTING",
-                    "description": "Sighting reference within the Biolivision site"
+                    "title": "ALTITUDE",
+                    "description": "Altitude of the observation"
                 },
-                "id_universal": {
-                    "type": "string"
+                "anonymous": {
+                    "$ref": "#/definitions/ZeroOneId",
+                    "title": "ANONYMOUS",
+                    "description": "Is the observer name hidden?"
                 },
-                "timing": {
-                    "$ref": "#/definitions/Date"
+                "atlas_code": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "enum": [
+                                "2",
+                                "3",
+                                "4",
+                                "5",
+                                "6",
+                                "7",
+                                "8",
+                                "9",
+                                "10",
+                                "11",
+                                "12",
+                                "13",
+                                "14",
+                                "15",
+                                "16",
+                                "17",
+                                "18",
+                                "19",
+                                "20",
+                                "30",
+                                "40",
+                                "50",
+                                "99"
+                            ]
+                        },
+                        {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "@id": {
+                                    "type": "string",
+                                    "enum": [
+                                        "3_2",
+                                        "3_3",
+                                        "3_4",
+                                        "3_5",
+                                        "3_6",
+                                        "3_7",
+                                        "3_8",
+                                        "3_9",
+                                        "3_10",
+                                        "3_11",
+                                        "3_12",
+                                        "3_13",
+                                        "3_14",
+                                        "3_15",
+                                        "3_16",
+                                        "3_17",
+                                        "3_18",
+                                        "3_19",
+                                        "3_20",
+                                        "3_30",
+                                        "3_40",
+                                        "3_50",
+                                        "3_99"
+                                    ]
+                                },
+                                "#text": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    ],
+                    "title": "ATLAS_CODE",
+                    "description": "Atlas code, coded according to site preference"
+                },
+                "atlas_grid_name": {
+                    "type": "string",
+                    "title": "GRID_NAME",
+                    "description": "Atlas grid name of the observation"
+                },
+                "behaviours": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Behaviour",
+                        "title": "BEHAVIOUR",
+                        "description": "Behaviours, exported as string"
+                    }
+                },
+                "chiro_identify": {
+                    "OneOf": [
+                        {
+                            "$ref": "#/definitions/ChiroIdentifyId"
+                        },
+                        {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "@id": {
+                                    "$ref": "#/definitions/ChiroIdentifyId"
+                                },
+                                "#text": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "comment": {
+                    "type": "string",
+                    "title": "COMMENT",
+                    "description": "Comment"
+                },
+                "committees_validation": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "chr": {
+                            "$ref": "#/definitions/CommitteeValidation"
+                        },
+                        "chn": {
+                            "$ref": "#/definitions/CommitteeValidation"
+                        }
+                    }
                 },
                 "coord_lat": {
                     "type": "string",
                     "title": "COORD_LAT",
-                    "description": "Latitude (WGS84)"
+                    "description": "Latitude (WGS84) of the observation"
                 },
                 "coord_lon": {
                     "type": "string",
                     "title": "COORD_LON",
-                    "description": "Longitude (WGS84)"
+                    "description": "Longitude (WGS84) of the observation"
                 },
-                "altitude": {
+                "count": {
                     "type": "string",
-                    "format": "integer"
+                    "format": "integer",
+                    "title": "TOTAL_COUNT",
+                    "description": "Counted number"
                 },
-                "atlas_grid_name": {
+                "count_string": {
                     "type": "string"
                 },
-                "precision": {
-                    "$ref": "#/definitions/PlaceType"
+                "details": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/_details"
+                    },
+                    "title": "DETAIL",
+                    "description": "Details about the observation, exported as string"
+                },
+                "entity": {
+                    "type": "string",
+                    "title": "SEARCH_EXPORT_ENTITY_SHORT_NAME",
+                    "description": "Observer entity code"
+                },
+                "entity_fullname": {
+                    "type": "string",
+                    "title": "SEARCH_EXPORT_ENTITY_FULL_NAME",
+                    "description": "Observer entity name"
                 },
                 "estimation_code": {
                     "type": "string",
@@ -332,14 +564,14 @@
                         "ESTIMATION",
                         "NO_VALUE"
                     ],
-                    "title": "EstimationCode"
+                    "title": "ESTIMATION_CODE",
+                    "description": "Type of count estimation"
                 },
-                "count": {
-                    "type": "string",
-                    "format": "integer"
+                "export_date": {
+                    "$ref": "#/definitions/_date"
                 },
-                "count_string": {
-                    "type": "string"
+                "extended_info": {
+                    "$ref": "#/definitions/_ExtendedInfo"
                 },
                 "flight_number": {
                     "type": "string",
@@ -355,102 +587,145 @@
                 },
                 "has_death": {
                     "type": "string",
-                    "format": "integer"
+                    "enum": [
+                        "0",
+                        "1",
+                        "2"
+                    ],
+                    "title": "HAS_DEATH_INFO",
+                    "description": "Does this observation contain information about death cause (0: non death, 1: death without information, 2: death with information)?"
                 },
                 "has_gypaete": {
                     "type": "string",
                     "format": "integer"
                 },
-                "source": {
-                    "$ref": "#/definitions/Source"
+                "hidden": {
+                    "$ref": "#/definitions/ZeroOneId",
+                    "title": "HIDDEN",
+                    "description": "Is the observation hidden by admin or user?"
                 },
-                "insert_date": {
-                    "$ref": "#/definitions/Date"
+                "hidden_comment": {
+                    "type": "string",
+                    "title": "PRIVATE_COMMENT",
+                    "description": "Private comment"
                 },
-                "atlas_code": {
-                    "$ref": "#/definitions/AtlasCode"
+                "id_form": {
+                    "type": "string",
+                    "format": "integer",
+                    "title": "ID_FORM",
+                    "description": "Reference to enclosing form"
                 },
-                "details": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/Detail"
-                    }
-                },
-                "comment": {
+                "id_form_universal": {
                     "type": "string"
                 },
-                "hidden": {
+                "id_sighting": {
                     "type": "string",
-                    "format": "integer"
+                    "format": "integer",
+                    "title": "ID_SIGHTING",
+                    "description": "Sighting reference within the Biolivision site"
+                },
+                "id_universal": {
+                    "type": "string"
+                },
+                "insert_date": {
+                    "$ref": "#/definitions/_date",
+                    "title": "INSERT_DATE",
+                    "description": "Date observation was created"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "medias": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/_media"
+                    },
+                    "title": "MEDIA_HAS_MEDIA",
+                    "description": "Observation contains media (photo or sound), if array length > 0"
+                },
+                "precision": {
+                    "$ref": "#/definitions/PlaceType",
+                    "title": "PRECISION",
+                    "description": "Type of site"
                 },
                 "project": {
                     "type": "string",
                     "format": "integer"
                 },
+                "project_code": {
+                    "type": "string",
+                    "title": "PROJECT_CODE",
+                    "description": "Project code"
+                },
                 "project_name": {
                     "type": "string",
                     "title": "project_name"
                 },
-                "project_code": {
-                    "type": "string",
-                    "title": "project_code"
+                "second_hand": {
+                    "$ref": "#/definitions/ZeroOneId",
+                    "title": "SECOND_HAND",
+                    "description": "Is the observation from another source?"
                 },
-                "update_date": {
-                    "$ref": "#/definitions/Date"
+                "source": {
+                    "$ref": "#/definitions/Source"
                 },
-                "behaviours": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/Behaviour"
-                    }
+                "timing": {
+                    "$ref": "#/definitions/_date",
+                    "title": "TIMING",
+                    "description": "Observation time"
                 },
-                "medias": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/Media"
-                    }
-                },
-                "entity": {
-                    "type": "string",
-                    "title": "Entity"
-                },
-                "entity_fullname": {
-                    "type": "string",
-                    "title": "EntityFullname"
-                },
-                "extended_info": {
-                    "$ref": "#/definitions/ExtendedInfo"
-                },
-                "hidden_comment": {
-                    "type": "string"
-                },
-                "committees_validation": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "chr": {
-                            "$ref": "#/definitions/CommitteeValidation"
-                        },
-                        "chn": {
-                            "$ref": "#/definitions/CommitteeValidation"
-                        }
-                    }
-                },
-                "admin_hidden": {
+                "traid": {
                     "type": "string",
                     "format": "integer"
                 },
-                "admin_hidden_type": {
+                "update_date": {
+                    "$ref": "#/definitions/_date",
+                    "title": "UPDATE_DATE",
+                    "description": "Date observation was updated"
+                },
+                "version": {
                     "type": "string",
-                    "enum": [
-                        "incomplete",
-                        "question",
-                        "refused"
-                    ],
-                    "title": "AdminHiddenType"
+                    "format": "integer"
                 }
             },
             "title": "_observer"
+        },
+        "ChiroIdentifyId": {
+            "type": "string",
+            "enum": [
+                "242_1",
+                "242_2"
+            ]
+        },
+        "DirOiseauxId": {
+            "type": "string",
+            "enum": [
+                "1"
+            ]
+        },
+        "UICNId": {
+            "type": "string",
+            "enum": [
+                "EX",
+                "EW",
+                "CR",
+                "EN",
+                "VU",
+                "NT",
+                "LC",
+                "DD",
+                "NE"
+            ]
+        },
+        "LRNatId": {
+            "type": "string",
+            "enum": [
+                "CR",
+                "EN",
+                "R",
+                "VN",
+                "VU"
+            ]
         },
         "CommitteeValidation": {
             "type": "string",
@@ -459,7 +734,7 @@
                 "REQUESTED"
             ]
         },
-        "Detail": {
+        "_details": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -483,9 +758,9 @@
                     "$ref": "#/definitions/Section"
                 }
             },
-            "title": "Detail"
+            "title": "_details"
         },
-        "Media": {
+        "_media": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -493,17 +768,17 @@
                     "type": "string",
                     "format": "integer"
                 },
-                "type": {
-                    "type": "string",
-                    "enum": [
-                        "PHOTO",
-                        "SOUND"
-                    ],
-                    "title": "Type"
+                "insert_date": {
+                    "$ref": "#/definitions/_date"
+                },
+                "filename": {
+                    "type": "string"
                 },
                 "media_is_hidden": {
-                    "type": "string",
-                    "format": "integer"
+                    "$ref": "#/definitions/ZeroOneId"
+                },
+                "metadata": {
+                    "type": "string"
                 },
                 "path": {
                     "type": "string",
@@ -512,19 +787,18 @@
                         "https"
                     ]
                 },
-                "filename": {
-                    "type": "string"
-                },
-                "metadata": {
-                    "type": "string"
-                },
-                "insert_date": {
-                    "$ref": "#/definitions/Date"
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "PHOTO",
+                        "SOUND"
+                    ],
+                    "title": "Type"
                 }
             },
-            "title": "Media"
+            "title": "_media"
         },
-        "ExtendedInfo": {
+        "_ExtendedInfo": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -537,6 +811,12 @@
                             "title": "collected",
                             "description": ""
                         },
+                        "collision_km_point": {
+                            "type": "string",
+                            "format": "integer",
+                            "title": "collision_km_point",
+                            "description": ""
+                        },
                         "comment": {
                             "type": "string",
                             "title": "comment",
@@ -545,8 +825,11 @@
                         "crash_object": {
                             "type": "string",
                             "enum": [
+                                "BUILDING",
+                                "OTHER",
                                 "UNKNOWN",
-                                "WINDOW"
+                                "WINDOW",
+                                "WIRE_FENCE"
                             ],
                             "title": "crash_object",
                             "description": ""
@@ -562,7 +845,9 @@
                                 "DISEASE_PARASITE",
                                 "DROWNING",
                                 "ELECTRIC",
+                                "EOLIEN",
                                 "EXHAUSTION",
+                                "FALL",
                                 "FISHING",
                                 "HUNTING",
                                 "NATURAL_DISASTER",
@@ -574,6 +859,7 @@
                                 "OTHER_NATURAL",
                                 "OTHER_TRANSPORT",
                                 "POISONING",
+                                "POLLUTION",
                                 "ROAD_VEHICLE",
                                 "TRAIN",
                                 "TRAP",
@@ -593,8 +879,10 @@
                             "type": "string",
                             "enum": [
                                 "BASIN",
+                                "FLOOD",
                                 "NATURAL_WATER",
                                 "OTHER",
+                                "POOL",
                                 "TROUGH",
                                 "UNKNOWN"
                             ],
@@ -604,6 +892,8 @@
                         "destruction_capture": {
                             "type": "string",
                             "enum": [
+                                "BROOD_DESTRUCTION",
+                                "CAPTURE_ACCIDENT",
                                 "OTHER",
                                 "SCIENTIFIC_SAMPLE",
                                 "UNKNOWN"
@@ -615,25 +905,45 @@
                             "type": "string",
                             "enum": [
                                 "COLLISION",
-                                "ELECTROCUTION"
+                                "ELECTROCUTION",
+                                "UNKNOWN"
                             ],
                             "title": "electric_cause",
                             "description": ""
+                        },
+                        "electric_hta_pylon_id": {
+                            "type": "string",
+                            "format": "integer"
                         },
                         "electric_object": {
                             "type": "string",
                             "enum": [
                                 "PYLON",
                                 "LINE",
-                                "OTHER"
+                                "OTHER",
+                                "UNKNOWN"
                             ],
                             "title": "electric_object",
+                            "description": ""
+                        },
+                        "fall_into_object": {
+                            "type": "string",
+                            "enum": [
+                                "CHIMNEY",
+                                "HOLE",
+                                "OTHER",
+                                "UNKNOWN"
+                            ],
+                            "title": "fall_into_object",
                             "description": ""
                         },
                         "fishing_cause": {
                             "type": "string",
                             "enum": [
-                                "OTHER"
+                                "BEACHED",
+                                "DROWNED",
+                                "OTHER",
+                                "UNKNOWN"
                             ],
                             "title": "fishing_cause",
                             "description": ""
@@ -641,6 +951,8 @@
                         "hunting": {
                             "type": "string",
                             "enum": [
+                                "DIGGING_UP",
+                                "HOUNDS_HUNTING",
                                 "SHOOTING",
                                 "UNKNOWN"
                             ],
@@ -650,6 +962,8 @@
                         "natural_disaster": {
                             "type": "string",
                             "enum": [
+                                "AVALANCHE",
+                                "OTHER",
                                 "ROCK_FALL",
                                 "UNKNOWN"
                             ],
@@ -662,7 +976,19 @@
                                 "BIRD",
                                 "CAT",
                                 "DOG",
+                                "HEN",
                                 "MAMMAL",
+                                "OTHER",
+                                "UNKNOWN"
+                            ],
+                            "title": "predation2",
+                            "description": ""
+                        },
+                        "pollution2": {
+                            "type": "string",
+                            "enum": [
+                                "CHEMICAL",
+                                "PLASTIC",
                                 "OTHER",
                                 "UNKNOWN"
                             ],
@@ -678,8 +1004,12 @@
                             "type": "string",
                             "enum": [
                                 "HEALTH_CENTER",
+                                "LOCAL_MUSEUM",
+                                "NATIONAL_MUSEUM",
+                                "ONCFS",
                                 "OTHER",
-                                "VETERINAIRE"
+                                "VETERINAIRE",
+                                "UNKNOWN"
                             ],
                             "title": "recipient",
                             "description": ""
@@ -687,8 +1017,13 @@
                         "response": {
                             "type": "string",
                             "enum": [
+                                "CP",
                                 "DISCUTION",
-                                "NOTHING"
+                                "LAWSUIT",
+                                "LAWSUIT_X",
+                                "NOTHING",
+                                "POLICE",
+                                "UNKNOWN"
                             ],
                             "title": "response",
                             "description": ""
@@ -707,6 +1042,10 @@
                             "title": "road_type2",
                             "description": ""
                         },
+                        "electric_tht_pylon_id": {
+                            "type": "string",
+                            "format": "integer"
+                        },
                         "track_number": {
                             "type": "string",
                             "title": "track_number",
@@ -715,8 +1054,10 @@
                         "trap2": {
                             "type": "string",
                             "enum": [
+                                "CAGE",
                                 "INSECT_TRAP",
                                 "LETAL",
+                                "NASSE",
                                 "OTHER",
                                 "TRAP",
                                 "UNKNOWN"
@@ -724,9 +1065,16 @@
                             "title": "trap2",
                             "description": ""
                         },
+                        "wind_turbine_cnt": {
+                            "type": "string",
+                            "format": "integer",
+                            "title": "work",
+                            "description": ""
+                        },
                         "work": {
                             "type": "string",
                             "enum": [
+                                "BUILDING",
                                 "OTHER",
                                 "TRANS_INFRA"
                             ],
@@ -736,7 +1084,10 @@
                         "work_vegetal": {
                             "type": "string",
                             "enum": [
-                                "MOWING"
+                                "MOWING",
+                                "OTHER",
+                                "PRUNING",
+                                "UNKNOWN"
                             ],
                             "title": "work_vegetal",
                             "description": ""
@@ -753,7 +1104,7 @@
                             "description": ""
                         }
                     },
-                    "title": "Mortality",
+                    "title": "_ExtendedInfo",
                     "description": ""
                 },
                 "gypaetus_barbatus": {
@@ -778,18 +1129,22 @@
                                 "format": "integer"
                             },
                             "behaviour": {
-                                "type": "string",
-                                "enum": [
-                                    "BONE_BREAKING",
-                                    "CARRYING_BONES",
-                                    "CARRYING_MATERIAL_IN_BEAK",
-                                    "CARRYING_MATERIAL_IN_CLAWS",
-                                    "CIRCLING",
-                                    "FEEDING",
-                                    "FLYING_STRAIT",
-                                    "SLEEPING",
-                                    "SOCIAL_CONTACT",
-                                    "UNKNOWN"
+                                "OneOf": [
+                                    {
+                                        "$ref": "#/definitions/GypaetusBarbatusBehaviour"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "properties": {
+                                            "@id": {
+                                                "$ref": "#/definitions/GypaetusBarbatusBehaviour"
+                                            },
+                                            "#text": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
                                 ]
                             },
                             "bird_interaction": {
@@ -812,11 +1167,59 @@
                             "flight_direction": {
                                 "$ref": "#/definitions/Direction"
                             },
+                            "gypaetus_barbatus_birds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "additionalProperties": true,
+                                    "properties": {
+                                        "@id": {
+                                            "type": "string",
+                                            "format": "integer"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            },
                             "interaction": {
-                                "$ref": "#/definitions/Interaction"
+                                "OneOf": [
+                                    {
+                                        "$ref": "#/definitions/InteractionId"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "properties": {
+                                            "@id": {
+                                                "$ref": "#/definitions/InteractionId"
+                                            },
+                                            "#text": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                ]
                             },
                             "interaction_benefit": {
-                                "$ref": "#/definitions/InteractionBenefit"
+                                "OneOf": [
+                                    {
+                                        "$ref": "#/definitions/InteractionBenefitId"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "properties": {
+                                            "@id": {
+                                                "$ref": "#/definitions/InteractionBenefitId"
+                                            },
+                                            "#text": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                ]
                             },
                             "signs": {
                                 "type": "string"
@@ -920,18 +1323,26 @@
             },
             "title": "ExtendedInfo"
         },
-        "Rarity": {
-            "type": "string",
-            "enum": [
-                "verycommon",
-                "common",
-                "unusual",
-                "rare",
-                "escaped",
-                "veryrare",
-                "never"
-            ],
-            "title": "Rarity"
+        "GypaetusBarbatusBehaviour": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "@id": {
+                    "type": "string",
+                    "enum": [
+                        "BONE_BREAKING",
+                        "CARRYING_BONES",
+                        "CARRYING_MATERIAL_IN_BEAK",
+                        "CARRYING_MATERIAL_IN_CLAWS",
+                        "CIRCLING",
+                        "FEEDING",
+                        "FLYING_STRAIT",
+                        "SLEEPING",
+                        "SOCIAL_CONTACT",
+                        "UNKNOWN"
+                    ]
+                }
+            }
         },
         "Behaviour": {
             "type": "object",
@@ -970,34 +1381,30 @@
                 "name": {
                     "type": "string",
                     "enum": [
-                        "SLEEP",
+                        "CHASED",
+                        "COUPLING",
+                        "EMERGENCE",
                         "FOOD",
-                        "MIGRATION_ACTIV"
+                        "LAY_EGGS",
+                        "MIGRATION",
+                        "MIGRATION_ACTIV",
+                        "MOVE",
+                        "PLAQUE",
+                        "RUT",
+                        "SLEEP",
+                        "SUNBATH",
+                        "TANDEM",
+                        "TERRITORY",
+                        "TERRITORY_MARK"
                     ],
                     "title": "Name"
                 },
                 "#text": {
                     "type": "string",
-                    "enum": [
-                        "Dortoir / reposoir",
-                        "Se nourrit",
-                        "Migration active",
-                        "inconnu"
-                    ],
                     "title": "BehaviourText"
                 }
             },
             "title": "Behaviour"
-        },
-        "ProtectionNat": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "#text": {
-                    "type": "string"
-                }
-            },
-            "title": "ProtectionNat"
         },
         "Sex": {
             "OneOf": [
@@ -1445,9 +1852,9 @@
                 "TWO_THIRD",
                 "THREE_THIRD"
             ],
-            "title": "StocCloud"
+            "title": "StocCloudId"
         },
-        "Protocol": {
+        "_protocol": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -1472,6 +1879,7 @@
                         "GENERIC_BIRD",
                         "SHOC",
                         "STOC_EPS",
+                        "STOC_MONTAGNE",
                         "STOC_SITES",
                         "WATERBIRD"
                     ],
@@ -1485,10 +1893,7 @@
                     "format": "integer"
                 },
                 "habitat": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "$ref": "#/definitions/Habitat"
-                    }
+                    "$ref": "#/definitions/Habitat"
                 },
                 "stoc_cloud": {
                     "$ref": "#/definitions/StocCloud"
@@ -1513,166 +1918,314 @@
                     "format": "integer"
                 },
                 "waterbird_conditions": {
-                    "type": "string",
-                    "enum": [
-                        "BAD",
-                        "GOOD_NORMAL",
-                        "MODERATE"
+                    "OneOf": [
+                        {
+                            "$ref": "#/definitions/WaterbirdConditionsId"
+                        },
+                        {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "@id": {
+                                    "$ref": "#/definitions/WaterbirdConditionsId"
+                                },
+                                "#text": {
+                                    "type": "string"
+                                }
+                            }
+                        }
                     ]
                 },
                 "waterbird_conditions_reason": {
-                    "type": "string",
-                    "enum": [
-                        "FOG",
-                        "HUNTING",
-                        "MIXED_HUMAN",
-                        "MIXED_WEATHER",
-                        "OTHERS",
-                        "WIND"
+                    "OneOf": [
+                        {
+                            "$ref": "#/definitions/WaterbirdConditionsReasonId"
+                        },
+                        {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "@id": {
+                                    "$ref": "#/definitions/WaterbirdConditionsReasonId"
+                                },
+                                "#text": {
+                                    "type": "string"
+                                }
+                            }
+                        }
                     ]
                 },
                 "waterbird_count_payed": {
                     "$ref": "#/definitions/YesNo"
                 },
                 "waterbird_countmethod": {
-                    "type": "string",
-                    "enum": [
-                        "GROUND"
+                    "OneOf": [
+                        {
+                            "$ref": "#/definitions/WaterbirdCountMethodId"
+                        },
+                        {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "@id": {
+                                    "$ref": "#/definitions/WaterbirdCountMethodId"
+                                },
+                                "#text": {
+                                    "type": "string"
+                                }
+                            }
+                        }
                     ]
                 },
                 "waterbird_counttype": {
-                    "type": "string",
-                    "enum": [
-                        "DAY_COUNT",
-                        "ROOST_COUNT"
+                    "OneOf": [
+                        {
+                            "$ref": "#/definitions/WaterbirdCountTypeId"
+                        },
+                        {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "@id": {
+                                    "$ref": "#/definitions/WaterbirdCountTypeId"
+                                },
+                                "#text": {
+                                    "type": "string"
+                                }
+                            }
+                        }
                     ]
                 },
                 "waterbird_coverage": {
-                    "type": "string",
-                    "enum": [
-                        "COMPLETE",
-                        "PARTLY",
-                        "UNKNOWN"
+                    "OneOf": [
+                        {
+                            "$ref": "#/definitions/WaterbirdCoverageId"
+                        },
+                        {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "@id": {
+                                    "$ref": "#/definitions/WaterbirdCoverageId"
+                                },
+                                "#text": {
+                                    "type": "string"
+                                }
+                            }
+                        }
                     ]
                 },
                 "waterbird_ice": {
-                    "type": "string",
-                    "enum": [
-                        "NO_ICE"
+                    "OneOf": [
+                        {
+                            "$ref": "#/definitions/WaterbirdIceId"
+                        },
+                        {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "@id": {
+                                    "$ref": "#/definitions/WaterbirdIceId"
+                                },
+                                "#text": {
+                                    "type": "string"
+                                }
+                            }
+                        }
                     ]
                 },
                 "waterbird_optical": {
-                    "type": "string",
-                    "enum": [
-                        "BINOCULARS",
-                        "NONE",
-                        "TELESCOPE"
+                    "OneOf": [
+                        {
+                            "$ref": "#/definitions/WaterbirdOpticalId"
+                        },
+                        {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "@id": {
+                                    "$ref": "#/definitions/WaterbirdOpticalId"
+                                },
+                                "#text": {
+                                    "type": "string"
+                                }
+                            }
+                        }
                     ]
                 },
                 "waterbird_snowcover": {
-                    "type": "string",
-                    "enum": [
-                        "GOOD_NORMAL",
-                        "NO_SNOW"
+                    "OneOf": [
+                        {
+                            "$ref": "#/definitions/WaterbirdSnowCoverId"
+                        },
+                        {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "@id": {
+                                    "$ref": "#/definitions/WaterbirdSnowCoverId"
+                                },
+                                "#text": {
+                                    "type": "string"
+                                }
+                            }
+                        }
                     ]
                 },
                 "waterbird_visibility": {
-                    "type": "string",
-                    "enum": [
-                        "0_100",
-                        "100_300",
-                        "300_1000",
-                        "1000",
-                        "UNKNOWN"
+                    "OneOf": [
+                        {
+                            "$ref": "#/definitions/WaterbirdVisibilityId"
+                        },
+                        {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "@id": {
+                                    "$ref": "#/definitions/WaterbirdVisibilityId"
+                                },
+                                "#text": {
+                                    "type": "string"
+                                }
+                            }
+                        }
                     ]
                 },
                 "waterbird_waterlevel": {
-                    "type": "string",
-                    "enum": [
-                        "DRY_EMPTY",
-                        "HIGH",
-                        "LOW",
-                        "NORMAL",
-                        "UNKNOWN"
+                    "OneOf": [
+                        {
+                            "$ref": "#/definitions/WaterbirdWaterLevelId"
+                        },
+                        {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "@id": {
+                                    "$ref": "#/definitions/WaterbirdWaterLevelId"
+                                },
+                                "#text": {
+                                    "type": "string"
+                                }
+                            }
+                        }
                     ]
                 },
                 "waterbird_waves": {
-                    "type": "string",
-                    "enum": [
-                        "MODERATE",
-                        "NONE",
-                        "SMALL",
-                        "UNKNOWN"
+                    "OneOf": [
+                        {
+                            "$ref": "#/definitions/WaterbirdWavesId"
+                        },
+                        {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "@id": {
+                                    "$ref": "#/definitions/WaterbirdWavesId"
+                                },
+                                "#text": {
+                                    "type": "string"
+                                }
+                            }
+                        }
                     ]
                 }
             },
-            "title": "Protocol"
+            "title": "_protocol"
         },
-        "AtlasCode": {
-            "oneOf": [
-                {
-                    "type": "string",
-                    "enum": [
-                        "2",
-                        "3",
-                        "4",
-                        "5",
-                        "6",
-                        "7",
-                        "8",
-                        "9",
-                        "10",
-                        "11",
-                        "12",
-                        "13",
-                        "14",
-                        "15",
-                        "16",
-                        "17",
-                        "18",
-                        "19",
-                        "30",
-                        "40",
-                        "50",
-                        "99"
-                    ]
-                },
-                {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "@id": {
-                            "type": "string",
-                            "enum": [
-                                "3_2",
-                                "3_3",
-                                "3_4",
-                                "3_5",
-                                "3_6",
-                                "3_7",
-                                "3_8",
-                                "3_9",
-                                "3_10",
-                                "3_11",
-                                "3_12",
-                                "3_13",
-                                "3_14",
-                                "3_15",
-                                "3_16",
-                                "3_17",
-                                "3_18",
-                                "3_19",
-                                "3_30",
-                                "3_40",
-                                "3_50",
-                                "3_99"
-                            ]
-                        },
-                        "#text": {
-                            "type": "string"
-                        }
-                    }
-                }
+        "WaterbirdConditionsId": {
+            "type": "string",
+            "enum": [
+                "BAD",
+                "GOOD_NORMAL",
+                "MODERATE"
+            ]
+        },
+        "WaterbirdConditionsReasonId": {
+            "type": "string",
+            "enum": [
+                "FISHING",
+                "FOG",
+                "HUNTING",
+                "MIXED_HUMAN",
+                "MIXED_WEATHER",
+                "OTHERS",
+                "WIND"
+            ]
+        },
+        "WaterbirdCountMethodId": {
+            "type": "string",
+            "enum": [
+                "GROUND"
+            ]
+        },
+        "WaterbirdCountTypeId": {
+            "type": "string",
+            "enum": [
+                "DAY_COUNT",
+                "ROOST_COUNT"
+            ]
+        },
+        "WaterbirdCoverageId": {
+            "type": "string",
+            "enum": [
+                "COMPLETE",
+                "PARTLY",
+                "UNKNOWN"
+            ]
+        },
+        "WaterbirdIceId": {
+            "type": "string",
+            "enum": [
+                "0_10",
+                "10_50",
+                "50_90",
+                "NO_ICE",
+                "UNKNOWN"
+            ]
+        },
+        "WaterbirdOpticalId": {
+            "type": "string",
+            "enum": [
+                "BINOCULARS",
+                "NONE",
+                "TELESCOPE"
+            ]
+        },
+        "WaterbirdSnowCoverId": {
+            "type": "string",
+            "enum": [
+                "GOOD_NORMAL",
+                "NO_SNOW",
+                "SOME_SNOW"
+            ]
+        },
+        "WaterbirdVisibilityId": {
+            "type": "string",
+            "enum": [
+                "0_100",
+                "100_300",
+                "300_1000",
+                "1000",
+                "UNKNOWN"
+            ]
+        },
+        "WaterbirdWaterLevelId": {
+            "type": "string",
+            "enum": [
+                "DRY_EMPTY",
+                "HIGH",
+                "LOW",
+                "NORMAL",
+                "UNKNOWN"
+            ]
+        },
+        "WaterbirdWavesId": {
+            "type": "string",
+            "enum": [
+                "MODERATE",
+                "NONE",
+                "SMALL",
+                "UNKNOWN"
             ]
         },
         "Direction": {
@@ -1708,50 +2261,12 @@
             ],
             "title": "Direction"
         },
-        "Interaction": {
-            "OneOf": [
-                {
-                    "$ref": "#/definitions/InteractionId"
-                },
-                {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "@id": {
-                            "$ref": "#/definitions/InteractionId"
-                        },
-                        "#text": {
-                            "type": "string"
-                        }
-                    }
-                }
-            ]
-        },
         "InteractionId": {
             "type": "string",
             "enum": [
                 "MOBBING"
             ],
             "title": "Category"
-        },
-        "InteractionBenefit": {
-            "OneOf": [
-                {
-                    "$ref": "#/definitions/InteractionBenefitId"
-                },
-                {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "@id": {
-                            "$ref": "#/definitions/InteractionBenefitId"
-                        },
-                        "#text": {
-                            "type": "string"
-                        }
-                    }
-                }
-            ]
         },
         "InteractionBenefitId": {
             "type": "string",
@@ -1817,40 +2332,37 @@
             ],
             "title": "Source"
         },
-        "IDID": {
-            "type": "string",
-            "enum": [
-                "3_3",
-                "3_4",
-                "3_14",
-                "3_2",
-                "3_10",
-                "3_6",
-                "3_5",
-                "3_16",
-                "3_13",
-                "3_7",
-                "3_8",
-                "3_19",
-                "FT",
-                "LC",
-                "3_18",
-                "3_99",
-                "3_12",
-                "3_15",
-                "3_11",
-                "3_17",
-                "3_9",
-                "2.1",
-                "VN"
-            ],
-            "title": "IDID"
-        },
         "YesNo": {
+            "OneOf": [
+                {
+                    "$ref": "#/definitions/YesNoId"
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "@id": {
+                            "$ref": "#/definitions/YesNoId"
+                        },
+                        "#text": {
+                            "type": "string"
+                        }
+                    }
+                }
+            ]
+        },
+        "YesNoId": {
             "type": "string",
             "enum": [
                 "YES",
                 "NO"
+            ]
+        },
+        "ZeroOneId": {
+            "type": "string",
+            "enum": [
+                "0",
+                "1"
             ]
         }
     }
