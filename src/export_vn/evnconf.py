@@ -71,6 +71,23 @@ _ConfSchema = Map(
                         ),
                     }
                 ),
+                "families": Map(
+                    {
+                        "enabled": Bool(),
+                        "schedule": Map(
+                            {
+                                Optional("year"): Str(),
+                                Optional("month"): Str(),
+                                Optional("day"): Str(),
+                                Optional("week"): Str(),
+                                Optional("day_of_week"): Str(),
+                                Optional("hour"): Str(),
+                                Optional("minute"): Str(),
+                                Optional("second"): Str(),
+                            }
+                        ),
+                    }
+                ),
                 "fields": Map(
                     {
                         "enabled": Bool(),
@@ -191,6 +208,23 @@ _ConfSchema = Map(
                     }
                 ),
                 "territorial_units": Map(
+                    {
+                        "enabled": Bool(),
+                        "schedule": Map(
+                            {
+                                Optional("year"): Str(),
+                                Optional("month"): Str(),
+                                Optional("day"): Str(),
+                                Optional("week"): Str(),
+                                Optional("day_of_week"): Str(),
+                                Optional("hour"): Str(),
+                                Optional("minute"): Str(),
+                                Optional("second"): Str(),
+                            }
+                        ),
+                    }
+                ),
+                "validations": Map(
                     {
                         "enabled": Bool(),
                         "schedule": Map(

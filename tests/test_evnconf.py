@@ -92,6 +92,7 @@ def test_ctrl_list(create_file):
     ctrl_list = cfg.ctrl_list
     for ctrl in {
         "entities",
+        "families",
         "fields",
         "local_admin_units",
         "observations",
@@ -100,6 +101,7 @@ def test_ctrl_list(create_file):
         "species",
         "taxo_groups",
         "territorial_units",
+        "validations",
     }:
         assert ctrl in ctrl_list
 

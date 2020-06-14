@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 
 from biolovision.api import (
     EntitiesAPI,
+    FamiliesAPI,
     FieldsAPI,
     HTTPError,
     IncorrectParameter,
@@ -34,6 +35,7 @@ FILE = ".evn_test.yaml"
 # Get configuration for test site
 CFG = EvnConf(FILE).site_list[SITE]
 ENTITIES_API = EntitiesAPI(CFG)
+FAMILIES_API = FamiliesAPI(CFG)
 FIELDS_API = FieldsAPI(CFG)
 LOCAL_ADMIN_UNITS_API = LocalAdminUnitsAPI(CFG)
 OBSERVATIONS_API = ObservationsAPI(CFG)
@@ -44,6 +46,7 @@ SPECIES_API_ERR = SpeciesAPI(CFG, max_retry=1, max_requests=1, max_chunks=1)
 TAXO_GROUPS_API = TaxoGroupsAPI(CFG)
 TERRITORIAL_UNITS_API = TerritorialUnitsAPI(CFG)
 VALIDATIONS_API = ValidationsAPI(CFG)
+
 
 def test_version():
     """Check if version is defined."""
@@ -80,8 +83,33 @@ def test_entities_list():
 
 
 # --------------------------
-# Fields controler methods
+# Families controler methods
 # --------------------------
+def test_families_controler():
+    """Check controler name."""
+    ctrl = FAMILIES_API.controler
+    assert ctrl == "families"
+
+
+def test_families_get():
+    """Get a family."""
+    families = FAMILIES_API.api_get("1")
+    assert FAMILIES_API.transfer_errors == 0
+    assert families["data"][0]["generic"] == "0"
+    assert families["data"][0]["id"] == "1"
+
+
+def test_families_list():
+    """Get list of families."""
+    families = FAMILIES_API.api_list()
+    assert FAMILIES_API.transfer_errors == 0
+    assert len(families["data"]) >= 80
+    assert families["data"][0]["id"] == "1"
+
+
+# ------------------------
+# Fields controler methods
+# ------------------------
 def test_fields_controler():
     """Check controler name."""
     ctrl = FIELDS_API.controler
@@ -1312,6 +1340,7 @@ def test_validations_list():
     assert VALIDATIONS_API.transfer_errors == 0
     assert len(validations["data"]) >= 1
     logging.debug(f"Number of validations : {len(validations['data'])}")
+
 
 # -------------
 # Error testing

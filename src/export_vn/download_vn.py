@@ -15,6 +15,7 @@ from datetime import datetime, timedelta
 
 from biolovision.api import (
     EntitiesAPI,
+    FamiliesAPI,
     FieldsAPI,
     LocalAdminUnitsAPI,
     ObservationsAPI,
@@ -23,6 +24,7 @@ from biolovision.api import (
     SpeciesAPI,
     TaxoGroupsAPI,
     TerritorialUnitsAPI,
+    ValidationsAPI,
 )
 from export_vn.regulator import PID
 
@@ -138,6 +140,23 @@ class Entities(DownloadVn):
     ):
         super().__init__(
             config, EntitiesAPI(config), backend, max_retry, max_requests, max_chunks
+        )
+        return None
+
+
+class Families(DownloadVn):
+    """ Implement store from families controler.
+
+    Methods
+    - store               - Download and store to json
+
+    """
+
+    def __init__(
+        self, config, backend, max_retry=None, max_requests=None, max_chunks=None
+    ):
+        super().__init__(
+            config, FamiliesAPI(config), backend, max_retry, max_requests, max_chunks
         )
         return None
 
@@ -727,6 +746,28 @@ class TerritorialUnits(DownloadVn):
         super().__init__(
             config,
             TerritorialUnitsAPI(config),
+            backend,
+            max_retry,
+            max_requests,
+            max_chunks,
+        )
+        return None
+
+
+class Validations(DownloadVn):
+    """ Implement store from validations controler.
+
+    Methods
+    - store               - Download and store to json
+
+    """
+
+    def __init__(
+        self, config, backend, max_retry=None, max_requests=None, max_chunks=None
+    ):
+        super().__init__(
+            config,
+            ValidationsAPI(config),
             backend,
             max_retry,
             max_requests,

@@ -18,6 +18,13 @@ controler:
             # Every Friday at 23:00 UTC
             day_of_week: 4
             hour: 23
+    families:
+        # Enable download from this controler
+        enabled: true
+        schedule:
+            # Every Friday at 23:00 UTC
+            day_of_week: 4
+            hour: 23
     fields:
         # Enable download from this controler
         enabled: true
@@ -78,6 +85,13 @@ controler:
         schedule:
             # Every Thursday at 23:00 UTC
             day_of_week: 3
+            hour: 23
+    validations:
+        # Enable download from this controler
+        enabled: true
+        schedule:
+            # Every Friday at 23:00 UTC
+            day_of_week: 4
             hour: 23
 
 # Observations filter, to limit download scope

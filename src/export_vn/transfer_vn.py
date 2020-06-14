@@ -32,6 +32,7 @@ from apscheduler.schedulers import SchedulerNotRunningError
 from apscheduler.schedulers.background import BackgroundScheduler
 from export_vn.download_vn import (
     Entities,
+    Families,
     Fields,
     LocalAdminUnits,
     Observations,
@@ -40,6 +41,7 @@ from export_vn.download_vn import (
     Species,
     TaxoGroup,
     TerritorialUnits,
+    Validations,
 )
 from export_vn.evnconf import EvnConf
 from export_vn.store_all import StoreAll
@@ -52,6 +54,7 @@ from . import _, __version__
 
 CTRL_DEFS = {
     "entities": Entities,
+    "families": Families,
     "fields": Fields,
     "local_admin_units": LocalAdminUnits,
     "observations": Observations,
@@ -60,6 +63,7 @@ CTRL_DEFS = {
     "species": Species,
     "taxo_groups": TaxoGroup,
     "territorial_units": TerritorialUnits,
+    "validations": Validations,
 }
 logger = logging.getLogger("transfer_vn")
 
@@ -433,16 +437,19 @@ def full_download(cfg_ctrl):
             if cfg.enabled:
                 logger.info(_("Scheduling work for site %s"), cfg.site)
                 jobs.add_job_once(
-                    job_fn=full_download_1, args=[TaxoGroup, cfg_crtl_list, cfg]
-                )
-                jobs.add_job_once(
                     job_fn=full_download_1, args=[Entities, cfg_crtl_list, cfg]
                 )
                 jobs.add_job_once(
-                    job_fn=full_download_1, args=[TerritorialUnits, cfg_crtl_list, cfg]
+                    job_fn=full_download_1, args=[Families, cfg_crtl_list, cfg]
                 )
                 jobs.add_job_once(
                     job_fn=full_download_1, args=[LocalAdminUnits, cfg_crtl_list, cfg]
+                )
+                jobs.add_job_once(
+                    job_fn=full_download_1, args=[Observations, cfg_crtl_list, cfg]
+                )
+                jobs.add_job_once(
+                    job_fn=full_download_1, args=[Observers, cfg_crtl_list, cfg]
                 )
                 jobs.add_job_once(
                     job_fn=full_download_1, args=[Places, cfg_crtl_list, cfg]
@@ -451,10 +458,10 @@ def full_download(cfg_ctrl):
                     job_fn=full_download_1, args=[Species, cfg_crtl_list, cfg]
                 )
                 jobs.add_job_once(
-                    job_fn=full_download_1, args=[Observers, cfg_crtl_list, cfg]
+                    job_fn=full_download_1, args=[TaxoGroup, cfg_crtl_list, cfg]
                 )
                 jobs.add_job_once(
-                    job_fn=full_download_1, args=[Observations, cfg_crtl_list, cfg]
+                    job_fn=full_download_1, args=[TerritorialUnits, cfg_crtl_list, cfg]
                 )
             else:
                 logger.info(_("Skipping site %s"), site)

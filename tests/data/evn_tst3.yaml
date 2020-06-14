@@ -12,6 +12,13 @@ controler:
     entities:
         # Enable download from this controler
         enabled: error
+    families:
+        # Enable download from this controler
+        enabled: true
+        schedule:
+            # Every Friday at 23:00 UTC
+            day_of_week: 4
+            hour: 23
     fields:
         # Enable download from this controler
         enabled: true
@@ -69,6 +76,9 @@ controler:
         # Enable download from this controler
         enabled: true
     territorial_units:
+        # Enable download from this controler
+        enabled: true
+    validations:
         # Enable download from this controler
         enabled: true
 
