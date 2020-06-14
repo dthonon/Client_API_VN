@@ -80,13 +80,7 @@ class StoreFile:
                 else:
                     logger.info(_("Successfully created the directory %s"), json_path)
 
-            nb_obs = 0
-            if "sightings" in items_dict["data"]:
-                nb_obs += len(items_dict["data"]["sightings"])
-            if "forms" in items_dict["data"]:
-                for f in range(0, len(items_dict["data"]["forms"])):
-                    nb_obs += len(items_dict["data"]["forms"][f]["sightings"])
-            if nb_obs > 0:
+            if len(items_dict["data"]) > 0:
                 # Convert to json
                 logger.debug(_("Converting to json %d items"), len(items_dict["data"]))
                 items_json = json.dumps(
@@ -96,7 +90,7 @@ class StoreFile:
                 logger.debug(_("Received data, storing json to %s"), file_json_gz)
                 with gzip.open(file_json_gz, "wb", 9) as g:
                     g.write(items_json.encode())
-            return nb_obs
+            return len(items_dict["data"])
         else:
             return 0
 
