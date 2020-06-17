@@ -45,7 +45,6 @@ class IncorrectParameter(EvnConfException):
 
 
 # Define PEP 484 types, TODO: refine type
-_CtrlType = Dict[str, Dict[str, Any]]
 _ConfType = Dict[str, Any]
 
 # Define strictyaml schema
@@ -299,15 +298,6 @@ _ConfSchema = Map(
                 Optional("sched_executors", default=1): Int(),
             }
         ),
-        Optional("pne"): Map(
-            {
-                "data_url": Url(),
-                "db_schema": Str(),
-                "db_in_table": Str(),
-                "db_xref_table": Str(),
-                "observer_uid": Int(),
-            }
-        ),
     }
 )
 
@@ -326,7 +316,7 @@ class EvnCtrlConf:
             else cfg["schedule"][param]
         )
 
-    def __init__(self, ctrl: str, config: _CtrlType) -> None:
+    def __init__(self, ctrl: str, config: _ConfType) -> None:
         self._ctrl = ctrl
 
         # Import parameters in properties
@@ -481,7 +471,9 @@ class EvnSiteConf:
                 self._db_host = config["database"]["db_host"]  # type: str
                 self._db_port = str(config["database"]["db_port"])  # type: str
                 self._db_name = config["database"]["db_name"]  # type: str
-                self._db_schema_import = config["database"]["db_schema_import"]  # type: str
+                self._db_schema_import = config["database"][
+                    "db_schema_import"
+                ]  # type: str
                 self._db_schema_vn = config["database"]["db_schema_vn"]  # type: str
                 self._db_group = config["database"]["db_group"]  # type: str
                 self._db_user = config["database"]["db_user"]  # type: str
@@ -524,19 +516,6 @@ class EvnSiteConf:
                 self._pid_limit_max = 2000  # type: float
                 self._pid_delta_days = 15  # type: int
                 self._sched_executors = 1  # type: int
-            if "pne" in config:
-                self._pne_data_url = config["pne"]["data_url"]  # type: str
-                self._pne_db_schema = config["pne"]["db_schema"]  # type: str
-                self._pne_db_in_table = config["pne"]["db_in_table"]  # type: str
-                self._pne_db_xref_table = config["pne"]["db_xref_table"]  # type: str
-                self._pne_observer_uid = config["pne"]["observer_uid"]  # type: int
-            else:
-                # Provide empty default values
-                self._pne_data_url = ""  # type: str
-                self._pne_db_schema = ""  # type: str
-                self._pne_db_in_table = ""  # type: str
-                self._pne_db_xref_table = ""  # type: str
-                self._pne_observer_uid = 0  # type: str
 
         except Exception:  # pragma: no cover
             logger.exception(_("Error creating %s configuration"), site)
@@ -741,31 +720,6 @@ class EvnSiteConf:
         """Return tuning parameter."""
         return self._sched_executors
 
-    @property
-    def pne_data_url(self) -> int:
-        """Return PNE parameter."""
-        return self._pne_data_url
-
-    @property
-    def pne_db_schema(self) -> int:
-        """Return PNE parameter."""
-        return self._pne_db_schema
-
-    @property
-    def pne_db_in_table(self) -> int:
-        """Return PNE parameter."""
-        return self._pne_db_in_table
-
-    @property
-    def pne_db_xref_table(self) -> int:
-        """Return PNE parameter."""
-        return self._pne_db_xref_table
-
-    @property
-    def pne_observer_uid(self) -> int:
-        """Return PNE parameter."""
-        return self._pne_observer_uid
-
 
 class EvnConf:
     """
@@ -788,9 +742,9 @@ class EvnConf:
             logger.critical(_("Error while reading YAML configuration %s"), file)
             raise
 
-        self._ctrl_list = {}  # type: _CtrlType
+        self._ctrl_list = {}  # type: _ConfType
         for ctrl in self._config["controler"]:
-            self._ctrl_list[ctrl] = cast(_CtrlType, EvnCtrlConf(ctrl, self._config))
+            self._ctrl_list[ctrl] = cast(_ConfType, EvnCtrlConf(ctrl, self._config))
 
         self._site_list = {}  # type: _ConfType
         for site in self._config["site"]:
@@ -802,9 +756,14 @@ class EvnConf:
         return __version__
 
     @property
-    def ctrl_list(self) -> _CtrlType:
+    def ctrl_list(self) -> _ConfType:
         """Return list of controler configurations."""
         return self._ctrl_list
+
+    @property
+    def site_list(self) -> _ConfType:
+        """Return list of site configurations."""
+        return self._site_list
 
     @property
     def site_list(self) -> _ConfType:

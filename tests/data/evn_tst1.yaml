@@ -225,16 +225,3 @@ tuning:
     pid_delta_days: 15
     # Scheduler tuning parameters
     sched_executors: 2
-
-# Optional parameters for sync_pne
-pne:
-    # URL providing data file
-    data_url: https://portail.ecrins-parcnational.fr/xxx/admin/xportcsv.php
-    # Postgresql schema name, in database:db_name
-    db_schema: import_pne
-    # Table name for raw PNE data import
-    db_in_table: in_pne
-    # Table name for cross reference with VN observations
-    db_xref_table: xref_pne
-    # Universal Id of PNE archive account
-    observer_uid: 14250
