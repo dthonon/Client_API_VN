@@ -80,7 +80,7 @@
                     "format": "time",
                     "title": "TIME_STOP",
                     "description": "Finish time of the form"
-               },
+                },
                 "version": {
                     "type": "string",
                     "format": "integer"
@@ -115,7 +115,7 @@
                     }
                 }
             },
-            "title": "Sighting"
+            "title": "_sighting"
         },
         "_date": {
             "oneOf": [
@@ -149,7 +149,7 @@
                     "format": "integer"
                 }
             ],
-            "title": "Date"
+            "title": "_date"
         },
         "_species": {
             "type": "object",
@@ -219,7 +219,7 @@
                 "dir_oiseaux": {
                     "OneOf": [
                         {
-                            "$ref": "#/definitions/AgeId"
+                            "$ref": "#/definitions/DirOiseauxId"
                         },
                         {
                             "type": "object",
@@ -367,7 +367,9 @@
             "properties": {
                 "@id": {
                     "type": "string",
-                    "format": "integer"
+                    "format": "integer",
+                    "title": "ID_OBSERVER",
+                    "description": "Observer identifier within the site"
                 },
                 "@uid": {
                     "type": "string",
@@ -625,7 +627,9 @@
                     "description": "Sighting reference within the Biolivision site"
                 },
                 "id_universal": {
-                    "type": "string"
+                    "type": "string",
+                    "title": "UNIVERSAL_ID_OBSERVER",
+                    "description": "Observer identifier, unique across site"
                 },
                 "insert_date": {
                     "$ref": "#/definitions/_date",
@@ -664,10 +668,20 @@
                 "second_hand": {
                     "$ref": "#/definitions/ZeroOneId",
                     "title": "SECOND_HAND",
-                    "description": "Is the observation from another source?"
+                    "description": "Is the observation from another observer?"
                 },
                 "source": {
-                    "$ref": "#/definitions/Source"
+                    "type": "string",
+                    "enum": [
+                        "WEB",
+                        "MOBILE_LIVE",
+                        "MOBILE_LIVE_IOS",
+                        "MOBILE_DELAYED",
+                        "MOBILE_DELAYED_IOS",
+                        "MOBILE_FORM_LIVE",
+                        "MOBILE_FORM_DELAYED"
+                    ],
+                    "title": "source"
                 },
                 "timing": {
                     "$ref": "#/definitions/_date",
@@ -676,7 +690,8 @@
                 },
                 "traid": {
                     "type": "string",
-                    "format": "integer"
+                    "format": "integer",
+                    "description": "Transmitter idenfier"
                 },
                 "update_date": {
                     "$ref": "#/definitions/_date",
@@ -2318,19 +2333,6 @@
                 "transect_precise"
             ],
             "title": "PlaceType"
-        },
-        "Source": {
-            "type": "string",
-            "enum": [
-                "WEB",
-                "MOBILE_LIVE",
-                "MOBILE_LIVE_IOS",
-                "MOBILE_DELAYED",
-                "MOBILE_DELAYED_IOS",
-                "MOBILE_FORM_LIVE",
-                "MOBILE_FORM_DELAYED"
-            ],
-            "title": "Source"
         },
         "YesNo": {
             "OneOf": [
