@@ -7,7 +7,7 @@ See details in each class.
 
 Each Biolovision controler is mapped to a python class.
 Class name is derived from controler name by removing '_' and using CamelCase.
-Methods names are similar to the corresponding API call, prefixed by 'api_'.
+Methods names are similar to the corresponding API call, prefixed by 'api\_'.
 For example, method 'api_list' in class 'LocalAdminUnits' will
 call 'local_admin_units'.
 
@@ -515,8 +515,10 @@ class BiolovisionAPI:
 class EntitiesAPI(BiolovisionAPI):
     """ Implement api calls to entities controler.
 
-    Methods
+    Methods:
+
     - api_get                - Return a single entity from the controler
+
     - api_list               - Return a list of entity from the controler
 
     """
@@ -528,8 +530,10 @@ class EntitiesAPI(BiolovisionAPI):
 class FamiliesAPI(BiolovisionAPI):
     """ Implement api calls to families controler.
 
-    Methods
+    Methods:
+
     - api_get                - Return a single entity from the controler
+
     - api_list               - Return a list of entity from the controler
 
     """
@@ -541,8 +545,10 @@ class FamiliesAPI(BiolovisionAPI):
 class FieldsAPI(BiolovisionAPI):
     """ Implement api calls to fields controler.
 
-    Methods
+    Methods:
+
     - api_get                - Return a single entity from the controler
+
     - api_list               - Return a list of entity from the controler
 
     """
@@ -554,8 +560,10 @@ class FieldsAPI(BiolovisionAPI):
 class LocalAdminUnitsAPI(BiolovisionAPI):
     """ Implement api calls to local_admin_units controler.
 
-    Methods
+    Methods:
+
     - api_get                - Return a single entity from the controler
+
     - api_list               - Return a list of entity from the controler
 
     """
@@ -569,13 +577,20 @@ class LocalAdminUnitsAPI(BiolovisionAPI):
 class ObservationsAPI(BiolovisionAPI):
     """ Implement api calls to observations controler.
 
-    Methods
+    Methods:
+
     - api_get      - Return a single observations from the controler
+
     - api_list     - Return a list of observations from the controler
+
     - api_diff     - Return all changes in observations since a given date
+
     - api_search   - Search for observations based on parameter value
+
     - api_create   - Create a single observation
+
     - api_update   - Update an existing observation
+
     - api_delete   - Delete an observation
     """
 
@@ -750,8 +765,10 @@ class ObservationsAPI(BiolovisionAPI):
 class ObserversAPI(BiolovisionAPI):
     """ Implement api calls to observers controler.
 
-    Methods
+    Methods:
+
     - api_get                - Return a single entity from the controler
+
     - api_list               - Return a list of entity from the controler
 
     """
@@ -763,8 +780,10 @@ class ObserversAPI(BiolovisionAPI):
 class PlacesAPI(BiolovisionAPI):
     """ Implement api calls to places controler.
 
-    Methods
+    Methods:
+
     - api_get                - Return a single place from the controler
+
     - api_list               - Return a list of places from the controler
 
     """
@@ -776,8 +795,10 @@ class PlacesAPI(BiolovisionAPI):
 class SpeciesAPI(BiolovisionAPI):
     """ Implement api calls to species controler.
 
-    Methods
+    Methods:
+
     - api_get                - Return a single specie from the controler
+
     - api_list               - Return a list of species from the controler
 
     """
@@ -789,8 +810,10 @@ class SpeciesAPI(BiolovisionAPI):
 class TaxoGroupsAPI(BiolovisionAPI):
     """ Implement api calls to taxo_groups controler.
 
-    Methods
+    Methods:
+
     - api_get                - Return a single taxo group from the controler
+
     - api_list               - Return a list of taxo groups from the controler
 
     """
@@ -807,8 +830,10 @@ class TaxoGroupsAPI(BiolovisionAPI):
 class TerritorialUnitsAPI(BiolovisionAPI):
     """ Implement api calls to territorial_units controler.
 
-    Methods
+    Methods:
+
     - api_get                - Return a single territorial unit from the controler
+
     - api_list               - Return a list of territorial units from the controler
 
     """
@@ -827,8 +852,10 @@ class TerritorialUnitsAPI(BiolovisionAPI):
 class ValidationsAPI(BiolovisionAPI):
     """ Implement api calls to validations controler.
 
-    Methods
+    Methods:
+
     - api_get                - Return a single validation from the controler
+    
     - api_list               - Return the list of validations from the controler
 
     """

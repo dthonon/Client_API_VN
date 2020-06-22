@@ -24,13 +24,21 @@ Applications documentation
    :caption: Applications documentation
    :hidden:
 
-   api/export_vn
-   server_install
+   apps/transfer_vn
+   apps/update_vn
+   apps/validate
+   apps/server_install
 
-:doc:api/export_vn
-   Applications reference
+:doc:`apps/transfer_vn`
+   export_vn: biolovision to Postgresql application reference
 
-:doc:server_install
+:doc:`apps/update_vn`
+   update_vn: biolovison database update script reference
+
+:doc:`apps/validate`
+   validate: JSON schema validation application reference
+
+:doc:`apps/server_install`
    Server Installation Guide
 
 API documentation
@@ -42,7 +50,7 @@ API documentation
 
    api/modules
 
-:doc:api/modules
+:doc:`api/modules`
    API Classes
 
 
@@ -57,17 +65,14 @@ Other information
    authors
    changelog
 
-:doc:license
+:doc:`license`
    License
 
-:doc:authors
+:doc:`authors`
    Authors
 
-:doc:alicense
+:doc:`changelog`
    Changelog
-
-   Applications Reference <>
-   
 
 
 Indices and tables

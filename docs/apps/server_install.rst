@@ -1,5 +1,6 @@
-Server installation
--------------------
+========================================
+Guide d'installation d'un serveur debian
+========================================
 
 Procédure d'installation sur Linux Debian 9.
 
