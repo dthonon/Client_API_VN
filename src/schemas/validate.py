@@ -115,11 +115,12 @@ def validate(cfg_site_list: Any, samples: float) -> None:
             p = Path.home() / cfg.file_store
             for tst_f in p.glob(f"{schema}*.gz"):
                 f_list.append(tst_f)
-        if isinstance(samples, float):
-            samples = round(samples * len(f_list))
-        samples = min(samples, len(f_list))
-        logger.debug(_(f"Sampling {samples} out of {len(f_list)} files"))
-        f_list = random.sample(f_list, samples)
+        sample_schema = samples
+        if isinstance(sample_schema, float):
+            sample_schema = round(sample_schema * len(f_list))
+        sample_schema = min(sample_schema, len(f_list))
+        logger.debug(_(f"Sampling {sample_schema} out of {len(f_list)} files"))
+        f_list = random.sample(f_list, sample_schema)
         for fj in f_list:
             logger.debug(_(f"Validating {schema} schema with {fj}"))
             with gzip.open(fj) as f:
