@@ -15,7 +15,7 @@ Features
           # Enable storing to database
           enabled: true (`#63 <https://framagit.org/lpo/Client_API_VN/issues/63>`_)
 - Validation controler is available in biolovision.api.
-  It is not used by update-vn for database storage. (`#74 <https://framagit.org/lpo/Client_API_VN/issues/74>`_)
+   (`#74 <https://framagit.org/lpo/Client_API_VN/issues/74>`_)
 - In case of service unavailable error (HTTP 503), wait for longer delay
   before retry. Delay can be changed by YAML parameter unavailable_delay. (`#94 <https://framagit.org/lpo/Client_API_VN/issues/94>`_)
 - Added field information from JSON download.
