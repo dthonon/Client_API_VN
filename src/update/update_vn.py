@@ -16,6 +16,7 @@ Modification are tracked in hidden_comment.
 """
 import argparse
 import csv
+import datetime
 import logging
 import shutil
 import sys
@@ -112,13 +113,19 @@ def update(cfg_ctrl, input: str):
                     row[1].strip(),
                     row[3].strip(),
                 )
-                if row[3].strip() not in ["delete_observation", "delete_attribute", "replace"]:
+                if row[3].strip() not in [
+                    "delete_observation",
+                    "delete_attribute",
+                    "replace",
+                ]:
                     logger.error(_("Unknown operation in row, ignored %s"), row)
                 elif row[3].strip() == "delete_observation":
                     obs_api[row[0].strip()].api_delete(row[1].strip())
                 else:
                     # Get current observation
-                    sighting = obs_api[row[0].strip()].api_get(row[1].strip(), short_version="1")
+                    sighting = obs_api[row[0].strip()].api_get(
+                        row[1].strip(), short_version="1"
+                    )
                     logger.debug(
                         _("Before: %s"),
                         sighting["data"]["sightings"][0]["observers"][0],
@@ -135,18 +142,26 @@ def update(cfg_ctrl, input: str):
                         msg = sighting["data"]["sightings"][0]["observers"][0][
                             "hidden_comment"
                         ]
-                    except KeyError: # pragma: no cover
+                    except KeyError:  # pragma: no cover
                         msg = ""
                     # Prepare logging message to be appended to hidden_comment
                     msg = msg + json.dumps(
-                        {"op": row[3].strip(), "path": row[2].strip(), "old": old_attr, "new": row[4].strip()}
+                        {
+                            "updated": datetime.datetime.now().strftime(
+                                "%Y-%m-%d %H:%M:%S"
+                            ),
+                            "op": row[3].strip(),
+                            "path": row[2].strip(),
+                            "old": old_attr,
+                            "new": row[4].strip(),
+                        }
                     )
                     if row[3].strip() == "replace":
                         exec("{} = {}".format(repl, row[4].strip()))
                     else:
                         try:
                             exec("del {}".format(repl))
-                        except KeyError: # pragma: no cover
+                        except KeyError:  # pragma: no cover
                             pass
                     exec(
                         """sighting['data']['sightings'][0]['observers'][0]['hidden_comment'] = '{}'""".format(
