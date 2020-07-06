@@ -1,0 +1,84 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "data": {
+            "$ref": "#/definitions/_data"
+        }
+    },
+    "required": [
+        "data"
+    ],
+    "title": "_local_admin_units",
+    "description": "Root of local_admin_units schema.",
+    "definitions": {
+        "_data": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "altitude":{
+                        "type": "string",
+                        "format": "integer"
+                    },
+                    "coord_lat": {
+                        "type": "string",
+                        "format": "number"
+                    }, 
+                    "coord_lon": {
+                        "type": "string",
+                        "format": "number"
+                    }, 
+                    "id":{
+                        "type": "string",
+                        "format": "integer"
+                    },
+                    "id_commune":{
+                        "type": "string",
+                        "format": "integer"
+                    },
+                    "id_region":{
+                        "type": "string",
+                        "format": "integer"
+                    },
+                    "is_private": {
+                        "$ref": "#/definitions/_zero_one"
+                    },
+                    "loc_precision":{
+                        "type": "string",
+                        "format": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "place_type": {
+                        "type": "string",
+                        "enum": [
+                            "garden",
+                            "municipality",
+                            "place",
+                            "polygone",
+                            "subplace",
+                            "square",
+                            "transect"
+                        ]
+                    },
+                    "visible": {
+                        "$ref": "#/definitions/_zero_one"
+                    }
+                }
+            },
+            "title": "_data",
+            "description": "Top level element of local_admin_units data."
+        },
+        "_zero_one": {
+            "type": "string",
+            "enum": [
+                "0",
+                "1"
+            ]
+        }
+    }
+}

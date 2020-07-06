@@ -47,7 +47,7 @@
                     "description": "Form comment"
                 },
                 "full_form": {
-                    "$ref": "#/definitions/ZeroOneId",
+                    "$ref": "#/definitions/_zero_one",
                     "title": "FULL_FORM",
                     "description": "Is the form complete?"
                 },
@@ -219,14 +219,14 @@
                 "dir_oiseaux": {
                     "OneOf": [
                         {
-                            "$ref": "#/definitions/DirOiseauxId"
+                            "$ref": "#/definitions/_dir_oiseaux_id"
                         },
                         {
                             "type": "object",
                             "additionalProperties": false,
                             "properties": {
                                 "@id": {
-                                    "$ref": "#/definitions/DirOiseauxId"
+                                    "$ref": "#/definitions/_dir_oiseaux_id"
                                 },
                                 "#text": {
                                     "type": "string"
@@ -249,7 +249,7 @@
                     "additionalProperties": false,
                     "properties": {
                         "@id": {
-                            "$ref": "#/definitions/UICNId"
+                            "$ref": "#/definitions/_uicn_id"
                         },
                         "#text": {
                             "type": "string"
@@ -261,7 +261,7 @@
                     "additionalProperties": false,
                     "properties": {
                         "@id": {
-                            "$ref": "#/definitions/LRNatId"
+                            "$ref": "#/definitions/_lr_nat_id"
                         },
                         "#text": {
                             "type": "string"
@@ -273,7 +273,7 @@
                     "additionalProperties": false,
                     "properties": {
                         "@id": {
-                            "$ref": "#/definitions/LRNatId"
+                            "$ref": "#/definitions/_lr_nat_id"
                         },
                         "#text": {
                             "type": "string"
@@ -355,7 +355,7 @@
                     "description": "Site name"
                 },
                 "place_type": {
-                    "$ref": "#/definitions/PlaceType",
+                    "$ref": "#/definitions/_place_type_id",
                     "description": "Type of site"
                 }
             },
@@ -376,7 +376,7 @@
                     "format": "integer"
                 },
                 "admin_hidden": {
-                    "$ref": "#/definitions/ZeroOneId",
+                    "$ref": "#/definitions/_zero_one",
                     "title": "ADMIN_HIDDEN",
                     "description": "Is the observation being verified?"
                 },
@@ -397,7 +397,7 @@
                     "description": "Altitude of the observation"
                 },
                 "anonymous": {
-                    "$ref": "#/definitions/ZeroOneId",
+                    "$ref": "#/definitions/_zero_one",
                     "title": "ANONYMOUS",
                     "description": "Is the observer name hidden?"
                 },
@@ -480,7 +480,7 @@
                 "behaviours": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/Behaviour",
+                        "$ref": "#/definitions/_behaviour",
                         "title": "BEHAVIOUR",
                         "description": "Behaviours, exported as string"
                     }
@@ -488,14 +488,14 @@
                 "chiro_identify": {
                     "OneOf": [
                         {
-                            "$ref": "#/definitions/ChiroIdentifyId"
+                            "$ref": "#/definitions/_chiro_identify_id"
                         },
                         {
                             "type": "object",
                             "additionalProperties": false,
                             "properties": {
                                 "@id": {
-                                    "$ref": "#/definitions/ChiroIdentifyId"
+                                    "$ref": "#/definitions/_chiro_identify_id"
                                 },
                                 "#text": {
                                     "type": "string"
@@ -514,10 +514,10 @@
                     "additionalProperties": false,
                     "properties": {
                         "chr": {
-                            "$ref": "#/definitions/CommitteeValidation"
+                            "$ref": "#/definitions/_committee_validation"
                         },
                         "chn": {
-                            "$ref": "#/definitions/CommitteeValidation"
+                            "$ref": "#/definitions/_committee_validation"
                         }
                     }
                 },
@@ -573,7 +573,7 @@
                     "$ref": "#/definitions/_date"
                 },
                 "extended_info": {
-                    "$ref": "#/definitions/_ExtendedInfo"
+                    "$ref": "#/definitions/_extended_info"
                 },
                 "flight_number": {
                     "type": "string",
@@ -602,7 +602,7 @@
                     "format": "integer"
                 },
                 "hidden": {
-                    "$ref": "#/definitions/ZeroOneId",
+                    "$ref": "#/definitions/_zero_one",
                     "title": "HIDDEN",
                     "description": "Is the observation hidden by admin or user?"
                 },
@@ -648,7 +648,7 @@
                     "description": "Observation contains media (photo or sound), if array length > 0"
                 },
                 "precision": {
-                    "$ref": "#/definitions/PlaceType",
+                    "$ref": "#/definitions/_place_type_id",
                     "title": "PRECISION",
                     "description": "Type of site"
                 },
@@ -666,7 +666,7 @@
                     "title": "project_name"
                 },
                 "second_hand": {
-                    "$ref": "#/definitions/ZeroOneId",
+                    "$ref": "#/definitions/_zero_one",
                     "title": "SECOND_HAND",
                     "description": "Is the observation from another observer?"
                 },
@@ -705,20 +705,20 @@
             },
             "title": "_observer"
         },
-        "ChiroIdentifyId": {
+        "_chiro_identify_id": {
             "type": "string",
             "enum": [
                 "242_1",
                 "242_2"
             ]
         },
-        "DirOiseauxId": {
+        "_dir_oiseaux_id": {
             "type": "string",
             "enum": [
                 "1"
             ]
         },
-        "UICNId": {
+        "_uicn_id": {
             "type": "string",
             "enum": [
                 "EX",
@@ -732,7 +732,7 @@
                 "NE"
             ]
         },
-        "LRNatId": {
+        "_lr_nat_id": {
             "type": "string",
             "enum": [
                 "CR",
@@ -742,7 +742,7 @@
                 "VU"
             ]
         },
-        "CommitteeValidation": {
+        "_committee_validation": {
             "type": "string",
             "enum": [
                 "ACCEPTED",
@@ -758,19 +758,51 @@
                     "format": "integer"
                 },
                 "sex": {
-                    "$ref": "#/definitions/Sex"
+                    "$ref": "#/definitions/_sex"
                 },
                 "age": {
-                    "$ref": "#/definitions/Age"
+                    "$ref": "#/definitions/_age"
                 },
                 "condition": {
-                    "$ref": "#/definitions/Condition"
+                    "OneOf": [
+                        {
+                            "$ref": "#/definitions/_condition_id"
+                        },
+                        {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "@id": {
+                                    "$ref": "#/definitions/_condition_id"
+                                },
+                                "#text": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    ]
                 },
                 "distance": {
-                    "$ref": "#/definitions/Distance"
+                    "OneOf": [
+                        {
+                            "$ref": "#/definitions/_distance_id"
+                        },
+                        {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "@id": {
+                                    "$ref": "#/definitions/_distance_id"
+                                },
+                                "#text": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    ]
                 },
                 "section": {
-                    "$ref": "#/definitions/Section"
+                    "$ref": "#/definitions/_section"
                 }
             },
             "title": "_details"
@@ -790,7 +822,7 @@
                     "type": "string"
                 },
                 "media_is_hidden": {
-                    "$ref": "#/definitions/ZeroOneId"
+                    "$ref": "#/definitions/_zero_one"
                 },
                 "metadata": {
                     "type": "string"
@@ -813,7 +845,7 @@
             },
             "title": "_media"
         },
-        "_ExtendedInfo": {
+        "_extended_info": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -822,7 +854,7 @@
                     "additionalProperties": false,
                     "properties": {
                         "collected": {
-                            "$ref": "#/definitions/YesNo",
+                            "$ref": "#/definitions/_yes_no",
                             "title": "collected",
                             "description": ""
                         },
@@ -994,6 +1026,7 @@
                                 "HEN",
                                 "MAMMAL",
                                 "OTHER",
+                                "OTHER_DOMESTIC",
                                 "UNKNOWN"
                             ],
                             "title": "predation2",
@@ -1011,7 +1044,7 @@
                             "description": ""
                         },
                         "radio": {
-                            "$ref": "#/definitions/YesNo",
+                            "$ref": "#/definitions/_yes_no",
                             "title": "radio",
                             "description": ""
                         },
@@ -1108,7 +1141,7 @@
                             "description": ""
                         },
                         "weather": {
-                            "$ref": "#/definitions/Weather",
+                            "$ref": "#/definitions/_weather",
                             "title": "weather",
                             "description": ""
                         },
@@ -1119,7 +1152,7 @@
                             "description": ""
                         }
                     },
-                    "title": "_ExtendedInfo",
+                    "title": "_extended_info",
                     "description": ""
                 },
                 "gypaetus_barbatus": {
@@ -1133,7 +1166,7 @@
                                 "format": "integer"
                             },
                             "age": {
-                                "$ref": "#/definitions/Age"
+                                "$ref": "#/definitions/_age"
                             },
                             "altitude_max": {
                                 "type": "string",
@@ -1146,14 +1179,14 @@
                             "behaviour": {
                                 "OneOf": [
                                     {
-                                        "$ref": "#/definitions/GypaetusBarbatusBehaviour"
+                                        "$ref": "#/definitions/_gypaetus_barbatus_behaviour"
                                     },
                                     {
                                         "type": "object",
                                         "additionalProperties": false,
                                         "properties": {
                                             "@id": {
-                                                "$ref": "#/definitions/GypaetusBarbatusBehaviour"
+                                                "$ref": "#/definitions/_gypaetus_barbatus_behaviour"
                                             },
                                             "#text": {
                                                 "type": "string"
@@ -1180,7 +1213,7 @@
                                 "format": "integer"
                             },
                             "flight_direction": {
-                                "$ref": "#/definitions/Direction"
+                                "$ref": "#/definitions/_direction"
                             },
                             "gypaetus_barbatus_birds": {
                                 "type": "array",
@@ -1201,14 +1234,14 @@
                             "interaction": {
                                 "OneOf": [
                                     {
-                                        "$ref": "#/definitions/InteractionId"
+                                        "$ref": "#/definitions/_interaction_id"
                                     },
                                     {
                                         "type": "object",
                                         "additionalProperties": false,
                                         "properties": {
                                             "@id": {
-                                                "$ref": "#/definitions/InteractionId"
+                                                "$ref": "#/definitions/_interaction_id"
                                             },
                                             "#text": {
                                                 "type": "string"
@@ -1220,14 +1253,14 @@
                             "interaction_benefit": {
                                 "OneOf": [
                                     {
-                                        "$ref": "#/definitions/InteractionBenefitId"
+                                        "$ref": "#/definitions/_interaction_benefit_id"
                                     },
                                     {
                                         "type": "object",
                                         "additionalProperties": false,
                                         "properties": {
                                             "@id": {
-                                                "$ref": "#/definitions/InteractionBenefitId"
+                                                "$ref": "#/definitions/_interaction_benefit_id"
                                             },
                                             "#text": {
                                                 "type": "string"
@@ -1252,7 +1285,7 @@
                                 "format": "integer"
                             },
                             "weather": {
-                                "$ref": "#/definitions/Weather"
+                                "$ref": "#/definitions/_weather"
                             }
                         }
                     }
@@ -1338,7 +1371,7 @@
             },
             "title": "ExtendedInfo"
         },
-        "GypaetusBarbatusBehaviour": {
+        "_gypaetus_barbatus_behaviour": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -1359,7 +1392,7 @@
                 }
             }
         },
-        "Behaviour": {
+        "_behaviour": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -1419,19 +1452,19 @@
                     "title": "BehaviourText"
                 }
             },
-            "title": "Behaviour"
+            "title": "_behaviour"
         },
-        "Sex": {
+        "_sex": {
             "OneOf": [
                 {
-                    "$ref": "#/definitions/SexId"
+                    "$ref": "#/definitions/_sex_id"
                 },
                 {
                     "type": "object",
                     "additionalProperties": false,
                     "properties": {
                         "@id": {
-                            "$ref": "#/definitions/SexId"
+                            "$ref": "#/definitions/_sex_id"
                         },
                         "#text": {
                             "type": "string"
@@ -1440,7 +1473,7 @@
                 }
             ]
         },
-        "SexId": {
+        "_sex_id": {
             "type": "string",
             "enum": [
                 "U",
@@ -1448,20 +1481,20 @@
                 "F",
                 "FT"
             ],
-            "title": "Sex",
+            "title": "_sex",
             "description": ""
         },
-        "Age": {
+        "_age": {
             "OneOf": [
                 {
-                    "$ref": "#/definitions/AgeId"
+                    "$ref": "#/definitions/_age_id"
                 },
                 {
                     "type": "object",
                     "additionalProperties": false,
                     "properties": {
                         "@id": {
-                            "$ref": "#/definitions/AgeId"
+                            "$ref": "#/definitions/_age_id"
                         },
                         "#text": {
                             "type": "string"
@@ -1470,7 +1503,7 @@
                 }
             ]
         },
-        "AgeId": {
+        "_age_id": {
             "type": "string",
             "enum": [
                 "AD",
@@ -1492,29 +1525,10 @@
                 "5Y",
                 "U"
             ],
-            "title": "Age",
+            "title": "_age",
             "description": ""
         },
-        "Condition": {
-            "OneOf": [
-                {
-                    "$ref": "#/definitions/ConditionId"
-                },
-                {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "@id": {
-                            "$ref": "#/definitions/ConditionId"
-                        },
-                        "#text": {
-                            "type": "string"
-                        }
-                    }
-                }
-            ]
-        },
-        "ConditionId": {
+        "_condition_id": {
             "type": "string",
             "enum": [
                 "VIEW",
@@ -1526,29 +1540,10 @@
                 "AUDIO",
                 "U"
             ],
-            "title": "Condition",
+            "title": "_condition_id",
             "description": ""
         },
-        "Distance": {
-            "OneOf": [
-                {
-                    "$ref": "#/definitions/DistanceId"
-                },
-                {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "@id": {
-                            "$ref": "#/definitions/DistanceId"
-                        },
-                        "#text": {
-                            "type": "string"
-                        }
-                    }
-                }
-            ]
-        },
-        "DistanceId": {
+        "_distance_id": {
             "type": "string",
             "enum": [
                 "LESS25",
@@ -1558,20 +1553,20 @@
                 "TRANSIT",
                 "U"
             ],
-            "title": "Distance",
+            "title": "_distance_id",
             "description": ""
         },
-        "Section": {
+        "_section": {
             "OneOf": [
                 {
-                    "$ref": "#/definitions/SectionId"
+                    "$ref": "#/definitions/_section_id"
                 },
                 {
                     "type": "object",
                     "additionalProperties": false,
                     "properties": {
                         "@id": {
-                            "$ref": "#/definitions/SectionId"
+                            "$ref": "#/definitions/_section_id"
                         },
                         "#text": {
                             "type": "string"
@@ -1580,34 +1575,15 @@
                 }
             ]
         },
-        "SectionId": {
+        "_section_id": {
             "type": "string",
             "enum": [
                 "U"
             ],
-            "title": "Section",
+            "title": "_section",
             "description": ""
         },
-        "Habitat": {
-            "OneOf": [
-                {
-                    "$ref": "#/definitions/HabitatId"
-                },
-                {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "@id": {
-                            "$ref": "#/definitions/HabitatId"
-                        },
-                        "#text": {
-                            "type": "string"
-                        }
-                    }
-                }
-            ]
-        },
-        "HabitatId": {
+        "_habitat_id": {
             "type": "string",
             "enum": [
                 "A0_A",
@@ -1714,160 +1690,46 @@
                 "G1_4"
             ]
         },
-        "StocTransport": {
-            "OneOf": [
-                {
-                    "$ref": "#/definitions/StocTransportId"
-                },
-                {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "@id": {
-                            "$ref": "#/definitions/StocTransportId"
-                        },
-                        "#text": {
-                            "type": "string"
-                        }
-                    }
-                }
-            ]
-        },
-        "StocTransportId": {
+        "_stoc_transport_id": {
             "type": "string",
             "enum": [
                 "WALK"
             ]
         },
-        "StocSnow": {
-            "OneOf": [
-                {
-                    "$ref": "#/definitions/StocSnowId"
-                },
-                {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "@id": {
-                            "$ref": "#/definitions/StocSnowId"
-                        },
-                        "#text": {
-                            "type": "string"
-                        }
-                    }
-                }
-            ]
-        },
-        "StocSnowId": {
+        "_stoc_snow_id": {
             "type": "string",
             "enum": [
                 "NO_SNOW"
             ]
         },
-        "StocRain": {
-            "OneOf": [
-                {
-                    "$ref": "#/definitions/StocRainId"
-                },
-                {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "@id": {
-                            "$ref": "#/definitions/StocRainId"
-                        },
-                        "#text": {
-                            "type": "string"
-                        }
-                    }
-                }
-            ]
-        },
-        "StocRainId": {
+        "_stoc_rain_id": {
             "type": "string",
             "enum": [
                 "NO_RAIN",
                 "STRONG_RAIN"
             ]
         },
-        "StocWind": {
-            "OneOf": [
-                {
-                    "$ref": "#/definitions/StocWindId"
-                },
-                {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "@id": {
-                            "$ref": "#/definitions/StocWindId"
-                        },
-                        "#text": {
-                            "type": "string"
-                        }
-                    }
-                }
-            ]
-        },
-        "StocWindId": {
+        "_stoc_wind_id": {
             "type": "string",
             "enum": [
                 "NO_WIND",
                 "WEAK_WIND"
             ]
         },
-        "StocVisibility": {
-            "OneOf": [
-                {
-                    "$ref": "#/definitions/StocVisibilityId"
-                },
-                {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "@id": {
-                            "$ref": "#/definitions/StocVisibilityId"
-                        },
-                        "#text": {
-                            "type": "string"
-                        }
-                    }
-                }
-            ]
-        },
-        "StocVisibilityId": {
+        "_stoc_visibility_id": {
             "type": "string",
             "enum": [
                 "GOOD_VISIBILITY"
             ]
         },
-        "StocCloud": {
-            "OneOf": [
-                {
-                    "$ref": "#/definitions/StocCloudId"
-                },
-                {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "@id": {
-                            "$ref": "#/definitions/StocCloudId"
-                        },
-                        "#text": {
-                            "type": "string"
-                        }
-                    }
-                }
-            ]
-        },
-        "StocCloudId": {
+        "_stoc_cloud_id": {
             "type": "string",
             "enum": [
                 "ONE_THIRD",
                 "TWO_THIRD",
                 "THREE_THIRD"
             ],
-            "title": "StocCloudId"
+            "title": "_stoc_cloud_id"
         },
         "_protocol": {
             "type": "object",
@@ -1908,25 +1770,137 @@
                     "format": "integer"
                 },
                 "habitat": {
-                    "$ref": "#/definitions/Habitat"
+                    "OneOf": [
+                        {
+                            "$ref": "#/definitions/_habitat_id"
+                        },
+                        {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "@id": {
+                                    "$ref": "#/definitions/_habitat_id"
+                                },
+                                "#text": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    ]
                 },
                 "stoc_cloud": {
-                    "$ref": "#/definitions/StocCloud"
+                    "OneOf": [
+                        {
+                            "$ref": "#/definitions/_stoc_cloud_id"
+                        },
+                        {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "@id": {
+                                    "$ref": "#/definitions/_stoc_cloud_id"
+                                },
+                                "#text": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    ]
                 },
                 "stoc_rain": {
-                    "$ref": "#/definitions/StocRain"
+                    "OneOf": [
+                        {
+                            "$ref": "#/definitions/_stoc_rain_id"
+                        },
+                        {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "@id": {
+                                    "$ref": "#/definitions/_stoc_rain_id"
+                                },
+                                "#text": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    ]
                 },
                 "stoc_snow": {
-                    "$ref": "#/definitions/StocSnow"
+                    "OneOf": [
+                        {
+                            "$ref": "#/definitions/_stoc_snow_id"
+                        },
+                        {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "@id": {
+                                    "$ref": "#/definitions/_stoc_snow_id"
+                                },
+                                "#text": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    ]
                 },
                 "stoc_transport": {
-                    "$ref": "#/definitions/StocTransport"
+                    "OneOf": [
+                        {
+                            "$ref": "#/definitions/_stoc_transport_id"
+                        },
+                        {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "@id": {
+                                    "$ref": "#/definitions/_stoc_transport_id"
+                                },
+                                "#text": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    ]
                 },
                 "stoc_visibility": {
-                    "$ref": "#/definitions/StocVisibility"
+                    "OneOf": [
+                        {
+                            "$ref": "#/definitions/_stoc_visibility_id"
+                        },
+                        {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "@id": {
+                                    "$ref": "#/definitions/_stoc_visibility_id"
+                                },
+                                "#text": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    ]
                 },
                 "stoc_wind": {
-                    "$ref": "#/definitions/StocWind"
+                    "OneOf": [
+                        {
+                            "$ref": "#/definitions/_stoc_wind_id"
+                        },
+                        {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "@id": {
+                                    "$ref": "#/definitions/_stoc_wind_id"
+                                },
+                                "#text": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    ]
                 },
                 "visit_number": {
                     "type": "string",
@@ -1935,14 +1909,14 @@
                 "waterbird_conditions": {
                     "OneOf": [
                         {
-                            "$ref": "#/definitions/WaterbirdConditionsId"
+                            "$ref": "#/definitions/_waterbird_conditions_id"
                         },
                         {
                             "type": "object",
                             "additionalProperties": false,
                             "properties": {
                                 "@id": {
-                                    "$ref": "#/definitions/WaterbirdConditionsId"
+                                    "$ref": "#/definitions/_waterbird_conditions_id"
                                 },
                                 "#text": {
                                     "type": "string"
@@ -1954,14 +1928,14 @@
                 "waterbird_conditions_reason": {
                     "OneOf": [
                         {
-                            "$ref": "#/definitions/WaterbirdConditionsReasonId"
+                            "$ref": "#/definitions/_waterbird_conditions_reason_id"
                         },
                         {
                             "type": "object",
                             "additionalProperties": false,
                             "properties": {
                                 "@id": {
-                                    "$ref": "#/definitions/WaterbirdConditionsReasonId"
+                                    "$ref": "#/definitions/_waterbird_conditions_reason_id"
                                 },
                                 "#text": {
                                     "type": "string"
@@ -1971,19 +1945,19 @@
                     ]
                 },
                 "waterbird_count_payed": {
-                    "$ref": "#/definitions/YesNo"
+                    "$ref": "#/definitions/_yes_no"
                 },
                 "waterbird_countmethod": {
                     "OneOf": [
                         {
-                            "$ref": "#/definitions/WaterbirdCountMethodId"
+                            "$ref": "#/definitions/_waterbird_count_method_id"
                         },
                         {
                             "type": "object",
                             "additionalProperties": false,
                             "properties": {
                                 "@id": {
-                                    "$ref": "#/definitions/WaterbirdCountMethodId"
+                                    "$ref": "#/definitions/_waterbird_count_method_id"
                                 },
                                 "#text": {
                                     "type": "string"
@@ -1995,14 +1969,14 @@
                 "waterbird_counttype": {
                     "OneOf": [
                         {
-                            "$ref": "#/definitions/WaterbirdCountTypeId"
+                            "$ref": "#/definitions/_waterbird_count_type_id"
                         },
                         {
                             "type": "object",
                             "additionalProperties": false,
                             "properties": {
                                 "@id": {
-                                    "$ref": "#/definitions/WaterbirdCountTypeId"
+                                    "$ref": "#/definitions/_waterbird_count_type_id"
                                 },
                                 "#text": {
                                     "type": "string"
@@ -2014,14 +1988,14 @@
                 "waterbird_coverage": {
                     "OneOf": [
                         {
-                            "$ref": "#/definitions/WaterbirdCoverageId"
+                            "$ref": "#/definitions/_waterbird_coverage_id"
                         },
                         {
                             "type": "object",
                             "additionalProperties": false,
                             "properties": {
                                 "@id": {
-                                    "$ref": "#/definitions/WaterbirdCoverageId"
+                                    "$ref": "#/definitions/_waterbird_coverage_id"
                                 },
                                 "#text": {
                                     "type": "string"
@@ -2033,14 +2007,14 @@
                 "waterbird_ice": {
                     "OneOf": [
                         {
-                            "$ref": "#/definitions/WaterbirdIceId"
+                            "$ref": "#/definitions/_waterbird_ice_id"
                         },
                         {
                             "type": "object",
                             "additionalProperties": false,
                             "properties": {
                                 "@id": {
-                                    "$ref": "#/definitions/WaterbirdIceId"
+                                    "$ref": "#/definitions/_waterbird_ice_id"
                                 },
                                 "#text": {
                                     "type": "string"
@@ -2052,14 +2026,14 @@
                 "waterbird_optical": {
                     "OneOf": [
                         {
-                            "$ref": "#/definitions/WaterbirdOpticalId"
+                            "$ref": "#/definitions/_waterbird_optical_id"
                         },
                         {
                             "type": "object",
                             "additionalProperties": false,
                             "properties": {
                                 "@id": {
-                                    "$ref": "#/definitions/WaterbirdOpticalId"
+                                    "$ref": "#/definitions/_waterbird_optical_id"
                                 },
                                 "#text": {
                                     "type": "string"
@@ -2071,14 +2045,14 @@
                 "waterbird_snowcover": {
                     "OneOf": [
                         {
-                            "$ref": "#/definitions/WaterbirdSnowCoverId"
+                            "$ref": "#/definitions/_waterbird_snow_cover_id"
                         },
                         {
                             "type": "object",
                             "additionalProperties": false,
                             "properties": {
                                 "@id": {
-                                    "$ref": "#/definitions/WaterbirdSnowCoverId"
+                                    "$ref": "#/definitions/_waterbird_snow_cover_id"
                                 },
                                 "#text": {
                                     "type": "string"
@@ -2090,14 +2064,14 @@
                 "waterbird_visibility": {
                     "OneOf": [
                         {
-                            "$ref": "#/definitions/WaterbirdVisibilityId"
+                            "$ref": "#/definitions/_waterbird_visibility_id"
                         },
                         {
                             "type": "object",
                             "additionalProperties": false,
                             "properties": {
                                 "@id": {
-                                    "$ref": "#/definitions/WaterbirdVisibilityId"
+                                    "$ref": "#/definitions/_waterbird_visibility_id"
                                 },
                                 "#text": {
                                     "type": "string"
@@ -2109,14 +2083,14 @@
                 "waterbird_waterlevel": {
                     "OneOf": [
                         {
-                            "$ref": "#/definitions/WaterbirdWaterLevelId"
+                            "$ref": "#/definitions/_waterbird_water_level_id"
                         },
                         {
                             "type": "object",
                             "additionalProperties": false,
                             "properties": {
                                 "@id": {
-                                    "$ref": "#/definitions/WaterbirdWaterLevelId"
+                                    "$ref": "#/definitions/_waterbird_water_level_id"
                                 },
                                 "#text": {
                                     "type": "string"
@@ -2128,14 +2102,14 @@
                 "waterbird_waves": {
                     "OneOf": [
                         {
-                            "$ref": "#/definitions/WaterbirdWavesId"
+                            "$ref": "#/definitions/_waterbird_waves_id"
                         },
                         {
                             "type": "object",
                             "additionalProperties": false,
                             "properties": {
                                 "@id": {
-                                    "$ref": "#/definitions/WaterbirdWavesId"
+                                    "$ref": "#/definitions/_waterbird_waves_id"
                                 },
                                 "#text": {
                                     "type": "string"
@@ -2147,7 +2121,7 @@
             },
             "title": "_protocol"
         },
-        "WaterbirdConditionsId": {
+        "_waterbird_conditions_id": {
             "type": "string",
             "enum": [
                 "BAD",
@@ -2155,7 +2129,7 @@
                 "MODERATE"
             ]
         },
-        "WaterbirdConditionsReasonId": {
+        "_waterbird_conditions_reason_id": {
             "type": "string",
             "enum": [
                 "FISHING",
@@ -2167,20 +2141,20 @@
                 "WIND"
             ]
         },
-        "WaterbirdCountMethodId": {
+        "_waterbird_count_method_id": {
             "type": "string",
             "enum": [
                 "GROUND"
             ]
         },
-        "WaterbirdCountTypeId": {
+        "_waterbird_count_type_id": {
             "type": "string",
             "enum": [
                 "DAY_COUNT",
                 "ROOST_COUNT"
             ]
         },
-        "WaterbirdCoverageId": {
+        "_waterbird_coverage_id": {
             "type": "string",
             "enum": [
                 "COMPLETE",
@@ -2188,7 +2162,7 @@
                 "UNKNOWN"
             ]
         },
-        "WaterbirdIceId": {
+        "_waterbird_ice_id": {
             "type": "string",
             "enum": [
                 "0_10",
@@ -2198,7 +2172,7 @@
                 "UNKNOWN"
             ]
         },
-        "WaterbirdOpticalId": {
+        "_waterbird_optical_id": {
             "type": "string",
             "enum": [
                 "BINOCULARS",
@@ -2206,7 +2180,7 @@
                 "TELESCOPE"
             ]
         },
-        "WaterbirdSnowCoverId": {
+        "_waterbird_snow_cover_id": {
             "type": "string",
             "enum": [
                 "GOOD_NORMAL",
@@ -2214,7 +2188,7 @@
                 "SOME_SNOW"
             ]
         },
-        "WaterbirdVisibilityId": {
+        "_waterbird_visibility_id": {
             "type": "string",
             "enum": [
                 "0_100",
@@ -2224,7 +2198,7 @@
                 "UNKNOWN"
             ]
         },
-        "WaterbirdWaterLevelId": {
+        "_waterbird_water_level_id": {
             "type": "string",
             "enum": [
                 "DRY_EMPTY",
@@ -2234,7 +2208,7 @@
                 "UNKNOWN"
             ]
         },
-        "WaterbirdWavesId": {
+        "_waterbird_waves_id": {
             "type": "string",
             "enum": [
                 "MODERATE",
@@ -2243,26 +2217,27 @@
                 "UNKNOWN"
             ]
         },
-        "Direction": {
+        "_direction": {
             "OneOf": [
                 {
-                    "$ref": "#/definitions/DirectionId"
+                    "$ref": "#/definitions/_direction_id"
                 },
                 {
                     "type": "object",
                     "additionalProperties": false,
                     "properties": {
                         "@id": {
-                            "$ref": "#/definitions/DirectionId"
+                            "$ref": "#/definitions/_direction_id"
                         },
                         "#text": {
                             "type": "string"
                         }
                     }
                 }
-            ]
+            ],
+            "title": "_direction"
         },
-        "DirectionId": {
+        "_direction_id": {
             "type": "string",
             "enum": [
                 "N",
@@ -2274,49 +2249,50 @@
                 "E",
                 "NE"
             ],
-            "title": "Direction"
+            "title": "_direction_id"
         },
-        "InteractionId": {
+        "_interaction_id": {
             "type": "string",
             "enum": [
                 "MOBBING"
             ],
-            "title": "Category"
+            "title": "_interaction_id"
         },
-        "InteractionBenefitId": {
+        "_interaction_benefit_id": {
             "type": "string",
             "enum": [
                 "OTHER"
             ],
-            "title": "Category"
+            "title": "_interaction_benefit_id"
         },
-        "Weather": {
+        "_weather": {
             "OneOf": [
                 {
-                    "$ref": "#/definitions/WeatherId"
+                    "$ref": "#/definitions/_weather_id"
                 },
                 {
                     "type": "object",
                     "additionalProperties": false,
                     "properties": {
                         "@id": {
-                            "$ref": "#/definitions/WeatherId"
+                            "$ref": "#/definitions/_weather_id"
                         },
                         "#text": {
                             "type": "string"
                         }
                     }
                 }
-            ]
+            ],
+            "title": "_weather"
         },
-        "WeatherId": {
+        "_weather_id": {
             "type": "string",
             "enum": [
                 "SUNNY"
             ],
-            "title": "Type"
+            "title": "_weather_id"
         },
-        "PlaceType": {
+        "_place_type_id": {
             "type": "string",
             "enum": [
                 "",
@@ -2332,40 +2308,43 @@
                 "transect",
                 "transect_precise"
             ],
-            "title": "PlaceType"
+            "title": "_place_type_id"
         },
-        "YesNo": {
+        "_yes_no": {
             "OneOf": [
                 {
-                    "$ref": "#/definitions/YesNoId"
+                    "$ref": "#/definitions/_yes_no_id"
                 },
                 {
                     "type": "object",
                     "additionalProperties": false,
                     "properties": {
                         "@id": {
-                            "$ref": "#/definitions/YesNoId"
+                            "$ref": "#/definitions/_yes_no_id"
                         },
                         "#text": {
                             "type": "string"
                         }
                     }
                 }
-            ]
+            ],
+            "title": "_yes_no"
         },
-        "YesNoId": {
+        "_yes_no_id": {
             "type": "string",
             "enum": [
                 "YES",
                 "NO"
-            ]
+            ],
+            "title": "_yes_no_id"
         },
-        "ZeroOneId": {
+        "_zero_one": {
             "type": "string",
             "enum": [
                 "0",
                 "1"
-            ]
+            ],
+            "title": "_zero_one"
         }
     }
 }
