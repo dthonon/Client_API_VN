@@ -1,1 +1,0 @@
-update_vn adds "updated" date in the hidden_comment

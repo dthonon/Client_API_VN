@@ -1,2 +1,0 @@
-Scheduled jobs are now terminated by Ctrl-C. 
-There is still an OSError raised during shutdown.

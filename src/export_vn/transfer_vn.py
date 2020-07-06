@@ -379,7 +379,7 @@ def col_table_create(cfg, sql_quiet, client_min_message):
 def full_download_1(ctrl, cfg_crtl_list, cfg):
     """Downloads from a single controler."""
     logger = logging.getLogger("transfer_vn")
-    logger.debug(_("Enter full_download_1: {}").format(ctrl.__name__))
+    logger.debug(_("Enter full_download_1: %s"), ctrl.__name__)
     with StorePostgresql(cfg) as store_pg, StoreFile(cfg) as store_f:
         store_all = StoreAll(cfg, db_backend = store_pg, file_backend = store_f)
         downloader = ctrl(cfg, store_all)
@@ -478,7 +478,7 @@ def full_download(cfg_ctrl):
 def increment_download_1(ctrl, cfg_crtl_list, cfg):
     """Download incremental updates from one site."""
     logger = logging.getLogger("transfer_vn")
-    logger.debug("Enter increment_download_1: {}".format(ctrl.__name__))
+    logger.debug(_("Enter increment_download_1: %s"), ctrl.__name__)
     with StorePostgresql(cfg) as store_pg, StoreFile(cfg) as store_f:
         store_all = StoreAll(cfg, db_backend = store_pg, file_backend = store_f)
         downloader = ctrl(cfg, store_all)

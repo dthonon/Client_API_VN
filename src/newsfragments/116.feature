@@ -1,1 +1,0 @@
-Python version 3.8 is now supported.
