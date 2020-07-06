@@ -103,7 +103,7 @@ def validate(cfg_site_list: Any, samples: float) -> None:
     for js_f in js_list:
         schema = js_f.split(".")[0]
         file = pkg_resources.resource_filename(__name__, js_f)
-        logger.info(_(f"Validating schema {schema}, in file {file}"))
+        logger.info(_("Validating schema %s, in file %s"), schema, file)
         with open(file) as f:
             schema_js = json.load(f)
         cls = validator_for(schema_js)
@@ -119,10 +119,10 @@ def validate(cfg_site_list: Any, samples: float) -> None:
         if isinstance(sample_schema, float):
             sample_schema = round(sample_schema * len(f_list))
         sample_schema = min(sample_schema, len(f_list))
-        logger.debug(_(f"Sampling {sample_schema} out of {len(f_list)} files"))
+        logger.debug(_("Sampling %s out of %i files"), sample_schema, len(f_list))
         f_list = random.sample(f_list, sample_schema)
         for fj in f_list:
-            logger.debug(_(f"Validating {schema} schema with {fj}"))
+            logger.debug(_("Validating %s schema with %s"), schema, fj)
             with gzip.open(fj) as f:
                 js = json.load(f)
             instance.validate(js)
@@ -141,7 +141,7 @@ def restore(cfg_site_list: Any) -> None:
     for js_f in js_list:
         schema = js_f.split(".")[0]
         file = pkg_resources.resource_filename(__name__, js_f)
-        logger.info(_(f"Restoring files for schema {schema}"))
+        logger.info(_("Restoring files for schema %s"), schema)
         # Gathering files to rename
         f_list = list()
         for site, cfg in cfg_site_list.items():
@@ -150,7 +150,7 @@ def restore(cfg_site_list: Any) -> None:
                 f_list.append(tst_f)
         for fj in f_list:
             fjr = str(fj)[:-5]
-            logger.debug(_(f"Renaming {fj} to {fjr}"))
+            logger.debug(_("Renaming %s to %s"), fj, fjr)
             shutil.move(fj, fjr)
 
     return None
@@ -167,7 +167,7 @@ def report(cfg_site_list: Any) -> None:
     for js_f in js_list:
         schema = js_f.split(".")[0]
         file = pkg_resources.resource_filename(__name__, js_f)
-        logger.info(_(f"Validating schema {schema}, in file {file}"))
+        logger.info(_("Validating schema %s, in file %s"), schema, file)
         with open(file) as f:
             schema_js = json.load(f)
         for defs in schema_js["definitions"]:
@@ -239,17 +239,17 @@ def main(args):
         if isinstance(samples, float) and (samples < 0 or samples > 1):
             logger.error(
                 _(
-                    f"--samples float parameter: {samples} "
-                    f"must be between 0.0 and 1.0. Coerced to 0.1"
-                )
+                    "--samples float parameter: %s "
+                    "must be between 0.0 and 1.0. Coerced to 0.1"
+                ), samples
             )
             samples = 0.1
         if isinstance(samples, int) and (samples < 0):
             logger.error(
                 _(
-                    f"--samples int parameter: {samples} "
-                    f"must be positive. Coerced to 0.1"
-                )
+                    "--samples int parameter: %s "
+                    "must be positive. Coerced to 0.1"
+                ), samples
             )
             samples = 0.1
         validate(cfg_site_list, samples)
