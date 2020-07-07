@@ -12,13 +12,28 @@ Note: install Debian development environment first::
     sudo apt install python3-dev
     sudo apt install python3-venv
 
+Add newer python versions, using pyenv::
+
+    curl https://pyenv.run | bash
+    pyenv install 3.7.7 # for example
+    pyenv global 3.7.7  # for example
+
 Create a python virtual environment, activate it and install or
 update basic tools::
 
     python3 -m venv VN_env
     source VN_env/bin/activate
     python -m pip install --upgrade pip
-    pip install --upgrade setuptools wheel twine babel tox
+    pip install --upgrade setuptools wheel twine babel tox coverage
+
+Add the following lines to .bashrc, to enable pyenv and venv::
+
+    # Activate venv
+    source VN_env/bin/activate
+    # Load pyenv automatically
+    export PATH="~/.pyenv/bin:$PATH"
+    eval "$(pyenv init -)"
+    eval "$(pyenv virtualenv-init -)"
 
 Downloading source
 ------------------
@@ -68,6 +83,10 @@ To document a change :
 Running the tests
 -----------------
 
+Create .evn_test.yaml file in your root directory, with values. 
+The tests access the active production site of biolovision and
+requires admin rights.
+
 Run tests (try one or the other, as I haven't found which one is best)::
 
     ./setup.py tests
@@ -76,6 +95,8 @@ Run tests (try one or the other, as I haven't found which one is best)::
 When tests are OK, run full test suite::
 
     tox
+
+Test coverage and upload to codecov.io is possible, using tox targets clean and cover.
 
 Updating translations
 ---------------------

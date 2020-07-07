@@ -18,6 +18,13 @@ controler:
             # Every Friday at 23:00 UTC
             day_of_week: 4
             hour: 23
+    families:
+        # Enable download from this controler
+        enabled: true
+        schedule:
+            # Every Friday at 23:00 UTC
+            day_of_week: 4
+            hour: 23
     fields:
         # Enable download from this controler
         enabled: true
@@ -78,6 +85,13 @@ controler:
         schedule:
             # Every Thursday at 23:00 UTC
             day_of_week: 3
+            hour: 23
+    validations:
+        # Enable download from this controler
+        enabled: true
+        schedule:
+            # Every Friday at 23:00 UTC
+            day_of_week: 4
             hour: 23
 
 # Observations filter, to limit download scope
@@ -161,6 +175,8 @@ file:
 
 # Postgresql backend related parameters
 database:
+    # Enable storing to database
+    enabled: true
     # Database host
     db_host: localhost
     # Database IP port
@@ -197,6 +213,8 @@ tuning:
     max_requests: 0
     # Delay between retries after an error
     retry_delay: 5
+    # Delay between retries after an error HTTP 503 (service unavailable)
+    unavailable_delay: 600
     # LRU cache size for common requests (taxo_groups...)
     lru_maxsize: 32
     # PID parameters, for throughput management.
@@ -207,21 +225,5 @@ tuning:
     pid_limit_min: 5
     pid_limit_max: 2000
     pid_delta_days: 10
-    # Postgresql interface tuning parameters
-    db_worker_threads: 2
-    db_worker_queue: 100000
     # Scheduler tuning parameters
     sched_executors: 2
-
-# Optional parameters for sync_pne
-pne:
-    # URL providing data file
-    data_url: https://portail.ecrins-parcnational.fr/xxx/admin/xportcsv.php
-    # Postgresql schema name, in database:db_name
-    db_schema: import_pne
-    # Table name for raw PNE data import
-    db_in_table: in_pne
-    # Table name for cross reference with VN observations
-    db_xref_table: xref_pne
-    # Universal Id of PNE archive account
-    observer_uid: 14250

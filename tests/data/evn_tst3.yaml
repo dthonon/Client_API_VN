@@ -12,6 +12,13 @@ controler:
     entities:
         # Enable download from this controler
         enabled: error
+    families:
+        # Enable download from this controler
+        enabled: true
+        schedule:
+            # Every Friday at 23:00 UTC
+            day_of_week: 4
+            hour: 23
     fields:
         # Enable download from this controler
         enabled: true
@@ -71,6 +78,9 @@ controler:
     territorial_units:
         # Enable download from this controler
         enabled: true
+    validations:
+        # Enable download from this controler
+        enabled: true
 
 # VisioNature site access parameters
 site:
@@ -97,6 +107,8 @@ file:
 
 # Postgresql backend related parameters
 database:
+    # Enable storing to database
+    enabled: false
     # Database host
     db_host: localhost
     # Database IP port

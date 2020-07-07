@@ -1,5 +1,6 @@
-"""Methods to store Biolovision data to file.
+"""Methods to store Biolovision data to different stores.
 
+For the moment, quick and dirty call to StoreFile and StorePostgresql.
 
 Methods
 
@@ -10,34 +11,33 @@ Properties
 -
 
 """
-import gzip
-import json
+
 import logging
-import os
-from pathlib import Path
 
-from . import __version__, _
+from export_vn.evnconf import EvnConf
+from export_vn.store_file import StoreFile
+from export_vn.store_postgresql import PostgresqlUtils, StorePostgresql
 
-logger = logging.getLogger("transfer_vn.store_file")
+from . import _, __version__
 
-
-class StoreFileException(Exception):
-    """An exception occurred while handling download or store. """
+logger = logging.getLogger("transfer_vn.store_all")
 
 
-class StoreFile:
-    """Provides store to file method."""
+class StoreAll:
+    """Provides store to backend storage."""
 
-    def __init__(self, config):
+    def __init__(self, config, file_backend, db_backend):
         self._config = config
+        self._file_backend = file_backend
+        self._db_backend = db_backend
 
     def __enter__(self):
-        logger.debug(_("Entry into StoreFile"))
+        logger.debug(_("Entry into StoreAll"))
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         """Finalize connections."""
-        logger.debug(_("Exit from StoreFile"))
+        logger.debug(_("Exit from StoreAll"))
 
     @property
     def version(self):
@@ -68,31 +68,13 @@ class StoreFile:
         int
             Count of items stored (not exact for observations, due to forms).
         """
-        # Store to file, if enabled
+        # Call backends if needed
+        nb_item = 0
         if self._config.file_enabled:
-            json_path = str(Path.home()) + "/" + self._config.file_store
-            if not Path(json_path).is_dir():
-                try:
-                    os.makedirs(json_path)
-                except OSError:
-                    logger.error(_("Creation of the directory %s failed"), json_path)
-                    raise
-                else:
-                    logger.info(_("Successfully created the directory %s"), json_path)
-
-            if len(items_dict["data"]) > 0:
-                # Convert to json
-                logger.debug(_("Converting to json %d items"), len(items_dict["data"]))
-                items_json = json.dumps(
-                    items_dict, sort_keys=True, indent=4, separators=(",", ": ")
-                )
-                file_json_gz = json_path + controler + "_" + seq + ".json.gz"
-                logger.debug(_("Received data, storing json to %s"), file_json_gz)
-                with gzip.open(file_json_gz, "wb", 9) as g:
-                    g.write(items_json.encode())
-            return len(items_dict["data"])
-        else:
-            return 0
+            nb_item = self._file_backend.store(controler, seq, items_dict)
+        if self._config.db_enabled:
+            nb_item = self._db_backend.store(controler, seq, items_dict)
+        return nb_item
 
     def delete_obs(self, obs_list):
         """Delete observations stored in database.
@@ -107,8 +89,13 @@ class StoreFile:
         int
             Count of items deleted.
         """
-        # Not implemented
-        return None
+        # Call backends if needed
+        nb_delete = 0
+        if self._config.file_enabled:
+            nb_delete = self._file_backend.delete_obs(obs_list)
+        if self._config.db_enabled:
+            nb_delete = self._db_backend.delete_obs(obs_list)
+        return nb_delete
 
     def log(self, site, controler, error_count=0, http_status=0, comment=""):
         """Write download log entries to database.
@@ -127,7 +114,11 @@ class StoreFile:
             Optional comment, in free text.
 
         """
-        # Not implemented
+        # Call backends if needed
+        if self._config.file_enabled:
+            self._file_backend.log(site, controler, error_count, http_status, comment)
+        if self._config.db_enabled:
+            self._db_backend.log(site, controler, error_count, http_status, comment)
         return None
 
     def increment_log(self, site, taxo_group, last_ts):
@@ -142,7 +133,11 @@ class StoreFile:
         last_ts : timestamp
             Timestamp of last update of this taxo_group.
         """
-        # Not implemented
+        # Call backends if needed
+        if self._config.file_enabled:
+            self._file_backend.increment_log(site, taxo_group, last_ts)
+        if self._config.db_enabled:
+            self._db_backend.increment_log(site, taxo_group, last_ts)
         return None
 
     def increment_get(self, site, taxo_group):
@@ -160,5 +155,10 @@ class StoreFile:
         timestamp
             Timestamp of last update of this taxo_group.
         """
-        # Not implemented
-        return None
+        # Call backends if needed
+        incr = None
+        if self._config.file_enabled:
+            incr = self._file_backend.increment_get(site, taxo_group)
+        if self._config.db_enabled:
+            incr = self._db_backend.increment_get(site, taxo_group)
+        return incr

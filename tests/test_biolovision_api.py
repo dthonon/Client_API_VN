@@ -5,14 +5,13 @@ import json
 import logging
 import time
 from datetime import datetime, timedelta
-from pathlib import Path
-
-import pytest
-import requests
 
 from biolovision.api import (
     EntitiesAPI,
+    FamiliesAPI,
     FieldsAPI,
+    HTTPError,
+    IncorrectParameter,
     LocalAdminUnitsAPI,
     MaxChunksError,
     ObservationsAPI,
@@ -21,10 +20,12 @@ from biolovision.api import (
     SpeciesAPI,
     TaxoGroupsAPI,
     TerritorialUnitsAPI,
+    ValidationsAPI,
     HTTPError,
 )
 from export_vn.evnconf import EvnConf
-from export_vn.store_file import StoreFile
+
+import pytest
 
 # Using faune-ardeche or faune-isere site, that needs to be created first
 # SITE = "t07"
@@ -33,8 +34,8 @@ FILE = ".evn_test.yaml"
 
 # Get configuration for test site
 CFG = EvnConf(FILE).site_list[SITE]
-STORE_FILE = StoreFile(CFG)
 ENTITIES_API = EntitiesAPI(CFG)
+FAMILIES_API = FamiliesAPI(CFG)
 FIELDS_API = FieldsAPI(CFG)
 LOCAL_ADMIN_UNITS_API = LocalAdminUnitsAPI(CFG)
 OBSERVATIONS_API = ObservationsAPI(CFG)
@@ -44,6 +45,7 @@ SPECIES_API = SpeciesAPI(CFG)
 SPECIES_API_ERR = SpeciesAPI(CFG, max_retry=1, max_requests=1, max_chunks=1)
 TAXO_GROUPS_API = TaxoGroupsAPI(CFG)
 TERRITORIAL_UNITS_API = TerritorialUnitsAPI(CFG)
+VALIDATIONS_API = ValidationsAPI(CFG)
 
 
 def test_version():
@@ -54,6 +56,12 @@ def test_version():
 # --------------------------
 # Entities controler methods
 # --------------------------
+def test_entities_controler():
+    """Check controler name."""
+    ctrl = ENTITIES_API.controler
+    assert ctrl == "entities"
+
+
 def test_entities_get():
     """Get an entity."""
     entity = ENTITIES_API.api_get("2")
@@ -75,8 +83,39 @@ def test_entities_list():
 
 
 # --------------------------
-# Fields controler methods
+# Families controler methods
 # --------------------------
+def test_families_controler():
+    """Check controler name."""
+    ctrl = FAMILIES_API.controler
+    assert ctrl == "families"
+
+
+def test_families_get():
+    """Get a family."""
+    families = FAMILIES_API.api_get("1")
+    assert FAMILIES_API.transfer_errors == 0
+    assert families["data"][0]["generic"] == "0"
+    assert families["data"][0]["id"] == "1"
+
+
+def test_families_list():
+    """Get list of families."""
+    families = FAMILIES_API.api_list()
+    assert FAMILIES_API.transfer_errors == 0
+    assert len(families["data"]) >= 80
+    assert families["data"][0]["id"] == "1"
+
+
+# ------------------------
+# Fields controler methods
+# ------------------------
+def test_fields_controler():
+    """Check controler name."""
+    ctrl = FIELDS_API.controler
+    assert ctrl == "fields"
+
+
 def test_fields_get():
     """Get a field."""
     field = FIELDS_API.api_get("0")
@@ -95,7 +134,7 @@ def test_fields_list():
 # ------------------------------------
 #  Local admin units controler methods
 # ------------------------------------
-def test_controler():
+def test_local_admin_units_controler():
     """Check controler name."""
     ctrl = LOCAL_ADMIN_UNITS_API.controler
     assert ctrl == "local_admin_units"
@@ -181,6 +220,12 @@ def test_local_admin_units_list_1():
 # ------------------------------
 # Observations controler methods
 # ------------------------------
+def test_observations_controler():
+    """Check controler name."""
+    ctrl = OBSERVATIONS_API.controler
+    assert ctrl == "observations"
+
+
 def test_observations_diff():
     """Get list of diffs from last day."""
     since = (datetime.now() - timedelta(days=1)).strftime("%H:%M:%S %d.%m.%Y")
@@ -203,47 +248,33 @@ def test_observations_list_1():
 
 @pytest.mark.slow
 def test_observations_list_2_1():
-    """Get the list of sightings, from taxo_group 1, specie 518."""
-    file_json = Path.home() / CFG.file_store / "test_observations_list_2_1.json.gz"
-    if file_json.is_file():
-        file_json.unlink()
-    list = OBSERVATIONS_API.api_list("1", id_species="518", short_version="1")
+    """Get the list of sightings, from taxo_group 1, specie 218."""
+    list = OBSERVATIONS_API.api_list("1", id_species="218", short_version="1")
     logging.debug(
         "local test_observations_list_3_0 unit {} sightings/forms ".format(len(list))
     )
     assert OBSERVATIONS_API.transfer_errors == 0
-    assert len(list) > 0
-    STORE_FILE.store("test_observations_list_2", str(1), list)
-    assert file_json.is_file()
+    assert len(list["data"]) > 1
 
 
 def test_observations_list_3_0():
-    """Get the list of sightings, from taxo_group 1, specie 382."""
-    file_json = Path.home() / CFG.file_store / "test_observations_list_3_0.json.gz"
-    if file_json.is_file():
-        file_json.unlink()
-    list = OBSERVATIONS_API.api_list("1", id_species="382")
+    """Get the list of sightings, from taxo_group 1, specie 153."""
+    list = OBSERVATIONS_API.api_list("1", id_species="153")
     logging.debug(
         "local test_observations_list_3_0 unit {} sightings/forms ".format(len(list))
     )
     assert OBSERVATIONS_API.transfer_errors == 0
-    assert len(list) > 0
-    STORE_FILE.store("test_observations_list_3", str(0), list)
-    assert file_json.is_file()
+    assert len(list["data"]) > 1
 
 
 def test_observations_list_3_1():
-    """Get the list of sightings, from taxo_group 1, specie 382."""
-    file_json = Path.home() / CFG.file_store / "test_observations_list_3_1.json.gz"
-    if file_json.is_file():
-        file_json.unlink()
-    list = OBSERVATIONS_API.api_list("1", id_species="382", short_version="1")
+    """Get the list of sightings, from taxo_group 1, specie 153."""
+    list = OBSERVATIONS_API.api_list("1", id_species="153", short_version="1")
     logging.debug(
         "local test_observations_list_3_0 unit {} sightings/forms ".format(len(list))
     )
     assert OBSERVATIONS_API.transfer_errors == 0
-    assert len(list) > 0
-    STORE_FILE.store("test_observations_list_3", str(1), list)
+    assert len(list["data"]) > 1
 
 
 def test_observations_list_list():
@@ -668,6 +699,11 @@ def test_observations_get_short():
 
 def test_observations_search_1():
     """Query sightings, from taxo_group 18: Mantodea and date range."""
+    # Testing incorrect parameter
+    q_param = None
+    with pytest.raises(IncorrectParameter) as excinfo:  # noqa: F841
+        list = OBSERVATIONS_API.api_search(q_param)
+    # Testing real search
     q_param = {
         "period_choice": "range",
         "date_from": "01.09.2017",
@@ -872,33 +908,29 @@ def test_observations_update():
 
 
 def test_observations_create():
-    """Update a specific sighting."""
+    """Create a specific sighting."""
     data = {
-            "data": {
-                "sightings": [
-                    {
-                        "date": {
-                            "@timestamp": "1430258400",
-                        },
-                        "species": {
-                            "@id": "19703",
-                        },
-                        "observers": [
-                            {
-                                "@id": "33",
-                                "altitude": "230",
-                                "comment": "TEST API !!! à supprimer !!!",
-                                "coord_lat": "45.18724",
-                                "coord_lon": "5.735458",
-                                "precision": "precise",
-                                "count": "1",
-                                "estimation_code": "MINIMUM",
-                            }
-                        ],
-                    }
-                ]
-            }
+        "data": {
+            "sightings": [
+                {
+                    "date": {"@timestamp": "1430258400"},
+                    "species": {"@id": "19703"},
+                    "observers": [
+                        {
+                            "@id": "33",
+                            "altitude": "230",
+                            "comment": "TEST API !!! à supprimer !!!",
+                            "coord_lat": "45.18724",
+                            "coord_lon": "5.735458",
+                            "precision": "precise",
+                            "count": "1",
+                            "estimation_code": "MINIMUM",
+                        }
+                    ],
+                }
+            ]
         }
+    }
     if SITE == "t38":
         # First creation should succeed
         sighting = OBSERVATIONS_API.api_create(data)
@@ -920,6 +952,12 @@ def test_observations_create():
 # ----------------------------
 #  Observers controler methods
 # ----------------------------
+def test_observers_controler():
+    """Check controler name."""
+    ctrl = OBSERVERS_API.controler
+    assert ctrl == "observers"
+
+
 def test_observers_get():
     """Get a single observer."""
     if SITE == "t38":
@@ -931,6 +969,7 @@ def test_observers_get():
     logging.debug("Getting observer %s", o)
     observer = OBSERVERS_API.api_get(o)
     assert OBSERVERS_API.transfer_errors == 0
+    assert "data" in observer
     assert observer["data"][0]["id_universal"] == "11675"
     assert observer["data"][0]["email"] == "d.thonon9@gmail.com"
     assert "anonymous" in observer["data"][0]
@@ -978,6 +1017,7 @@ def test_observers_get():
     assert "work_phone" in observer["data"][0]
 
 
+@pytest.mark.slow
 def test_observers_list_all():
     """Get list of all observers."""
     observers_list = OBSERVERS_API.api_list()
@@ -1013,6 +1053,12 @@ def test_observers_list_diff():
 # -------------------------
 #  Places controler methods
 # -------------------------
+def test_places_controler():
+    """Check controler name."""
+    ctrl = PLACES_API.controler
+    assert ctrl == "places"
+
+
 def test_places_get():
     """Get a single place."""
     if SITE == "t38":
@@ -1115,6 +1161,12 @@ def test_places_list_1():
 # -------------------------
 # Species controler methods
 # -------------------------
+def test_species_controler():
+    """Check controler name."""
+    ctrl = SPECIES_API.controler
+    assert ctrl == "species"
+
+
 def test_species_get():
     """Get a single specie."""
     logging.debug("Getting species from taxo_group %s", "2")
@@ -1173,6 +1225,12 @@ def test_species_list_error():
 # ----------------------------
 # Taxo_group controler methods
 # ----------------------------
+def test_taxo_groups_controler():
+    """Check controler name."""
+    ctrl = TAXO_GROUPS_API.controler
+    assert ctrl == "taxo_groups"
+
+
 def test_taxo_groups_get():
     """Get a taxo_groups."""
     taxo_group = TAXO_GROUPS_API.api_get("2")
@@ -1209,6 +1267,12 @@ def test_taxo_groups_list():
 # -----------------------------------
 # Territorial_units controler methods
 # -----------------------------------
+def test_territorial_units_controler():
+    """Check controler name."""
+    ctrl = TERRITORIAL_UNITS_API.controler
+    assert ctrl == "territorial_units"
+
+
 def test_territorial_units_get():
     """Get a territorial_units."""
     if SITE == "t38":
@@ -1243,13 +1307,46 @@ def test_territorial_units_list():
     assert TERRITORIAL_UNITS_API.transfer_errors == 0
 
 
+# -----------------------------
+# Validations controler methods
+# -----------------------------
+def test_validations_controler():
+    """Check controler name."""
+    ctrl = VALIDATIONS_API.controler
+    assert ctrl == "validations"
+
+
+def test_validations_get():
+    """Get a validation."""
+    validation = VALIDATIONS_API.api_get("2")
+    assert VALIDATIONS_API.transfer_errors == 0
+    logging.debug("Validation 2:")
+    logging.debug(validation)
+    assert "data" in validation
+    assert len(validation["data"]) == 1
+    assert validation["data"][0]["id"] == "2"
+    assert isinstance(validation["data"][0]["committee"], str)
+    assert int(validation["data"][0]["date_start"]) >= 1
+    assert int(validation["data"][0]["date_start"]) <= 366
+    assert int(validation["data"][0]["date_stop"]) >= 1
+    assert int(validation["data"][0]["date_stop"]) <= 366
+    assert int(validation["data"][0]["id_species"]) >= 1
+
+
+def test_validations_list():
+    """Get list of validations."""
+    # Validations for the last days
+    validations = VALIDATIONS_API.api_list()
+    assert VALIDATIONS_API.transfer_errors == 0
+    assert len(validations["data"]) >= 1
+    logging.debug(f"Number of validations : {len(validations['data'])}")
+
+
 # -------------
 # Error testing
 # -------------
-@pytest.mark.skip
 def test_wrong_api():
     """Raise an exception."""
-    with pytest.raises(requests.HTTPError) as excinfo:  # noqa: F841
+    with pytest.raises(HTTPError) as excinfo:  # noqa: F841
         error = PLACES_API.wrong_api()  # noqa: F841
-    assert PLACES_API.transfer_errors != 0
     logging.debug("HTTPError code %s", excinfo)

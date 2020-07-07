@@ -1,0 +1,228 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "data": {
+            "$ref": "#/definitions/_data"
+        }
+    },
+    "required": [
+        "data"
+    ],
+    "title": "_observers",
+    "description": "Root of observers schema.",
+    "definitions": {
+        "_data": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "anonymous": {
+                        "$ref": "#/definitions/_zero_one"
+                    },
+                    "archive_account": {
+                        "$ref": "#/definitions/_zero_one"
+                    },
+                    "atlas_list":{
+                        "type": "string",
+                        "format": "integer"
+                    },
+                    "birth_year":{
+                        "type": "string",
+                        "format": "integer"
+                    },
+                    "bypass_purchase": {
+                        "$ref": "#/definitions/_zero_one"
+                    },
+                    "collectif": {
+                        "$ref": "#/definitions/_zero_one"
+                    },
+                    "debug_file_upload": {
+                        "$ref": "#/definitions/_zero_one"
+                    },
+                    "default_hidden": {
+                        "$ref": "#/definitions/_zero_one"
+                    },
+                    "display_order": {
+                        "type": "string",
+                        "enum": [
+                            "DATE_PLACE_SPECIES",
+                            "DATE_SPECIES_PLACE",
+                            "PLACE_DATE_SPECIES",
+                            "PLACE_SPECIES_DATE",
+                            "SPECIES_DATE_PLACE",
+                            "SPECIES_PLACE_DATE"
+                        ]
+                    },
+                    "email":{
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "external_id": {
+                        "type": "string",
+                        "format": "integer"
+                    },
+                    "has_search_access": {
+                        "$ref": "#/definitions/_zero_one"
+                    },
+                    "hide_email": {
+                        "$ref": "#/definitions/_zero_one"
+                    },
+                    "id":{
+                        "type": "string",
+                        "format": "integer"
+                    },
+                    "id_entity": {
+                        "type": "string",
+                        "format": "integer"
+                    }, 
+                    "id_universal": {
+                        "type": "string",
+                        "format": "integer"
+                    }, 
+                    "item_per_page_gallery": {
+                        "type": "string",
+                        "format": "integer"
+                    }, 
+                    "item_per_page_obs": {
+                        "type": "string",
+                        "format": "integer"
+                    }, 
+                    "langu": {
+                        "type": "string"
+                    },
+                    "last_inserted_data": {
+                        "$ref": "#/definitions/_date"
+                    },
+                    "last_login": {
+                        "$ref": "#/definitions/_date"
+                    },
+                    "lat": {
+                        "type": "string",
+                        "format": "number"
+                    }, 
+                    "lon": {
+                        "type": "string",
+                        "format": "number"
+                    }, 
+                    "mobile_phone": {
+                        "type": "string"
+                    },
+                    "mobile_use_form": {
+                        "$ref": "#/definitions/_zero_one"
+                    },
+                    "mobile_use_mortality": {
+                        "$ref": "#/definitions/_zero_one"
+                    },
+                    "mobile_use_playback": {
+                        "$ref": "#/definitions/_zero_one"
+                    },
+                    "mobile_use_protocol": {
+                        "$ref": "#/definitions/_zero_one"
+                    },
+                    "mobile_use_trace": {
+                        "$ref": "#/definitions/_zero_one"
+                    },
+                    "municipality": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "number": {
+                        "type": "string"
+                    },
+                    "photo": {
+                        "type": "string"
+                    },
+                    "postcode": {
+                        "type": "string"
+                    },
+                    "presentation": {
+                        "type": "string"
+                    },
+                    "private_phone": {
+                        "type": "string"
+                    },
+                    "private_website": {
+                        "type": "string"
+                    },
+                    "registration_date": {
+                        "$ref": "#/definitions/_date"
+                    },
+                    "show_precise": {
+                        "$ref": "#/definitions/_zero_one"
+                    },
+                    "species_order": {
+                        "type": "string",
+                        "enum": [
+                            "ALPHA",
+                            "SYSTEMATIC"
+                        ]
+                    },
+                    "street": {
+                        "type": "string"
+                    },
+                    "surname": {
+                        "type": "string"
+                    },
+                    "use_latin_search": {
+                        "type": "string",
+                        "enum": [
+                            "L",
+                            "N"
+                        ]
+                    },
+                    "work_phone": {
+                        "type": "string"
+                    }    
+                }
+            },
+            "title": "_data",
+            "description": "Top level element of observers data."
+        },
+        "_date": {
+            "oneOf": [
+                {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "@timestamp": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "@notime": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "@offset": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "@ISO8601": {
+                            "type": "string",
+                            "format": "date-time"
+                        },
+                        "#text": {
+                            "type": "string"
+                        }
+                    }
+                },
+                {
+                    "type": "string",
+                    "format": "integer"
+                }
+            ],
+            "title": "_date"
+        },
+        "_zero_one": {
+            "type": "string",
+            "enum": [
+                "0",
+                "1"
+            ]
+        }
+    }
+}

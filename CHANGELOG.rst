@@ -1,3 +1,60 @@
+Client-API-VN v2.7.0 (2020-07-06)
+=================================
+
+Features
+--------
+
+- Storing to database can be disabled.
+
+  Dowload_vn can now store to any or both Postgresql and File backend stores.
+
+  The database section is optional.
+  If present, a new key is required::
+
+      database:
+          # Enable storing to database
+          enabled: true (`#63 <https://framagit.org/lpo/Client_API_VN/issues/63>`_)
+- Validation controler is available in biolovision.api.
+   (`#74 <https://framagit.org/lpo/Client_API_VN/issues/74>`_)
+- In case of service unavailable error (HTTP 503), wait for longer delay
+  before retry. Delay can be changed by YAML parameter unavailable_delay. (`#94 <https://framagit.org/lpo/Client_API_VN/issues/94>`_)
+- Added field information from JSON download.
+
+  In field_group table :
+  - text_v, from 'text' attribute
+  - group_v, from 'group' attributé
+
+  in field_details table :
+  - text_v, from 'text' attribute (`#107 <https://framagit.org/lpo/Client_API_VN/issues/107>`_)
+- New commands added to update_vn.
+  - delete_attribute, to keep the observation and remove the attribute with the given path
+  - delete_observation, to remove completely the observation (`#113 <https://framagit.org/lpo/Client_API_VN/issues/113>`_)
+- Python version 3.8 is now supported. (`#116 <https://framagit.org/lpo/Client_API_VN/issues/116>`_)
+- Added families controler in api and download_vn. (`#120 <https://framagit.org/lpo/Client_API_VN/issues/120>`_)
+- A new application, validate, checks downloaded JSON files against its schema.
+  JSON schemas are used to document the dowloaded files. (`#123 <https://framagit.org/lpo/Client_API_VN/issues/123>`_)
+- update_vn adds "updated" date in the hidden_comment (`#127 <https://framagit.org/lpo/Client_API_VN/issues/127>`_)
+
+
+Bugfixes
+--------
+
+- Scheduled jobs are now terminated by Ctrl-C. 
+  There is still an OSError raised during shutdown. (`#96 <https://framagit.org/lpo/Client_API_VN/issues/96>`_)
+- Option --status does not start pending tasks. (`#112 <https://framagit.org/lpo/Client_API_VN/issues/112>`_)
+- update_vn accepts files with leading or trailing blanks in the values. (`#118 <https://framagit.org/lpo/Client_API_VN/issues/118>`_)
+- Long json_format was not enforced by transfer_vn. 
+  When json_format: long is defined in YAML file and file storage is enablesd,
+  files are now correctly containing long JSON data.
+  Note: long json_format is not compatible with PostgreSQL storage. (`#122 <https://framagit.org/lpo/Client_API_VN/issues/122>`_)
+
+
+Misc
+----
+
+- `#75 <https://framagit.org/lpo/Client_API_VN/issues/75>`_, `#104 <https://framagit.org/lpo/Client_API_VN/issues/104>`_, `#111 <https://framagit.org/lpo/Client_API_VN/issues/111>`_, `#114 <https://framagit.org/lpo/Client_API_VN/issues/114>`_, `#115 <https://framagit.org/lpo/Client_API_VN/issues/115>`_
+
+
 Client-API-VN v2.6.4 (2020-04-01)
 =================================
 
@@ -20,7 +77,7 @@ Bugfixes
 
 
 Client-API-VN v2.6.3 (2020-03-14)
-============================
+=================================
 
 Bugfixes
 --------

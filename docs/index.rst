@@ -4,21 +4,75 @@ Client_API_VN
 
 This is the documentation of **Client_API_VN**.
 
-.. include:: ../README.rst
-
-
-Contents
-========
+First steps
+===========
 
 .. toctree::
-   :maxdepth: 2
+   :caption: First steps
+   :hidden:
 
-   License <license>
-   Authors <authors>
-   Changelog <changelog>
-   API Reference <api/modules>
-   Applications Reference <api/export_vn>
-   Server Installation Guide <server_install>
+   readme
+
+:doc:`readme`
+   Understand what Client_API_VN can do.
+
+
+Applications documentation
+==========================
+
+.. toctree::
+   :caption: Applications documentation
+   :hidden:
+
+   apps/transfer_vn
+   apps/update_vn
+   apps/validate
+   apps/server_install
+
+:doc:`apps/transfer_vn`
+   export_vn: biolovision to Postgresql application reference
+
+:doc:`apps/update_vn`
+   update_vn: biolovison database update script reference
+
+:doc:`apps/validate`
+   validate: JSON schema validation application reference
+
+:doc:`apps/server_install`
+   Server Installation Guide
+
+API documentation
+=================
+
+.. toctree::
+   :caption: API documentation
+   :hidden:
+
+   api/modules
+
+:doc:`api/modules`
+   API Classes
+
+
+Other information
+=================
+
+.. toctree::
+   :caption: Other information
+   :hidden:
+
+   license
+   authors
+   changelog
+
+:doc:`license`
+   License
+
+:doc:`authors`
+   Authors
+
+:doc:`changelog`
+   Changelog
 
 
 Indices and tables
@@ -27,19 +81,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
-.. _toctree: http://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html
-.. _reStructuredText: http://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html
-.. _references: http://www.sphinx-doc.org/en/stable/markup/inline.html
-.. _Python domain syntax: http://sphinx-doc.org/domains.html#the-python-domain
-.. _Sphinx: http://www.sphinx-doc.org/
-.. _Python: http://docs.python.org/
-.. _Numpy: http://docs.scipy.org/doc/numpy
-.. _SciPy: http://docs.scipy.org/doc/scipy/reference/
-.. _matplotlib: https://matplotlib.org/contents.html#
-.. _Pandas: http://pandas.pydata.org/pandas-docs/stable
-.. _Scikit-Learn: http://scikit-learn.org/stable
-.. _autodoc: http://www.sphinx-doc.org/en/stable/ext/autodoc.html
-.. _Google style: https://github.com/google/styleguide/blob/gh-pages/pyguide.md#38-comments-and-docstrings
-.. _NumPy style: https://numpydoc.readthedocs.io/en/latest/format.html
-.. _classical style: http://www.sphinx-doc.org/en/stable/domains.html#info-field-lists

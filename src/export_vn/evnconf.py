@@ -45,7 +45,6 @@ class IncorrectParameter(EvnConfException):
 
 
 # Define PEP 484 types, TODO: refine type
-_CtrlType = Dict[str, Dict[str, Any]]
 _ConfType = Dict[str, Any]
 
 # Define strictyaml schema
@@ -55,6 +54,23 @@ _ConfSchema = Map(
         "controler": Map(
             {
                 "entities": Map(
+                    {
+                        "enabled": Bool(),
+                        "schedule": Map(
+                            {
+                                Optional("year"): Str(),
+                                Optional("month"): Str(),
+                                Optional("day"): Str(),
+                                Optional("week"): Str(),
+                                Optional("day_of_week"): Str(),
+                                Optional("hour"): Str(),
+                                Optional("minute"): Str(),
+                                Optional("second"): Str(),
+                            }
+                        ),
+                    }
+                ),
+                "families": Map(
                     {
                         "enabled": Bool(),
                         "schedule": Map(
@@ -207,6 +223,23 @@ _ConfSchema = Map(
                         ),
                     }
                 ),
+                "validations": Map(
+                    {
+                        "enabled": Bool(),
+                        "schedule": Map(
+                            {
+                                Optional("year"): Str(),
+                                Optional("month"): Str(),
+                                Optional("day"): Str(),
+                                Optional("week"): Str(),
+                                Optional("day_of_week"): Str(),
+                                Optional("hour"): Str(),
+                                Optional("minute"): Str(),
+                                Optional("second"): Str(),
+                            }
+                        ),
+                    }
+                ),
             }
         ),
         Optional("filter"): Map(
@@ -231,8 +264,9 @@ _ConfSchema = Map(
             ),
         ),
         Optional("file"): Map({"enabled": Bool(), "file_store": Str()}),
-        "database": Map(
+        Optional("database"): Map(
             {
+                "enabled": Bool(),
                 Optional("db_host", default="localhost"): Str(),
                 Optional("db_port", default=5432): Int(),
                 "db_name": Str(),
@@ -252,6 +286,7 @@ _ConfSchema = Map(
                 Optional("max_retry", default=5): Int(),
                 Optional("max_requests", default=0): Int(),
                 Optional("retry_delay", default=5): Int(),
+                Optional("unavailable_delay", default=600): Int(),
                 Optional("lru_maxsize", default=32): Int(),
                 Optional("pid_kp", default=0.0): Float(),
                 Optional("pid_ki", default=0.003): Float(),
@@ -260,18 +295,7 @@ _ConfSchema = Map(
                 Optional("pid_limit_min", default=5): Float(),
                 Optional("pid_limit_max", default=2000): Float(),
                 Optional("pid_delta_days", default=15): Int(),
-                Optional("db_worker_threads", default=2): Int(),
-                Optional("db_worker_queue", default=100000): Int(),
                 Optional("sched_executors", default=1): Int(),
-            }
-        ),
-        Optional("pne"): Map(
-            {
-                "data_url": Url(),
-                "db_schema": Str(),
-                "db_in_table": Str(),
-                "db_xref_table": Str(),
-                "observer_uid": Int(),
             }
         ),
     }
@@ -292,7 +316,7 @@ class EvnCtrlConf:
             else cfg["schedule"][param]
         )
 
-    def __init__(self, ctrl: str, config: _CtrlType) -> None:
+    def __init__(self, ctrl: str, config: _ConfType) -> None:
         self._ctrl = ctrl
 
         # Import parameters in properties
@@ -427,16 +451,35 @@ class EvnSiteConf:
                         logger.error(_("file:file_store must be defined"))
                         raise IncorrectParameter
 
-            self._db_host = config["database"]["db_host"]  # type: str
-            self._db_port = str(config["database"]["db_port"])  # type: str
-            self._db_name = config["database"]["db_name"]  # type: str
-            self._db_schema_import = config["database"]["db_schema_import"]  # type: str
-            self._db_schema_vn = config["database"]["db_schema_vn"]  # type: str
-            self._db_group = config["database"]["db_group"]  # type: str
-            self._db_user = config["database"]["db_user"]  # type: str
-            self._db_pw = config["database"]["db_pw"]  # type: str
-            self._db_secret_key = config["database"]["db_secret_key"]  # type: str
-            self._db_out_proj = config["database"]["db_out_proj"]  # type: str
+            self._database_enabled = False  # type: bool
+            self._db_host = ""  # type: str
+            self._db_port = ""  # type: str
+            self._db_name = ""  # type: str
+            self._db_schema_import = ""  # type: str
+            self._db_schema_vn = ""  # type: str
+            self._db_group = ""  # type: str
+            self._db_user = ""  # type: str
+            self._db_pw = ""  # type: str
+            self._db_secret_key = ""  # type: str
+            self._db_out_proj = ""  # type: str
+            if "database" in config:
+                self._database_enabled = (
+                    False
+                    if "enabled" not in config["database"]
+                    else config["database"]["enabled"]
+                )
+                self._db_host = config["database"]["db_host"]  # type: str
+                self._db_port = str(config["database"]["db_port"])  # type: str
+                self._db_name = config["database"]["db_name"]  # type: str
+                self._db_schema_import = config["database"][
+                    "db_schema_import"
+                ]  # type: str
+                self._db_schema_vn = config["database"]["db_schema_vn"]  # type: str
+                self._db_group = config["database"]["db_group"]  # type: str
+                self._db_user = config["database"]["db_user"]  # type: str
+                self._db_pw = config["database"]["db_pw"]  # type: str
+                self._db_secret_key = config["database"]["db_secret_key"]  # type: str
+                self._db_out_proj = config["database"]["db_out_proj"]  # type: str
 
             if "tuning" in config:
                 self._max_list_length = config["tuning"]["max_list_length"]  # type: int
@@ -444,6 +487,9 @@ class EvnSiteConf:
                 self._max_retry = config["tuning"]["max_retry"]  # type: int
                 self._max_requests = config["tuning"]["max_requests"]  # type: int
                 self._retry_delay = config["tuning"]["retry_delay"]  # type: int
+                self._unavailable_delay = config["tuning"][
+                    "unavailable_delay"
+                ]  # type: int
                 self._lru_maxsize = config["tuning"]["lru_maxsize"]  # type: int
                 self._pid_kp = config["tuning"]["pid_kp"]  # type: float
                 self._pid_ki = config["tuning"]["pid_ki"]  # type: float
@@ -452,10 +498,6 @@ class EvnSiteConf:
                 self._pid_limit_min = config["tuning"]["pid_limit_min"]  # type: float
                 self._pid_limit_max = config["tuning"]["pid_limit_max"]  # type: float
                 self._pid_delta_days = config["tuning"]["pid_delta_days"]  # type: int
-                self._db_worker_threads = config["tuning"][
-                    "db_worker_threads"
-                ]  # type: int
-                self._db_worker_queue = config["tuning"]["db_worker_queue"]  # type: int
                 self._sched_executors = config["tuning"]["sched_executors"]  # type: int
             else:
                 # Provide default values
@@ -464,6 +506,7 @@ class EvnSiteConf:
                 self._max_retry = 5  # type: int
                 self._max_requests = 0  # type: int
                 self._retry_delay = 5  # type: int
+                self._unavailable_delay = 600  # type: int
                 self._lru_maxsize = 32  # type: int
                 self._pid_kp = 0.0  # type: float
                 self._pid_ki = 0.003  # type: float
@@ -472,22 +515,7 @@ class EvnSiteConf:
                 self._pid_limit_min = 1  # type: float
                 self._pid_limit_max = 2000  # type: float
                 self._pid_delta_days = 15  # type: int
-                self._db_worker_threads = 2  # type: int
-                self._db_worker_queue = 100000  # type: int
                 self._sched_executors = 1  # type: int
-            if "pne" in config:
-                self._pne_data_url = config["pne"]["data_url"]  # type: str
-                self._pne_db_schema = config["pne"]["db_schema"]  # type: str
-                self._pne_db_in_table = config["pne"]["db_in_table"]  # type: str
-                self._pne_db_xref_table = config["pne"]["db_xref_table"]  # type: str
-                self._pne_observer_uid = config["pne"]["observer_uid"]  # type: int
-            else:
-                # Provide empty default values
-                self._pne_data_url = ""  # type: str
-                self._pne_db_schema = ""  # type: str
-                self._pne_db_in_table = ""  # type: str
-                self._pne_db_xref_table = ""  # type: str
-                self._pne_observer_uid = 0  # type: str
 
         except Exception:  # pragma: no cover
             logger.exception(_("Error creating %s configuration"), site)
@@ -562,6 +590,12 @@ class EvnSiteConf:
         return self._file_store
 
     @property
+    def db_enabled(self) -> bool:
+        """Return flag to enable or not database storage
+        on top of Postgresql storage."""
+        return self._database_enabled
+
+    @property
     def db_host(self) -> str:
         """Return hostname of Postgresql server."""
         return self._db_host
@@ -632,6 +666,11 @@ class EvnSiteConf:
         return self._retry_delay
 
     @property
+    def tuning_unavailable_delay(self) -> int:
+        """Return tuning parameter."""
+        return self._unavailable_delay
+
+    @property
     def tuning_max_requests(self) -> int:
         """Return tuning parameter."""
         return self._max_requests
@@ -677,44 +716,9 @@ class EvnSiteConf:
         return self._pid_delta_days
 
     @property
-    def tuning_db_worker_threads(self) -> int:
-        """Return tuning parameter."""
-        return self._db_worker_threads
-
-    @property
-    def tuning_db_worker_queue(self) -> int:
-        """Return tuning parameter."""
-        return self._db_worker_queue
-
-    @property
     def tuning_sched_executors(self) -> int:
         """Return tuning parameter."""
         return self._sched_executors
-
-    @property
-    def pne_data_url(self) -> int:
-        """Return PNE parameter."""
-        return self._pne_data_url
-
-    @property
-    def pne_db_schema(self) -> int:
-        """Return PNE parameter."""
-        return self._pne_db_schema
-
-    @property
-    def pne_db_in_table(self) -> int:
-        """Return PNE parameter."""
-        return self._pne_db_in_table
-
-    @property
-    def pne_db_xref_table(self) -> int:
-        """Return PNE parameter."""
-        return self._pne_db_xref_table
-
-    @property
-    def pne_observer_uid(self) -> int:
-        """Return PNE parameter."""
-        return self._pne_observer_uid
 
 
 class EvnConf:
@@ -738,9 +742,9 @@ class EvnConf:
             logger.critical(_("Error while reading YAML configuration %s"), file)
             raise
 
-        self._ctrl_list = {}  # type: _CtrlType
+        self._ctrl_list = {}  # type: _ConfType
         for ctrl in self._config["controler"]:
-            self._ctrl_list[ctrl] = cast(_CtrlType, EvnCtrlConf(ctrl, self._config))
+            self._ctrl_list[ctrl] = cast(_ConfType, EvnCtrlConf(ctrl, self._config))
 
         self._site_list = {}  # type: _ConfType
         for site in self._config["site"]:
@@ -752,9 +756,14 @@ class EvnConf:
         return __version__
 
     @property
-    def ctrl_list(self) -> _CtrlType:
+    def ctrl_list(self) -> _ConfType:
         """Return list of controler configurations."""
         return self._ctrl_list
+
+    @property
+    def site_list(self) -> _ConfType:
+        """Return list of site configurations."""
+        return self._site_list
 
     @property
     def site_list(self) -> _ConfType:

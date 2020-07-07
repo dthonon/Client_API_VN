@@ -1,0 +1,52 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "data": {
+            "$ref": "#/definitions/_data"
+        }
+    },
+    "required": [
+        "data"
+    ],
+    "title": "_families",
+    "description": "Root of families schema.",
+    "definitions": {
+        "_data": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "generic": {
+                        "$ref": "#/definitions/_zero_one"
+                    },
+                    "id":{
+                        "type": "string",
+                        "format": "integer"
+                    },
+                    "id_taxo_group": {
+                        "type": "string",
+                        "format": "integer"
+                    }, 
+                    "latin_name": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                }
+            },
+            "title": "_data",
+            "description": "Top level element of families data."
+        },
+        "_zero_one": {
+            "type": "string",
+            "enum": [
+                "0",
+                "1"
+            ]
+        }
+    }
+}

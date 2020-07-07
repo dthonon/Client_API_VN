@@ -5,21 +5,10 @@ version: 2
 python:
    version: 3.7
    install:
+      - requirements: requirements.txt
       - method: pip
         path: .
         extra_requirements:
             - docs
             - docutils
-            - beautifulsoup4
-            - psycopg2-binary
-            - pyexpander
-            - pyproj
-            - strictyaml
-            - requests
-            - requests-oauthlib
-            - setuptools_scm
-            - SQLAlchemy
-            - tabulate
-            - xmltodict
-            - yappi
             

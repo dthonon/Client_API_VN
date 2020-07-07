@@ -25,6 +25,7 @@ CRTL = "observations"
             "site": "tst1",
             "site_enabled": True,
             "file_enabled": True,
+            "db_enabled": True,
             "start_date": datetime(2019, 8, 1),
             "end_date": datetime(2019, 9, 1),
         },
@@ -33,6 +34,7 @@ CRTL = "observations"
             "site": "tst2",
             "site_enabled": False,
             "file_enabled": True,
+            "db_enabled": True,
             "start_date": datetime(2019, 8, 1),
             "end_date": datetime(2019, 9, 1),
         },
@@ -41,6 +43,7 @@ CRTL = "observations"
             "site": "tst3",
             "site_enabled": True,
             "file_enabled": False,
+            "db_enabled": False,
             "start_date": None,
             "end_date": None,
         },
@@ -49,6 +52,7 @@ CRTL = "observations"
             "site": "tst4",
             "site_enabled": True,
             "file_enabled": False,
+            "db_enabled": False,
             "start_date": None,
             "end_date": None,
         },
@@ -88,6 +92,7 @@ def test_ctrl_list(create_file):
     ctrl_list = cfg.ctrl_list
     for ctrl in {
         "entities",
+        "families",
         "fields",
         "local_admin_units",
         "observations",
@@ -96,6 +101,7 @@ def test_ctrl_list(create_file):
         "species",
         "taxo_groups",
         "territorial_units",
+        "validations",
     }:
         assert ctrl in ctrl_list
 
@@ -266,6 +272,12 @@ def test_file_store(create_file):
         assert s_cfg.file_store == ""
 
 
+def test_db_enabled(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, cfg_file, params = create_file
+    assert s_cfg.db_enabled == params["db_enabled"]
+
+
 def test_db_host(create_file):
     """ Test property."""
     cfg, c_cfg, s_cfg, cfg_file, params = create_file
@@ -338,6 +350,18 @@ def test_tuning_max_retry(create_file):
     assert s_cfg.tuning_max_retry == 5
 
 
+def test_tuning_retry_delay(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, cfg_file, params = create_file
+    assert s_cfg.tuning_retry_delay == 5
+
+
+def test_tuning_unavailable_delay(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, cfg_file, params = create_file
+    assert s_cfg.tuning_unavailable_delay == 600
+
+
 def test_tuning_max_requests(create_file):
     """ Test property."""
     cfg, c_cfg, s_cfg, cfg_file, params = create_file
@@ -392,12 +416,6 @@ def test_tuning_pid_delta_days(create_file):
     assert s_cfg.tuning_pid_delta_days == 15
 
 
-def test_tuning_db_worker_threads(create_file):
-    """ Test property."""
-    cfg, c_cfg, s_cfg, cfg_file, params = create_file
-    assert s_cfg.tuning_db_worker_threads == 2
-
-
 def test_tuning_sched_executors(create_file):
     """ Test property."""
     cfg, c_cfg, s_cfg, cfg_file, params = create_file
@@ -405,43 +423,3 @@ def test_tuning_sched_executors(create_file):
         assert s_cfg.tuning_sched_executors == 2
     else:
         assert s_cfg.tuning_sched_executors == 1
-
-def test_pne_data_url(create_file):
-    """ Test property."""
-    cfg, c_cfg, s_cfg, cfg_file, params = create_file
-    if params["site"] in ["tst1", "tst2"]:
-        assert s_cfg.pne_data_url == "https://portail.ecrins-parcnational.fr/xxx/admin/xportcsv.php"
-    else:
-        assert s_cfg.pne_data_url == ""
-
-def test_pne_db_schema(create_file):
-    """ Test property."""
-    cfg, c_cfg, s_cfg, cfg_file, params = create_file
-    if params["site"] in ["tst1", "tst2"]:
-        assert s_cfg.pne_db_schema == "import_pne"
-    else:
-        assert s_cfg.pne_db_schema == ""
-
-def test_pne_db_in_table(create_file):
-    """ Test property."""
-    cfg, c_cfg, s_cfg, cfg_file, params = create_file
-    if params["site"] in ["tst1", "tst2"]:
-        assert s_cfg.pne_db_in_table == "in_pne"
-    else:
-        assert s_cfg.pne_db_in_table == ""
-
-def test_pne_db_xref_table(create_file):
-    """ Test property."""
-    cfg, c_cfg, s_cfg, cfg_file, params = create_file
-    if params["site"] in ["tst1", "tst2"]:
-        assert s_cfg.pne_db_xref_table == "xref_pne"
-    else:
-        assert s_cfg.pne_db_xref_table == ""
-
-def test_pne_observer_uid(create_file):
-    """ Test property."""
-    cfg, c_cfg, s_cfg, cfg_file, params = create_file
-    if params["site"] in ["tst1", "tst2"]:
-        assert s_cfg.pne_observer_uid == 14250
-    else:
-        assert s_cfg.pne_observer_uid == 0

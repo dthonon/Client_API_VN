@@ -4,11 +4,11 @@ Test each method of store_file module.
 import gzip
 import json
 import logging
+import shutil
 from pathlib import Path
 
 from export_vn.evnconf import EvnConf
 from export_vn.store_file import StoreFile
-
 
 # Using faune-ardeche or faune-isere site, that needs to be created first
 SITE = "t07"
@@ -30,9 +30,9 @@ def test_version():
 # ------------
 def test_general_data_file_store():
     """Store general items_dict to file."""
-    file_json = str(Path.home()) + "/" + CFG.file_store + "general_data_1.json.gz"
-    if Path(file_json).is_file():
-        Path(file_json).unlink()
+    dir_json = str(Path.home()) + "/" + CFG.file_store
+    shutil.rmtree(dir_json)
+    file_json = dir_json + "general_data_1.json.gz"
     items_dict = {
         "data": [
             {
@@ -58,3 +58,4 @@ def test_general_data_file_store():
     with gzip.open(file_json, "rb") as gziped:
         items_dict = json.loads(gziped.read().decode("utf-8"))
     assert len(items_dict["data"]) == 2
+    STORE_FILE.delete_obs(None)

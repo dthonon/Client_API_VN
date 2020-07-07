@@ -16,9 +16,7 @@ from strictyaml import YAMLValidationError
 
 from . import _, __version__
 
-APP_NAME = "sample_app"
-
-logger = logging.getLogger(APP_NAME)
+logger = logging.getLogger(__name__)
 
 
 def arguments(args):
@@ -57,7 +55,6 @@ def arguments(args):
 
 def init(config: str):
     """Copy template YAML file to home directory."""
-    logger = logging.getLogger(APP_NAME + ".init")
     yaml_src = pkg_resources.resource_filename(__name__, "data/evn_template.yaml")
     yaml_dst = str(Path.home() / config)
     logger.info(_("Creating YAML configuration file %s, from %s"), yaml_dst, yaml_src)
@@ -74,11 +71,9 @@ def main(args):
     # Create $HOME/tmp directory if it does not exist
     (Path.home() / "tmp").mkdir(exist_ok=True)
 
-    # Define logger format and handlers
-    logger = logging.getLogger(APP_NAME)
     # create file handler which logs even debug messages
     fh = TimedRotatingFileHandler(
-        str(Path.home()) + "/tmp/" + APP_NAME + ".log",
+        str(Path.home()) + "/tmp/" + __name__ + ".log",
         when="midnight",
         interval=1,
         backupCount=100,
@@ -87,7 +82,7 @@ def main(args):
     ch = logging.StreamHandler()
     # create formatter and add it to the handlers
     formatter = logging.Formatter(
-        "%(asctime)s - %(levelname)s - %(name)s - %(message)s"
+        "%(asctime)s - %(levelname)s - %(module)s:%(funcName)s - %(message)s"
     )
     fh.setFormatter(formatter)
     ch.setFormatter(formatter)
@@ -101,6 +96,8 @@ def main(args):
     # Define verbosity
     if args.verbose:
         logger.setLevel(logging.DEBUG)
+    elif args.quiet:
+        logger.setLevel(logging.WARNING)
     else:
         logger.setLevel(logging.INFO)
 
@@ -115,15 +112,18 @@ def main(args):
 
     # Get configuration from file
     if not (Path.home() / args.config).is_file():
-        logger.critical(_("Configuration file %s does not exist"), str(Path.home() / args.config))
+        logger.critical(
+            _("Configuration file %s does not exist"), str(Path.home() / args.config)
+        )
         return None
     logger.info(_("Getting configuration data from %s"), args.config)
     try:
         cfg_ctrl = EvnConf(args.config)
-    except YAMLValidationError as error:
+    except YAMLValidationError:
         logger.critical(_("Incorrect content in YAML configuration %s"), args.config)
         sys.exit(0)
     cfg_site_list = cfg_ctrl.site_list
+    logger.debug(cfg_site_list)
 
     return None
 

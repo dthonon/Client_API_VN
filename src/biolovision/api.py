@@ -7,7 +7,7 @@ See details in each class.
 
 Each Biolovision controler is mapped to a python class.
 Class name is derived from controler name by removing '_' and using CamelCase.
-Methods names are similar to the corresponding API call, prefixed by 'api_'.
+Methods names are similar to the corresponding API call, prefixed by 'api\_'.
 For example, method 'api_list' in class 'LocalAdminUnits' will
 call 'local_admin_units'.
 
@@ -25,7 +25,7 @@ Biolovision API to Classes mapping:
 +===============================+=====================+
 | Taxo groups                   | TaxoGroupsAPI       |
 +-------------------------------+---------------------+
-| Families                      | NA                  |
+| Families                      | FamiliesAPI         |
 +-------------------------------+---------------------+
 | Species                       | SpeciesAPI          |
 +-------------------------------+---------------------+
@@ -39,6 +39,8 @@ Biolovision API to Classes mapping:
 +-------------------------------+---------------------+
 | Entities                      | EntitiesAPI         |
 +-------------------------------+---------------------+
+| Protocols                     | NA                  |
++-------------------------------+---------------------+
 | Export organizations          | NA                  |
 +-------------------------------+---------------------+
 | Observations                  | ObservationsAPI     |
@@ -51,7 +53,7 @@ Biolovision API to Classes mapping:
 +-------------------------------+---------------------+
 | Import files/Observations     | NA                  |
 +-------------------------------+---------------------+
-| Validations                   | NA                  |
+| Validations                   | ValidationsAPI      |
 +-------------------------------+---------------------+
 | Mortality informations        | NA                  |
 +-------------------------------+---------------------+
@@ -86,7 +88,7 @@ import time
 import urllib
 from functools import lru_cache
 
-from typing import Dict, List
+from typing import Dict
 import requests
 from requests_oauthlib import OAuth1
 
@@ -248,10 +250,7 @@ class BiolovisionAPI:
                 )
             elif method == "DELETE":
                 resp = requests.delete(
-                    url=protected_url,
-                    auth=self._oauth,
-                    params=payload,
-                    headers=headers
+                    url=protected_url, auth=self._oauth, params=payload, headers=headers
                 )
             else:
                 raise NotImplementedException
@@ -274,16 +273,25 @@ class BiolovisionAPI:
                     resp.status_code,
                     protected_url,
                 )
-                if self._http_status == 422:
+                if (self._http_status >= 400) and (
+                    self._http_status <= 499
+                ):  # pragma: no cover
                     # Unreceverable error
                     logger.critical(
                         _("Unreceverable error %s, raising exception"),
                         self._http_status,
                     )
                     raise HTTPError(resp.status_code)
-                self._transfer_errors += 1
-                time.sleep(self._config.tuning_retry_delay)
-                if self._transfer_errors > self._limits["max_retry"]:
+                self._transfer_errors += 1  # pragma: no cover
+                if self._http_status == 503:  # pragma: no cover
+                    # Service unavailable: long wait
+                    time.sleep(self._config.tuning_unavailable_delay)
+                else:
+                    # A transient error: short wait
+                    time.sleep(self._config.tuning_retry_delay)
+                if (
+                    self._transfer_errors > self._limits["max_retry"]
+                ):  # pragma: no cover
                     # Too many retries. Raising exception
                     logger.critical(
                         _("Too many error %s, raising exception"), self._transfer_errors
@@ -297,7 +305,7 @@ class BiolovisionAPI:
                 else:
                     try:
                         resp_chunk = resp.json()
-                    except json.decoder.JSONDecodeError:
+                    except json.decoder.JSONDecodeError:  # pragma: no cover
                         # Error during JSON decoding =>
                         # Logging error and no further processing of empty chunk
                         resp_chunk = json.loads("{}")
@@ -323,9 +331,10 @@ class BiolovisionAPI:
                                     "sightings"
                                 ]
                             else:
-                                data_rec["data"]["sightings"] = resp_chunk["data"][
-                                    "sightings"
-                                ]
+                                # logger.error(_("No 'sightings' in previous data"))
+                                # logger.error(data_rec)
+                                # logger.error(resp_chunk)
+                                data_rec["data"]["sightings"] = resp_chunk["data"]["sightings"]
                     if "forms" in resp_chunk["data"]:
                         observations = True
                         logger.debug(
@@ -338,7 +347,12 @@ class BiolovisionAPI:
                         else:
                             if "forms" in data_rec["data"]:
                                 data_rec["data"]["forms"] += resp_chunk["data"]["forms"]
-                            else:
+                            else:  # pragma: no cover
+                                # logger.error(
+                                #     _("Trying to add 'forms' to another data stream")
+                                # )
+                                # logger.error(data_rec)
+                                # logger.error(resp_chunk)
                                 data_rec["data"]["forms"] = resp_chunk["data"]["forms"]
 
                     if not observations:
@@ -352,10 +366,7 @@ class BiolovisionAPI:
                         else:
                             data_rec["data"] += resp_chunk["data"]
                 else:
-                    logger.debug(
-                        _("Received non-data response: %s"),
-                        resp_chunk
-                    )
+                    logger.debug(_("Received non-data response: %s"), resp_chunk)
                     if nb_chunks == 0:
                         data_rec = resp_chunk
                     else:
@@ -504,8 +515,10 @@ class BiolovisionAPI:
 class EntitiesAPI(BiolovisionAPI):
     """ Implement api calls to entities controler.
 
-    Methods
+    Methods:
+
     - api_get                - Return a single entity from the controler
+
     - api_list               - Return a list of entity from the controler
 
     """
@@ -514,11 +527,28 @@ class EntitiesAPI(BiolovisionAPI):
         super().__init__(config, "entities", max_retry, max_requests, max_chunks)
 
 
+class FamiliesAPI(BiolovisionAPI):
+    """ Implement api calls to families controler.
+
+    Methods:
+
+    - api_get                - Return a single entity from the controler
+
+    - api_list               - Return a list of entity from the controler
+
+    """
+
+    def __init__(self, config, max_retry=None, max_requests=None, max_chunks=None):
+        super().__init__(config, "families", max_retry, max_requests, max_chunks)
+
+
 class FieldsAPI(BiolovisionAPI):
     """ Implement api calls to fields controler.
 
-    Methods
+    Methods:
+
     - api_get                - Return a single entity from the controler
+
     - api_list               - Return a list of entity from the controler
 
     """
@@ -530,8 +560,10 @@ class FieldsAPI(BiolovisionAPI):
 class LocalAdminUnitsAPI(BiolovisionAPI):
     """ Implement api calls to local_admin_units controler.
 
-    Methods
+    Methods:
+
     - api_get                - Return a single entity from the controler
+
     - api_list               - Return a list of entity from the controler
 
     """
@@ -545,13 +577,20 @@ class LocalAdminUnitsAPI(BiolovisionAPI):
 class ObservationsAPI(BiolovisionAPI):
     """ Implement api calls to observations controler.
 
-    Methods
+    Methods:
+
     - api_get      - Return a single observations from the controler
+
     - api_list     - Return a list of observations from the controler
+
     - api_diff     - Return all changes in observations since a given date
+
     - api_search   - Search for observations based on parameter value
+
     - api_create   - Create a single observation
+
     - api_update   - Update an existing observation
+
     - api_delete   - Delete an observation
     """
 
@@ -726,8 +765,10 @@ class ObservationsAPI(BiolovisionAPI):
 class ObserversAPI(BiolovisionAPI):
     """ Implement api calls to observers controler.
 
-    Methods
+    Methods:
+
     - api_get                - Return a single entity from the controler
+
     - api_list               - Return a list of entity from the controler
 
     """
@@ -739,8 +780,10 @@ class ObserversAPI(BiolovisionAPI):
 class PlacesAPI(BiolovisionAPI):
     """ Implement api calls to places controler.
 
-    Methods
+    Methods:
+
     - api_get                - Return a single place from the controler
+
     - api_list               - Return a list of places from the controler
 
     """
@@ -752,8 +795,10 @@ class PlacesAPI(BiolovisionAPI):
 class SpeciesAPI(BiolovisionAPI):
     """ Implement api calls to species controler.
 
-    Methods
+    Methods:
+
     - api_get                - Return a single specie from the controler
+
     - api_list               - Return a list of species from the controler
 
     """
@@ -765,8 +810,10 @@ class SpeciesAPI(BiolovisionAPI):
 class TaxoGroupsAPI(BiolovisionAPI):
     """ Implement api calls to taxo_groups controler.
 
-    Methods
+    Methods:
+
     - api_get                - Return a single taxo group from the controler
+
     - api_list               - Return a list of taxo groups from the controler
 
     """
@@ -783,8 +830,10 @@ class TaxoGroupsAPI(BiolovisionAPI):
 class TerritorialUnitsAPI(BiolovisionAPI):
     """ Implement api calls to territorial_units controler.
 
-    Methods
+    Methods:
+
     - api_get                - Return a single territorial unit from the controler
+
     - api_list               - Return a list of territorial units from the controler
 
     """
@@ -798,3 +847,18 @@ class TerritorialUnitsAPI(BiolovisionAPI):
     def api_list(self, opt_params=None):
         """Return list of taxo groups, from cache or site."""
         return super().api_list()
+
+
+class ValidationsAPI(BiolovisionAPI):
+    """ Implement api calls to validations controler.
+
+    Methods:
+
+    - api_get                - Return a single validation from the controler
+    
+    - api_list               - Return the list of validations from the controler
+
+    """
+
+    def __init__(self, config, max_retry=None, max_requests=None, max_chunks=None):
+        super().__init__(config, "validations", max_retry, max_requests, max_chunks)

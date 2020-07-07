@@ -16,6 +16,7 @@ Modification are tracked in hidden_comment.
 """
 import argparse
 import csv
+import datetime
 import logging
 import shutil
 import sys
@@ -74,7 +75,7 @@ def arguments(args):
 def init(config: str):
     """Copy template YAML file to home directory."""
     logger = logging.getLogger(APP_NAME + ".init")
-    yaml_src = pkg_resources.resource_filename(__name__, "data/evn_template.yaml")
+    yaml_src = pkg_resources.resource_filename("export_vn", "data/evn_template.yaml")
     yaml_dst = str(Path.home() / config)
     logger.info(_("Creating YAML configuration file %s, from %s"), yaml_dst, yaml_src)
     shutil.copyfile(yaml_src, yaml_dst)
@@ -88,9 +89,8 @@ def update(cfg_ctrl, input: str):
 
     obs_api = dict()
     for site, cfg in cfg_site_list.items():
-        if cfg.enabled:
-            logger.info(_("Preparing update for site %s"), site)
-            obs_api[site] = ObservationsAPI(cfg)
+        logger.debug(_("Preparing update for site %s"), site)
+        obs_api[site] = ObservationsAPI(cfg)
 
     with open(input, newline="") as csvfile:
         reader = csv.reader(csvfile, delimiter=";")
@@ -99,46 +99,80 @@ def update(cfg_ctrl, input: str):
             nb_row += 1
             logger.debug(row)
             if nb_row == 1:
-                assert row[0] == "site"
-                assert row[1] == "id_universal"
-                assert row[2] == "path"
-                assert row[3] == "operation"
-                assert row[4] == "value"
+                # First row must be header
+                assert row[0].strip() == "site"
+                assert row[1].strip() == "id_universal"
+                assert row[2].strip() == "path"
+                assert row[3].strip() == "operation"
+                assert row[4].strip() == "value"
             else:
+                # Next rows are update commands
                 logger.info(
                     _("Site %s: updating sighting %s, operation %s"),
-                    row[0],
-                    row[1],
-                    row[3],
+                    row[0].strip(),
+                    row[1].strip(),
+                    row[3].strip(),
                 )
-                sighting = obs_api[row[0]].api_get(row[1], short_version="1")
-                logger.debug(
-                    _("Before: %s"), sighting["data"]["sightings"][0]["observers"][0]
-                )
-                repl = row[2].replace("$", "sighting")
-                try:
-                    old_attr = eval(repl)
-                except KeyError:
-                    old_attr = None
-                try:
-                    msg = sighting["data"]["sightings"][0]["observers"][0][
-                        "hidden_comment"
-                    ]
-                except KeyError:
-                    msg = ""
-                msg = msg + json.dumps(
-                    {"op": row[3], "path": row[2], "old": old_attr, "new": row[4]}
-                )
-                exec("{} = {}".format(repl, row[4]))
-                exec(
-                    """sighting['data']['sightings'][0]['observers'][0]['hidden_comment'] = '{}'""".format(
-                        msg.replace('"', '\\"').replace("'", "\\'")
+                if row[3].strip() not in [
+                    "delete_observation",
+                    "delete_attribute",
+                    "replace",
+                ]:
+                    logger.error(_("Unknown operation in row, ignored %s"), row)
+                elif row[3].strip() == "delete_observation":
+                    obs_api[row[0].strip()].api_delete(row[1].strip())
+                else:
+                    # Get current observation
+                    sighting = obs_api[row[0].strip()].api_get(
+                        row[1].strip(), short_version="1"
                     )
-                )
-                logger.debug(
-                    _("After: %s"), sighting["data"]["sightings"][0]["observers"][0]
-                )
-                obs_api[row[0]].api_update(row[1], sighting)
+                    logger.debug(
+                        _("Before: %s"),
+                        sighting["data"]["sightings"][0]["observers"][0],
+                    )
+                    # JSON path relative to "sighting"
+                    repl = row[2].strip().replace("$", "sighting")
+                    # Get current value, if exists
+                    try:
+                        old_attr = eval(repl)
+                    except KeyError:
+                        old_attr = None
+                    # Get current hidden_comment, if exists
+                    try:
+                        msg = sighting["data"]["sightings"][0]["observers"][0][
+                            "hidden_comment"
+                        ]
+                    except KeyError:  # pragma: no cover
+                        msg = ""
+                    # Prepare logging message to be appended to hidden_comment
+                    msg = msg + json.dumps(
+                        {
+                            "updated": datetime.datetime.now().strftime(
+                                "%Y-%m-%d %H:%M:%S"
+                            ),
+                            "op": row[3].strip(),
+                            "path": row[2].strip(),
+                            "old": old_attr,
+                            "new": row[4].strip(),
+                        }
+                    )
+                    if row[3].strip() == "replace":
+                        exec("{} = {}".format(repl, row[4].strip()))
+                    else:
+                        try:
+                            exec("del {}".format(repl))
+                        except KeyError:  # pragma: no cover
+                            pass
+                    exec(
+                        """sighting['data']['sightings'][0]['observers'][0]['hidden_comment'] = '{}'""".format(
+                            msg.replace('"', '\\"').replace("'", "\\'")
+                        )
+                    )
+                    logger.debug(
+                        _("After: %s"), sighting["data"]["sightings"][0]["observers"][0]
+                    )
+                    # Update to remote site
+                    obs_api[row[0].strip()].api_update(row[1].strip(), sighting)
 
 
 def main(args):
@@ -159,15 +193,15 @@ def main(args):
         interval=1,
         backupCount=100,
     )
-    # create console handler with a higher log level
+    # Create console handler with a higher log level
     ch = logging.StreamHandler()
-    # create formatter and add it to the handlers
+    # Create formatter and add it to the handlers
     formatter = logging.Formatter(
         "%(asctime)s - %(levelname)s - %(name)s - %(message)s"
     )
     fh.setFormatter(formatter)
     ch.setFormatter(formatter)
-    # add the handlers to the logger
+    # Add the handlers to the logger
     logger.addHandler(fh)
     logger.addHandler(ch)
 
@@ -194,18 +228,18 @@ def main(args):
         logger.critical(
             _("Configuration file %s does not exist"), str(Path.home() / args.config)
         )
-        return None
+        raise FileNotFoundError
     logger.info(_("Getting configuration data from %s"), args.config)
     try:
         cfg_ctrl = EvnConf(args.config)
-    except YAMLValidationError as error:
+    except YAMLValidationError:
         logger.critical(_("Incorrect content in YAML configuration %s"), args.config)
-        sys.exit(0)
+        raise
 
     # Update Biolovision site from update file
     if not Path(args.input).is_file():
         logger.critical(_("Input file %s does not exist"), str(Path(args.input)))
-        return None
+        raise FileNotFoundError
     update(cfg_ctrl, args.input)
 
     return None

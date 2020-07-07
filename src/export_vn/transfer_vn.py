@@ -5,7 +5,9 @@ Program managing VisioNature export to Postgresql database
 """
 import argparse
 import logging
+import os
 import shutil
+import signal
 import subprocess
 import sys
 import time
@@ -14,8 +16,13 @@ from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
 import pkg_resources
-import pyexpander.lib as pyexpander
+import psutil
 import requests
+from bs4 import BeautifulSoup
+from jinja2 import Environment, PackageLoader
+from pytz import utc
+from sqlalchemy.engine.url import URL
+
 import yappi
 from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED, EVENT_JOB_SUBMITTED
 from apscheduler.executors.pool import ProcessPoolExecutor
@@ -23,9 +30,9 @@ from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers import SchedulerNotRunningError
 from apscheduler.schedulers.background import BackgroundScheduler
-from bs4 import BeautifulSoup
 from export_vn.download_vn import (
     Entities,
+    Families,
     Fields,
     LocalAdminUnits,
     Observations,
@@ -34,11 +41,12 @@ from export_vn.download_vn import (
     Species,
     TaxoGroup,
     TerritorialUnits,
+    Validations,
 )
 from export_vn.evnconf import EvnConf
+from export_vn.store_all import StoreAll
+from export_vn.store_file import StoreFile
 from export_vn.store_postgresql import PostgresqlUtils, StorePostgresql
-from pytz import utc
-from sqlalchemy.engine.url import URL
 from strictyaml import YAMLValidationError
 from tabulate import tabulate
 
@@ -46,6 +54,7 @@ from . import _, __version__
 
 CTRL_DEFS = {
     "entities": Entities,
+    "families": Families,
     "fields": Fields,
     "local_admin_units": LocalAdminUnits,
     "observations": Observations,
@@ -54,6 +63,7 @@ CTRL_DEFS = {
     "species": Species,
     "taxo_groups": TaxoGroup,
     "territorial_units": TerritorialUnits,
+    "validations": Validations,
 }
 logger = logging.getLogger("transfer_vn")
 
@@ -61,18 +71,20 @@ logger = logging.getLogger("transfer_vn")
 class Jobs:
     def _listener(self, event):
         if event.code == EVENT_JOB_SUBMITTED:
-            logger.debug("The job %s started", event.job_id)
+            logger.debug(_("The job %s started"), event.job_id)
             self._job_set.add(event.job_id)
         else:
             if event.job_id in self._job_set:
                 self._job_set.remove(event.job_id)
             else:
-                logger.error(_("Job %s not found in job_set"), event.job_id)
+                logger.error(
+                    _("Job %s not found in job_set"), event.job_id
+                )  # pragma: no cover
             if event.exception:
-                logger.error("The job %s crashed", event.job_id)
+                logger.error(_("The job %s crashed"), event.job_id)  # pragma: no cover
             else:
-                logger.debug("The job %s worked", event.job_id)
-        logger.debug("Job set: %s", self._job_set)
+                logger.debug(_("The job %s worked"), event.job_id)
+        logger.debug(_("Job set: %s"), self._job_set)
 
     def __init__(self, url="sqlite:///jobs.sqlite", nb_executors=1):
         """Initialize class.
@@ -87,7 +99,7 @@ class Jobs:
         """
         self._job_set = set()
         logger.info(
-            "Creating scheduler, %s executors, storing in %s",
+            _("Creating scheduler, %s executors, storing in %s"),
             nb_executors,
             str(url)[0 : str(url).find(":")],
         )
@@ -112,15 +124,46 @@ class Jobs:
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        logger.info("Shutting down scheduler in __atexit__, if still running")
+        logger.info(_("Shutting down scheduler in __atexit__, if still running"))
+        try:
+            self._scheduler.shutdown(wait=False)
+        except Exception:
+            pass
+
+    def shutdown(self):
+        logger.info(_("Shutting down scheduler"))
+        try:
+            self._scheduler.shutdown()
+        except SchedulerNotRunningError:  # pragma: no cover
+            pass
+
+    def _handler(self, signum, frame):  # pragma: no cover
+        logger.error(_("Signal handler called with signal %s"), signum)
         try:
             self._scheduler.shutdown(wait=False)
         except SchedulerNotRunningError:
             pass
+        try:
+            parent_id = os.getpid()
+            for child in psutil.Process(parent_id).children(recursive=True):
+                child.kill()
+        except Exception:
+            pass
+        sys.exit(1)
 
-    def start(self):
-        logger.debug("Starting scheduler")
-        self._scheduler.start()
+    def start(self, paused=False):
+        logger.debug(_("Starting scheduler, paused=%s"), paused)
+        self._scheduler.start(paused)
+        signal.signal(signal.SIGINT, self._handler)
+        # signal.signal(signal.SIGTERM, self._handler)
+
+    # def pause(self):
+    #     logger.debug(_("Pausing scheduler"))
+    #     self._scheduler.pause()
+
+    def resume(self):
+        logger.debug(_("Resuming scheduler"))
+        self._scheduler.resume()
 
     def remove_all_jobs(self):
         logger.debug(_("Removing all scheduled jobs"))
@@ -176,28 +219,21 @@ class Jobs:
     def count_jobs(self):
         # self._scheduler.print_jobs()
         jobs = self._scheduler.get_jobs()
-        logger.debug("Number of jobs scheduled, %s", len(jobs))
+        logger.debug(_("Number of jobs scheduled, %s"), len(jobs))
         for j in jobs:
             logger.debug(
-                "Job %s, scheduled in: %s",
+                _("Job %s, scheduled in: %s"),
                 j.id,
                 j.next_run_time - datetime.now(timezone.utc),
             )
-        logger.debug("Number of jobs running, %s", len(self._job_set))
+        logger.debug(_("Number of jobs running, %s"), len(self._job_set))
         return len(self._job_set)
-
-    def shutdown(self):
-        logger.info("Shutting down scheduler")
-        try:
-            self._scheduler.shutdown()
-        except SchedulerNotRunningError:
-            pass
 
     def print_jobs(self):
         jobs = self._scheduler.get_jobs()
-        logger.info("Number of jobs scheduled, %s", len(jobs))
+        logger.info(_("Number of jobs scheduled, %s"), len(jobs))
         for j in jobs:
-            logger.info("Job %s, scheduled: %s", j.id, j.trigger)
+            logger.info(_("Job %s, scheduled: %s"), j.id, j.trigger)
 
 
 def db_config(cfg):
@@ -304,12 +340,13 @@ def init(file: str):
 
 def col_table_create(cfg, sql_quiet, client_min_message):
     """Create the column based tables, by running psql script."""
-    in_sql = pkg_resources.resource_filename(__name__, "sql/create-vn-tables.sql")
-    with open(in_sql, "r") as myfile:
-        template = myfile.read()
-    (cmd, exp_globals) = pyexpander.expandToStr(
-        template, external_definitions=db_config(cfg)
+    logger = logging.getLogger("transfer_vn")
+    logger.debug(_("Creating SQL file from template"))
+    env = Environment(
+        loader=PackageLoader("export_vn", "sql"), keep_trailing_newline=True,
     )
+    template = env.get_template("create-vn-tables.sql")
+    cmd = template.render(cfg=db_config(cfg))
     tmp_sql = Path.home() / "tmp/create-vn-tables.sql"
     with tmp_sql.open(mode="w") as myfile:
         myfile.write(cmd)
@@ -333,7 +370,7 @@ def col_table_create(cfg, sql_quiet, client_min_message):
             check=True,
             shell=True,
         )
-    except subprocess.CalledProcessError as err:
+    except subprocess.CalledProcessError as err:  # pragma: no cover
         logger.error(err)
 
     return None
@@ -342,9 +379,10 @@ def col_table_create(cfg, sql_quiet, client_min_message):
 def full_download_1(ctrl, cfg_crtl_list, cfg):
     """Downloads from a single controler."""
     logger = logging.getLogger("transfer_vn")
-    logger.debug("Enter full_download_1: {}".format(ctrl.__name__))
-    with StorePostgresql(cfg) as store_pg:
-        downloader = ctrl(cfg, store_pg)
+    logger.debug(_("Enter full_download_1: %s"), ctrl.__name__)
+    with StorePostgresql(cfg) as store_pg, StoreFile(cfg) as store_f:
+        store_all = StoreAll(cfg, db_backend = store_pg, file_backend = store_f)
+        downloader = ctrl(cfg, store_all)
         if cfg_crtl_list[downloader.name].enabled:
             logger.info(
                 _("%s => Starting download using controler %s"),
@@ -360,6 +398,7 @@ def full_download_1(ctrl, cfg_crtl_list, cfg):
                     method="search",
                     by_specie=False,
                     taxo_groups_ex=cfg.taxo_exclude,
+                    short_version= (1 if cfg.json_format == "short" else 0),
                 )
             else:
                 downloader.store()
@@ -388,8 +427,9 @@ def full_download(cfg_ctrl):
     jobs_o = Jobs(url=URL(**db_url), nb_executors=cfg.tuning_sched_executors)
     with jobs_o as jobs:
         # Cleanup any existing job
-        jobs.start()
+        jobs.start(paused=True)
         jobs.remove_all_jobs()
+        jobs.resume()
         # Download field only once
         jobs.add_job_once(job_fn=full_download_1, args=[Fields, cfg_crtl_list, cfg])
         # Looping on sites for other controlers
@@ -397,16 +437,19 @@ def full_download(cfg_ctrl):
             if cfg.enabled:
                 logger.info(_("Scheduling work for site %s"), cfg.site)
                 jobs.add_job_once(
-                    job_fn=full_download_1, args=[TaxoGroup, cfg_crtl_list, cfg]
-                )
-                jobs.add_job_once(
                     job_fn=full_download_1, args=[Entities, cfg_crtl_list, cfg]
                 )
                 jobs.add_job_once(
-                    job_fn=full_download_1, args=[TerritorialUnits, cfg_crtl_list, cfg]
+                    job_fn=full_download_1, args=[Families, cfg_crtl_list, cfg]
                 )
                 jobs.add_job_once(
                     job_fn=full_download_1, args=[LocalAdminUnits, cfg_crtl_list, cfg]
+                )
+                jobs.add_job_once(
+                    job_fn=full_download_1, args=[Observations, cfg_crtl_list, cfg]
+                )
+                jobs.add_job_once(
+                    job_fn=full_download_1, args=[Observers, cfg_crtl_list, cfg]
                 )
                 jobs.add_job_once(
                     job_fn=full_download_1, args=[Places, cfg_crtl_list, cfg]
@@ -415,10 +458,13 @@ def full_download(cfg_ctrl):
                     job_fn=full_download_1, args=[Species, cfg_crtl_list, cfg]
                 )
                 jobs.add_job_once(
-                    job_fn=full_download_1, args=[Observers, cfg_crtl_list, cfg]
+                    job_fn=full_download_1, args=[TaxoGroup, cfg_crtl_list, cfg]
                 )
                 jobs.add_job_once(
-                    job_fn=full_download_1, args=[Observations, cfg_crtl_list, cfg]
+                    job_fn=full_download_1, args=[TerritorialUnits, cfg_crtl_list, cfg]
+                )
+                jobs.add_job_once(
+                    job_fn=full_download_1, args=[Validations, cfg_crtl_list, cfg]
                 )
             else:
                 logger.info(_("Skipping site %s"), site)
@@ -435,9 +481,10 @@ def full_download(cfg_ctrl):
 def increment_download_1(ctrl, cfg_crtl_list, cfg):
     """Download incremental updates from one site."""
     logger = logging.getLogger("transfer_vn")
-    logger.debug("Enter increment_download_1: {}".format(ctrl.__name__))
-    with StorePostgresql(cfg) as store_pg:
-        downloader = ctrl(cfg, store_pg)
+    logger.debug(_("Enter increment_download_1: %s"), ctrl.__name__)
+    with StorePostgresql(cfg) as store_pg, StoreFile(cfg) as store_f:
+        store_all = StoreAll(cfg, db_backend = store_pg, file_backend = store_f)
+        downloader = ctrl(cfg, store_all)
         if cfg_crtl_list[downloader.name].enabled:
             logger.info(
                 _("%s => Starting incremental download using controler %s"),
@@ -527,8 +574,8 @@ def increment_schedule(cfg_ctrl):
         else:
             logger.info(_("Skipping site %s"), site)
 
-    # Start scheduler and wait for jobs to finish
-    jobs.start()
+    # Print status
+    jobs.start(paused=True)
     jobs.print_jobs()
     jobs.shutdown()
 
@@ -552,9 +599,8 @@ def status(cfg_ctrl):
         "database": "postgres",
     }
     jobs = Jobs(url=URL(**db_url), nb_executors=cfg.tuning_sched_executors)
-    jobs.start()
+    jobs.start(paused=True)
     jobs.print_jobs()
-    jobs.shutdown()
 
 
 def count_observations(cfg_ctrl):
@@ -614,7 +660,7 @@ def count_observations(cfg_ctrl):
                         tablefmt="psql",
                     )
                 )
-        except:
+        except Exception:  # pragma: no cover
             logger.error(_("Can not retrieve informations from %s"), cfg.site)
 
     return None
@@ -681,15 +727,20 @@ def main(args):
     if not (Path.home() / args.file).is_file():
         logger.critical(_("File %s does not exist"), str(Path.home() / args.file))
         return None
-
     logger.info(_("Getting configuration data from %s"), args.file)
     try:
         cfg_ctrl = EvnConf(args.file)
-    except YAMLValidationError as error:
+    except YAMLValidationError:
         logger.critical(_("Incorrect content in YAML configuration %s"), args.file)
         sys.exit(0)
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
+    # Check configuration consistency
+    if cfg.db_enabled and cfg.json_format != "short":
+        logger.critical(_("Storing to Postgresql cannot use long json_format."))
+        logger.critical(_("Please modify YAML configuration and restart."))
+        sys.exit(0)
+
 
     manage_pg = PostgresqlUtils(cfg)
 
@@ -706,7 +757,7 @@ def main(args):
         manage_pg.create_json_tables()
 
     if args.col_tables_create:
-        logger.info(_("Creating or recreating vn colums based files"))
+        logger.info(_("Creating or recreating vn columns based files"))
         col_table_create(cfg, sql_quiet, client_min_message)
 
     if args.full:

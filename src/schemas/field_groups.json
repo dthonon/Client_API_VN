@@ -1,0 +1,60 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "data": {
+            "$ref": "#/definitions/_data"
+        }
+    },
+    "required": [
+        "data"
+    ],
+    "title": "_field_groups ",
+    "description": "Root of field_groups schema.",
+    "definitions": {
+        "_data": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "default":{
+                        "type": "string",
+                        "format": "integer"
+                    },
+                    "empty_choice":{
+                        "type": "string",
+                        "format": "integer"
+                    },
+                    "group":{
+                        "type": "string",
+                        "format": "integer"
+                    },
+                    "mandatory": {
+                        "$ref": "#/definitions/_zero_one"
+                    },
+                    "id":{
+                        "type": "string",
+                        "format": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "text": {
+                        "type": "string"
+                    }
+                }
+            },
+            "title": "_data",
+            "description": "Top level element of field_groups data."
+        },
+        "_zero_one": {
+            "type": "string",
+            "enum": [
+                "0",
+                "1"
+            ]
+        }
+    }
+}

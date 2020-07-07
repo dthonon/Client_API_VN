@@ -11,8 +11,6 @@ Properties
 
 """
 import logging
-import queue
-import threading
 from datetime import datetime, date
 from uuid import uuid4
 
@@ -33,7 +31,6 @@ from sqlalchemy.dialects.postgresql import ARRAY, JSONB, insert
 from sqlalchemy.engine.url import URL
 from sqlalchemy.sql import and_
 
-from export_vn.store_file import StoreFile
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 from . import _, __version__
@@ -46,7 +43,7 @@ class StorePostgresqlException(Exception):
 
 
 class ObservationItem:
-    """Properties of an observation, for transmission in Queue."""
+    """Properties of an observation, for writing to DB."""
 
     def __init__(self, site, metadata, conn, transformer, elem, form=None):
         """Item elements.
@@ -160,17 +157,6 @@ def store_1_observation(item):
     return None
 
 
-def observation_worker(i, q):
-    """Workers running in parallel to update database."""
-    while True:
-        item = q.get()
-        if item is None:
-            break
-        store_1_observation(item)
-        q.task_done()
-    return None
-
-
 class PostgresqlUtils:
     """Provides create and delete Postgresql database method."""
 
@@ -191,12 +177,16 @@ class PostgresqlUtils:
             Data returned from API call.
 
         """
-        if (self._config.db_schema_import + "." + name) not in self._metadata.tables:
-            logger.info(_("Table %s not found => Creating it"), name)
-            table = Table(name, self._metadata, *cols)
-            table.create(self._db)
-        else:
-            logger.info(_("Table %s already exists => Keeping it"), name)
+        # Store to database, if enabled
+        if self._config.db_enabled:
+            if (
+                self._config.db_schema_import + "." + name
+            ) not in self._metadata.tables:
+                logger.info(_("Table %s not found => Creating it"), name)
+                table = Table(name, self._metadata, *cols)
+                table.create(self._db)
+            else:
+                logger.info(_("Table %s already exists => Keeping it"), name)
         return None
 
     def _create_download_log(self):
@@ -235,6 +225,17 @@ class PostgresqlUtils:
         )
         return None
 
+    def _create_families_json(self):
+        """Create families_json table if it does not exist."""
+        self._create_table(
+            "families_json",
+            Column("id", Integer, nullable=False),
+            Column("site", String, nullable=False),
+            Column("item", JSONB, nullable=False),
+            PrimaryKeyConstraint("id", "site", name="families_json_pk"),
+        )
+        return None
+
     def _create_field_groups_json(self):
         """Create field_groups_json table if it does not exist."""
         self._create_table(
@@ -251,7 +252,7 @@ class PostgresqlUtils:
             "field_details_json",
             Column("id", String, nullable=False),
             Column("item", JSONB, nullable=False),
-            PrimaryKeyConstraint("id", name="field_detais_json_pk"),
+            PrimaryKeyConstraint("id", name="field_details_json_pk"),
         )
         return None
 
@@ -360,188 +361,210 @@ class PostgresqlUtils:
         )
         return None
 
+    def _create_validations_json(self):
+        """Create validations_json table if it does not exist."""
+        self._create_table(
+            "validations_json",
+            Column("id", Integer, nullable=False),
+            Column("site", String, nullable=False),
+            Column("item", JSONB, nullable=False),
+            PrimaryKeyConstraint("id", "site", name="validations_json_pk"),
+        )
+        return None
+
+
     # ---------------
     # External methods
     # ---------------
     def create_database(self):
         """Create database, roles..."""
-        # Connect first using postgres database, that always exists
-        logger.info(
-            _("Connecting to postgres database, to create %s database"),
-            self._config.db_name,
-        )
-        db_url = {
-            "drivername": "postgresql+psycopg2",
-            "username": self._config.db_user,
-            "password": self._config.db_pw,
-            "host": self._config.db_host,
-            "port": self._config.db_port,
-            "database": "postgres",
-        }
-        db = create_engine(URL(**db_url), echo=False)
-        conn = db.connect()
-        conn.connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+        # Store to database, if enabled
+        if self._config.db_enabled:
+            # Connect first using postgres database, that always exists
+            logger.info(
+                _("Connecting to postgres database, to create %s database"),
+                self._config.db_name,
+            )
+            db_url = {
+                "drivername": "postgresql+psycopg2",
+                "username": self._config.db_user,
+                "password": self._config.db_pw,
+                "host": self._config.db_host,
+                "port": self._config.db_port,
+                "database": "postgres",
+            }
+            db = create_engine(URL(**db_url), echo=False)
+            conn = db.connect()
+            conn.connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
 
-        # Group role:
-        text = """
-            SELECT FROM pg_catalog.pg_roles WHERE rolname = '{db_group}'
-            """.format(
-            db_group=self._config.db_group
-        )
-        result = conn.execute(text)
-        row = result.fetchone()
-        if row is None:
+            # Group role:
             text = """
-                CREATE ROLE {db_group} NOLOGIN NOSUPERUSER INHERIT NOCREATEDB
-                NOCREATEROLE NOREPLICATION
+                SELECT FROM pg_catalog.pg_roles WHERE rolname = '{db_group}'
                 """.format(
                 db_group=self._config.db_group
             )
-        else:
-            text = """
-                ALTER ROLE {db_group} NOLOGIN NOSUPERUSER INHERIT NOCREATEDB
-                NOCREATEROLE NOREPLICATION
-                """.format(
-                db_group=self._config.db_group
+            result = conn.execute(text)
+            row = result.fetchone()
+            if row is None:
+                text = """
+                    CREATE ROLE {db_group} NOLOGIN NOSUPERUSER INHERIT NOCREATEDB
+                    NOCREATEROLE NOREPLICATION
+                    """.format(
+                    db_group=self._config.db_group
+                )
+            else:
+                text = """
+                    ALTER ROLE {db_group} NOLOGIN NOSUPERUSER INHERIT NOCREATEDB
+                    NOCREATEROLE NOREPLICATION
+                    """.format(
+                    db_group=self._config.db_group
+                )
+            conn.execute(text)
+
+            # Import role:
+            text = "GRANT {} TO {}".format(self._config.db_group, self._config.db_user)
+            conn.execute(text)
+
+            # Create database:
+            text = "CREATE DATABASE {} WITH OWNER = {}".format(
+                self._config.db_name, self._config.db_group
             )
-        conn.execute(text)
-
-        # Import role:
-        text = "GRANT {} TO {}".format(self._config.db_group, self._config.db_user)
-        conn.execute(text)
-
-        # Create database:
-        text = "CREATE DATABASE {} WITH OWNER = {}".format(
-            self._config.db_name, self._config.db_group
-        )
-        conn.execute(text)
-        text = "GRANT ALL ON DATABASE {} TO {}".format(
-            self._config.db_name, self._config.db_group
-        )
-        conn.execute(text)
-        conn.close()
-        db.dispose()
+            conn.execute(text)
+            text = "GRANT ALL ON DATABASE {} TO {}".format(
+                self._config.db_name, self._config.db_group
+            )
+            conn.execute(text)
+            conn.close()
+            db.dispose()
 
         return None
 
     def drop_database(self):
         """Force session deconnection and drop database, roles..."""
-        logger.info(
-            _("Connecting to postgres database, to delete %s database"),
-            self._config.db_name,
-        )
-        db_url = {
-            "drivername": "postgresql+psycopg2",
-            "username": self._config.db_user,
-            "password": self._config.db_pw,
-            "host": self._config.db_host,
-            "port": self._config.db_port,
-            "database": "postgres",
-        }
-        db = create_engine(URL(**db_url), echo=False)
-        conn = db.connect()
-        conn.connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+        # Store to database, if enabled
+        if self._config.db_enabled:
+            logger.info(
+                _("Connecting to postgres database, to delete %s database"),
+                self._config.db_name,
+            )
+            db_url = {
+                "drivername": "postgresql+psycopg2",
+                "username": self._config.db_user,
+                "password": self._config.db_pw,
+                "host": self._config.db_host,
+                "port": self._config.db_port,
+                "database": "postgres",
+            }
+            db = create_engine(URL(**db_url), echo=False)
+            conn = db.connect()
+            conn.connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
 
-        version = conn.dialect.server_version_info
-        pid_column = "pid" if (version >= (9, 2)) else "procpid"
+            version = conn.dialect.server_version_info
+            pid_column = "pid" if (version >= (9, 2)) else "procpid"
 
-        text = """
-        SELECT pg_terminate_backend(pg_stat_activity.%(pid_column)s)
-        FROM pg_stat_activity
-        WHERE pg_stat_activity.datname = '%(database)s'
-          AND %(pid_column)s <> pg_backend_pid();
-        """ % {
-            "pid_column": pid_column,
-            "database": self._config.db_name,
-        }
-        logger.debug(_("Dropping tables: %s"), text)
-        conn.execute(text)
-        text = "DROP DATABASE IF EXISTS {}".format(self._config.db_name)
-        logger.debug(_("Dropping database: %s"), text)
-        conn.execute(text)
-        text = "DROP ROLE IF EXISTS {}".format(self._config.db_group)
-        logger.debug(_("Dropping role: %s"), text)
-        conn.execute(text)
+            text = """
+            SELECT pg_terminate_backend(pg_stat_activity.%(pid_column)s)
+            FROM pg_stat_activity
+            WHERE pg_stat_activity.datname = '%(database)s'
+            AND %(pid_column)s <> pg_backend_pid();
+            """ % {
+                "pid_column": pid_column,
+                "database": self._config.db_name,
+            }
+            logger.debug(_("Dropping tables: %s"), text)
+            conn.execute(text)
+            text = "DROP DATABASE IF EXISTS {}".format(self._config.db_name)
+            logger.debug(_("Dropping database: %s"), text)
+            conn.execute(text)
+            text = "DROP ROLE IF EXISTS {}".format(self._config.db_group)
+            logger.debug(_("Dropping role: %s"), text)
+            conn.execute(text)
 
-        conn.close()
-        db.dispose()
+            conn.close()
+            db.dispose()
+
         return None
 
     def create_json_tables(self):
         """Create all internal and jsonb tables."""
-        # Initialize interface to Postgresql DB
-        db_url = {
-            "drivername": "postgresql+psycopg2",
-            "username": self._config.db_user,
-            "password": self._config.db_pw,
-            "host": self._config.db_host,
-            "port": self._config.db_port,
-            "database": self._config.db_name,
-        }
+        # Store to database, if enabled
+        if self._config.db_enabled:
+            # Initialize interface to Postgresql DB
+            db_url = {
+                "drivername": "postgresql+psycopg2",
+                "username": self._config.db_user,
+                "password": self._config.db_pw,
+                "host": self._config.db_host,
+                "port": self._config.db_port,
+                "database": self._config.db_name,
+            }
 
-        # Connect to database
-        logger.info(
-            _("Connecting to %s database, to finalize creation"), self._config.db_name
-        )
-        self._db = create_engine(URL(**db_url), echo=False)
-        conn = self._db.connect()
+            # Connect to database
+            logger.info(
+                _("Connecting to %s database, to finalize creation"),
+                self._config.db_name,
+            )
+            self._db = create_engine(URL(**db_url), echo=False)
+            conn = self._db.connect()
 
-        # Add extensions
-        text = "CREATE EXTENSION IF NOT EXISTS pgcrypto"
-        conn.execute(text)
-        text = "CREATE EXTENSION IF NOT EXISTS adminpack"
-        conn.execute(text)
-        text = 'CREATE EXTENSION IF NOT EXISTS "uuid-ossp"'
-        conn.execute(text)
-        text = "CREATE EXTENSION IF NOT EXISTS postgis"
-        conn.execute(text)
-        text = "CREATE EXTENSION IF NOT EXISTS postgis_topology"
-        conn.execute(text)
+            # Add extensions
+            text = "CREATE EXTENSION IF NOT EXISTS pgcrypto"
+            conn.execute(text)
+            text = "CREATE EXTENSION IF NOT EXISTS adminpack"
+            conn.execute(text)
+            text = 'CREATE EXTENSION IF NOT EXISTS "uuid-ossp"'
+            conn.execute(text)
+            text = "CREATE EXTENSION IF NOT EXISTS postgis"
+            conn.execute(text)
+            text = "CREATE EXTENSION IF NOT EXISTS postgis_topology"
+            conn.execute(text)
 
-        # Create import schema
-        text = "CREATE SCHEMA IF NOT EXISTS {} AUTHORIZATION {}".format(
-            self._config.db_schema_import, self._config.db_group
-        )
-        conn.execute(text)
+            # Create import schema
+            text = "CREATE SCHEMA IF NOT EXISTS {} AUTHORIZATION {}".format(
+                self._config.db_schema_import, self._config.db_group
+            )
+            conn.execute(text)
 
-        # Enable privileges
-        text = """
-        ALTER DEFAULT PRIVILEGES
-           GRANT INSERT, SELECT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON TABLES
-           TO postgres"""
-        conn.execute(text)
-        text = """
-        ALTER DEFAULT PRIVILEGES
-           GRANT INSERT, SELECT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON TABLES
-           TO {}""".format(
-            self._config.db_group
-        )
-        conn.execute(text)
+            # Enable privileges
+            text = """
+            ALTER DEFAULT PRIVILEGES
+            GRANT INSERT, SELECT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON TABLES
+            TO postgres"""
+            conn.execute(text)
+            text = """
+            ALTER DEFAULT PRIVILEGES
+            GRANT INSERT, SELECT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON TABLES
+            TO {}""".format(
+                self._config.db_group
+            )
+            conn.execute(text)
 
-        # Set path to include VN import schema
-        dbschema = self._config.db_schema_import
-        self._metadata = MetaData(schema=dbschema)
-        self._metadata.reflect(self._db)
+            # Set path to include VN import schema
+            dbschema = self._config.db_schema_import
+            self._metadata = MetaData(schema=dbschema)
+            self._metadata.reflect(self._db)
 
-        # Check if tables exist or else create them
-        self._create_download_log()
-        self._create_increment_log()
+            # Check if tables exist or else create them
+            self._create_download_log()
+            self._create_increment_log()
 
-        self._create_entities_json()
-        self._create_field_groups_json()
-        self._create_field_details_json()
-        self._create_forms_json()
-        self._create_local_admin_units_json()
-        self._create_uuid_xref()
-        self._create_observations_json()
-        self._create_observers_json()
-        self._create_places_json()
-        self._create_species_json()
-        self._create_taxo_groups_json()
-        self._create_territorial_units_json()
+            self._create_entities_json()
+            self._create_families_json()
+            self._create_field_groups_json()
+            self._create_field_details_json()
+            self._create_forms_json()
+            self._create_local_admin_units_json()
+            self._create_uuid_xref()
+            self._create_observations_json()
+            self._create_observers_json()
+            self._create_places_json()
+            self._create_species_json()
+            self._create_taxo_groups_json()
+            self._create_territorial_units_json()
+            self._create_validations_json()
 
-        conn.close()
-        self._db.dispose()
+            conn.close()
+            self._db.dispose()
 
         return None
 
@@ -553,33 +576,36 @@ class PostgresqlUtils:
         dict
             Count of observations by site and taxonomy.
         """
-        logger.info("Counting observations in database for all sites")
-        db_url = {
-            "drivername": "postgresql+psycopg2",
-            "username": self._config.db_user,
-            "password": self._config.db_pw,
-            "host": self._config.db_host,
-            "port": self._config.db_port,
-            "database": self._config.db_name,
-        }
+        result = None
+        # Store to database, if enabled
+        if self._config.db_enabled:
+            logger.info(_("Counting observations in database for all sites"))
+            db_url = {
+                "drivername": "postgresql+psycopg2",
+                "username": self._config.db_user,
+                "password": self._config.db_pw,
+                "host": self._config.db_host,
+                "port": self._config.db_port,
+                "database": self._config.db_name,
+            }
 
-        # Connect and set path to include VN import schema
-        logger.info(_("Connecting to database %s"), self._config.db_name)
-        self._db = create_engine(URL(**db_url), echo=False)
-        conn = self._db.connect()
-        dbschema = self._config.db_schema_import
-        self._metadata = MetaData(schema=dbschema)
-        # self._metadata.reflect(self._db)
+            # Connect and set path to include VN import schema
+            logger.info(_("Connecting to database %s"), self._config.db_name)
+            self._db = create_engine(URL(**db_url), echo=False)
+            conn = self._db.connect()
+            dbschema = self._config.db_schema_import
+            self._metadata = MetaData(schema=dbschema)
+            # self._metadata.reflect(self._db)
 
-        text = """
-        SELECT site, ((item->>0)::json->'species') ->> 'taxonomy' AS taxonomy, COUNT(id)
-              FROM {}.observations_json
-              GROUP BY site, ((item->>0)::json->'species') ->> 'taxonomy';
-        """.format(
-            dbschema
-        )
+            text = """
+            SELECT site, ((item->>0)::json->'species') ->> 'taxonomy' AS taxonomy, COUNT(id)
+                FROM {}.observations_json
+                GROUP BY site, ((item->>0)::json->'species') ->> 'taxonomy';
+            """.format(
+                dbschema
+            )
 
-        result = conn.execute(text).fetchall()
+            result = conn.execute(text).fetchall()
 
         return result
 
@@ -591,35 +617,38 @@ class PostgresqlUtils:
         dict
             Count of observations by site and taxonomy.
         """
-        logger.info(_("Counting observations in database for all sites"))
-        db_url = {
-            "drivername": "postgresql+psycopg2",
-            "username": self._config.db_user,
-            "password": self._config.db_pw,
-            "host": self._config.db_host,
-            "port": self._config.db_port,
-            "database": self._config.db_name,
-        }
+        result = None
+        # Store to database, if enabled
+        if self._config.db_enabled:
+            logger.info(_("Counting observations in database for all sites"))
+            db_url = {
+                "drivername": "postgresql+psycopg2",
+                "username": self._config.db_user,
+                "password": self._config.db_pw,
+                "host": self._config.db_host,
+                "port": self._config.db_port,
+                "database": self._config.db_name,
+            }
 
-        # Connect and set path to include VN import schema
-        logger.info(_("Connecting to database %s"), self._config.db_name)
-        self._db = create_engine(URL(**db_url), echo=False)
-        conn = self._db.connect()
-        dbschema = self._config.db_schema_vn
-        self._metadata = MetaData(schema=dbschema)
-        # self._metadata.reflect(self._db)
+            # Connect and set path to include VN import schema
+            logger.info(_("Connecting to database %s"), self._config.db_name)
+            self._db = create_engine(URL(**db_url), echo=False)
+            conn = self._db.connect()
+            dbschema = self._config.db_schema_vn
+            self._metadata = MetaData(schema=dbschema)
+            # self._metadata.reflect(self._db)
 
-        text = """
-        SELECT o.site, o.taxonomy, t.name, COUNT(o.id_sighting)
-            FROM {}.observations AS o
-                LEFT JOIN {}.taxo_groups AS t
-                    ON (o.taxonomy::integer = t.id AND o.site LIKE t.site)
-            GROUP BY o.site, o.taxonomy, t.name
-        """.format(
-            dbschema, dbschema
-        )
+            text = """
+            SELECT o.site, o.taxonomy, t.name, COUNT(o.id_sighting)
+                FROM {}.observations AS o
+                    LEFT JOIN {}.taxo_groups AS t
+                        ON (o.taxonomy::integer = t.id AND o.site LIKE t.site)
+                GROUP BY o.site, o.taxonomy, t.name
+            """.format(
+                dbschema, dbschema
+            )
 
-        result = conn.execute(text).fetchall()
+            result = conn.execute(text).fetchall()
 
         return result
 
@@ -629,113 +658,105 @@ class StorePostgresql:
 
     def __init__(self, config):
         self._config = config
-        self._file_store = StoreFile(config)
 
-        # Initialize interface to Postgresql DB
-        db_url = {
-            "drivername": "postgresql+psycopg2",
-            "username": self._config.db_user,
-            "password": self._config.db_pw,
-            "host": self._config.db_host,
-            "port": self._config.db_port,
-            "database": self._config.db_name,
-        }
+        if self._config.db_enabled:
+            # Initialize interface to Postgresql DB
+            db_url = {
+                "drivername": "postgresql+psycopg2",
+                "username": self._config.db_user,
+                "password": self._config.db_pw,
+                "host": self._config.db_host,
+                "port": self._config.db_port,
+                "database": self._config.db_name,
+            }
 
-        dbschema = self._config.db_schema_import
-        self._metadata = MetaData(schema=dbschema)
-        logger.info(_("Connecting to database %s"), self._config.db_name)
+            dbschema = self._config.db_schema_import
+            self._metadata = MetaData(schema=dbschema)
+            logger.info(_("Connecting to database %s"), self._config.db_name)
 
-        # Connect and set path to include VN import schema
-        self._db = create_engine(URL(**db_url), echo=False)
-        self._conn = self._db.connect()
+            # Connect and set path to include VN import schema
+            self._db = create_engine(URL(**db_url), echo=False)
+            self._conn = self._db.connect()
 
-        # Get dbtable definition
-        self._metadata.reflect(bind=self._db, schema=dbschema)
+            # Get dbtable definition
+            self._metadata.reflect(bind=self._db, schema=dbschema)
 
-        # Map Biolovision tables in a single dict for easy reference
-        self._table_defs = {
-            "entities": {"type": "simple", "metadata": None},
-            "field_groups": {"type": "fields", "metadata": None},
-            "field_details": {"type": "fields", "metadata": None},
-            "forms": {"type": "others", "metadata": None},
-            "local_admin_units": {"type": "geometry", "metadata": None},
-            "uuid_xref": {"type": "others", "metadata": None},
-            "observations": {"type": "observation", "metadata": None},
-            "observers": {"type": "observers", "metadata": None},
-            "places": {"type": "geometry", "metadata": None},
-            "species": {"type": "simple", "metadata": None},
-            "taxo_groups": {"type": "simple", "metadata": None},
-            "territorial_units": {"type": "simple", "metadata": None},
-        }
-        self._table_defs["entities"]["metadata"] = self._metadata.tables[
-            dbschema + ".entities_json"
-        ]
-        self._table_defs["field_groups"]["metadata"] = self._metadata.tables[
-            dbschema + ".field_groups_json"
-        ]
-        self._table_defs["field_details"]["metadata"] = self._metadata.tables[
-            dbschema + ".field_details_json"
-        ]
-        self._table_defs["forms"]["metadata"] = self._metadata.tables[
-            dbschema + ".forms_json"
-        ]
-        self._table_defs["local_admin_units"]["metadata"] = self._metadata.tables[
-            dbschema + ".local_admin_units_json"
-        ]
-        self._table_defs["uuid_xref"]["metadata"] = self._metadata.tables[
-            dbschema + ".uuid_xref"
-        ]
-        self._table_defs["observations"]["metadata"] = self._metadata.tables[
-            dbschema + ".observations_json"
-        ]
-        self._table_defs["observers"]["metadata"] = self._metadata.tables[
-            dbschema + ".observers_json"
-        ]
-        self._table_defs["places"]["metadata"] = self._metadata.tables[
-            dbschema + ".places_json"
-        ]
-        self._table_defs["species"]["metadata"] = self._metadata.tables[
-            dbschema + ".species_json"
-        ]
-        self._table_defs["taxo_groups"]["metadata"] = self._metadata.tables[
-            dbschema + ".taxo_groups_json"
-        ]
-        self._table_defs["territorial_units"]["metadata"] = self._metadata.tables[
-            dbschema + ".territorial_units_json"
-        ]
+            # Map Biolovision tables in a single dict for easy reference
+            self._table_defs = {
+                "entities": {"type": "simple", "metadata": None},
+                "families": {"type": "simple", "metadata": None},
+                "field_groups": {"type": "fields", "metadata": None},
+                "field_details": {"type": "fields", "metadata": None},
+                "forms": {"type": "others", "metadata": None},
+                "local_admin_units": {"type": "geometry", "metadata": None},
+                "uuid_xref": {"type": "others", "metadata": None},
+                "observations": {"type": "observation", "metadata": None},
+                "observers": {"type": "observers", "metadata": None},
+                "places": {"type": "geometry", "metadata": None},
+                "species": {"type": "simple", "metadata": None},
+                "taxo_groups": {"type": "simple", "metadata": None},
+                "territorial_units": {"type": "simple", "metadata": None},
+                "validations": {"type": "simple", "metadata": None},
+            }
+            self._table_defs["entities"]["metadata"] = self._metadata.tables[
+                dbschema + ".entities_json"
+            ]
+            self._table_defs["families"]["metadata"] = self._metadata.tables[
+                dbschema + ".families_json"
+            ]
+            self._table_defs["field_groups"]["metadata"] = self._metadata.tables[
+                dbschema + ".field_groups_json"
+            ]
+            self._table_defs["field_details"]["metadata"] = self._metadata.tables[
+                dbschema + ".field_details_json"
+            ]
+            self._table_defs["forms"]["metadata"] = self._metadata.tables[
+                dbschema + ".forms_json"
+            ]
+            self._table_defs["local_admin_units"]["metadata"] = self._metadata.tables[
+                dbschema + ".local_admin_units_json"
+            ]
+            self._table_defs["uuid_xref"]["metadata"] = self._metadata.tables[
+                dbschema + ".uuid_xref"
+            ]
+            self._table_defs["observations"]["metadata"] = self._metadata.tables[
+                dbschema + ".observations_json"
+            ]
+            self._table_defs["observers"]["metadata"] = self._metadata.tables[
+                dbschema + ".observers_json"
+            ]
+            self._table_defs["places"]["metadata"] = self._metadata.tables[
+                dbschema + ".places_json"
+            ]
+            self._table_defs["species"]["metadata"] = self._metadata.tables[
+                dbschema + ".species_json"
+            ]
+            self._table_defs["taxo_groups"]["metadata"] = self._metadata.tables[
+                dbschema + ".taxo_groups_json"
+            ]
+            self._table_defs["territorial_units"]["metadata"] = self._metadata.tables[
+                dbschema + ".territorial_units_json"
+            ]
+            self._table_defs["validations"]["metadata"] = self._metadata.tables[
+                dbschema + ".validations_json"
+            ]
 
-        # Create parallel workers for database queries
-        logger.debug(
-            _("Creating %s worker threads, queue size: %s"),
-            self._config.tuning_db_worker_threads,
-            self._config.tuning_db_worker_queue,
-        )
-        self._observations_queue = queue.Queue(
-            maxsize=self._config.tuning_db_worker_queue
-        )
-        self._observations_threads = []
-        for i in range(self._config.tuning_db_worker_threads):
-            t = threading.Thread(
-                target=observation_worker, args=(i, self._observations_queue)
+            # Create transformation
+            self._transformer = Transformer.from_proj(
+                4326, int(self._config.db_out_proj), always_xy=True
             )
-            t.start()
-            self._observations_threads.append(t)
 
         return None
 
     def __enter__(self):
+        logger.debug(_("Entry into StorePostgresql"))
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        """Send finish signal to workers and wait for tasks to finish."""
-        logger.debug(
-            _("Stopping %s worker threads"), self._config.tuning_db_worker_threads
-        )
-        for i in range(self._config.tuning_db_worker_threads):
-            self._observations_queue.put(None)
-        for t in self._observations_threads:
-            t.join()
-        self._conn.close()
+        """Finalize connections."""
+        if self._config.db_enabled:
+            logger.debug(_("Closing database connection at exit from StorePostgresql"))
+            self._conn.close()
 
     @property
     def version(self):
@@ -804,12 +825,9 @@ class StorePostgresql:
             Count of items stored (not exact for observations, due to forms).
         """
 
-        transformer = Transformer.from_proj(
-            4326, int(self._config.db_out_proj), always_xy=True
-        )
         # Loop on data array to reproject
         for elem in items_dict["data"]:
-            elem["coord_x_local"], elem["coord_y_local"] = transformer.transform(
+            elem["coord_x_local"], elem["coord_y_local"] = self._transformer.transform(
                 elem["coord_lon"], elem["coord_lat"]
             )
         return self._store_simple(controler, items_dict)
@@ -954,10 +972,6 @@ class StorePostgresql:
         logger.debug(
             _("Storing %d single observations"), len(items_dict["data"]["sightings"])
         )
-        # Create projection transformer
-        transformer = Transformer.from_proj(
-            4326, int(self._config.db_out_proj), always_xy=True
-        )
         for i in range(0, len(items_dict["data"]["sightings"])):
             elem = items_dict["data"]["sightings"][i]
             # Create UUID
@@ -965,15 +979,16 @@ class StorePostgresql:
                 elem["observers"][0]["id_sighting"],
                 elem["observers"][0]["id_universal"],
             )
-            # Send observation to queue
-            obs = ObservationItem(
-                self._config.site,
-                self._table_defs[controler]["metadata"],
-                self._conn,
-                transformer.transform,
-                elem,
+            # Write observation to database
+            store_1_observation(
+                ObservationItem(
+                    self._config.site,
+                    self._table_defs[controler]["metadata"],
+                    self._conn,
+                    self._transformer.transform,
+                    elem,
+                )
             )
-            self._observations_queue.put(obs)
             nb_obs += 1
 
         if "forms" in items_dict["data"]:
@@ -1000,15 +1015,16 @@ class StorePostgresql:
                                 v[i]["observers"][0]["id_sighting"],
                                 v[i]["observers"][0]["id_universal"],
                             )
-                            obs = ObservationItem(
-                                self._config.site,
-                                self._table_defs[controler]["metadata"],
-                                self._conn,
-                                transformer.transform,
-                                v[i],
-                                id_form_universal,
+                            store_1_observation(
+                                ObservationItem(
+                                    self._config.site,
+                                    self._table_defs[controler]["metadata"],
+                                    self._conn,
+                                    self._transformer.transform,
+                                    v[i],
+                                    id_form_universal,
+                                )
                             )
-                            self._observations_queue.put(obs)
                             nb_obs += 1
                         # Add presumed start and stop date from observations
                         forms_data["date_start"] = min(dates).isoformat()
@@ -1018,10 +1034,7 @@ class StorePostgresql:
                     else:
                         # Put anything except sightings in forms data
                         forms_data[k] = v
-                self._store_form(forms_data, transformer.transform)
-
-        # Wait for threads to finish before commit
-        # self._observations_queue.join()
+                self._store_form(forms_data, self._transformer.transform)
 
         logger.debug(_("Stored %d observations or forms to database"), nb_obs)
         return nb_obs
@@ -1093,20 +1106,22 @@ class StorePostgresql:
         int
             Count of items stored (not exact for observations, due to forms).
         """
-        self._file_store.store(controler, seq, items_dict)
-        if self._table_defs[controler]["type"] == "observation":
-            nb_item = self._store_observation(controler, items_dict)
-        elif self._table_defs[controler]["type"] == "simple":
-            nb_item = self._store_simple(controler, items_dict)
-        elif self._table_defs[controler]["type"] == "geometry":
-            nb_item = self._store_geometry(controler, items_dict)
-        elif self._table_defs[controler]["type"] == "observers":
-            nb_item = self._store_observers(controler, items_dict)
-        elif self._table_defs[controler]["type"] == "fields":
-            nb_item = self._store_fields(controler, items_dict)
+        nb_item = 0
+        # Store to database, if enabled
+        if self._config.db_enabled:
+            if self._table_defs[controler]["type"] == "observation":
+                nb_item = self._store_observation(controler, items_dict)
+            elif self._table_defs[controler]["type"] == "simple":
+                nb_item = self._store_simple(controler, items_dict)
+            elif self._table_defs[controler]["type"] == "geometry":
+                nb_item = self._store_geometry(controler, items_dict)
+            elif self._table_defs[controler]["type"] == "observers":
+                nb_item = self._store_observers(controler, items_dict)
+            elif self._table_defs[controler]["type"] == "fields":
+                nb_item = self._store_fields(controler, items_dict)
 
-        else:
-            raise StorePostgresqlException(_("Not implemented"))
+            else:
+                raise StorePostgresqlException(_("Not implemented"))
 
         return nb_item
 
@@ -1123,21 +1138,24 @@ class StorePostgresql:
         int
             Count of items deleted.
         """
-        logger.info(_("Deleting %d observations from database"), len(obs_list))
         nb_delete = 0
-        for obs in obs_list:
-            nd = self._conn.execute(
-                self._table_defs["observations"]["metadata"]
-                .delete()
-                .where(
-                    and_(
-                        self._table_defs["observations"]["metadata"].c.id == obs,
-                        self._table_defs["observations"]["metadata"].c.site
-                        == self._config.site,
+        # Store to database, if enabled
+        if self._config.db_enabled:
+            logger.info(_("Deleting %d observations from database"), len(obs_list))
+            nb_delete = 0
+            for obs in obs_list:
+                nd = self._conn.execute(
+                    self._table_defs["observations"]["metadata"]
+                    .delete()
+                    .where(
+                        and_(
+                            self._table_defs["observations"]["metadata"].c.id == obs,
+                            self._table_defs["observations"]["metadata"].c.site
+                            == self._config.site,
+                        )
                     )
                 )
-            )
-            nb_delete += nd.rowcount
+                nb_delete += nd.rowcount
 
         return nb_delete
 
@@ -1157,17 +1175,19 @@ class StorePostgresql:
         comment : str
             Optional comment, in free text.
         """
-        metadata = self._metadata.tables[
-            self._config.db_schema_import + "." + "download_log"
-        ]
-        stmt = metadata.insert().values(
-            site=site,
-            controler=controler,
-            error_count=error_count,
-            http_status=http_status,
-            comment=comment,
-        )
-        self._conn.execute(stmt)
+        # Store to database, if enabled
+        if self._config.db_enabled:
+            metadata = self._metadata.tables[
+                self._config.db_schema_import + "." + "download_log"
+            ]
+            stmt = metadata.insert().values(
+                site=site,
+                controler=controler,
+                error_count=error_count,
+                http_status=http_status,
+                comment=comment,
+            )
+            self._conn.execute(stmt)
 
         return None
 
@@ -1183,17 +1203,19 @@ class StorePostgresql:
         last_ts : timestamp
             Timestamp of last update of this taxo_group.
         """
-        metadata = self._metadata.tables[
-            self._config.db_schema_import + "." + "increment_log"
-        ]
+        # Store to database, if enabled
+        if self._config.db_enabled:
+            metadata = self._metadata.tables[
+                self._config.db_schema_import + "." + "increment_log"
+            ]
 
-        insert_stmt = insert(metadata).values(
-            taxo_group=taxo_group, site=site, last_ts=last_ts
-        )
-        do_update_stmt = insert_stmt.on_conflict_do_update(
-            constraint=metadata.primary_key, set_=dict(last_ts=last_ts)
-        )
-        self._conn.execute(do_update_stmt)
+            insert_stmt = insert(metadata).values(
+                taxo_group=taxo_group, site=site, last_ts=last_ts
+            )
+            do_update_stmt = insert_stmt.on_conflict_do_update(
+                constraint=metadata.primary_key, set_=dict(last_ts=last_ts)
+            )
+            self._conn.execute(do_update_stmt)
 
         return None
 
@@ -1212,14 +1234,17 @@ class StorePostgresql:
         timestamp
             Timestamp of last update of this taxo_group.
         """
-        metadata = self._metadata.tables[
-            self._config.db_schema_import + "." + "increment_log"
-        ]
-        stmt = select([metadata.c.last_ts]).where(
-            and_(metadata.c.taxo_group == taxo_group, metadata.c.site == site)
-        )
-        result = self._conn.execute(stmt)
-        row = result.fetchone()
+        row = None
+        # Store to database, if enabled
+        if self._config.db_enabled:
+            metadata = self._metadata.tables[
+                self._config.db_schema_import + "." + "increment_log"
+            ]
+            stmt = select([metadata.c.last_ts]).where(
+                and_(metadata.c.taxo_group == taxo_group, metadata.c.site == site)
+            )
+            result = self._conn.execute(stmt)
+            row = result.fetchone()
 
         if row is None:
             return None

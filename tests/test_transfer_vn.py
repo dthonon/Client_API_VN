@@ -39,22 +39,31 @@ def test_db_ops():
 
 
 @pytest.mark.slow
-def test_db_full():
+def test_full():
     """Check database full download."""
     file_yaml = ".evn_test.yaml"
     with patch("sys.argv", ["py.test", "--full", file_yaml]):
         transfer_vn.run()
 
 
-def test_db_count():
+def test_count():
     """Check database counting."""
     file_yaml = ".evn_test.yaml"
     with patch("sys.argv", ["py.test", "--count", file_yaml]):
         transfer_vn.run()
 
 
-def test_db_update():
+def test_update():
     """Check database updating."""
     file_yaml = ".evn_test.yaml"
-    with patch("sys.argv", ["py.test", "--count", file_yaml]):
+    with patch("sys.argv", ["py.test", "--schedule", file_yaml]):
+        transfer_vn.run()
+    with patch("sys.argv", ["py.test", "--update", file_yaml]):
+        transfer_vn.run()
+
+
+def test_status():
+    """Check database counting."""
+    file_yaml = ".evn_test.yaml"
+    with patch("sys.argv", ["py.test", "--status", file_yaml]):
         transfer_vn.run()
