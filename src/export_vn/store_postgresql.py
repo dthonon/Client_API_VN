@@ -225,6 +225,17 @@ class PostgresqlUtils:
         )
         return None
 
+    def _create_families_json(self):
+        """Create families_json table if it does not exist."""
+        self._create_table(
+            "families_json",
+            Column("id", Integer, nullable=False),
+            Column("site", String, nullable=False),
+            Column("item", JSONB, nullable=False),
+            PrimaryKeyConstraint("id", "site", name="families_json_pk"),
+        )
+        return None
+
     def _create_field_groups_json(self):
         """Create field_groups_json table if it does not exist."""
         self._create_table(
@@ -241,7 +252,7 @@ class PostgresqlUtils:
             "field_details_json",
             Column("id", String, nullable=False),
             Column("item", JSONB, nullable=False),
-            PrimaryKeyConstraint("id", name="field_detais_json_pk"),
+            PrimaryKeyConstraint("id", name="field_details_json_pk"),
         )
         return None
 
@@ -349,6 +360,18 @@ class PostgresqlUtils:
             PrimaryKeyConstraint("id", "site", name="territorial_units_json_pk"),
         )
         return None
+
+    def _create_validations_json(self):
+        """Create validations_json table if it does not exist."""
+        self._create_table(
+            "validations_json",
+            Column("id", Integer, nullable=False),
+            Column("site", String, nullable=False),
+            Column("item", JSONB, nullable=False),
+            PrimaryKeyConstraint("id", "site", name="validations_json_pk"),
+        )
+        return None
+
 
     # ---------------
     # External methods
@@ -526,6 +549,7 @@ class PostgresqlUtils:
             self._create_increment_log()
 
             self._create_entities_json()
+            self._create_families_json()
             self._create_field_groups_json()
             self._create_field_details_json()
             self._create_forms_json()
@@ -537,6 +561,7 @@ class PostgresqlUtils:
             self._create_species_json()
             self._create_taxo_groups_json()
             self._create_territorial_units_json()
+            self._create_validations_json()
 
             conn.close()
             self._db.dispose()
@@ -659,6 +684,7 @@ class StorePostgresql:
             # Map Biolovision tables in a single dict for easy reference
             self._table_defs = {
                 "entities": {"type": "simple", "metadata": None},
+                "families": {"type": "simple", "metadata": None},
                 "field_groups": {"type": "fields", "metadata": None},
                 "field_details": {"type": "fields", "metadata": None},
                 "forms": {"type": "others", "metadata": None},
@@ -670,9 +696,13 @@ class StorePostgresql:
                 "species": {"type": "simple", "metadata": None},
                 "taxo_groups": {"type": "simple", "metadata": None},
                 "territorial_units": {"type": "simple", "metadata": None},
+                "validations": {"type": "simple", "metadata": None},
             }
             self._table_defs["entities"]["metadata"] = self._metadata.tables[
                 dbschema + ".entities_json"
+            ]
+            self._table_defs["families"]["metadata"] = self._metadata.tables[
+                dbschema + ".families_json"
             ]
             self._table_defs["field_groups"]["metadata"] = self._metadata.tables[
                 dbschema + ".field_groups_json"
@@ -706,6 +736,9 @@ class StorePostgresql:
             ]
             self._table_defs["territorial_units"]["metadata"] = self._metadata.tables[
                 dbschema + ".territorial_units_json"
+            ]
+            self._table_defs["validations"]["metadata"] = self._metadata.tables[
+                dbschema + ".validations_json"
             ]
 
             # Create transformation

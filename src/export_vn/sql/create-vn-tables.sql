@@ -111,6 +111,83 @@ CREATE TRIGGER entities_trigger
 AFTER INSERT OR UPDATE OR DELETE ON {{ cfg.db_schema_import }}.entities_json
     FOR EACH ROW EXECUTE PROCEDURE {{ cfg.db_schema_vn }}.update_entities();
 
+-----------
+-- Families
+-----------
+CREATE TABLE {{ cfg.db_schema_vn }}.families(
+    site                VARCHAR(50),
+    id                  INTEGER,
+    id_taxo_group       INTEGER,
+    latin_name          VARCHAR(500),
+    name                VARCHAR(500),
+    generic             VARCHAR(10),
+    PRIMARY KEY (site, id)
+);
+
+DROP INDEX IF EXISTS families_idx_site;
+CREATE INDEX families_idx_site
+    ON {{ cfg.db_schema_vn }}.families USING btree(site);
+DROP INDEX IF EXISTS families_idx_id;
+CREATE INDEX families_idx_id
+    ON {{ cfg.db_schema_vn }}.families USING btree(id);
+
+CREATE OR REPLACE FUNCTION update_families() RETURNS TRIGGER AS $$
+    BEGIN
+    IF (TG_OP = 'DELETE') THEN
+        -- Deleting data when JSON data is deleted
+        DELETE FROM {{ cfg.db_schema_vn }}.families
+            WHERE id = OLD.id AND site = OLD.site;
+        IF NOT FOUND THEN
+            RETURN NULL;
+        END IF;
+        RETURN OLD;
+
+    ELSIF (TG_OP = 'UPDATE') THEN
+        -- Updating or inserting data when JSON data is updated
+        UPDATE {{ cfg.db_schema_vn }}.families SET
+            id_taxo_group = CAST(NEW.item->>'id_taxo_group' AS INTEGER),
+            latin_name    = NEW.item->>'latin_name',
+            name          = NEW.item->>'name',
+            generic       = NEW.item->>'generic'
+        WHERE id = OLD.id AND site = OLD.site ;
+        IF NOT FOUND THEN
+            -- Inserting data in new row, usually after table re-creation
+            INSERT INTO {{ cfg.db_schema_vn }}.families(site, id, id_taxo_group, latin_name, name,
+                                                        generic)
+            VALUES (
+                NEW.site,
+                NEW.id,
+                CAST(NEW.item->>'id_taxo_group' AS INTEGER),
+                NEW.item->>'latin_name',
+                NEW.item->>'name',
+                NEW.item->>'generic'
+            );
+            END IF;
+        RETURN NEW;
+
+    ELSIF (TG_OP = 'INSERT') THEN
+        -- Inserting row when raw data is inserted
+        INSERT INTO {{ cfg.db_schema_vn }}.families(site, id, id_taxo_group, latin_name, name,
+                                                    generic)
+        VALUES (
+            NEW.site,
+            NEW.id,
+            CAST(NEW.item->>'id_taxo_group' AS INTEGER),
+            NEW.item->>'latin_name',
+            NEW.item->>'name',
+            NEW.item->>'generic'
+        );
+        RETURN NEW;
+    END IF;
+END;
+$$
+LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS families_trigger ON {{ cfg.db_schema_import }}.families_json;
+CREATE TRIGGER families_trigger
+AFTER INSERT OR UPDATE OR DELETE ON {{ cfg.db_schema_import }}.families_json
+    FOR EACH ROW EXECUTE PROCEDURE {{ cfg.db_schema_vn }}.update_families();
+
 
 ----------------
 -- Field_details
@@ -1214,21 +1291,101 @@ CREATE TRIGGER territorial_units_trigger
 AFTER INSERT OR UPDATE OR DELETE ON {{ cfg.db_schema_import }}.territorial_units_json
     FOR EACH ROW EXECUTE PROCEDURE {{ cfg.db_schema_vn }}.update_territorial_units();
 
+
+--------------
+-- Validations
+--------------
+CREATE TABLE {{ cfg.db_schema_vn }}.validations(
+    site                VARCHAR(50),
+    id                  INTEGER,
+    committee           VARCHAR(150),
+    date_start          INTEGER,
+    date_stop           INTEGER,
+    id_species          INTEGER,
+    PRIMARY KEY (site, id)
+);
+
+DROP INDEX IF EXISTS validations_idx_site;
+CREATE INDEX validations_idx_site
+    ON {{ cfg.db_schema_vn }}.validations USING btree(site);
+DROP INDEX IF EXISTS validations_idx_id;
+CREATE INDEX validations_idx_id
+    ON {{ cfg.db_schema_vn }}.validations USING btree(id);
+
+CREATE OR REPLACE FUNCTION validations_units() RETURNS TRIGGER AS $$
+    BEGIN
+    IF (TG_OP = 'DELETE') THEN
+        -- Deleting data when JSON data is deleted
+        DELETE FROM {{ cfg.db_schema_vn }}.validations
+            WHERE id = OLD.id AND site = OLD.site;
+        IF NOT FOUND THEN
+            RETURN NULL;
+        END IF;
+        RETURN OLD;
+
+    ELSIF (TG_OP = 'UPDATE') THEN
+        -- Updating or inserting data when JSON data is updated
+        UPDATE {{ cfg.db_schema_vn }}.validations SET
+            committee    = NEW.item->>'name',
+            date_start   = CAST(NEW.item->>'id_country' AS INTEGER),
+            date_stop    = CAST(NEW.item->>'id_country' AS INTEGER),
+            id_species   = CAST(NEW.item->>'id_country' AS INTEGER)
+        WHERE id = OLD.id AND site = OLD.site ;
+        IF NOT FOUND THEN
+            -- Inserting data in new row, usually after table re-creation
+            INSERT INTO {{ cfg.db_schema_vn }}.validations(site, id, committee, date_start, date_stop, id_species)
+            VALUES (
+                NEW.site,
+                NEW.id,
+                NEW.item->>'committee',
+                CAST(NEW.item->>'date_start' AS INTEGER),
+                CAST(NEW.item->>'date_stop' AS INTEGER),
+                CAST(NEW.item->>'id_species' AS INTEGER)
+            );
+            END IF;
+        RETURN NEW;
+
+    ELSIF (TG_OP = 'INSERT') THEN
+        -- Inserting data on src_vn.observations when raw data is inserted
+        INSERT INTO {{ cfg.db_schema_vn }}.validations(site, id, committee, date_start, date_stop, id_species)
+        VALUES (
+            NEW.site,
+            NEW.id,
+            NEW.item->>'committee',
+            CAST(NEW.item->>'date_start' AS INTEGER),
+            CAST(NEW.item->>'date_stop' AS INTEGER),
+            CAST(NEW.item->>'id_species' AS INTEGER)
+        );
+        RETURN NEW;
+    END IF;
+END;
+$$
+LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS validations_trigger ON {{ cfg.db_schema_import }}.validations_json;
+CREATE TRIGGER validations_trigger
+AFTER INSERT OR UPDATE OR DELETE ON {{ cfg.db_schema_import }}.validations_json
+    FOR EACH ROW EXECUTE PROCEDURE {{ cfg.db_schema_vn }}.validations_units();
+
+
 -- Dummy update of all rows to trigger new FUNCTION
 UPDATE {{ cfg.db_schema_import }}.entities_json SET site=site;
+UPDATE {{ cfg.db_schema_import }}.families_json SET site=site;
 UPDATE {{ cfg.db_schema_import }}.field_details_json SET id=id;
 UPDATE {{ cfg.db_schema_import }}.field_groups_json SET id=id;
 UPDATE {{ cfg.db_schema_import }}.forms_json SET site=site;
-UPDATE {{ cfg.db_schema_import }}.territorial_units_json SET site=site;
 UPDATE {{ cfg.db_schema_import }}.local_admin_units_json SET site=site;
 UPDATE {{ cfg.db_schema_import }}.places_json SET site=site;
-UPDATE {{ cfg.db_schema_import }}.taxo_groups_json SET site=site;
-UPDATE {{ cfg.db_schema_import }}.species_json SET site=site;
 UPDATE {{ cfg.db_schema_import }}.observers_json SET site=site;
 UPDATE {{ cfg.db_schema_import }}.observations_json SET site=site;
+UPDATE {{ cfg.db_schema_import }}.species_json SET site=site;
+UPDATE {{ cfg.db_schema_import }}.taxo_groups_json SET site=site;
+UPDATE {{ cfg.db_schema_import }}.territorial_units_json SET site=site;
+UPDATE {{ cfg.db_schema_import }}.validations_json SET site=site;
 
 -- Final cleanup
 VACUUM FULL ANALYZE {{ cfg.db_schema_import }}.entities_json, {{ cfg.db_schema_vn }}.entities;
+VACUUM FULL ANALYZE {{ cfg.db_schema_import }}.families_json, {{ cfg.db_schema_vn }}.families;
 VACUUM FULL ANALYZE {{ cfg.db_schema_import }}.field_details_json, {{ cfg.db_schema_vn }}.field_details;
 VACUUM FULL ANALYZE {{ cfg.db_schema_import }}.field_groups_json, {{ cfg.db_schema_vn }}.field_groups;
 VACUUM FULL ANALYZE {{ cfg.db_schema_import }}.forms_json, {{ cfg.db_schema_vn }}.forms;
@@ -1240,3 +1397,4 @@ VACUUM FULL ANALYZE {{ cfg.db_schema_import }}.species_json, {{ cfg.db_schema_vn
 VACUUM FULL ANALYZE {{ cfg.db_schema_import }}.taxo_groups_json, {{ cfg.db_schema_vn }}.taxo_groups;
 VACUUM FULL ANALYZE {{ cfg.db_schema_import }}.territorial_units_json, {{ cfg.db_schema_vn }}.territorial_units;
 VACUUM FULL ANALYZE {{ cfg.db_schema_import }}.uuid_xref;
+VACUUM FULL ANALYZE {{ cfg.db_schema_import }}.validations_json, {{ cfg.db_schema_vn }}.validations;

@@ -1,0 +1,51 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "data": {
+            "$ref": "#/definitions/_data"
+        }
+    },
+    "required": [
+        "data"
+    ],
+    "title": "_validations",
+    "description": "Root of validations schema.",
+    "definitions": {
+        "_data": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "committee": {
+                        "type": "string",
+                        "enum": [
+                            "CHR",
+                            "CHN"
+                        ]
+                    },
+                    "date_start":{
+                        "type": "string",
+                        "format": "integer"
+                    },
+                    "date_stop":{
+                        "type": "string",
+                        "format": "integer"
+                    },
+                    "id":{
+                        "type": "string",
+                        "format": "integer"
+                    },
+                    "id_species":{
+                        "type": "string",
+                        "format": "integer"
+                    } 
+                }
+            },
+            "title": "_data",
+            "description": "Top level element of validations data."
+        }
+    }
+}

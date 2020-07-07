@@ -463,6 +463,9 @@ def full_download(cfg_ctrl):
                 jobs.add_job_once(
                     job_fn=full_download_1, args=[TerritorialUnits, cfg_crtl_list, cfg]
                 )
+                jobs.add_job_once(
+                    job_fn=full_download_1, args=[Validations, cfg_crtl_list, cfg]
+                )
             else:
                 logger.info(_("Skipping site %s"), site)
 
@@ -754,7 +757,7 @@ def main(args):
         manage_pg.create_json_tables()
 
     if args.col_tables_create:
-        logger.info(_("Creating or recreating vn colums based files"))
+        logger.info(_("Creating or recreating vn columns based files"))
         col_table_create(cfg, sql_quiet, client_min_message)
 
     if args.full:

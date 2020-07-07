@@ -756,7 +756,7 @@ msgstr "Echantillon de %s dans %i fichiers"
 #: src/schemas/validate.py:125
 #, python-format
 msgid "Validating %s schema with %s"
-msgstr "Validation le schéma %s avec %s"
+msgstr "Validation du schéma %s avec %s"
 
 #: src/schemas/validate.py:144
 #, python-format
