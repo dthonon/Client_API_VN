@@ -131,7 +131,7 @@ par défaut et installant un firewall:
 
     sudo nano /etc/passwd
 
-    => remplacer `/bin/bash` par `/bin/false` pour les comptes debian et postgres
+    => remplacer `/bin/bash` par `/usr/sbin/nologin` pour les comptes debian et postgres
 
     sudo apt -y install ufw
     sudo ufw allow ssh
