@@ -59,9 +59,12 @@ de la manière suivante.
     sudo apt -y install postgresql postgresql-contrib postgis postgresql-12-postgis-3 postgresql-12-postgis-3-scripts
     sudo nano /etc/postgresql/12/main/postgresql.conf
 
-=> changer 
-`#listen_addresses='localhost'` en `listen_addresses='*'`
-shared_preload_libraries = 'pgaudit'    # (change requires restart)
+=> changer :
+
+.. code:: cfg
+
+    listen_addresses='*'`
+    shared_preload_libraries = 'pgaudit'    # (change requires restart)
 
 .. code:: bash
 
@@ -79,6 +82,7 @@ shared_preload_libraries = 'pgaudit'    # (change requires restart)
 
     psql
     CREATE EXTENSION adminpack;
+    CREATE EXTENSION pgadmin;
     CREATE EXTENSION postgis;
     CREATE EXTENSION postgis_topology;
     CREATE ROLE xfer38 LOGIN PASSWORD '*whateveryouwant*' SUPERUSER CREATEDB CREATEROLE;
