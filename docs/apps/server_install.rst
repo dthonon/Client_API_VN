@@ -59,7 +59,9 @@ de la manière suivante.
     sudo apt -y install postgresql postgresql-contrib postgis postgresql-12-postgis-3 postgresql-12-postgis-3-scripts
     sudo nano /etc/postgresql/12/main/postgresql.conf
 
-=> changer `#listen_addresses='localhost'` en `listen_addresses='*'`
+=> changer 
+`#listen_addresses='localhost'` en `listen_addresses='*'`
+shared_preload_libraries = 'pgaudit'    # (change requires restart)
 
 .. code:: bash
 
