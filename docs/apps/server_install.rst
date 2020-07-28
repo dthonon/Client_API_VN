@@ -142,10 +142,12 @@ par défaut et installant un firewall:
     sudo apt -y install ufw
     sudo ufw allow ssh
     sudo ufw allow postgresql
-    # Pour les serveurs fournissant plus que postgres (developpement...)
+    # For development servers with additional services (developpement...), to be customized
+    sudo ufw allow smtp
     sudo ufw allow ftp
     sudo ufw allow http
     sudo ufw allow https
+    # After adding all ports
     sudo ufw enable
     sudo reboot
 
