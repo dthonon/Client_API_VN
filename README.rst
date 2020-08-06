@@ -37,6 +37,11 @@ Installation - Python
 These instructions present the steps required to install the
 Python applications.
 
+Add the follwing debian packages::
+
+    sudo apt install python3-dev
+    sudo apt install python3-venv
+
 Create a python virtual environment, activate it and update basic tools::
 
     python3 -m venv VN_env
