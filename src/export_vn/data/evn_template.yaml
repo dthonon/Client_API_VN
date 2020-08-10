@@ -134,8 +134,8 @@ filter:
     # Use short (recommended) or long JSON data
     # json_format: short
     # Optional start and end dates
-    # start_date: 2019-09-01
-    # end_date: 2019-08-01
+    # start_date: 2019-08-01
+    # end_date: 2019-09-01
 
 # VisioNature site access parameters
 site:
