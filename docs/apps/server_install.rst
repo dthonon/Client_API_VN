@@ -51,12 +51,15 @@ de la manière suivante.
 
 .. code:: bash
 
-    sudo apt-get install curl ca-certificates gnupg
+    sudo apt -y install curl ca-certificates gnupg
     sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
     curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
 
-    sudo apt-get update
+    sudo apt update
     sudo apt -y install postgresql postgresql-contrib postgis postgresql-12-postgis-3 postgresql-12-postgis-3-scripts
+    sudo apt -y install pgadmin4 # Optionnel, pour l'accès par PgAdmin
+    sudo apt -y install postgresql-12-pgaudit # Optionnel, pour l'audit détaillé des accès à la base
+    sudo apt install postgresql-12-pgaudit
     sudo nano /etc/postgresql/12/main/postgresql.conf
 
 => changer :
@@ -64,7 +67,7 @@ de la manière suivante.
 .. code:: cfg
 
     listen_addresses='*'`
-    shared_preload_libraries = 'pgaudit'    # (change requires restart)
+    shared_preload_libraries = 'pgaudit'    # Optionnel, pour l'audit détaillé des accès à la Postgresql
 
 .. code:: bash
 
@@ -82,7 +85,6 @@ de la manière suivante.
 
     psql
     CREATE EXTENSION adminpack;
-    CREATE EXTENSION pgadmin;
     CREATE EXTENSION postgis;
     CREATE EXTENSION postgis_topology;
     CREATE ROLE xfer38 LOGIN PASSWORD '*whateveryouwant*' SUPERUSER CREATEDB CREATEROLE;
@@ -97,8 +99,9 @@ Optionnel, pour fournir pgAdmin4 serveur:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Les modules python suivants doivent être installés dans le système de base.
+D'autres modules peuvent être nécessaires, à vérifier.
 Les autres modules seront installés dans l'environnement virtuel de
-l'utilisateur:
+l'utilisateur :
 
 .. code:: bash
 
