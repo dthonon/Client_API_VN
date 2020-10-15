@@ -128,13 +128,30 @@ def test_update(sighting_for_test):
     obs_1 = sighting_for_test["id"][0]
     assert isinstance(obs_1, int)
 
-    # Check with incorrect operation
+    # Check handling of incorrect operation
     with open(file_input, "w", newline="") as csvfile:
         inwriter = csv.writer(csvfile, delimiter=";", quoting=csv.QUOTE_MINIMAL)
         inwriter.writerow([" site", "id_universal ", "path", "operation", " value "])
         inwriter.writerow(
             [
-                "Isère",
+                "vn38",
+                str(obs_1),
+                "$['data']['sightings'][0]['observers'][0]['atlas_code']",
+                "unknown",
+                "2",
+            ]
+        )
+    with patch("sys.argv", ["py.test", name_yaml, "../" + name_input]):
+        update_vn.run()
+
+    # Check handling of empty line
+    with open(file_input, "w", newline="") as csvfile:
+        inwriter = csv.writer(csvfile, delimiter=";", quoting=csv.QUOTE_MINIMAL)
+        inwriter.writerow([" site", "id_universal ", "path", "operation", " value "])
+        inwriter.writerow([])
+        inwriter.writerow(
+            [
+                "vn38",
                 str(obs_1),
                 "$['data']['sightings'][0]['observers'][0]['atlas_code']",
                 "unknown",
@@ -150,7 +167,7 @@ def test_update(sighting_for_test):
         inwriter.writerow(["site", "id_universal", "path", "operation", "value"])
         inwriter.writerow(
             [
-                "Isère",
+                "vn38",
                 str(obs_1),
                 "$['data']['sightings'][0]['observers'][0]['atlas_code']",
                 "replace",
@@ -170,7 +187,7 @@ def test_update(sighting_for_test):
         inwriter.writerow(["site", "id_universal", "path", "operation", "value"])
         inwriter.writerow(
             [
-                "Isère",
+                "vn38",
                 str(obs_1),
                 "$['data']['sightings'][0]['observers'][0]['atlas_code']",
                 "replace",
@@ -190,7 +207,7 @@ def test_update(sighting_for_test):
         inwriter.writerow(["site", "id_universal", "path", "operation", "value"])
         inwriter.writerow(
             [
-                "Isère",
+                "vn38",
                 str(obs_1),
                 "$['data']['sightings'][0]['observers'][0]['atlas_code']",
                 "delete_attribute",
@@ -208,7 +225,7 @@ def test_update(sighting_for_test):
         inwriter.writerow(["site", "id_universal", "path", "operation", "value"])
         inwriter.writerow(
             [
-                "Isère",
+                "vn38",
                 str(obs_1),
                 "$['data']['sightings'][0]['observers'][0]['comment']",
                 "replace",
@@ -226,7 +243,6 @@ def test_update(sighting_for_test):
     with open(file_input, "w", newline="") as csvfile:
         inwriter = csv.writer(csvfile, delimiter=";", quoting=csv.QUOTE_MINIMAL)
         inwriter.writerow(["site", "id_universal", "path", "operation", "value"])
-        inwriter.writerow(["Isère", str(obs_1), "", "delete_observation", ""])
+        inwriter.writerow(["vn38", str(obs_1), "", "delete_observation", ""])
     with patch("sys.argv", ["py.test", name_yaml, "../" + name_input]):
         update_vn.run()
-
