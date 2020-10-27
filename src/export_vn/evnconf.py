@@ -40,6 +40,10 @@ class EvnConfException(Exception):
     """An exception occurred while loading parameters."""
 
 
+class MissingConfigurationFile(EvnConfException):
+    """Incorrect or missing parameter."""
+
+
 class IncorrectParameter(EvnConfException):
     """Incorrect or missing parameter."""
 
@@ -730,6 +734,10 @@ class EvnConf:
         # Define configuration schema
         # Read configuration parameters
         p = Path.home() / file
+        if not p.is_file():
+            logger.critical(_("File %s does not exist"), str(p))
+            raise MissingConfigurationFile
+
         yaml_text = p.read_text()
         try:
             logger.info(_("Loading YAML configuration %s"), file)

@@ -30,8 +30,9 @@ def test_version():
 # ------------
 def test_general_data_file_store():
     """Store general items_dict to file."""
+    assert len(CFG.file_store) > 0
     dir_json = str(Path.home()) + "/" + CFG.file_store
-    shutil.rmtree(dir_json)
+    shutil.rmtree(dir_json, ignore_errors=True)
     file_json = dir_json + "general_data_1.json.gz"
     items_dict = {
         "data": [

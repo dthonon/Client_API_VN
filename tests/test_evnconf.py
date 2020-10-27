@@ -10,6 +10,7 @@ import pytest
 
 from export_vn import __version__
 from export_vn.evnconf import EvnConf
+from export_vn.evnconf import MissingConfigurationFile
 from strictyaml import YAMLValidationError
 
 # Testing constants
@@ -76,6 +77,16 @@ def create_file(request):
     c_cfg = cfg.ctrl_list[CRTL]
     s_cfg = cfg.site_list[request.param["site"]]
     return (cfg, c_cfg, s_cfg, cfg_file, request.param)
+
+
+def test_no_file():
+    """Check for exception is no configuration file."""
+    cfg_file = ".QfB7F0jvnC7V.yaml"
+    try:
+        cfg = EvnConf(cfg_file)
+    except MissingConfigurationFile:
+        pytest.skip("Expected evnconf MissingConfigurationFile error")
+
 
 
 def test_version(create_file):
