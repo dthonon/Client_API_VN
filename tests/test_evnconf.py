@@ -220,6 +220,12 @@ def test_taxo_exclude(create_file):
     assert s_cfg.taxo_exclude == ["TAXO_GROUP_ALIEN_PLANTS"]
 
 
+def test_territorial_unit_ids(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, cfg_file, params = create_file
+    assert s_cfg.territorial_unit_ids == ["7"]
+
+
 def test_json_format(create_file):
     """ Test property."""
     cfg, c_cfg, s_cfg, cfg_file, params = create_file

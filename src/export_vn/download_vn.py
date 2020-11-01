@@ -366,7 +366,7 @@ class Observations(DownloadVn):
     def _store_search(self, id_taxo_group, short_version="1"):
         """Download from VN by API search and store json to file.
 
-        Calls biolovision_api to get observation, convert to json and store.
+        Calls biolovision_api to get observations, convert to json and store.
         If id_taxo_group is defined, downloads only this taxo_group
         Else if id_taxo_group is None, downloads all database
         Moves back in date range, starting from now
@@ -495,6 +495,7 @@ class Observations(DownloadVn):
         by_specie=False,
         method="search",
         taxo_groups_ex=None,
+        territorial_unit_ids=None,
         short_version="1",
     ):
         """Download from VN by API and store json to backend.
@@ -512,9 +513,11 @@ class Observations(DownloadVn):
         by_specie : bool
             If True, downloading by specie.
         method : str
-            API used to download, either 'search' or 'list'.
+            API used to download, only 'search'.
         taxo_groups_ex : list
             List of taxo_groups to exclude from storage.
+        territorial_unit_ids : list
+            List of territorial_units to include in storage.
         short_version : str
             '0' for long JSON and '1' for short_version.
         """
@@ -528,6 +531,7 @@ class Observations(DownloadVn):
             for taxo in taxo_list:
                 self._store_search(taxo, short_version=short_version)
         elif method == "list":
+            logger.warn(_("Download using list is deprecated"))
             for taxo in taxo_list:
                 self._store_list(taxo, by_specie=by_specie, short_version=short_version)
         else:

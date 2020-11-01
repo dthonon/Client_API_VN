@@ -1,0 +1,2 @@
+Support for list download is deprecated and will be removed in a future version.
+Download should only be performed using search method.

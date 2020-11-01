@@ -7,7 +7,7 @@ See details in each class.
 
 Each Biolovision controler is mapped to a python class.
 Class name is derived from controler name by removing '_' and using CamelCase.
-Methods names are similar to the corresponding API call, prefixed by 'api\_'.
+Methods names are similar to the corresponding API call, prefixed by 'api'.
 For example, method 'api_list' in class 'LocalAdminUnits' will
 call 'local_admin_units'.
 
@@ -85,7 +85,7 @@ Exceptions:
 import json
 import logging
 import time
-import urllib
+from urllib import parse
 from functools import lru_cache
 
 from typing import Dict
@@ -216,13 +216,14 @@ class BiolovisionAPI:
         """
         # Loop on chunks
         nb_chunks = 0
+        data_rec = None
         while nb_chunks < self._limits["max_chunks"]:
             # Remove DEBUG logging level to avoid too many details
             level = logging.getLogger().level
             logging.getLogger().setLevel(logging.INFO)
 
             # Prepare call to API
-            payload = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
+            payload = parse.urlencode(params, quote_via=parse.quote)
             logger.debug(_("Params: %s"), payload)
             headers = {"Content-Type": "application/json;charset=UTF-8"}
             if optional_headers is not None:
