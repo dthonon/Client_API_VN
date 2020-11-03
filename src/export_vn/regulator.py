@@ -10,6 +10,7 @@ Derived from https://github.com/m-lundberg/simple-pid
 import logging
 
 from . import _, __version__
+from typing import Union
 
 logger = logging.getLogger("transfer_vn.regulator")
 
@@ -17,7 +18,14 @@ logger = logging.getLogger("transfer_vn.regulator")
 class PID(object):
     """A simple PID controller. No fuss."""
 
-    def __init__(self, kp=1.0, ki=0.0, kd=0.0, setpoint=0, output_limits=(None, None)):
+    def __init__(
+        self,
+        kp: float = 1.0,
+        ki: float = 0.0,
+        kd: float = 0.0,
+        setpoint: float = 0,
+        output_limits=(None, None),
+    ):
         """Simple PID creation.
 
         Parameters
@@ -38,15 +46,17 @@ class PID(object):
             Setting output limits also avoids integral windup, since the
             integral term will never be allowed to grow outside of the limits.
         """
-        self.kp, self.ki, self.kd = kp, ki, kd
+        self.kp = kp
+        self.ki = ki
+        self.kd = kd
         self.setpoint = setpoint
 
         self._min_output, self._max_output = output_limits
 
-        self._error_sum = 0
+        self._error_sum = 0.0
 
         self._last_output = None
-        self._proportional = 0
+        self._proportional = 0.0
         self._last_input = None
 
     @property
@@ -54,17 +64,15 @@ class PID(object):
         """Return version."""
         return __version__
 
-    def _clamp(self, value, limits):
+    def _clamp(self, value, limits) -> float:
         lower, upper = limits
-        if value is None:
-            return None
-        elif upper is not None and value > upper:
+        if upper is not None and value > upper:
             return upper
         elif lower is not None and value < lower:
             return lower
         return value
 
-    def __call__(self, input_):
+    def __call__(self, input_) -> float:
         """
         Call the PID controller with *input_* and calculate and return a
         control output since the last update. If no new output is calculated,

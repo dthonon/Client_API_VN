@@ -128,7 +128,7 @@ class DownloadVn:
 
 
 class Entities(DownloadVn):
-    """ Implement store from entities controler.
+    """Implement store from entities controler.
 
     Methods
     - store               - Download and store to json
@@ -145,7 +145,7 @@ class Entities(DownloadVn):
 
 
 class Families(DownloadVn):
-    """ Implement store from families controler.
+    """Implement store from families controler.
 
     Methods
     - store               - Download and store to json
@@ -162,7 +162,7 @@ class Families(DownloadVn):
 
 
 class Fields(DownloadVn):
-    """ Implement store from fields controler.
+    """Implement store from fields controler.
 
     Methods
     - store               - Download and store to json
@@ -228,7 +228,7 @@ class Fields(DownloadVn):
 
 
 class LocalAdminUnits(DownloadVn):
-    """ Implement store from local_admin_units controler.
+    """Implement store from local_admin_units controler.
 
     Methods
     - store               - Download and store to json
@@ -250,7 +250,7 @@ class LocalAdminUnits(DownloadVn):
 
 
 class Observations(DownloadVn):
-    """ Implement store from observations controler.
+    """Implement store from observations controler.
 
     Methods
     - store               - Download (by date interval) and store to json
@@ -430,6 +430,8 @@ class Observations(DownloadVn):
                         "species_choice": "all",
                         "taxonomic_group": taxo["id"],
                     }
+                    if len(self._config.territorial_unit_ids) > 0:
+                        q_param["territorial_unit_ids"] = self._config.territorial_unit_ids
                     items_dict = self._api_instance.api_search(
                         q_param, short_version=short_version
                     )
@@ -531,7 +533,11 @@ class Observations(DownloadVn):
             for taxo in taxo_list:
                 self._store_search(taxo, short_version=short_version)
         elif method == "list":
-            logger.warn(_("Download using list is deprecated"))
+            logger.warning(
+                _(
+                    "Download using list method is deprecated. Please use search method only"
+                )
+            )
             for taxo in taxo_list:
                 self._store_list(taxo, by_specie=by_specie, short_version=short_version)
         else:
@@ -656,7 +662,7 @@ class Observations(DownloadVn):
 
 
 class Observers(DownloadVn):
-    """ Implement store from observers controler.
+    """Implement store from observers controler.
 
     Methods
     - store               - Download and store to json
@@ -673,7 +679,7 @@ class Observers(DownloadVn):
 
 
 class Places(DownloadVn):
-    """ Implement store from places controler.
+    """Implement store from places controler.
 
     Methods
     - store               - Download and store to json
@@ -690,7 +696,7 @@ class Places(DownloadVn):
 
 
 class Species(DownloadVn):
-    """ Implement store from species controler.
+    """Implement store from species controler.
 
     Methods
     - store               - Download and store to json
@@ -706,8 +712,7 @@ class Species(DownloadVn):
         return None
 
     def store(self):
-        """Store species, iterating over taxo_groups
-        """
+        """Store species, iterating over taxo_groups"""
         taxo_groups = TaxoGroupsAPI(self._config).api_list()
         taxo_list = []
         for taxo in taxo_groups["data"]:
@@ -720,7 +725,7 @@ class Species(DownloadVn):
 
 
 class TaxoGroup(DownloadVn):
-    """ Implement store from taxo_groups controler.
+    """Implement store from taxo_groups controler.
 
     Methods
     - store               - Download and store to json
@@ -737,7 +742,7 @@ class TaxoGroup(DownloadVn):
 
 
 class TerritorialUnits(DownloadVn):
-    """ Implement store from territorial_units controler.
+    """Implement store from territorial_units controler.
 
     Methods
     - store               - Download and store to json
@@ -759,7 +764,7 @@ class TerritorialUnits(DownloadVn):
 
 
 class Validations(DownloadVn):
-    """ Implement store from validations controler.
+    """Implement store from validations controler.
 
     Methods
     - store               - Download and store to json
