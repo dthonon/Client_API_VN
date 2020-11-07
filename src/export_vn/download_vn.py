@@ -431,7 +431,7 @@ class Observations(DownloadVn):
                         "taxonomic_group": taxo["id"],
                     }
                     if len(self._config.territorial_unit_ids) > 0:
-                        q_param["territorial_unit_ids"] = self._config.territorial_unit_ids
+                        q_param["territorial_unit_ids"] = self._config.territorial_unit_ids[0]
                     items_dict = self._api_instance.api_search(
                         q_param, short_version=short_version
                     )

@@ -584,7 +584,7 @@ class ObservationsAPI(BiolovisionAPI):
 
     - api_list     - Return a list of observations from the controler
 
-    - api_diff     - Return all changes in observations since a given date
+    - api_diff     - Deprecated: Return all changes in observations since a given date
 
     - api_search   - Search for observations based on parameter value
 
