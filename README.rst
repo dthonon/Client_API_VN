@@ -31,6 +31,11 @@ They are tested under Linux Ubuntu or Debian. Other Linux
 distributions could work. Windows is not tested at all and will
 probably not work.
 
+See `Documentation <https://client-api-vn1.readthedocs.io/en/latest/>`_ for more informations.
+
+A thin Python layer on top of Biolovision API is provided,as described in
+`API Documentation <https://client-api-vn1.readthedocs.io/en/latest/api/modules.html>`_.
+
 Installation - Python
 ---------------------
 
