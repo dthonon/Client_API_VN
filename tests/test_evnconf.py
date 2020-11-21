@@ -243,6 +243,12 @@ def test_end_date(create_file):
     cfg, c_cfg, s_cfg, cfg_file, params = create_file
     assert s_cfg.end_date == params["end_date"]
 
+def test_type_date(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, cfg_file, params = create_file
+    if s_cfg.type_date is not None:
+        assert s_cfg.type_date == "sighting" or s_cfg.type_date == "entry"
+
 
 def test_base_url(create_file):
     """ Test property."""
