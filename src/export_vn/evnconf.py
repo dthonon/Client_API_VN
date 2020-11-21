@@ -253,6 +253,7 @@ _ConfSchema = Map(
                 Optional("json_format", default="short"): Enum(["short", "long"]),
                 Optional("start_date"): Datetime(),
                 Optional("end_date"): Datetime(),
+                Optional("type_date", default="sighting"): Enum(["sighting", "entry"]),
             }
         ),
         "site": MapPattern(
@@ -424,6 +425,7 @@ class EvnSiteConf:
             self._json_format = "short"  # type: str
             self._start_date = None  # type: Union[datetime, None]
             self._end_date = None  # type: Union[datetime, None]
+            self._type_date = None  # type: Union[str, None]
             if "filter" in config:
                 if "taxo_exclude" in config["filter"]:
                     self._taxo_exclude = config["filter"]["taxo_exclude"]
@@ -437,6 +439,8 @@ class EvnSiteConf:
                     self._start_date = config["filter"]["start_date"]
                 if "end_date" in config["filter"]:
                     self._end_date = config["filter"]["end_date"]
+                if "type_date" in config["filter"]:
+                    self._type_date = config["filter"]["type_date"]
             if (self._start_date is not None) and (self._end_date is not None):
                 if self._start_date > self._end_date:
                     logger.error(_("start_date must be before end_date"))
@@ -590,6 +594,11 @@ class EvnSiteConf:
     def end_date(self) -> Union[datetime, None]:
         """Return latest date for download."""
         return self._end_date
+
+    @property
+    def type_date(self) -> Union[str, None]:
+        """Return type of date ("sighting" or "entry") for download."""
+        return self._type_date
 
     @property
     def file_enabled(self) -> bool:
