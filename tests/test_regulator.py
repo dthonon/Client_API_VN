@@ -22,9 +22,8 @@ def test_tunings():
     assert pid.tunings == (4, 5, 6)
     pid.output_limits = (20, 30)
     assert pid.output_limits == (20, 30)
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         pid.output_limits = (30, 0)
-
 
 
 def test_zero():

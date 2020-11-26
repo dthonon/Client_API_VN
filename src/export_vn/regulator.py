@@ -10,7 +10,7 @@ Derived from https://github.com/m-lundberg/simple-pid
 import logging
 
 from . import _, __version__
-from typing import Optional, Union, Tuple
+from typing import Optional, Tuple
 
 logger = logging.getLogger("transfer_vn.regulator")
 

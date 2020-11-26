@@ -83,10 +83,9 @@ def test_no_file():
     """Check for exception is no configuration file."""
     cfg_file = ".QfB7F0jvnC7V.yaml"
     try:
-        cfg = EvnConf(cfg_file)
+        EvnConf(cfg_file)
     except MissingConfigurationFile:
         pytest.skip("Expected evnconf MissingConfigurationFile error")
-
 
 
 def test_version(create_file):
@@ -242,6 +241,7 @@ def test_end_date(create_file):
     """ Test property."""
     cfg, c_cfg, s_cfg, cfg_file, params = create_file
     assert s_cfg.end_date == params["end_date"]
+
 
 def test_type_date(create_file):
     """ Test property."""

@@ -331,24 +331,14 @@ class EvnCtrlConf:
             else config["controler"][ctrl]["enabled"]
         )  # type: bool
 
-        self._schedule_year = self._schedule_param(
-            config["controler"][ctrl], "year"
-        )
-        self._schedule_month = self._schedule_param(
-            config["controler"][ctrl], "month"
-        )
-        self._schedule_day = self._schedule_param(
-            config["controler"][ctrl], "day"
-        )
-        self._schedule_week = self._schedule_param(
-            config["controler"][ctrl], "week"
-        )
+        self._schedule_year = self._schedule_param(config["controler"][ctrl], "year")
+        self._schedule_month = self._schedule_param(config["controler"][ctrl], "month")
+        self._schedule_day = self._schedule_param(config["controler"][ctrl], "day")
+        self._schedule_week = self._schedule_param(config["controler"][ctrl], "week")
         self._schedule_day_of_week = self._schedule_param(
             config["controler"][ctrl], "day_of_week"
         )
-        self._schedule_hour = self._schedule_param(
-            config["controler"][ctrl], "hour"
-        )
+        self._schedule_hour = self._schedule_param(config["controler"][ctrl], "hour")
         self._schedule_minute = self._schedule_param(
             config["controler"][ctrl], "minute"
         )
@@ -785,11 +775,6 @@ class EvnConf:
     def ctrl_list(self) -> _ConfType:
         """Return list of controler configurations."""
         return self._ctrl_list
-
-    @property
-    def site_list(self) -> _ConfType:
-        """Return list of site configurations."""
-        return self._site_list
 
     @property
     def site_list(self) -> _ConfType:

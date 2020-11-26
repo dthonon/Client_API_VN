@@ -18,8 +18,7 @@ from pathlib import Path
 from typing import Any
 
 import pkg_resources
-from jsonschema import Draft7Validator, ValidationError, validate, validators
-from jsonschema.validators import validator_for, extend
+from jsonschema.validators import validator_for
 from strictyaml import YAMLValidationError
 
 from export_vn.evnconf import EvnConf
@@ -91,7 +90,8 @@ def _get_int_or_float(v):
     number_as_int = int(number_as_float)
     return number_as_int if number_as_float == number_as_int else number_as_float
 
-def validate(cfg_site_list: Any, samples: float) -> None:
+
+def validate_schema(cfg_site_list: Any, samples: float) -> None:
     """Validate schemas against downloaded files.
     Files are renamed *.done after successful processing."""
     # Iterate over schema list
@@ -130,6 +130,7 @@ def validate(cfg_site_list: Any, samples: float) -> None:
 
     return None
 
+
 def restore(cfg_site_list: Any) -> None:
     """Restore file names."""
     # Iterate over schema list
@@ -140,7 +141,6 @@ def restore(cfg_site_list: Any) -> None:
     ]
     for js_f in js_list:
         schema = js_f.split(".")[0]
-        file = pkg_resources.resource_filename(__name__, js_f)
         logger.info(_("Restoring files for schema %s"), schema)
         # Gathering files to rename
         f_list = list()
@@ -154,6 +154,7 @@ def restore(cfg_site_list: Any) -> None:
             shutil.move(fj, fjr)
 
     return None
+
 
 def report(cfg_site_list: Any) -> None:
     """Print of list of properties in the schemas."""
@@ -175,7 +176,6 @@ def report(cfg_site_list: Any) -> None:
                 for key, props in schema_js["definitions"][defs]["properties"].items():
                     if "title" in props:
                         pp.pprint(props)
-
 
 
 def main(args):
@@ -241,18 +241,17 @@ def main(args):
                 _(
                     "--samples float parameter: %s "
                     "must be between 0.0 and 1.0. Coerced to 0.1"
-                ), samples
+                ),
+                samples,
             )
             samples = 0.1
         if isinstance(samples, int) and (samples < 0):
             logger.error(
-                _(
-                    "--samples int parameter: %s "
-                    "must be positive. Coerced to 0.1"
-                ), samples
+                _("--samples int parameter: %s " "must be positive. Coerced to 0.1"),
+                samples,
             )
             samples = 0.1
-        validate(cfg_site_list, samples)
+        validate_schema(cfg_site_list, samples)
         return None
 
     # Restoring file names
@@ -269,8 +268,7 @@ def main(args):
 
 
 def run():
-    """Entry point for console_scripts
-    """
+    """Entry point for console_scripts"""
     main(sys.argv[1:])
 
 

@@ -343,7 +343,8 @@ def col_table_create(cfg, sql_quiet, client_min_message):
     logger = logging.getLogger("transfer_vn")
     logger.debug(_("Creating SQL file from template"))
     env = Environment(
-        loader=PackageLoader("export_vn", "sql"), keep_trailing_newline=True,
+        loader=PackageLoader("export_vn", "sql"),
+        keep_trailing_newline=True,
     )
     template = env.get_template("create-vn-tables.sql")
     cmd = template.render(cfg=db_config(cfg))
@@ -381,7 +382,7 @@ def full_download_1(ctrl, cfg_crtl_list, cfg):
     logger = logging.getLogger("transfer_vn")
     logger.debug(_("Enter full_download_1: %s"), ctrl.__name__)
     with StorePostgresql(cfg) as store_pg, StoreFile(cfg) as store_f:
-        store_all = StoreAll(cfg, db_backend = store_pg, file_backend = store_f)
+        store_all = StoreAll(cfg, db_backend=store_pg, file_backend=store_f)
         downloader = ctrl(cfg, store_all)
         if cfg_crtl_list[downloader.name].enabled:
             logger.info(
@@ -398,7 +399,7 @@ def full_download_1(ctrl, cfg_crtl_list, cfg):
                     method="search",
                     by_specie=False,
                     taxo_groups_ex=cfg.taxo_exclude,
-                    short_version= (1 if cfg.json_format == "short" else 0),
+                    short_version=(1 if cfg.json_format == "short" else 0),
                 )
             else:
                 downloader.store()
@@ -409,7 +410,7 @@ def full_download_1(ctrl, cfg_crtl_list, cfg):
 
 def full_download(cfg_ctrl):
     """Performs a full download of all sites and controlers,
-       based on configuration file."""
+    based on configuration file."""
     logger = logging.getLogger("transfer_vn")
     cfg_crtl_list = cfg_ctrl.ctrl_list
     cfg_site_list = cfg_ctrl.site_list
@@ -483,7 +484,7 @@ def increment_download_1(ctrl, cfg_crtl_list, cfg):
     logger = logging.getLogger("transfer_vn")
     logger.debug(_("Enter increment_download_1: %s"), ctrl.__name__)
     with StorePostgresql(cfg) as store_pg, StoreFile(cfg) as store_f:
-        store_all = StoreAll(cfg, db_backend = store_pg, file_backend = store_f)
+        store_all = StoreAll(cfg, db_backend=store_pg, file_backend=store_f)
         downloader = ctrl(cfg, store_all)
         if cfg_crtl_list[downloader.name].enabled:
             logger.info(
@@ -741,7 +742,6 @@ def main(args):
         logger.critical(_("Please modify YAML configuration and restart."))
         sys.exit(0)
 
-
     manage_pg = PostgresqlUtils(cfg)
 
     if args.db_drop:
@@ -791,8 +791,7 @@ def main(args):
 
 
 def run():
-    """Entry point for console_scripts
-    """
+    """Entry point for console_scripts"""
     main(sys.argv[1:])
 
 

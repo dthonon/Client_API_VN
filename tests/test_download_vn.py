@@ -234,6 +234,7 @@ def test_territorial_units_store(capsys):
         items_dict = json.loads(g.read().decode("utf-8"))
     assert len(items_dict["data"]) == 1
 
+
 # ------------
 #  Validations
 # ------------

@@ -6,6 +6,8 @@ import logging
 import time
 from datetime import datetime, timedelta
 
+import pytest
+
 from biolovision.api import (
     EntitiesAPI,
     FamiliesAPI,
@@ -21,11 +23,8 @@ from biolovision.api import (
     TaxoGroupsAPI,
     TerritorialUnitsAPI,
     ValidationsAPI,
-    HTTPError,
 )
 from export_vn.evnconf import EvnConf
-
-import pytest
 
 # Using faune-ardeche or faune-isere site, that needs to be created first
 # SITE = "t07"

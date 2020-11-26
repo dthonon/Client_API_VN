@@ -372,7 +372,6 @@ class PostgresqlUtils:
         )
         return None
 
-
     # ---------------
     # External methods
     # ---------------

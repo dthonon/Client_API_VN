@@ -335,7 +335,9 @@ class BiolovisionAPI:
                                 # logger.error(_("No 'sightings' in previous data"))
                                 # logger.error(data_rec)
                                 # logger.error(resp_chunk)
-                                data_rec["data"]["sightings"] = resp_chunk["data"]["sightings"]
+                                data_rec["data"]["sightings"] = resp_chunk["data"][
+                                    "sightings"
+                                ]
                     if "forms" in resp_chunk["data"]:
                         observations = True
                         logger.debug(
@@ -514,7 +516,7 @@ class BiolovisionAPI:
 
 
 class EntitiesAPI(BiolovisionAPI):
-    """ Implement api calls to entities controler.
+    """Implement api calls to entities controler.
 
     Methods:
 
@@ -529,7 +531,7 @@ class EntitiesAPI(BiolovisionAPI):
 
 
 class FamiliesAPI(BiolovisionAPI):
-    """ Implement api calls to families controler.
+    """Implement api calls to families controler.
 
     Methods:
 
@@ -544,7 +546,7 @@ class FamiliesAPI(BiolovisionAPI):
 
 
 class FieldsAPI(BiolovisionAPI):
-    """ Implement api calls to fields controler.
+    """Implement api calls to fields controler.
 
     Methods:
 
@@ -559,7 +561,7 @@ class FieldsAPI(BiolovisionAPI):
 
 
 class LocalAdminUnitsAPI(BiolovisionAPI):
-    """ Implement api calls to local_admin_units controler.
+    """Implement api calls to local_admin_units controler.
 
     Methods:
 
@@ -576,7 +578,7 @@ class LocalAdminUnitsAPI(BiolovisionAPI):
 
 
 class ObservationsAPI(BiolovisionAPI):
-    """ Implement api calls to observations controler.
+    """Implement api calls to observations controler.
 
     Methods:
 
@@ -764,7 +766,7 @@ class ObservationsAPI(BiolovisionAPI):
 
 
 class ObserversAPI(BiolovisionAPI):
-    """ Implement api calls to observers controler.
+    """Implement api calls to observers controler.
 
     Methods:
 
@@ -779,7 +781,7 @@ class ObserversAPI(BiolovisionAPI):
 
 
 class PlacesAPI(BiolovisionAPI):
-    """ Implement api calls to places controler.
+    """Implement api calls to places controler.
 
     Methods:
 
@@ -794,7 +796,7 @@ class PlacesAPI(BiolovisionAPI):
 
 
 class SpeciesAPI(BiolovisionAPI):
-    """ Implement api calls to species controler.
+    """Implement api calls to species controler.
 
     Methods:
 
@@ -809,7 +811,7 @@ class SpeciesAPI(BiolovisionAPI):
 
 
 class TaxoGroupsAPI(BiolovisionAPI):
-    """ Implement api calls to taxo_groups controler.
+    """Implement api calls to taxo_groups controler.
 
     Methods:
 
@@ -829,7 +831,7 @@ class TaxoGroupsAPI(BiolovisionAPI):
 
 
 class TerritorialUnitsAPI(BiolovisionAPI):
-    """ Implement api calls to territorial_units controler.
+    """Implement api calls to territorial_units controler.
 
     Methods:
 
@@ -851,12 +853,12 @@ class TerritorialUnitsAPI(BiolovisionAPI):
 
 
 class ValidationsAPI(BiolovisionAPI):
-    """ Implement api calls to validations controler.
+    """Implement api calls to validations controler.
 
     Methods:
 
     - api_get                - Return a single validation from the controler
-    
+
     - api_list               - Return the list of validations from the controler
 
     """
