@@ -432,6 +432,11 @@ class Observations(DownloadVn):
                     }
                     if len(self._config.territorial_unit_ids) > 0:
                         q_param["territorial_unit_ids"] = self._config.territorial_unit_ids[0]
+                    if self._config._type_date is not None:
+                        if self._config._type_date == "entry":
+                            q_param["entry_date"] = "1"
+                        else:
+                            q_param["entry_date"] = "0"
                     items_dict = self._api_instance.api_search(
                         q_param, short_version=short_version
                     )
