@@ -66,7 +66,7 @@ de la manière suivante.
 
 .. code:: cfg
 
-    listen_addresses='*'`
+    listen_addresses='*'
     shared_preload_libraries = 'pgaudit'    # Optionnel, pour l'audit détaillé des accès à la Postgresql
 
 .. code:: bash
