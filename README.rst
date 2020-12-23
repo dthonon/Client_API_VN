@@ -142,21 +142,21 @@ where::
     options  command line options described below
     config   YAML file, located in $HOME directory, described in sample file
 
-    -h, --help             Prints help and exits
-    --version              Print version number
-    --verbose              Increase output verbosity
-    --quiet                Reduce output verbosity
-    --init                 Initialize the YAML configuration file
-    --db_drop              Delete if exists database and roles
-    --db_create            Create database and roles
-    --json_tables_create   Create or recreate json tables
-    --col_tables_create    Create or recreate colums based tables
-    --full                 Perform a full download
-    --update               Perform an incremental download
-    --schedule             Create or update the incremental update schedule
-    --status               Print downloading status (schedule, errors...)
-    --count                Count observations by site and taxo_group
-    --profile              Gather and print profiling times
+-h, --help             Prints help and exits
+--version              Print version number
+--verbose              Increase output verbosity
+--quiet                Reduce output verbosity
+--init                 Initialize the YAML configuration file
+--db_drop              Delete if exists database and roles
+--db_create            Create database and roles
+--json_tables_create   Create or recreate json tables
+--col_tables_create    Create or recreate colums based tables
+--full                 Perform a full download
+--update               Perform an incremental download
+--schedule             Create or update the incremental update schedule
+--status               Print downloading status (schedule, errors...)
+--count                Count observations by site and taxo_group
+--profile              Gather and print profiling times
 
 Command-line options - update_vn
 ----------------------------------
@@ -171,11 +171,11 @@ where::
     config   YAML file, located in $HOME directory, described in sample file
     input    CSV file listing sightings to be updated
 
-    -h, --help             Prints help and exits
-    --version              Print version number
-    --verbose              Increase output verbosity
-    --quiet                Reduce output verbosity
-    --init                 Initialize the YAML configuration file
+-h, --help             Prints help and exits
+--version              Print version number
+--verbose              Increase output verbosity
+--quiet                Reduce output verbosity
+--init                 Initialize the YAML configuration file
 
 CSV input file must contain the following columns:
 
