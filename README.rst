@@ -139,8 +139,8 @@ The application runs as::
 
 where::
 
-    - options  command line options described below
-    - config   YAML file, located in $HOME directory, described in sample file
+    options  command line options described below
+    config   YAML file, located in $HOME directory, described in sample file
 
     -h, --help             Prints help and exits
     --version              Print version number
@@ -167,9 +167,9 @@ The application runs as::
 
 where::
 
-    - options  command line options described below
-    - config   YAML file, located in $HOME directory, described in sample file
-    - input    CSV file listing sightings to be updated
+    options  command line options described below
+    config   YAML file, located in $HOME directory, described in sample file
+    input    CSV file listing sightings to be updated
 
     -h, --help             Prints help and exits
     --version              Print version number
