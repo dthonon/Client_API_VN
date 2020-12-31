@@ -62,7 +62,7 @@ CRTL = "observations"
 def create_file(request):
     cfg_file = "." + request.param["file"]
     # Copy test file to HOME
-    in_file = Path.home() / "Client_API_VN" / "tests" / "data" / request.param["file"]
+    in_file = Path.home() / "Code" / "Client_API_VN" / "tests" / "data" / request.param["file"]
     out_file = Path.home() / cfg_file
     if (not out_file.is_file()) or (in_file.stat().st_mtime > out_file.stat().st_mtime):
         shutil.copy(in_file, out_file)

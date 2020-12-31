@@ -9,6 +9,7 @@ import pytest
 
 from export_vn.download_vn import (
     Entities,
+    Families,
     Fields,
     LocalAdminUnits,
     Observations,
@@ -34,6 +35,7 @@ MANAGE_PG = PostgresqlUtils(CFG)
 try:
     STORE_PG = StorePostgresql(CFG)
     ENTITIES = Entities(CFG, STORE_PG)
+    FAMILIES = Families(CFG, STORE_PG)
     FIELDS = Fields(CFG, STORE_PG)
     LOCAL_ADMIN_UNITS = LocalAdminUnits(CFG, STORE_PG)
     OBSERVATIONS = Observations(CFG, STORE_PG)
@@ -85,6 +87,15 @@ def test_increment_get_pg_store():
 def test_entities_api_pg_store():
     """Store entities to database."""
     ENTITIES.store()
+
+
+# --------
+# Families
+# --------
+@pytest.mark.slow
+def test_families_api_pg_store():
+    """Store families to database."""
+    FAMILIES.store()
 
 
 # ------
