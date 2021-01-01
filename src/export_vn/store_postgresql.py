@@ -652,8 +652,8 @@ class PostgresqlUtils:
         return result
 
 
-class StorePostgresql:
-    """Provides store to Postgresql database method."""
+class Postgresql:
+    """Provides common access Postgresql database."""
 
     def __init__(self, config):
         self._config = config
@@ -754,13 +754,47 @@ class StorePostgresql:
     def __exit__(self, exc_type, exc_value, traceback):
         """Finalize connections."""
         if self._config.db_enabled:
-            logger.debug(_("Closing database connection at exit from StorePostgresql"))
+            logger.info(_("Closing connection to database %s"), self._config.db_name)
             self._conn.close()
 
     @property
     def version(self):
         """Return version."""
         return __version__
+
+
+class ReadPostgresql(Postgresql):
+    """Provides read from Postgresql database method."""
+
+    # ----------------
+    # External methods
+    # ----------------
+    def read(self, controler):
+        """Read items from database.
+
+        Parameters
+        ----------
+        controler : str
+            Name of API controler.
+
+        Returns
+        -------
+        dict
+            Dict of items read from table.
+        """
+
+        logger.info(
+            _("Reading from %s of site %s"),
+            controler,
+            self._config.site,
+        )
+        metadata = self._table_defs[controler]["metadata"]
+        stmt = select([metadata.c.item]).where(
+            metadata.c.site == self._config.site)
+        return self._conn.execute(stmt).fetchall()
+
+class StorePostgresql(Postgresql):
+    """Provides store to Postgresql database method."""
 
     # ----------------
     # Internal methods
