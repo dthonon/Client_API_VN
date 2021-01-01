@@ -399,7 +399,15 @@ def full_download_1(ctrl, cfg_crtl_list, cfg):
                     method="search",
                     by_specie=False,
                     taxo_groups_ex=cfg.taxo_exclude,
+                    territorial_unit_ids=cfg.territorial_unit_ids,
                     short_version=(1 if cfg.json_format == "short" else 0),
+                )
+            elif downloader.name == "local_admin_units":
+                logger.info(
+                    _("%s => Included territorial_unit_ids: %s"), cfg.site, cfg.territorial_unit_ids
+                )
+                downloader.store(
+                    territorial_unit_ids=cfg.territorial_unit_ids,
                 )
             else:
                 downloader.store()

@@ -248,6 +248,33 @@ class LocalAdminUnits(DownloadVn):
         )
         return None
 
+    def store(
+        self, territorial_unit_ids=None,
+    ):
+        """Download from VN by API and store json to backend.
+
+        Overloads base method to add territorial_unit filter
+
+        Parameters
+        ----------
+        territorial_unit_ids : list
+            List of territorial_units to include in storage.
+        """
+        if (territorial_unit_ids is not None):
+            for id_canton in territorial_unit_ids:
+                logger.debug(
+                    _("Getting local_admin_units from id_canton %s, using API list"),
+                    id_canton,
+                )
+                q_param = {"id_canton": id_canton}
+                super().store([q_param])
+        else:
+            logger.debug(
+                _("Getting local_admin_units, using API list"),
+                self._api_instance.controler,
+            )
+            super().store()
+
 
 class Observations(DownloadVn):
     """Implement store from observations controler.
@@ -363,7 +390,9 @@ class Observations(DownloadVn):
 
         return None
 
-    def _store_search(self, id_taxo_group, short_version="1"):
+    def _store_search(
+        self, id_taxo_group, territorial_unit_ids=None, short_version="1"
+    ):
         """Download from VN by API search and store json to file.
 
         Calls biolovision_api to get observations, convert to json and store.
@@ -376,6 +405,8 @@ class Observations(DownloadVn):
         ----------
         id_taxo_group : str or None
             If not None, taxo_group to be downloaded.
+        territorial_unit_ids : list
+            List of territorial_units to include in storage.
         short_version : str
             '0' for long JSON and '1' for short_version.
         """
@@ -430,8 +461,8 @@ class Observations(DownloadVn):
                         "species_choice": "all",
                         "taxonomic_group": taxo["id"],
                     }
-                    if len(self._config.territorial_unit_ids) > 0:
-                        q_param["territorial_unit_ids"] = self._config.territorial_unit_ids[0]
+                    if (territorial_unit_ids is not None) and (len(territorial_unit_ids) > 0):
+                        q_param["territorial_unit_ids"] = territorial_unit_ids[0]
                     if self._config._type_date is not None:
                         if self._config._type_date == "entry":
                             q_param["entry_date"] = "1"

@@ -89,6 +89,7 @@ def test_families_store(capsys):
 # ---------
 #  Fields
 # ---------
+@pytest.mark.slow
 def test_fields_store(capsys):
     """Store fields to file."""
     file_json = str(Path.home()) + "/" + CFG.file_store + "field_details_1.json.gz"
