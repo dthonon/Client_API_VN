@@ -505,6 +505,13 @@ def increment_download_1(ctrl, cfg_crtl_list, cfg):
                     _("%s => Excluded taxo_groups: %s"), cfg.site, cfg.taxo_exclude
                 )
                 downloader.update(taxo_groups_ex=cfg.taxo_exclude)
+            elif downloader.name == "local_admin_units":
+                logger.info(
+                    _("%s => Included territorial_unit_ids: %s"), cfg.site, cfg.territorial_unit_ids
+                )
+                downloader.store(
+                    territorial_unit_ids=cfg.territorial_unit_ids,
+                )
             else:
                 downloader.store()
             logger.info(
