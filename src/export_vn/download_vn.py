@@ -27,6 +27,7 @@ from biolovision.api import (
     ValidationsAPI,
 )
 from export_vn.regulator import PID
+from export_vn.store_postgresql import ReadPostgresql
 
 from . import _, __version__
 
@@ -249,7 +250,8 @@ class LocalAdminUnits(DownloadVn):
         return None
 
     def store(
-        self, territorial_unit_ids=None,
+        self,
+        territorial_unit_ids=None,
     ):
         """Download from VN by API and store json to backend.
 
@@ -260,7 +262,7 @@ class LocalAdminUnits(DownloadVn):
         territorial_unit_ids : list
             List of territorial_units to include in storage.
         """
-        if (territorial_unit_ids is not None):
+        if territorial_unit_ids is not None:
             for id_canton in territorial_unit_ids:
                 logger.debug(
                     _("Getting local_admin_units from id_canton %s, using API list"),
@@ -461,7 +463,9 @@ class Observations(DownloadVn):
                         "species_choice": "all",
                         "taxonomic_group": taxo["id"],
                     }
-                    if (territorial_unit_ids is not None) and (len(territorial_unit_ids) > 0):
+                    if (territorial_unit_ids is not None) and (
+                        len(territorial_unit_ids) > 0
+                    ):
                         q_param["territorial_unit_ids"] = territorial_unit_ids[0]
                     if self._config._type_date is not None:
                         if self._config._type_date == "entry":
@@ -729,6 +733,37 @@ class Places(DownloadVn):
             config, PlacesAPI(config), backend, max_retry, max_requests, max_chunks
         )
         return None
+
+    def store(
+        self,
+        territorial_unit_ids=None,
+    ):
+        """Download from VN by API and store json to backend.
+
+        Overloads base method to add territorial_unit filter
+
+        Parameters
+        ----------
+        territorial_unit_ids : list
+            List of territorial_units to include in storage.
+        """
+        if territorial_unit_ids is not None:
+            # Get local_admin_units
+            l_a_units = ReadPostgresql(self._config).read("local_admin_units")
+            for id_canton in territorial_unit_ids:
+                # Loop on local_admin_units of the territorial_unit
+                for l_a_u in l_a_units:
+                    if l_a_u[0]["id_canton"] == id_canton:
+                        logger.debug(
+                            _("Getting places from id_canton %s, id_commune %s, using API list"),
+                            id_canton,
+                            l_a_u[0]["id"],
+                        )
+                        q_param = {"id_commune": l_a_u[0]["id"]}
+                        super().store([q_param])
+        else:
+            logger.debug(_("Getting places, using API list"))
+            super().store()
 
 
 class Species(DownloadVn):
