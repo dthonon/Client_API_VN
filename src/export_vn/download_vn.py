@@ -298,6 +298,7 @@ class Observations(DownloadVn):
             max_requests,
             max_chunks,
         )
+        self._t_units = ReadPostgresql(self._config).read("territorial_units")
         return None
 
     def _store_list(self, id_taxo_group, by_specie, short_version="1"):
@@ -455,6 +456,7 @@ class Observations(DownloadVn):
                 )
                 delta_days = self._config.tuning_pid_delta_days
                 while start_date > min_date:
+                    nb_obs = 0
                     start_date = end_date - timedelta(days=delta_days)
                     q_param = {
                         "period_choice": "range",
@@ -463,43 +465,52 @@ class Observations(DownloadVn):
                         "species_choice": "all",
                         "taxonomic_group": taxo["id"],
                     }
-                    if (territorial_unit_ids is not None) and (
-                        len(territorial_unit_ids) > 0
-                    ):
-                        q_param["territorial_unit_ids"] = territorial_unit_ids[0]
                     if self._config._type_date is not None:
                         if self._config._type_date == "entry":
                             q_param["entry_date"] = "1"
                         else:
                             q_param["entry_date"] = "0"
-                    items_dict = self._api_instance.api_search(
-                        q_param, short_version=short_version
-                    )
-                    # Call backend to store results
-                    nb_obs = self._backend.store(
-                        self._api_instance.controler,
-                        str(id_taxo_group) + "_" + str(seq),
-                        items_dict,
-                    )
-                    log_msg = _(
-                        "{} => Iter: {}, {} obs, taxo_group: {}, date: {}, interval: {}"
-                    ).format(
-                        self._config.site,
-                        seq,
-                        nb_obs,
-                        id_taxo_group,
-                        start_date.strftime("%d/%m/%Y"),
-                        str(delta_days),
-                    )
-                    # Call backend to store log
-                    self._backend.log(
-                        self._config.site,
-                        self._api_instance.controler,
-                        self._api_instance.transfer_errors,
-                        self._api_instance.http_status,
-                        log_msg,
-                    )
-                    logger.info(log_msg)
+                    for t_u in self._t_units:
+                        if t_u[0]["short_name"] in territorial_unit_ids:
+                            logger.debug(
+                                _(
+                                    "Getting observations from territorial_unit %s, using API search"
+                                ),
+                                t_u[0]["name"],
+                            )
+                            q_param["territorial_unit_ids"] = [
+                                t_u[0]["id_country"] + t_u[0]["short_name"]
+                            ]
+
+                            items_dict = self._api_instance.api_search(
+                                q_param, short_version=short_version
+                            )
+                            # Call backend to store results
+                            nb_obs += self._backend.store(
+                                self._api_instance.controler,
+                                str(id_taxo_group) + "_" + str(seq),
+                                items_dict,
+                            )
+                            log_msg = _(
+                                "{} => Iter: {}, {} obs, taxo_group: {}, territorial_unit: {}, date: {}, interval: {}"
+                            ).format(
+                                self._config.site,
+                                seq,
+                                nb_obs,
+                                id_taxo_group,
+                                t_u[0]["short_name"],
+                                start_date.strftime("%d/%m/%Y"),
+                                str(delta_days),
+                            )
+                            # Call backend to store log
+                            self._backend.log(
+                                self._config.site,
+                                self._api_instance.controler,
+                                self._api_instance.transfer_errors,
+                                self._api_instance.http_status,
+                                log_msg,
+                            )
+                            logger.info(log_msg)
                     seq += 1
                     end_date = start_date
                     delta_days = int(pid(nb_obs))
@@ -566,12 +577,17 @@ class Observations(DownloadVn):
         # Get the list of taxo groups to process
         taxo_list = self._list_taxo_groups(id_taxo_group, taxo_groups_ex)
         logger.info(
-            _("%s => Downloading taxo_groups: %s"), self._config.site, taxo_list
+            _("%s => Downloading taxo_groups: %s, territorial_units: %s"),
+            self._config.site,
+            taxo_list,
+            territorial_unit_ids,
         )
 
         if method == "search":
             for taxo in taxo_list:
-                self._store_search(taxo, short_version=short_version)
+                self._store_search(
+                    taxo, territorial_unit_ids, short_version=short_version
+                )
         elif method == "list":
             logger.warning(
                 _(
@@ -732,6 +748,7 @@ class Places(DownloadVn):
         super().__init__(
             config, PlacesAPI(config), backend, max_retry, max_requests, max_chunks
         )
+        self._l_a_units = ReadPostgresql(self._config).read("local_admin_units")
         return None
 
     def store(
@@ -749,17 +766,18 @@ class Places(DownloadVn):
         """
         if territorial_unit_ids is not None:
             # Get local_admin_units
-            l_a_units = ReadPostgresql(self._config).read("local_admin_units")
             for id_canton in territorial_unit_ids:
                 # Loop on local_admin_units of the territorial_unit
-                for l_a_u in l_a_units:
+                for l_a_u in self._l_a_units:
                     if l_a_u[0]["id_canton"] == id_canton:
                         logger.debug(
-                            _("Getting places from id_canton %s, id_commune %s, using API list"),
+                            _(
+                                "Getting places from id_canton %s, id_commune %s, using API list"
+                            ),
                             id_canton,
                             l_a_u[0]["id"],
                         )
-                        q_param = {"id_commune": l_a_u[0]["id"]}
+                        q_param = {"id_commune": l_a_u[0]["id"], "get_hidden": "1"}
                         super().store([q_param])
         else:
             logger.debug(_("Getting places, using API list"))
