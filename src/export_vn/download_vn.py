@@ -478,6 +478,7 @@ class Observations(DownloadVn):
                                 ),
                                 t_u[0]["name"],
                             )
+                            q_param["location_choice"] = "territorial_unit"
                             q_param["territorial_unit_ids"] = [
                                 t_u[0]["id_country"] + t_u[0]["short_name"]
                             ]
@@ -644,7 +645,9 @@ class Observations(DownloadVn):
                 logger.info(
                     _("Getting updates for taxo_group %s since %s"), taxo, since
                 )
-                items_dict = self._api_instance.api_diff(taxo, since)
+                items_dict = self._api_instance.api_diff(
+                    taxo, since, modification_type="only_modified"
+                )
 
                 # List by processing type
                 for item in items_dict:
@@ -673,6 +676,7 @@ class Observations(DownloadVn):
                 logger.error(
                     _("No date found for last download, increment not performed")
                 )
+            print(updated)
 
             # Process updates
             if len(updated) > 0:
