@@ -774,7 +774,7 @@ class Places(DownloadVn):
                 # Loop on local_admin_units of the territorial_unit
                 for l_a_u in self._l_a_units:
                     if l_a_u[0]["id_canton"] == id_canton:
-                        logger.debug(
+                        logger.info(
                             _(
                                 "Getting places from id_canton %s, id_commune %s, using API list"
                             ),
