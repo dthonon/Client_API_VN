@@ -1,3 +1,12 @@
+Client-API-VN v2.7.1 (2021-02-07)
+=================================
+
+Bugfixes
+--------
+
+- In column based tables, all text is now stored as TEXT instead of VACHAR(n) (`#138 <https://framagit.org/lpo/Client_API_VN/issues/138>`_)
+
+
 Client-API-VN v2.7.0 (2020-07-06)
 =================================
 

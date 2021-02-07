@@ -34,13 +34,13 @@ LANGUAGE plpgsql;
 -- Entities
 -----------
 CREATE TABLE {{ cfg.db_schema_vn }}.entities(
-    site                VARCHAR(50),
+    site                TEXT,
     id                  INTEGER,
-    short_name          VARCHAR(500),
-    full_name_french    VARCHAR(500),
-    description_french  VARCHAR(100000),
-    url                 VARCHAR(1000),
-    address             VARCHAR(1000),
+    short_name          TEXT,
+    full_name_french    TEXT,
+    description_french  TEXT,
+    url                 TEXT,
+    address             TEXT,
     PRIMARY KEY (site, id)
 );
 
@@ -115,12 +115,12 @@ AFTER INSERT OR UPDATE OR DELETE ON {{ cfg.db_schema_import }}.entities_json
 -- Families
 -----------
 CREATE TABLE {{ cfg.db_schema_vn }}.families(
-    site                VARCHAR(50),
+    site                TEXT,
     id                  INTEGER,
     id_taxo_group       INTEGER,
-    latin_name          VARCHAR(500),
-    name                VARCHAR(500),
-    generic             VARCHAR(10),
+    latin_name          TEXT,
+    name                TEXT,
+    generic             TEXT,
     PRIMARY KEY (site, id)
 );
 
@@ -193,12 +193,12 @@ AFTER INSERT OR UPDATE OR DELETE ON {{ cfg.db_schema_import }}.families_json
 -- Field_details
 ----------------
 CREATE TABLE {{ cfg.db_schema_vn }}.field_details(
-    id                  VARCHAR(100),
+    id                  TEXT,
     group_id            INTEGER,
     value_id            INTEGER,
     order_id            INTEGER,
-    name                VARCHAR(1000),
-    text_v              VARCHAR(1000),
+    name                TEXT,
+    text_v              TEXT,
     PRIMARY KEY (id)
 );
 
@@ -268,12 +268,12 @@ AFTER INSERT OR UPDATE OR DELETE ON {{ cfg.db_schema_import }}.field_details_jso
 ---------------
 CREATE TABLE {{ cfg.db_schema_vn }}.field_groups(
     id                  INTEGER,
-    default_v           VARCHAR(500),
-    empty_choice        VARCHAR(500),
-    mandatory           VARCHAR(500),
-    name                VARCHAR(1000),
-    text_v              VARCHAR(1000),
-    group_v             VARCHAR(1000),
+    default_v           TEXT,
+    empty_choice        TEXT,
+    mandatory           TEXT,
+    name                TEXT,
+    text_v              TEXT,
+    group_v             TEXT,
     PRIMARY KEY (id)
 );
 
@@ -341,22 +341,22 @@ AFTER INSERT OR UPDATE OR DELETE ON {{ cfg.db_schema_import }}.field_groups_json
 -- Forms
 --------
 CREATE TABLE {{ cfg.db_schema_vn }}.forms(
-    site                VARCHAR(50),
+    site                TEXT,
     id                  INTEGER,
-    id_form_universal   VARCHAR(500),
+    id_form_universal   TEXT,
     observer_uid        INT,
     date_start          DATE,
     date_stop           DATE,
-    time_start          VARCHAR(500),
-    time_stop           VARCHAR(500),
-    full_form           VARCHAR(500),
-    version             VARCHAR(500),
+    time_start          TEXT,
+    time_stop           TEXT,
+    full_form           TEXT,
+    version             TEXT,
     coord_lat           FLOAT,
     coord_lon           FLOAT,
     coord_x_local       FLOAT,
     coord_y_local       FLOAT,
-    comments            VARCHAR(100000),
-    protocol_name       VARCHAR(500),
+    comments            TEXT,
+    protocol_name       TEXT,
     protocol            JSONB,
     geom                GEOMETRY(Point, {{ cfg.proj }}),
     PRIMARY KEY (site, id)
@@ -487,11 +487,11 @@ AFTER INSERT OR UPDATE OR DELETE ON {{ cfg.db_schema_import }}.forms_json
 -- local_admin_units
 --------------------
 CREATE TABLE {{ cfg.db_schema_vn }}.local_admin_units(
-    site                VARCHAR(50),
+    site                TEXT,
     id                  INTEGER,
     id_canton           INTEGER,
-    name                VARCHAR(150),
-    insee               VARCHAR(50),
+    name                TEXT,
+    insee               TEXT,
     coord_lat           FLOAT,
     coord_lon           FLOAT,
     coord_x_local       FLOAT,
@@ -590,37 +590,37 @@ AFTER INSERT OR UPDATE OR DELETE ON {{ cfg.db_schema_import }}.local_admin_units
 -- Observations
 ---------------
 CREATE TABLE {{ cfg.db_schema_vn }}.observations (
-    site                VARCHAR(50),
+    site                TEXT,
     id_sighting         INTEGER,
-    pseudo_id_sighting  VARCHAR(200),
-    id_universal        VARCHAR(200),
-    id_form_universal   VARCHAR(200),
+    pseudo_id_sighting  TEXT,
+    id_universal        TEXT,
+    id_form_universal   TEXT,
     id_species          INTEGER,
     taxonomy            INTEGER,
     date                TIMESTAMP,
     date_year           INTEGER, -- Missing time_start & time_stop
     timing              TIMESTAMP,
     id_place            INTEGER,
-    place               VARCHAR(150),
+    place               TEXT,
     coord_lat           FLOAT,
     coord_lon           FLOAT,
     coord_x_local       FLOAT,
     coord_y_local       FLOAT,
-    precision           VARCHAR(100),
-    estimation_code     VARCHAR(100),
+    precision           TEXT,
+    estimation_code     TEXT,
     count               INTEGER,
     atlas_code          INTEGER,
     altitude            INTEGER,
-    project_code        VARCHAR(50),
+    project_code        TEXT,
     hidden              BOOLEAN,
     admin_hidden        BOOLEAN,
     observer_uid        INTEGER,
-    details             VARCHAR(10000),
+    details             TEXT,
     behaviours          TEXT[],
-    comment             VARCHAR(10000),
-    hidden_comment      VARCHAR(10000),
+    comment             TEXT,
+    hidden_comment      TEXT,
     mortality           BOOLEAN,
-    death_cause2        VARCHAR(100),
+    death_cause2        TEXT,
     insert_date         TIMESTAMP,
     update_date         TIMESTAMP,
     geom                GEOMETRY(Point, {{ cfg.proj }}),
@@ -824,16 +824,16 @@ AFTER INSERT OR UPDATE OR DELETE ON {{ cfg.db_schema_import }}.observations_json
 -- Observers
 ------------
 CREATE TABLE {{ cfg.db_schema_vn }}.observers(
-    site                VARCHAR(50),
+    site                TEXT,
     id                  INTEGER,
     id_universal        INTEGER,
-    pseudo_observer_uid VARCHAR(200),
+    pseudo_observer_uid TEXT,
     id_entity           INTEGER,
     anonymous           BOOLEAN,
     collectif           BOOLEAN,
     default_hidden      BOOLEAN,
-    name                VARCHAR(100),
-    surname             VARCHAR(100),
+    name                TEXT,
+    surname             TEXT,
     PRIMARY KEY (site, id)
 );
 
@@ -920,15 +920,15 @@ AFTER INSERT OR UPDATE OR DELETE ON {{ cfg.db_schema_import }}.observers_json
 -- Places
 ---------
 CREATE TABLE {{ cfg.db_schema_vn }}.places(
-    site                VARCHAR(50),
+    site                TEXT,
     id                  INTEGER,
     id_commune          INTEGER,
     id_region           INTEGER,
-    name                VARCHAR(150),
+    name                TEXT,
     is_private          BOOLEAN,
     loc_precision       INTEGER,
     altitude            INTEGER,
-    place_type          VARCHAR(150),
+    place_type          TEXT,
     visible             BOOLEAN,
     coord_lat           FLOAT,
     coord_lon           FLOAT,
@@ -1046,14 +1046,14 @@ AFTER INSERT OR UPDATE OR DELETE ON {{ cfg.db_schema_import }}.places_json
 -- Species
 ----------
 CREATE TABLE {{ cfg.db_schema_vn }}.species(
-    site                VARCHAR(50),
+    site                TEXT,
     id                  INTEGER,
     id_taxo_group       INTEGER,
     is_used             BOOLEAN,
-    french_name         VARCHAR(150),
-    latin_name          VARCHAR(150),
-    rarity              VARCHAR(50),
-    category_1          VARCHAR(50),
+    french_name         TEXT,
+    latin_name          TEXT,
+    rarity              TEXT,
+    category_1          TEXT,
     sys_order           INTEGER,
     atlas_start         INTEGER,
     atlas_end           INTEGER,
@@ -1147,12 +1147,12 @@ AFTER INSERT OR UPDATE OR DELETE ON {{ cfg.db_schema_import }}.species_json
 -- Taxo_groups
 --------------
 CREATE TABLE {{ cfg.db_schema_vn }}.taxo_groups(
-    site                VARCHAR(50),
+    site                TEXT,
     id                  INTEGER,
-    name                VARCHAR(150),
-    latin_name          VARCHAR(150),
-    name_constant       VARCHAR(150),
-    access_mode         VARCHAR(50),
+    name                TEXT,
+    latin_name          TEXT,
+    name_constant       TEXT,
+    access_mode         TEXT,
     PRIMARY KEY (site, id)
 );
 
@@ -1224,11 +1224,11 @@ AFTER INSERT OR UPDATE OR DELETE ON {{ cfg.db_schema_import }}.taxo_groups_json
 -- Territorial_units
 --------------------
 CREATE TABLE {{ cfg.db_schema_vn }}.territorial_units(
-    site                VARCHAR(50),
+    site                TEXT,
     id                  INTEGER,
     id_country          INTEGER,
-    name                VARCHAR(150),
-    short_name          VARCHAR(150),
+    name                TEXT,
+    short_name          TEXT,
     PRIMARY KEY (site, id)
 );
 
@@ -1296,9 +1296,9 @@ AFTER INSERT OR UPDATE OR DELETE ON {{ cfg.db_schema_import }}.territorial_units
 -- Validations
 --------------
 CREATE TABLE {{ cfg.db_schema_vn }}.validations(
-    site                VARCHAR(50),
+    site                TEXT,
     id                  INTEGER,
-    committee           VARCHAR(150),
+    committee           TEXT,
     date_start          INTEGER,
     date_stop           INTEGER,
     id_species          INTEGER,
