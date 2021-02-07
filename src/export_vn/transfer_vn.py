@@ -772,7 +772,7 @@ def main(args):
         manage_pg.create_json_tables()
 
     if args.col_tables_create:
-        logger.info(_("Creating or recreating vn columns based files"))
+        logger.info(_("Creating or recreating vn columns based tables"))
         col_table_create(cfg, sql_quiet, client_min_message)
 
     if args.full:
