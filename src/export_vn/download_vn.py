@@ -471,7 +471,10 @@ class Observations(DownloadVn):
                         else:
                             q_param["entry_date"] = "0"
                     for t_u in self._t_units:
-                        if t_u[0]["short_name"] in territorial_unit_ids:
+                        if (
+                            territorial_unit_ids is not None
+                            and t_u[0]["short_name"] in territorial_unit_ids
+                        ):
                             logger.debug(
                                 _(
                                     "Getting observations from territorial_unit %s, using API search"
@@ -483,35 +486,35 @@ class Observations(DownloadVn):
                                 t_u[0]["id_country"] + t_u[0]["short_name"]
                             ]
 
-                            items_dict = self._api_instance.api_search(
-                                q_param, short_version=short_version
-                            )
-                            # Call backend to store results
-                            nb_obs += self._backend.store(
-                                self._api_instance.controler,
-                                str(id_taxo_group) + "_" + str(seq),
-                                items_dict,
-                            )
-                            log_msg = _(
-                                "{} => Iter: {}, {} obs, taxo_group: {}, territorial_unit: {}, date: {}, interval: {}"
-                            ).format(
-                                self._config.site,
-                                seq,
-                                nb_obs,
-                                id_taxo_group,
-                                t_u[0]["short_name"],
-                                start_date.strftime("%d/%m/%Y"),
-                                str(delta_days),
-                            )
-                            # Call backend to store log
-                            self._backend.log(
-                                self._config.site,
-                                self._api_instance.controler,
-                                self._api_instance.transfer_errors,
-                                self._api_instance.http_status,
-                                log_msg,
-                            )
-                            logger.info(log_msg)
+                        items_dict = self._api_instance.api_search(
+                            q_param, short_version=short_version
+                        )
+                        # Call backend to store results
+                        nb_obs += self._backend.store(
+                            self._api_instance.controler,
+                            str(id_taxo_group) + "_" + str(seq),
+                            items_dict,
+                        )
+                        log_msg = _(
+                            "{} => Iter: {}, {} obs, taxo_group: {}, territorial_unit: {}, date: {}, interval: {}"
+                        ).format(
+                            self._config.site,
+                            seq,
+                            nb_obs,
+                            id_taxo_group,
+                            t_u[0]["short_name"],
+                            start_date.strftime("%d/%m/%Y"),
+                            str(delta_days),
+                        )
+                        # Call backend to store log
+                        self._backend.log(
+                            self._config.site,
+                            self._api_instance.controler,
+                            self._api_instance.transfer_errors,
+                            self._api_instance.http_status,
+                            log_msg,
+                        )
+                        logger.info(log_msg)
                     seq += 1
                     end_date = start_date
                     delta_days = int(pid(nb_obs))
