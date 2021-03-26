@@ -131,7 +131,7 @@ def update(cfg_ctrl, input: str):
                         )
                         logger.debug(
                             _("Before: %s"),
-                            sighting["data"]["sightings"][0]["observers"][0],
+                            sighting["data"],
                         )
                         # JSON path relative to "sighting"
                         repl = row[2].strip().replace("$", "sighting")
@@ -142,9 +142,14 @@ def update(cfg_ctrl, input: str):
                             old_attr = None
                         # Get current hidden_comment, if exists
                         try:
-                            msg = sighting["data"]["sightings"][0]["observers"][0][
-                                "hidden_comment"
-                            ]
+                            if row[2].find("forms") > 0:
+                                msg = sighting["data"]["forms"][0]["sightings"][0]["observers"][0][
+                                    "hidden_comment"
+                               ]
+                            else:
+                                msg = sighting["data"]["sightings"][0]["observers"][0][
+                                    "hidden_comment"
+                               ]
                         except KeyError:  # pragma: no cover
                             msg = ""
                         # Prepare logging message to be appended to hidden_comment
@@ -166,13 +171,20 @@ def update(cfg_ctrl, input: str):
                                 exec("del {}".format(repl))
                             except KeyError:  # pragma: no cover
                                 pass
-                        exec(
-                            """sighting['data']['sightings'][0]['observers'][0]['hidden_comment'] = '{}'""".format(
-                                msg.replace('"', '\\"').replace("'", "\\'")
+                        if row[2].find("forms") > 0:
+                            exec(
+                                """sighting['data']['forms'][0]['sightings'][0]['observers'][0]['hidden_comment'] = '{}'""".format(
+                                    msg.replace('"', '\\"').replace("'", "\\'")
+                                )
                             )
-                        )
+                        else:
+                            exec(
+                                """sighting['data']['sightings'][0]['observers'][0]['hidden_comment'] = '{}'""".format(
+                                    msg.replace('"', '\\"').replace("'", "\\'")
+                                )
+                            )
                         logger.debug(
-                            _("After: %s"), sighting["data"]["sightings"][0]["observers"][0]
+                            _("After: %s"), sighting["data"]
                         )
                         # Update to remote site
                         obs_api[row[0].strip()].api_update(row[1].strip(), sighting)
