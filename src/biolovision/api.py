@@ -310,9 +310,9 @@ class BiolovisionAPI:
                         # Error during JSON decoding =>
                         # Logging error and no further processing of empty chunk
                         resp_chunk = json.loads("{}")
-                        logger.error(_("Incorrect response content: %s"), resp.text)
-                        logger.exception(_("Exception raised during JSON decoding"))
-                        raise HTTPError("resp.json exception")
+                        logger.error(
+                            _("Incorrect response content: %s, %s"), resp, resp.text
+                        )
 
                 # Initialize or append to response dict, depending on content
                 if "data" in resp_chunk:
