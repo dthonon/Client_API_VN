@@ -27,6 +27,7 @@ from biolovision.api import (
 from export_vn.evnconf import EvnConf
 
 # Using faune-ardeche or faune-isere site, that needs to be created first
+# SITE = "ff"
 # SITE = "t07"
 SITE = "t38"
 FILE = ".evn_test.yaml"
@@ -906,22 +907,22 @@ def test_observations_update():
         }
 
 
-@pytest.mark.skipif(SITE == "t07", reason="Requires SITE t38")
+@pytest.mark.skipif(SITE == "t07", reason="SITE t07 not supported")
 def test_observations_crud_s():
     """Create, read, update, delete a standalone sighting."""
     data = {
         "data": {
             "sightings": [
                 {
-                    "date": {"@timestamp": "1616748780"},
-                    "species": {"@id": "312"},
+                    "date": {"@timestamp": "1616753200"},
+                    "species": {"@id": "408"},
                     "observers": [
                         {
-                            "@id": "33",
+                            "@id": "38",
                             "altitude": "230",
                             "comment": "TEST API !!! à supprimer !!!",
-                            "coord_lat": "45.18724",
-                            "coord_lon": "5.735458",
+                            "coord_lat": "45.188302192726",
+                            "coord_lon": "5.7364289068356",
                             "precision": "precise",
                             "count": "1",
                             "estimation_code": "MINIMUM",
@@ -931,72 +932,75 @@ def test_observations_crud_s():
             ]
         }
     }
-    if SITE == "t38":
-        # First creation should succeed
+    # First creation should succeed
+    sighting = OBSERVATIONS_API.api_create(data)
+    logging.debug(sighting)
+    assert sighting["status"] == "saved"
+    obs_1 = sighting["id"][0]
+    assert isinstance(obs_1, int)
+    obs_1 = str(obs_1)
+
+    # Second creation should fail
+    with pytest.raises(HTTPError):
         sighting = OBSERVATIONS_API.api_create(data)
         logging.debug(sighting)
-        assert sighting["status"] == "saved"
-        obs_1 = sighting["id"][0]
-        assert isinstance(obs_1, int)
-        obs_1 = str(obs_1)
 
-        # Second creation should fail
-        with pytest.raises(HTTPError):
-            sighting = OBSERVATIONS_API.api_create(data)
-            logging.debug(sighting)
+    # Read created observation
+    sighting = OBSERVATIONS_API.api_get(obs_1, short_version="1")
+    assert sighting["data"]["sightings"][0]["observers"][0]["id_sighting"] == obs_1
+    assert (
+        sighting["data"]["sightings"][0]["observers"][0]["comment"]
+        == "TEST API !!! à supprimer !!!"
+    )
 
-        # Read created observation
-        sighting = OBSERVATIONS_API.api_get(obs_1, short_version="1")
-        assert sighting["data"]["sightings"][0]["observers"][0]["id_sighting"] == obs_1
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["comment"]
-            == "TEST API !!! à supprimer !!!"
-        )
+    # Update
+    sighting["data"]["sightings"][0]["observers"][0][
+        "hidden_comment"
+    ] = "API update test"
+    OBSERVATIONS_API.api_update(obs_1, sighting)
+    # Check
+    sighting = OBSERVATIONS_API.api_get(obs_1, short_version="1")
+    assert (
+        sighting["data"]["sightings"][0]["observers"][0]["hidden_comment"]
+        == "API update test"
+    )
 
-        # Update
-        sighting["data"]["sightings"][0]["observers"][0][
-            "hidden_comment"
-        ] = "API update test"
-        OBSERVATIONS_API.api_update(obs_1, sighting)
-        # Check
-        sighting = OBSERVATIONS_API.api_get(obs_1, short_version="1")
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["hidden_comment"]
-            == "API update test"
-        )
-
-        # Delete test observation
-        res = OBSERVATIONS_API.api_delete(obs_1)
-        logging.debug(res)
+    # Delete test observation
+    res = OBSERVATIONS_API.api_delete(obs_1)
+    logging.debug(res)
 
 
-@pytest.mark.skipif(SITE == "t07", reason="Requires SITE t38")
+@pytest.mark.skipif(SITE == "t07", reason="SITE t07 not supported")
 def test_observations_crud_f():
     """Create, read, update, delete a forms sighting."""
     data = {
         "data": {
             "forms": [
                 {
-                    "time_start": "09:29:00",
-                    "time_stop": "09:54:00",
+                    "time_start": "06:00:00",
+                    "time_stop": "16:00:00",
                     "full_form": "1",
-                    "lat": "45.204614",
-                    "lon": "5.823795",
                     "sightings": [
                         {
-                            "date": {"@timestamp": "1616713200"},
-                            "species": {"@id": "86"},
+                            "date": {"@timestamp": "1616753200"},
+                            "species": {"@id": "408"},
+                            "place": {
+                                "@id": "102004",
+                            },
                             "observers": [
                                 {
-                                    "@id": "33",
-                                    "timing": {"@timestamp": "1616748780"},
-                                    "altitude": "220",
+                                    "@id": "38",
+                                    "timing": {
+                                        "@timestamp": "1616753200",
+                                        "@notime": "0",
+                                    },
+                                    "altitude": "230",
                                     "comment": "TEST API !!! à supprimer !!!",
-                                    "coord_lat": "45.204614",
-                                    "coord_lon": "5.823795",
+                                    "coord_lat": "45.18724",
+                                    "coord_lon": "5.735458",
                                     "precision": "precise",
                                     "count": "1",
-                                    "estimation_code": "EXACT_VALUE",
+                                    "estimation_code": "MINIMUM",
                                 }
                             ],
                         }
@@ -1005,48 +1009,45 @@ def test_observations_crud_f():
             ],
         }
     }
-    if SITE == "t38":
-        # First creation should succeed
+    # First creation should succeed
+    sighting = OBSERVATIONS_API.api_create(data)
+    logging.debug(sighting)
+    assert sighting["status"] == "saved"
+    obs_1 = sighting["id"][0]
+    assert isinstance(obs_1, int)
+    obs_1 = str(obs_1)
+
+    # Second creation should fail
+    with pytest.raises(HTTPError):
         sighting = OBSERVATIONS_API.api_create(data)
         logging.debug(sighting)
-        assert sighting["status"] == "saved"
-        obs_1 = sighting["id"][0]
-        assert isinstance(obs_1, int)
-        obs_1 = str(obs_1)
 
-        # Second creation should fail
-        with pytest.raises(HTTPError):
-            sighting = OBSERVATIONS_API.api_create(data)
-            logging.debug(sighting)
+    # Read created observation
+    sighting = OBSERVATIONS_API.api_get(obs_1, short_version="1")
+    assert (
+        sighting["data"]["forms"][0]["sightings"][0]["observers"][0]["id_sighting"]
+        == obs_1
+    )
+    assert (
+        sighting["data"]["forms"][0]["sightings"][0]["observers"][0]["comment"]
+        == "TEST API !!! à supprimer !!!"
+    )
 
-        # Read created observation
-        sighting = OBSERVATIONS_API.api_get(obs_1, short_version="1")
-        assert (
-            sighting["data"]["forms"][0]["sightings"][0]["observers"][0]["id_sighting"]
-            == obs_1
-        )
-        assert (
-            sighting["data"]["forms"][0]["sightings"][0]["observers"][0]["comment"]
-            == "TEST API !!! à supprimer !!!"
-        )
+    # Update
+    sighting["data"]["forms"][0]["sightings"][0]["observers"][0][
+        "hidden_comment"
+    ] = "API update test"
+    OBSERVATIONS_API.api_update(obs_1, sighting)
+    # Check
+    sighting = OBSERVATIONS_API.api_get(obs_1, short_version="1")
+    assert (
+        sighting["data"]["forms"][0]["sightings"][0]["observers"][0]["hidden_comment"]
+        == "API update test"
+    )
 
-        # Update
-        sighting["data"]["forms"][0]["sightings"][0]["observers"][0][
-            "hidden_comment"
-        ] = "API update test"
-        OBSERVATIONS_API.api_update(obs_1, sighting)
-        # Check
-        sighting = OBSERVATIONS_API.api_get(obs_1, short_version="1")
-        assert (
-            sighting["data"]["forms"][0]["sightings"][0]["observers"][0][
-                "hidden_comment"
-            ]
-            == "API update test"
-        )
-
-        # Delete test observation
-        res = OBSERVATIONS_API.api_delete(obs_1)
-        logging.debug(res)
+    # Delete test observation
+    res = OBSERVATIONS_API.api_delete(obs_1)
+    logging.debug(res)
 
 
 # ----------------------------
