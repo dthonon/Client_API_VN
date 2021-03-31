@@ -1020,7 +1020,6 @@ def test_observations_crud_f():
     # Second creation should fail
     with pytest.raises(HTTPError):
         sighting = OBSERVATIONS_API.api_create(data)
-        logging.debug(sighting)
 
     # Read created observation
     sighting = OBSERVATIONS_API.api_get(obs_1, short_version="1")
@@ -1034,7 +1033,9 @@ def test_observations_crud_f():
     )
 
     # Update
-    sighting["data"]["forms"][0]["sightings"][0]["observers"][0][
+    sighting["data"] = sighting["data"]["forms"][0]
+    logging.debug(sighting)
+    sighting["data"]["sightings"][0]["observers"][0][
         "hidden_comment"
     ] = "API update test"
     OBSERVATIONS_API.api_update(obs_1, sighting)

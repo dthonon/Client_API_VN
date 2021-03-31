@@ -473,7 +473,8 @@ class BiolovisionAPI:
         for key, value in kwargs.items():
             params[key] = value
         logger.debug(
-            _("In api_get for controler:%s, with parameters:%s"),
+            _("In api_get for controler:%s, entity: %s, with parameters:%s"),
+            self._ctrl,
             id_entity,
             self._clean_params(params),
         )
