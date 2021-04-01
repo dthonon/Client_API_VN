@@ -311,8 +311,8 @@ class BiolovisionAPI:
                             _("Response content: %s, text: %s"), resp, resp.text
                         )
                         # TWEAK: remove extra text outside JSON response
-                        resp_chunk = json.loads(re.findall('({.+})', resp.text)[0])
-                        #resp_chunk = resp.json()
+                        #resp_chunk = json.loads(re.findall(r'(\[.+\])|({.+})', resp.text)[0])
+                        resp_chunk = resp.json()
                     except json.decoder.JSONDecodeError:  # pragma: no cover
                         # Error during JSON decoding =>
                         # Logging error and no further processing of empty chunk
