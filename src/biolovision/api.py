@@ -84,11 +84,12 @@ Exceptions:
 """
 import json
 import logging
+import re
 import time
-from urllib import parse
 from functools import lru_cache
-
 from typing import Dict
+from urllib import parse
+
 import requests
 from requests_oauthlib import OAuth1
 
@@ -278,6 +279,7 @@ class BiolovisionAPI:
                     self._http_status <= 499
                 ):  # pragma: no cover
                     # Unreceverable error
+                    logger.error(resp)
                     logger.critical(
                         _("Unreceverable error %s, raising exception"),
                         self._http_status,
@@ -305,14 +307,17 @@ class BiolovisionAPI:
                     resp_chunk = json.loads("{}")
                 else:
                     try:
-                        resp_chunk = resp.json()
+                        logger.debug(
+                            _("Response content: %s, text: %s"), resp, resp.text
+                        )
+                        # TWEAK: remove extra text outside JSON response
+                        resp_chunk = json.loads(re.findall('({.+})', resp.text)[0])
+                        #resp_chunk = resp.json()
                     except json.decoder.JSONDecodeError:  # pragma: no cover
                         # Error during JSON decoding =>
                         # Logging error and no further processing of empty chunk
                         resp_chunk = json.loads("{}")
-                        logger.error(_("Incorrect response content: %s"), resp.text)
-                        logger.exception(_("Exception raised during JSON decoding"))
-                        raise HTTPError("resp.json exception")
+                        logger.error(_("Incorrect response content: %s"), resp)
 
                 # Initialize or append to response dict, depending on content
                 if "data" in resp_chunk:
@@ -468,7 +473,8 @@ class BiolovisionAPI:
         for key, value in kwargs.items():
             params[key] = value
         logger.debug(
-            _("In api_get for controler:%s, with parameters:%s"),
+            _("In api_get for controler:%s, entity: %s, with parameters:%s"),
+            self._ctrl,
             id_entity,
             self._clean_params(params),
         )

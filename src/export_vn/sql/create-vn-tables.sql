@@ -648,6 +648,9 @@ CREATE INDEX observations_idx_id_form_universal
 DROP INDEX IF EXISTS observations_idx_observer_uid;
 CREATE INDEX observations_idx_observer_uid
     ON {{ cfg.db_schema_vn }}.observations USING btree(observer_uid);
+DROP INDEX IF EXISTS observations_idx_project_code;
+CREATE INDEX observations_idx_project_code
+    ON {{ cfg.db_schema_vn }}.observations USING btree(project_code);
 DROP INDEX IF EXISTS observations_gidx_geom;
 CREATE INDEX observations_gidx_geom
     ON {{ cfg.db_schema_vn }}.observations USING gist(geom);

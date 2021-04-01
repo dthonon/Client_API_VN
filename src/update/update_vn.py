@@ -107,7 +107,7 @@ def update(cfg_ctrl, input: str):
                 assert row[4].strip() == "value"
             else:
                 # Next rows are update commands
-                if (len(row) < 5):
+                if len(row) < 5:
                     logger.warning("Empty line ignored")
                 else:
                     logger.info(
@@ -129,9 +129,12 @@ def update(cfg_ctrl, input: str):
                         sighting = obs_api[row[0].strip()].api_get(
                             row[1].strip(), short_version="1"
                         )
+                        if "forms" in sighting["data"]:
+                            # Received a form, changing to single sighting
+                            sighting["data"] = sighting["data"]["forms"][0]
                         logger.debug(
                             _("Before: %s"),
-                            sighting["data"]["sightings"][0]["observers"][0],
+                            sighting["data"],
                         )
                         # JSON path relative to "sighting"
                         repl = row[2].strip().replace("$", "sighting")
@@ -171,9 +174,7 @@ def update(cfg_ctrl, input: str):
                                 msg.replace('"', '\\"').replace("'", "\\'")
                             )
                         )
-                        logger.debug(
-                            _("After: %s"), sighting["data"]["sightings"][0]["observers"][0]
-                        )
+                        logger.debug(_("After: %s"), sighting["data"])
                         # Update to remote site
                         obs_api[row[0].strip()].api_update(row[1].strip(), sighting)
 
@@ -249,8 +250,7 @@ def main(args):
 
 
 def run():
-    """Entry point for console_scripts
-    """
+    """Entry point for console_scripts"""
     main(sys.argv[1:])
 
 
