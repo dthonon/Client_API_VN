@@ -15,8 +15,8 @@
 --  6) Execute trigger by performing dummy update (site=site) on JSON table
 
 -- Cleanup and create
-DROP SCHEMA IF EXISTS {{ cfg.db_schema_vn }} CASCADE ;
-CREATE SCHEMA {{ cfg.db_schema_vn }};
+DROP SCHEMA IF EXISTS {{ cfg.db_schema_vn }} CASCADE;
+CREATE SCHEMA {{ cfg.db_schema_vn }} AUTHORIZATION {{ cfg.db_group }};
 
 SET search_path TO {{ cfg.db_schema_vn }},public;
 
