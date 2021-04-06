@@ -473,7 +473,7 @@ class Observations(DownloadVn):
                     if territorial_unit_ids is None:
                         t_us = self._t_units
                     else:
-                        t_us = [u for u in t_us if u[0]["short_name"] in territorial_unit_ids]
+                        t_us = [u for u in self._t_units if u[0]["short_name"] in territorial_unit_ids]
                     for t_u in t_us:
                         logger.debug(
                             _(
