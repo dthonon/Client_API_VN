@@ -470,21 +470,21 @@ class Observations(DownloadVn):
                             q_param["entry_date"] = "1"
                         else:
                             q_param["entry_date"] = "0"
-                    for t_u in self._t_units:
-                        if (
-                            territorial_unit_ids is not None
-                            and t_u[0]["short_name"] in territorial_unit_ids
-                        ):
-                            logger.debug(
-                                _(
-                                    "Getting observations from territorial_unit %s, using API search"
-                                ),
-                                t_u[0]["name"],
-                            )
-                            q_param["location_choice"] = "territorial_unit"
-                            q_param["territorial_unit_ids"] = [
-                                t_u[0]["id_country"] + t_u[0]["short_name"]
-                            ]
+                    if territorial_unit_ids is None:
+                        t_us = self._t_units
+                    else:
+                        t_us = [u for u in t_us if u[0]["short_name"] in territorial_unit_ids]
+                    for t_u in t_us:
+                        logger.debug(
+                            _(
+                                "Getting observations from territorial_unit %s, using API search"
+                            ),
+                            t_u[0]["name"],
+                        )
+                        q_param["location_choice"] = "territorial_unit"
+                        q_param["territorial_unit_ids"] = [
+                            t_u[0]["id_country"] + t_u[0]["short_name"]
+                        ]
 
                         items_dict = self._api_instance.api_search(
                             q_param, short_version=short_version
