@@ -1026,48 +1026,62 @@ class StorePostgresql(Postgresql):
 
         if "forms" in items_dict["data"]:
             for f in range(0, len(items_dict["data"]["forms"])):
-                forms_data = {}
-                if "id_form_universal" in items_dict["data"]["forms"][f]:
-                    id_form_universal = items_dict["data"]["forms"][f][
-                        "id_form_universal"
-                    ]
-                else:
-                    id_form_universal = None
-                for (k, v) in items_dict["data"]["forms"][f].items():
-                    if k == "sightings":
-                        dates = []
-                        nb_s = len(v)
-                        logger.debug("Storing %d observations in form %d", nb_s, f)
-                        for i in range(0, nb_s):
-                            # Find max and min dates
-                            dates.append(
-                                date.fromtimestamp(int(v[i]["date"]["@timestamp"]))
-                            )
-                            # Create UUID
-                            self._store_uuid(
-                                v[i]["observers"][0]["id_sighting"],
-                                v[i]["observers"][0]["id_universal"],
-                            )
-                            store_1_observation(
-                                ObservationItem(
-                                    self._config.site,
-                                    self._table_defs[controler]["metadata"],
-                                    self._conn,
-                                    self._transformer.transform,
-                                    v[i],
-                                    id_form_universal,
-                                )
-                            )
-                            nb_obs += 1
-                        # Add presumed start and stop date from observations
-                        forms_data["date_start"] = min(dates).isoformat()
-                        forms_data["date_stop"] = max(dates).isoformat()
-                        # Add presumed observer from first observation
-                        forms_data["@uid"] = v[0]["observers"][0]["@uid"]
+                if "@id" in items_dict["data"]["forms"][f]:
+                    # It's a real form
+                    forms_data = {}
+                    if "id_form_universal" in items_dict["data"]["forms"][f]:
+                        id_form_universal = items_dict["data"]["forms"][f][
+                            "id_form_universal"
+                        ]
                     else:
-                        # Put anything except sightings in forms data
-                        forms_data[k] = v
-                self._store_form(forms_data, self._transformer.transform)
+                        id_form_universal = None
+                    for (k, v) in items_dict["data"]["forms"][f].items():
+                        if k == "sightings":
+                            dates = []
+                            nb_s = len(v)
+                            logger.debug("Storing %d observations in form %d", nb_s, f)
+                            for i in range(0, nb_s):
+                                # Find max and min dates
+                                dates.append(
+                                    date.fromtimestamp(int(v[i]["date"]["@timestamp"]))
+                                )
+                                # Create UUID
+                                self._store_uuid(
+                                    v[i]["observers"][0]["id_sighting"],
+                                    v[i]["observers"][0]["id_universal"],
+                                )
+                                store_1_observation(
+                                    ObservationItem(
+                                        self._config.site,
+                                        self._table_defs[controler]["metadata"],
+                                        self._conn,
+                                        self._transformer.transform,
+                                        v[i],
+                                        id_form_universal,
+                                    )
+                                )
+                                nb_obs += 1
+                            # Add presumed start and stop date from observations
+                            forms_data["date_start"] = min(dates).isoformat()
+                            forms_data["date_stop"] = max(dates).isoformat()
+                            # Add presumed observer from first observation
+                            forms_data["@uid"] = v[0]["observers"][0]["@uid"]
+                        else:
+                            # Put everything except sightings in forms data
+                            forms_data[k] = v
+                    self._store_form(forms_data, self._transformer.transform)
+                else:
+                    # It's not a form, store it as a sighting
+                    store_1_observation(
+                        ObservationItem(
+                            self._config.site,
+                            self._table_defs[controler]["metadata"],
+                            self._conn,
+                            self._transformer.transform,
+                            items_dict["data"]["forms"][f],
+                            None,
+                        )
+                    )
 
         logger.debug(_("Stored %d observations or forms to database"), nb_obs)
         return nb_obs
