@@ -490,17 +490,19 @@ class Observations(DownloadVn):
                             q_param, short_version=short_version
                         )
                         # Call backend to store results
-                        nb_obs += self._backend.store(
+                        nb_o = self._backend.store(
                             self._api_instance.controler,
                             str(id_taxo_group) + "_" + str(seq),
                             items_dict,
                         )
+                        # Throttle on max size downloaded during each interval
+                        nb_obs = max(nb_o, nb_obs)
                         log_msg = _(
                             "{} => Iter: {}, {} obs, taxo_group: {}, territorial_unit: {}, date: {}, interval: {}"
                         ).format(
                             self._config.site,
                             seq,
-                            nb_obs,
+                            nb_o,
                             id_taxo_group,
                             t_u[0]["short_name"],
                             start_date.strftime("%d/%m/%Y"),
