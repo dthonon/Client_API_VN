@@ -5,13 +5,12 @@ Features
 --------
 
 - It is now possible to filter download by territorial_unit.
-  An optional parameter is available in YAML configuration file, `filter` section:
-  ```
+  An optional parameter is available in YAML configuration file, `filter` section::
       # List of territorial_unit_ids to download
       territorial_unit_ids:
           - 01
           - 03
-  ``` (`#134 <https://framagit.org/lpo/Client_API_VN/issues/134>`_)
+  (`#134 <https://framagit.org/lpo/Client_API_VN/issues/134>`_)
 - In observations table, project_code is indexed. (`#142 <https://framagit.org/lpo/Client_API_VN/issues/142>`_)
 - UUID, from JSON dowloaded, is now stored in observations table.
   `import.uuid_xref` is removed. (`#146 <https://framagit.org/lpo/Client_API_VN/issues/146>`_)
@@ -25,8 +24,8 @@ Bugfixes
 - Number of downloaded sightings is now displayed for each territorial_unit. (`#137 <https://framagit.org/lpo/Client_API_VN/issues/137>`_)
 - Both schemas are now created with `db_group` owner. (`#140 <https://framagit.org/lpo/Client_API_VN/issues/140>`_)
 - Updating sightings within forms is now possible.
-  Changing data of a sighting inside a forms should use the simple path
-  `Isère;3079911;$['data']['sightings'][0]['observers'][0]['project'];replace;26`
+  Changing data of a sighting inside a forms should use the simple path::
+    Isère;3079911;$['data']['sightings'][0]['observers'][0]['project'];replace;26
   and not include `['forms'][0]`. (`#141 <https://framagit.org/lpo/Client_API_VN/issues/141>`_)
 
 
