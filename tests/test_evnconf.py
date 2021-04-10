@@ -10,6 +10,7 @@ import pytest
 
 from export_vn import __version__
 from export_vn.evnconf import EvnConf
+from export_vn.evnconf import MissingConfigurationFile
 from strictyaml import YAMLValidationError
 
 # Testing constants
@@ -61,7 +62,14 @@ CRTL = "observations"
 def create_file(request):
     cfg_file = "." + request.param["file"]
     # Copy test file to HOME
-    in_file = Path.home() / "Client_API_VN" / "tests" / "data" / request.param["file"]
+    in_file = (
+        Path.home()
+        / "Code"
+        / "Client_API_VN"
+        / "tests"
+        / "data"
+        / request.param["file"]
+    )
     out_file = Path.home() / cfg_file
     if (not out_file.is_file()) or (in_file.stat().st_mtime > out_file.stat().st_mtime):
         shutil.copy(in_file, out_file)
@@ -70,12 +78,22 @@ def create_file(request):
         try:
             cfg = EvnConf(cfg_file)
         except YAMLValidationError:
-            pytest.skip("Expected YAML error")
+            pytest.skip("Found YAML error as expected")
+            return
     else:
         cfg = EvnConf(cfg_file)
     c_cfg = cfg.ctrl_list[CRTL]
     s_cfg = cfg.site_list[request.param["site"]]
     return (cfg, c_cfg, s_cfg, cfg_file, request.param)
+
+
+def test_no_file():
+    """Check for exception is no configuration file."""
+    cfg_file = ".QfB7F0jvnC7V.yaml"
+    try:
+        EvnConf(cfg_file)
+    except MissingConfigurationFile:
+        pytest.skip("Expected evnconf MissingConfigurationFile error")
 
 
 def test_version(create_file):
@@ -209,6 +227,12 @@ def test_taxo_exclude(create_file):
     assert s_cfg.taxo_exclude == ["TAXO_GROUP_ALIEN_PLANTS"]
 
 
+def test_territorial_unit_ids(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, cfg_file, params = create_file
+    assert s_cfg.territorial_unit_ids == ["7"]
+
+
 def test_json_format(create_file):
     """ Test property."""
     cfg, c_cfg, s_cfg, cfg_file, params = create_file
@@ -225,6 +249,13 @@ def test_end_date(create_file):
     """ Test property."""
     cfg, c_cfg, s_cfg, cfg_file, params = create_file
     assert s_cfg.end_date == params["end_date"]
+
+
+def test_type_date(create_file):
+    """ Test property."""
+    cfg, c_cfg, s_cfg, cfg_file, params = create_file
+    if s_cfg.type_date is not None:
+        assert s_cfg.type_date == "sighting" or s_cfg.type_date == "entry"
 
 
 def test_base_url(create_file):

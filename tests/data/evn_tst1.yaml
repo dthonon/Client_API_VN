@@ -131,9 +131,16 @@ filter:
         #- TAXO_GROUP_BIVALVIA
         #- TAXO_GROUP_BRANCHIOPODA
         - TAXO_GROUP_ALIEN_PLANTS
+    # List of territorial_unit_ids to download
+    # Comment out to download all territorial_units
+    territorial_unit_ids:
+        - 7
+    # Use short (recommended) or long JSON data
     json_format: short
+    # Optional start and end dates
     start_date: 2019-08-01
     end_date: 2019-09-01
+    type_date: entry
 
 # VisioNature site access parameters
 site:

@@ -11,7 +11,7 @@ import logging
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, cast
+from typing import Any, Dict, List, Union, cast
 
 from strictyaml import (
     Bool,
@@ -38,6 +38,10 @@ logger = logging.getLogger("transfer_vn.evn_conf")
 
 class EvnConfException(Exception):
     """An exception occurred while loading parameters."""
+
+
+class MissingConfigurationFile(EvnConfException):
+    """Incorrect or missing parameter."""
 
 
 class IncorrectParameter(EvnConfException):
@@ -245,9 +249,11 @@ _ConfSchema = Map(
         Optional("filter"): Map(
             {
                 Optional("taxo_exclude"): Seq(Str()),
+                Optional("territorial_unit_ids"): Seq(Str()),
                 Optional("json_format", default="short"): Enum(["short", "long"]),
                 Optional("start_date"): Datetime(),
                 Optional("end_date"): Datetime(),
+                Optional("type_date", default="sighting"): Enum(["sighting", "entry"]),
             }
         ),
         "site": MapPattern(
@@ -303,11 +309,10 @@ _ConfSchema = Map(
 
 
 class EvnCtrlConf:
-    """Expose controler configuration as properties.
-    """
+    """Expose controler configuration as properties."""
 
     @staticmethod
-    def _schedule_param(cfg: Dict, param: str) -> str:
+    def _schedule_param(cfg: Dict, param: str) -> Union[str, int, None]:
         return (
             None
             if ("schedule" not in cfg)
@@ -326,30 +331,20 @@ class EvnCtrlConf:
             else config["controler"][ctrl]["enabled"]
         )  # type: bool
 
-        self._schedule_year = self._schedule_param(
-            config["controler"][ctrl], "year"
-        )  # type: str
-        self._schedule_month = self._schedule_param(
-            config["controler"][ctrl], "month"
-        )  # type: str
-        self._schedule_day = self._schedule_param(
-            config["controler"][ctrl], "day"
-        )  # type: str
-        self._schedule_week = self._schedule_param(
-            config["controler"][ctrl], "week"
-        )  # type: str
+        self._schedule_year = self._schedule_param(config["controler"][ctrl], "year")
+        self._schedule_month = self._schedule_param(config["controler"][ctrl], "month")
+        self._schedule_day = self._schedule_param(config["controler"][ctrl], "day")
+        self._schedule_week = self._schedule_param(config["controler"][ctrl], "week")
         self._schedule_day_of_week = self._schedule_param(
             config["controler"][ctrl], "day_of_week"
-        )  # type: str
-        self._schedule_hour = self._schedule_param(
-            config["controler"][ctrl], "hour"
-        )  # type: str
+        )
+        self._schedule_hour = self._schedule_param(config["controler"][ctrl], "hour")
         self._schedule_minute = self._schedule_param(
             config["controler"][ctrl], "minute"
-        )  # type: str
+        )
         self._schedule_second = self._schedule_param(
             config["controler"][ctrl], "second"
-        )  # type: str
+        )
 
     @property
     def enabled(self) -> bool:
@@ -357,49 +352,48 @@ class EvnCtrlConf:
         return self._enabled
 
     @property
-    def schedule_year(self) -> int:
+    def schedule_year(self) -> Union[str, int, None]:
         """Return scheduling parameter."""
         return self._schedule_year
 
     @property
-    def schedule_month(self) -> int:
+    def schedule_month(self) -> Union[str, int, None]:
         """Return scheduling parameter."""
         return self._schedule_month
 
     @property
-    def schedule_day(self) -> int:
+    def schedule_day(self) -> Union[str, int, None]:
         """Return scheduling parameter."""
         return self._schedule_day
 
     @property
-    def schedule_week(self) -> int:
+    def schedule_week(self) -> Union[str, int, None]:
         """Return scheduling parameter."""
         return self._schedule_week
 
     @property
-    def schedule_day_of_week(self) -> int:
+    def schedule_day_of_week(self) -> Union[str, int, None]:
         """Return scheduling parameter."""
         return self._schedule_day_of_week
 
     @property
-    def schedule_hour(self) -> int:
+    def schedule_hour(self) -> Union[str, int, None]:
         """Return scheduling parameter."""
         return self._schedule_hour
 
     @property
-    def schedule_minute(self) -> int:
+    def schedule_minute(self) -> Union[str, int, None]:
         """Return scheduling parameter."""
         return self._schedule_minute
 
     @property
-    def schedule_second(self) -> int:
+    def schedule_second(self) -> Union[str, int, None]:
         """Return scheduling parameter."""
         return self._schedule_second
 
 
 class EvnSiteConf:
-    """Expose site configuration as properties.
-    """
+    """Expose site configuration as properties."""
 
     def __init__(self, site: str, config: _ConfType) -> None:
         self._site = site
@@ -417,18 +411,26 @@ class EvnSiteConf:
             self._base_url = config["site"][site]["site"]  # type: str
 
             self._taxo_exclude = []  # type: List[str]
+            self._territorial_unit_ids = []  # type: List[str]
             self._json_format = "short"  # type: str
-            self._start_date = None  # type: datetime
-            self._end_date = None  # type: datetime
+            self._start_date = None  # type: Union[datetime, None]
+            self._end_date = None  # type: Union[datetime, None]
+            self._type_date = None  # type: Union[str, None]
             if "filter" in config:
                 if "taxo_exclude" in config["filter"]:
                     self._taxo_exclude = config["filter"]["taxo_exclude"]
+                if "territorial_unit_ids" in config["filter"]:
+                    self._territorial_unit_ids = config["filter"][
+                        "territorial_unit_ids"
+                    ]
                 if "json_format" in config["filter"]:
                     self._json_format = config["filter"]["json_format"]
                 if "start_date" in config["filter"]:
                     self._start_date = config["filter"]["start_date"]
                 if "end_date" in config["filter"]:
                     self._end_date = config["filter"]["end_date"]
+                if "type_date" in config["filter"]:
+                    self._type_date = config["filter"]["type_date"]
             if (self._start_date is not None) and (self._end_date is not None):
                 if self._start_date > self._end_date:
                     logger.error(_("start_date must be before end_date"))
@@ -564,19 +566,29 @@ class EvnSiteConf:
         return self._taxo_exclude
 
     @property
+    def territorial_unit_ids(self) -> List[str]:
+        """Return list of territorial_unit_ids selected for download."""
+        return self._territorial_unit_ids
+
+    @property
     def json_format(self) -> str:
         """Return json format (short/long) for download."""
         return self._json_format
 
     @property
-    def start_date(self) -> datetime:
+    def start_date(self) -> Union[datetime, None]:
         """Return earliest date for download."""
         return self._start_date
 
     @property
-    def end_date(self) -> datetime:
+    def end_date(self) -> Union[datetime, None]:
         """Return latest date for download."""
         return self._end_date
+
+    @property
+    def type_date(self) -> Union[str, None]:
+        """Return type of date ("sighting" or "entry") for download."""
+        return self._type_date
 
     @property
     def file_enabled(self) -> bool:
@@ -730,6 +742,10 @@ class EvnConf:
         # Define configuration schema
         # Read configuration parameters
         p = Path.home() / file
+        if not p.is_file():
+            logger.critical(_("File %s does not exist"), str(p))
+            raise MissingConfigurationFile
+
         yaml_text = p.read_text()
         try:
             logger.info(_("Loading YAML configuration %s"), file)
@@ -759,11 +775,6 @@ class EvnConf:
     def ctrl_list(self) -> _ConfType:
         """Return list of controler configurations."""
         return self._ctrl_list
-
-    @property
-    def site_list(self) -> _ConfType:
-        """Return list of site configurations."""
-        return self._site_list
 
     @property
     def site_list(self) -> _ConfType:

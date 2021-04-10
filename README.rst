@@ -31,11 +31,21 @@ They are tested under Linux Ubuntu or Debian. Other Linux
 distributions could work. Windows is not tested at all and will
 probably not work.
 
+See `Documentation <https://client-api-vn1.readthedocs.io/en/latest/>`_ for more informations.
+
+A thin Python layer on top of Biolovision API is provided,as described in
+`API Documentation <https://client-api-vn1.readthedocs.io/en/latest/api/modules.html>`_.
+
 Installation - Python
 ---------------------
 
 These instructions present the steps required to install the
 Python applications.
+
+Add the follwing debian packages::
+
+    sudo apt install python3-dev
+    sudo apt install python3-venv
 
 Create a python virtual environment, activate it and update basic tools::
 
@@ -127,10 +137,10 @@ The application runs as::
 
     transfer_vn options config
 
-where:
+where::
 
-- options  command line options described below
-- config   YAML file, located in $HOME directory, described in sample file
+    options  command line options described below
+    config   YAML file, located in $HOME directory, described in sample file
 
 -h, --help             Prints help and exits
 --version              Print version number
@@ -155,11 +165,11 @@ The application runs as::
 
     update_vn options config input
 
-where:
+where::
 
-- options  command line options described below
-- config   YAML file, located in $HOME directory, described in sample file
-- input    CSV file listing sightings to be updated
+    options  command line options described below
+    config   YAML file, located in $HOME directory, described in sample file
+    input    CSV file listing sightings to be updated
 
 -h, --help             Prints help and exits
 --version              Print version number

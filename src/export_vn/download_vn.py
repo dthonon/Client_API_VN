@@ -27,6 +27,7 @@ from biolovision.api import (
     ValidationsAPI,
 )
 from export_vn.regulator import PID
+from export_vn.store_postgresql import ReadPostgresql
 
 from . import _, __version__
 
@@ -128,7 +129,7 @@ class DownloadVn:
 
 
 class Entities(DownloadVn):
-    """ Implement store from entities controler.
+    """Implement store from entities controler.
 
     Methods
     - store               - Download and store to json
@@ -145,7 +146,7 @@ class Entities(DownloadVn):
 
 
 class Families(DownloadVn):
-    """ Implement store from families controler.
+    """Implement store from families controler.
 
     Methods
     - store               - Download and store to json
@@ -162,7 +163,7 @@ class Families(DownloadVn):
 
 
 class Fields(DownloadVn):
-    """ Implement store from fields controler.
+    """Implement store from fields controler.
 
     Methods
     - store               - Download and store to json
@@ -228,7 +229,7 @@ class Fields(DownloadVn):
 
 
 class LocalAdminUnits(DownloadVn):
-    """ Implement store from local_admin_units controler.
+    """Implement store from local_admin_units controler.
 
     Methods
     - store               - Download and store to json
@@ -248,9 +249,37 @@ class LocalAdminUnits(DownloadVn):
         )
         return None
 
+    def store(
+        self,
+        territorial_unit_ids=None,
+    ):
+        """Download from VN by API and store json to backend.
+
+        Overloads base method to add territorial_unit filter
+
+        Parameters
+        ----------
+        territorial_unit_ids : list
+            List of territorial_units to include in storage.
+        """
+        if territorial_unit_ids is not None:
+            for id_canton in territorial_unit_ids:
+                logger.debug(
+                    _("Getting local_admin_units from id_canton %s, using API list"),
+                    id_canton,
+                )
+                q_param = {"id_canton": id_canton}
+                super().store([q_param])
+        else:
+            logger.debug(
+                _("Getting local_admin_units, using API list"),
+                self._api_instance.controler,
+            )
+            super().store()
+
 
 class Observations(DownloadVn):
-    """ Implement store from observations controler.
+    """Implement store from observations controler.
 
     Methods
     - store               - Download (by date interval) and store to json
@@ -269,6 +298,7 @@ class Observations(DownloadVn):
             max_requests,
             max_chunks,
         )
+        self._t_units = ReadPostgresql(self._config).read("territorial_units")
         return None
 
     def _store_list(self, id_taxo_group, by_specie, short_version="1"):
@@ -363,10 +393,12 @@ class Observations(DownloadVn):
 
         return None
 
-    def _store_search(self, id_taxo_group, short_version="1"):
+    def _store_search(
+        self, id_taxo_group, territorial_unit_ids=None, short_version="1"
+    ):
         """Download from VN by API search and store json to file.
 
-        Calls biolovision_api to get observation, convert to json and store.
+        Calls biolovision_api to get observations, convert to json and store.
         If id_taxo_group is defined, downloads only this taxo_group
         Else if id_taxo_group is None, downloads all database
         Moves back in date range, starting from now
@@ -376,6 +408,8 @@ class Observations(DownloadVn):
         ----------
         id_taxo_group : str or None
             If not None, taxo_group to be downloaded.
+        territorial_unit_ids : list
+            List of territorial_units to include in storage.
         short_version : str
             '0' for long JSON and '1' for short_version.
         """
@@ -422,6 +456,7 @@ class Observations(DownloadVn):
                 )
                 delta_days = self._config.tuning_pid_delta_days
                 while start_date > min_date:
+                    nb_obs = 0
                     start_date = end_date - timedelta(days=delta_days)
                     q_param = {
                         "period_choice": "range",
@@ -430,34 +465,58 @@ class Observations(DownloadVn):
                         "species_choice": "all",
                         "taxonomic_group": taxo["id"],
                     }
-                    items_dict = self._api_instance.api_search(
-                        q_param, short_version=short_version
-                    )
-                    # Call backend to store results
-                    nb_obs = self._backend.store(
-                        self._api_instance.controler,
-                        str(id_taxo_group) + "_" + str(seq),
-                        items_dict,
-                    )
-                    log_msg = _(
-                        "{} => Iter: {}, {} obs, taxo_group: {}, date: {}, interval: {}"
-                    ).format(
-                        self._config.site,
-                        seq,
-                        nb_obs,
-                        id_taxo_group,
-                        start_date.strftime("%d/%m/%Y"),
-                        str(delta_days),
-                    )
-                    # Call backend to store log
-                    self._backend.log(
-                        self._config.site,
-                        self._api_instance.controler,
-                        self._api_instance.transfer_errors,
-                        self._api_instance.http_status,
-                        log_msg,
-                    )
-                    logger.info(log_msg)
+                    if self._config._type_date is not None:
+                        if self._config._type_date == "entry":
+                            q_param["entry_date"] = "1"
+                        else:
+                            q_param["entry_date"] = "0"
+                    if territorial_unit_ids is None:
+                        t_us = self._t_units
+                    else:
+                        t_us = [u for u in self._t_units if u[0]["short_name"] in territorial_unit_ids]
+                    for t_u in t_us:
+                        logger.debug(
+                            _(
+                                "Getting observations from territorial_unit %s, using API search"
+                            ),
+                            t_u[0]["name"],
+                        )
+                        q_param["location_choice"] = "territorial_unit"
+                        q_param["territorial_unit_ids"] = [
+                            t_u[0]["id_country"] + t_u[0]["short_name"]
+                        ]
+
+                        items_dict = self._api_instance.api_search(
+                            q_param, short_version=short_version
+                        )
+                        # Call backend to store results
+                        nb_o = self._backend.store(
+                            self._api_instance.controler,
+                            str(id_taxo_group) + "_" + str(seq),
+                            items_dict,
+                        )
+                        # Throttle on max size downloaded during each interval
+                        nb_obs = max(nb_o, nb_obs)
+                        log_msg = _(
+                            "{} => Iter: {}, {} obs, taxo_group: {}, territorial_unit: {}, date: {}, interval: {}"
+                        ).format(
+                            self._config.site,
+                            seq,
+                            nb_o,
+                            id_taxo_group,
+                            t_u[0]["short_name"],
+                            start_date.strftime("%d/%m/%Y"),
+                            str(delta_days),
+                        )
+                        # Call backend to store log
+                        self._backend.log(
+                            self._config.site,
+                            self._api_instance.controler,
+                            self._api_instance.transfer_errors,
+                            self._api_instance.http_status,
+                            log_msg,
+                        )
+                        logger.info(log_msg)
                     seq += 1
                     end_date = start_date
                     delta_days = int(pid(nb_obs))
@@ -495,6 +554,7 @@ class Observations(DownloadVn):
         by_specie=False,
         method="search",
         taxo_groups_ex=None,
+        territorial_unit_ids=None,
         short_version="1",
     ):
         """Download from VN by API and store json to backend.
@@ -512,22 +572,34 @@ class Observations(DownloadVn):
         by_specie : bool
             If True, downloading by specie.
         method : str
-            API used to download, either 'search' or 'list'.
+            API used to download, only 'search'.
         taxo_groups_ex : list
             List of taxo_groups to exclude from storage.
+        territorial_unit_ids : list
+            List of territorial_units to include in storage.
         short_version : str
             '0' for long JSON and '1' for short_version.
         """
         # Get the list of taxo groups to process
         taxo_list = self._list_taxo_groups(id_taxo_group, taxo_groups_ex)
         logger.info(
-            _("%s => Downloading taxo_groups: %s"), self._config.site, taxo_list
+            _("%s => Downloading taxo_groups: %s, territorial_units: %s"),
+            self._config.site,
+            taxo_list,
+            territorial_unit_ids,
         )
 
         if method == "search":
             for taxo in taxo_list:
-                self._store_search(taxo, short_version=short_version)
+                self._store_search(
+                    taxo, territorial_unit_ids, short_version=short_version
+                )
         elif method == "list":
+            logger.warning(
+                _(
+                    "Download using list method is deprecated. Please use search method only"
+                )
+            )
             for taxo in taxo_list:
                 self._store_list(taxo, by_specie=by_specie, short_version=short_version)
         else:
@@ -578,7 +650,9 @@ class Observations(DownloadVn):
                 logger.info(
                     _("Getting updates for taxo_group %s since %s"), taxo, since
                 )
-                items_dict = self._api_instance.api_diff(taxo, since)
+                items_dict = self._api_instance.api_diff(
+                    taxo, since, modification_type="only_modified"
+                )
 
                 # List by processing type
                 for item in items_dict:
@@ -607,6 +681,7 @@ class Observations(DownloadVn):
                 logger.error(
                     _("No date found for last download, increment not performed")
                 )
+            print(updated)
 
             # Process updates
             if len(updated) > 0:
@@ -652,7 +727,7 @@ class Observations(DownloadVn):
 
 
 class Observers(DownloadVn):
-    """ Implement store from observers controler.
+    """Implement store from observers controler.
 
     Methods
     - store               - Download and store to json
@@ -669,7 +744,7 @@ class Observers(DownloadVn):
 
 
 class Places(DownloadVn):
-    """ Implement store from places controler.
+    """Implement store from places controler.
 
     Methods
     - store               - Download and store to json
@@ -682,11 +757,44 @@ class Places(DownloadVn):
         super().__init__(
             config, PlacesAPI(config), backend, max_retry, max_requests, max_chunks
         )
+        self._l_a_units = ReadPostgresql(self._config).read("local_admin_units")
         return None
+
+    def store(
+        self,
+        territorial_unit_ids=None,
+    ):
+        """Download from VN by API and store json to backend.
+
+        Overloads base method to add territorial_unit filter
+
+        Parameters
+        ----------
+        territorial_unit_ids : list
+            List of territorial_units to include in storage.
+        """
+        if territorial_unit_ids is not None:
+            # Get local_admin_units
+            for id_canton in territorial_unit_ids:
+                # Loop on local_admin_units of the territorial_unit
+                for l_a_u in self._l_a_units:
+                    if l_a_u[0]["id_canton"] == id_canton:
+                        logger.info(
+                            _(
+                                "Getting places from id_canton %s, id_commune %s, using API list"
+                            ),
+                            id_canton,
+                            l_a_u[0]["id"],
+                        )
+                        q_param = {"id_commune": l_a_u[0]["id"], "get_hidden": "1"}
+                        super().store([q_param])
+        else:
+            logger.debug(_("Getting places, using API list"))
+            super().store()
 
 
 class Species(DownloadVn):
-    """ Implement store from species controler.
+    """Implement store from species controler.
 
     Methods
     - store               - Download and store to json
@@ -702,8 +810,7 @@ class Species(DownloadVn):
         return None
 
     def store(self):
-        """Store species, iterating over taxo_groups
-        """
+        """Store species, iterating over taxo_groups"""
         taxo_groups = TaxoGroupsAPI(self._config).api_list()
         taxo_list = []
         for taxo in taxo_groups["data"]:
@@ -716,7 +823,7 @@ class Species(DownloadVn):
 
 
 class TaxoGroup(DownloadVn):
-    """ Implement store from taxo_groups controler.
+    """Implement store from taxo_groups controler.
 
     Methods
     - store               - Download and store to json
@@ -733,7 +840,7 @@ class TaxoGroup(DownloadVn):
 
 
 class TerritorialUnits(DownloadVn):
-    """ Implement store from territorial_units controler.
+    """Implement store from territorial_units controler.
 
     Methods
     - store               - Download and store to json
@@ -755,7 +862,7 @@ class TerritorialUnits(DownloadVn):
 
 
 class Validations(DownloadVn):
-    """ Implement store from validations controler.
+    """Implement store from validations controler.
 
     Methods
     - store               - Download and store to json

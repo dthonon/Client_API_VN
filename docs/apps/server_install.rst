@@ -51,14 +51,23 @@ de la manière suivante.
 
 .. code:: bash
 
+    sudo apt -y install curl ca-certificates gnupg
     sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-    wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | \
-    sudo apt-key add -
-    sudo apt-get update
+    curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+
+    sudo apt update
     sudo apt -y install postgresql postgresql-contrib postgis postgresql-12-postgis-3 postgresql-12-postgis-3-scripts
+    sudo apt -y install pgadmin4 # Optionnel, pour l'accès par PgAdmin
+    sudo apt -y install postgresql-12-pgaudit # Optionnel, pour l'audit détaillé des accès à la base
+    sudo apt install postgresql-12-pgaudit
     sudo nano /etc/postgresql/12/main/postgresql.conf
 
-=> changer `#listen_addresses='localhost'` en `listen_addresses='*'`
+=> changer :
+
+.. code:: cfg
+
+    listen_addresses='*'
+    shared_preload_libraries = 'pgaudit'    # Optionnel, pour l'audit détaillé des accès à la Postgresql
 
 .. code:: bash
 
@@ -90,8 +99,9 @@ Optionnel, pour fournir pgAdmin4 serveur:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Les modules python suivants doivent être installés dans le système de base.
+D'autres modules peuvent être nécessaires, à vérifier.
 Les autres modules seront installés dans l'environnement virtuel de
-l'utilisateur:
+l'utilisateur :
 
 .. code:: bash
 
@@ -130,15 +140,17 @@ par défaut et installant un firewall:
 
     sudo nano /etc/passwd
 
-    => remplacer `/bin/bash` par `/bin/false` pour les comptes debian et postgres
+    => remplacer `/bin/bash` par `/usr/sbin/nologin` pour les comptes debian et postgres
 
     sudo apt -y install ufw
     sudo ufw allow ssh
     sudo ufw allow postgresql
-    # Pour les serveurs fournissant plus que postgres (developpement...)
+    # For development servers with additional services (developpement...), to be customized
+    sudo ufw allow smtp
     sudo ufw allow ftp
     sudo ufw allow http
     sudo ufw allow https
+    # After adding all ports
     sudo ufw enable
     sudo reboot
 

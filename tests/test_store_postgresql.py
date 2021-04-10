@@ -9,6 +9,7 @@ import pytest
 
 from export_vn.download_vn import (
     Entities,
+    Families,
     Fields,
     LocalAdminUnits,
     Observations,
@@ -19,7 +20,7 @@ from export_vn.download_vn import (
     TerritorialUnits,
 )
 from export_vn.evnconf import EvnConf
-from export_vn.store_postgresql import PostgresqlUtils, StorePostgresql
+from export_vn.store_postgresql import PostgresqlUtils, ReadPostgresql, StorePostgresql
 
 # Using faune-ardeche or faune-isere site, that needs to be created first
 SITE = "t07"
@@ -33,7 +34,9 @@ MANAGE_PG = PostgresqlUtils(CFG)
 # Need to run test_create_json_tables first
 try:
     STORE_PG = StorePostgresql(CFG)
+    READ_PG = ReadPostgresql(CFG)
     ENTITIES = Entities(CFG, STORE_PG)
+    FAMILIES = Families(CFG, STORE_PG)
     FIELDS = Fields(CFG, STORE_PG)
     LOCAL_ADMIN_UNITS = LocalAdminUnits(CFG, STORE_PG)
     OBSERVATIONS = Observations(CFG, STORE_PG)
@@ -87,6 +90,15 @@ def test_entities_api_pg_store():
     ENTITIES.store()
 
 
+# --------
+# Families
+# --------
+@pytest.mark.slow
+def test_families_api_pg_store():
+    """Store families to database."""
+    FAMILIES.store()
+
+
 # ------
 # Fields
 # ------
@@ -103,6 +115,12 @@ def test_fields_api_pg_store():
 def test_local_adm_u_api_pg_store():
     """Store local_admin_units to database."""
     LOCAL_ADMIN_UNITS.store()
+
+
+def test_local_adm_u_api_pg_read():
+    """Read local admin units from database."""
+    l_a_u = READ_PG.read("local_admin_units")
+    assert len(l_a_u) > 339
 
 
 # -------------
@@ -156,6 +174,12 @@ def test_taxo_groups_api_pg_store():
 def test_terr_u_api_pg_store():
     """Store territorial units to database."""
     TERRITORIAL_UNIT.store()
+
+
+def test_terr_u_api_pg_read():
+    """Read territorial units from database."""
+    t_u = READ_PG.read("territorial_units")
+    assert len(t_u) == 1
 
 
 # -------------

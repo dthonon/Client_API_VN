@@ -14,10 +14,6 @@ Properties
 
 import logging
 
-from export_vn.evnconf import EvnConf
-from export_vn.store_file import StoreFile
-from export_vn.store_postgresql import PostgresqlUtils, StorePostgresql
-
 from . import _, __version__
 
 logger = logging.getLogger("transfer_vn.store_all")

@@ -15,8 +15,8 @@
 --  6) Execute trigger by performing dummy update (site=site) on JSON table
 
 -- Cleanup and create
-DROP SCHEMA IF EXISTS {{ cfg.db_schema_vn }} CASCADE ;
-CREATE SCHEMA {{ cfg.db_schema_vn }};
+DROP SCHEMA IF EXISTS {{ cfg.db_schema_vn }} CASCADE;
+CREATE SCHEMA {{ cfg.db_schema_vn }} AUTHORIZATION {{ cfg.db_group }};
 
 SET search_path TO {{ cfg.db_schema_vn }},public;
 
@@ -594,6 +594,7 @@ CREATE TABLE {{ cfg.db_schema_vn }}.observations (
     id_sighting         INTEGER,
     pseudo_id_sighting  TEXT,
     id_universal        TEXT,
+    uuid                TEXT,
     id_form_universal   TEXT,
     id_species          INTEGER,
     taxonomy            INTEGER,
@@ -648,6 +649,9 @@ CREATE INDEX observations_idx_id_form_universal
 DROP INDEX IF EXISTS observations_idx_observer_uid;
 CREATE INDEX observations_idx_observer_uid
     ON {{ cfg.db_schema_vn }}.observations USING btree(observer_uid);
+DROP INDEX IF EXISTS observations_idx_project_code;
+CREATE INDEX observations_idx_project_code
+    ON {{ cfg.db_schema_vn }}.observations USING btree(project_code);
 DROP INDEX IF EXISTS observations_gidx_geom;
 CREATE INDEX observations_gidx_geom
     ON {{ cfg.db_schema_vn }}.observations USING gist(geom);
@@ -690,6 +694,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
         -- Updating data on src_vn.observations when raw data is updated
         UPDATE {{ cfg.db_schema_vn }}.observations SET
             id_universal      = ((NEW.item -> 'observers') -> 0) ->> 'id_universal',
+            uuid              = ((NEW.item -> 'observers') -> 0) ->> 'uuid',
             id_form_universal = NEW.id_form_universal,
             id_species        = CAST(NEW.item #>> '{species,@id}' AS INTEGER),
             taxonomy          = CAST(NEW.item #>> '{species,taxonomy}' AS INTEGER),
@@ -723,7 +728,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
 
         IF NOT FOUND THEN
             -- Inserting data on src_vn.observations when raw data is inserted
-            INSERT INTO {{ cfg.db_schema_vn }}.observations (site, id_sighting, pseudo_id_sighting, id_universal, id_form_universal,
+            INSERT INTO {{ cfg.db_schema_vn }}.observations (site, id_sighting, pseudo_id_sighting, id_universal, uuid, id_form_universal,
                                              id_species, taxonomy, date, date_year, timing, id_place, place,
                                              coord_lat, coord_lon, coord_x_local, coord_y_local, precision, estimation_code,
                                              count, atlas_code, altitude, project_code, hidden, admin_hidden, observer_uid, details,
@@ -733,6 +738,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
                 NEW.id,
                 encode(hmac(NEW.id::text, '{{ cfg.db_secret_key }}', 'sha1'), 'hex'),
                 ((NEW.item -> 'observers') -> 0) ->> 'id_universal',
+                ((NEW.item -> 'observers') -> 0) ->> 'uuid',
                 NEW.id_form_universal,
                 CAST(NEW.item #>> '{species,@id}' AS INTEGER),
                 CAST(NEW.item #>> '{species,taxonomy}' AS INTEGER),
@@ -768,7 +774,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
 
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting data on src_vn.observations when raw data is inserted
-        INSERT INTO {{ cfg.db_schema_vn }}.observations (site, id_sighting, pseudo_id_sighting, id_universal, id_form_universal,
+        INSERT INTO {{ cfg.db_schema_vn }}.observations (site, id_sighting, pseudo_id_sighting, id_universal, uuid, id_form_universal,
                                          id_species, taxonomy, date, date_year, timing, id_place, place,
                                          coord_lat, coord_lon, coord_x_local, coord_y_local, precision, estimation_code,
                                          count, atlas_code, altitude, project_code, hidden, admin_hidden, observer_uid, details,
@@ -778,6 +784,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
             NEW.id,
             encode(hmac(NEW.id::text, '{{ cfg.db_secret_key }}', 'sha1'), 'hex'),
             ((NEW.item -> 'observers') -> 0) ->> 'id_universal',
+            ((NEW.item -> 'observers') -> 0) ->> 'uuid',
             NEW.id_form_universal,
             CAST(NEW.item #>> '{species,@id}' AS INTEGER),
             CAST(NEW.item #>> '{species,taxonomy}' AS INTEGER),
@@ -1396,5 +1403,5 @@ VACUUM FULL ANALYZE {{ cfg.db_schema_import }}.places_json, {{ cfg.db_schema_vn 
 VACUUM FULL ANALYZE {{ cfg.db_schema_import }}.species_json, {{ cfg.db_schema_vn }}.species;
 VACUUM FULL ANALYZE {{ cfg.db_schema_import }}.taxo_groups_json, {{ cfg.db_schema_vn }}.taxo_groups;
 VACUUM FULL ANALYZE {{ cfg.db_schema_import }}.territorial_units_json, {{ cfg.db_schema_vn }}.territorial_units;
-VACUUM FULL ANALYZE {{ cfg.db_schema_import }}.uuid_xref;
+-- VACUUM FULL ANALYZE {{ cfg.db_schema_import }}.uuid_xref;
 VACUUM FULL ANALYZE {{ cfg.db_schema_import }}.validations_json, {{ cfg.db_schema_vn }}.validations;

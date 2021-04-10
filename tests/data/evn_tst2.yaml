@@ -107,6 +107,10 @@ filter:
         #- TAXO_GROUP_BIVALVIA
         #- TAXO_GROUP_BRANCHIOPODA
         - TAXO_GROUP_ALIEN_PLANTS
+    # List of territorial_unit_ids to download
+    # Comment out to download all territorial_units
+    territorial_unit_ids:
+        - 7
 
 # VisioNature site access parameters
 site:

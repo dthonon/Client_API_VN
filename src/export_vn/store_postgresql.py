@@ -12,7 +12,7 @@ Properties
 """
 import logging
 from datetime import datetime, date
-from uuid import uuid4
+# from uuid import uuid4
 
 from pyproj import Transformer
 from sqlalchemy import (
@@ -278,19 +278,19 @@ class PostgresqlUtils:
         )
         return None
 
-    def _create_uuid_xref(self):
-        """Create uuid_xref table if it does not exist."""
-        self._create_table(
-            "uuid_xref",
-            Column("id", Integer, nullable=False, index=True),
-            Column("site", String, nullable=False, index=True),
-            Column("universal_id", String, nullable=False, index=True),
-            Column("uuid", String, nullable=False, index=True),
-            Column("alias", ARRAY(String), nullable=True),
-            Column("update_ts", DateTime, server_default=func.now(), nullable=False),
-            PrimaryKeyConstraint("id", "site", name="uuid_xref_json_pk"),
-        )
-        return None
+    # def _create_uuid_xref(self):
+    #     """Create uuid_xref table if it does not exist."""
+    #     self._create_table(
+    #         "uuid_xref",
+    #         Column("id", Integer, nullable=False, index=True),
+    #         Column("site", String, nullable=False, index=True),
+    #         Column("universal_id", String, nullable=False, index=True),
+    #         Column("uuid", String, nullable=False, index=True),
+    #         Column("alias", ARRAY(String), nullable=True),
+    #         Column("update_ts", DateTime, server_default=func.now(), nullable=False),
+    #         PrimaryKeyConstraint("id", "site", name="uuid_xref_json_pk"),
+    #     )
+    #     return None
 
     def _create_observations_json(self):
         """Create observations_json table if it does not exist."""
@@ -371,7 +371,6 @@ class PostgresqlUtils:
             PrimaryKeyConstraint("id", "site", name="validations_json_pk"),
         )
         return None
-
 
     # ---------------
     # External methods
@@ -554,7 +553,7 @@ class PostgresqlUtils:
             self._create_field_details_json()
             self._create_forms_json()
             self._create_local_admin_units_json()
-            self._create_uuid_xref()
+            # self._create_uuid_xref()
             self._create_observations_json()
             self._create_observers_json()
             self._create_places_json()
@@ -653,8 +652,8 @@ class PostgresqlUtils:
         return result
 
 
-class StorePostgresql:
-    """Provides store to Postgresql database method."""
+class Postgresql:
+    """Provides common access Postgresql database."""
 
     def __init__(self, config):
         self._config = config
@@ -689,7 +688,7 @@ class StorePostgresql:
                 "field_details": {"type": "fields", "metadata": None},
                 "forms": {"type": "others", "metadata": None},
                 "local_admin_units": {"type": "geometry", "metadata": None},
-                "uuid_xref": {"type": "others", "metadata": None},
+                # "uuid_xref": {"type": "others", "metadata": None},
                 "observations": {"type": "observation", "metadata": None},
                 "observers": {"type": "observers", "metadata": None},
                 "places": {"type": "geometry", "metadata": None},
@@ -716,9 +715,9 @@ class StorePostgresql:
             self._table_defs["local_admin_units"]["metadata"] = self._metadata.tables[
                 dbschema + ".local_admin_units_json"
             ]
-            self._table_defs["uuid_xref"]["metadata"] = self._metadata.tables[
-                dbschema + ".uuid_xref"
-            ]
+            # self._table_defs["uuid_xref"]["metadata"] = self._metadata.tables[
+            #     dbschema + ".uuid_xref"
+            # ]
             self._table_defs["observations"]["metadata"] = self._metadata.tables[
                 dbschema + ".observations_json"
             ]
@@ -755,13 +754,47 @@ class StorePostgresql:
     def __exit__(self, exc_type, exc_value, traceback):
         """Finalize connections."""
         if self._config.db_enabled:
-            logger.debug(_("Closing database connection at exit from StorePostgresql"))
+            logger.info(_("Closing connection to database %s"), self._config.db_name)
             self._conn.close()
 
     @property
     def version(self):
         """Return version."""
         return __version__
+
+
+class ReadPostgresql(Postgresql):
+    """Provides read from Postgresql database method."""
+
+    # ----------------
+    # External methods
+    # ----------------
+    def read(self, controler):
+        """Read items from database.
+
+        Parameters
+        ----------
+        controler : str
+            Name of API controler.
+
+        Returns
+        -------
+        dict
+            Dict of items read from table.
+        """
+
+        logger.info(
+            _("Reading from %s of site %s"),
+            controler,
+            self._config.site,
+        )
+        metadata = self._table_defs[controler]["metadata"]
+        stmt = select([metadata.c.item]).where(
+            metadata.c.site == self._config.site)
+        return self._conn.execute(stmt).fetchall()
+
+class StorePostgresql(Postgresql):
+    """Provides store to Postgresql database method."""
 
     # ----------------
     # Internal methods
@@ -909,41 +942,41 @@ class StorePostgresql:
 
         return len(items_dict)
 
-    def _store_uuid(self, obs_id, universal_id=""):
-        """Creates UUID and store along id and site.
+    # def _store_uuid(self, obs_id, universal_id=""):
+    #     """Creates UUID and store along id and site.
 
-        If (id, site) does not exist:
-        - creates an UID
-        - store it, along with id, site, universal_id to table.
+    #     If (id, site) does not exist:
+    #     - creates an UID
+    #     - store it, along with id, site, universal_id to table.
 
-        Parameters
-        ----------
-        obs_id : str
-            Observations id.
-        universal_id : str
-            Observations universal id.
+    #     Parameters
+    #     ----------
+    #     obs_id : str
+    #         Observations id.
+    #     universal_id : str
+    #         Observations universal id.
 
-        Returns
-        -------
-        int
-            Count of items stored.
-        """
+    #     Returns
+    #     -------
+    #     int
+    #         Count of items stored.
+    #     """
 
-        controler = "uuid_xref"
-        metadata = self._table_defs[controler]["metadata"]
-        insert_stmt = insert(metadata).values(
-            id=obs_id,
-            site=self._config.site,
-            universal_id=universal_id,
-            uuid=uuid4(),
-            update_ts=datetime.now(),
-        )
-        do_nothing_stmt = insert_stmt.on_conflict_do_nothing(
-            constraint=metadata.primary_key
-        )
-        self._conn.execute(do_nothing_stmt)
+    #     controler = "uuid_xref"
+    #     metadata = self._table_defs[controler]["metadata"]
+    #     insert_stmt = insert(metadata).values(
+    #         id=obs_id,
+    #         site=self._config.site,
+    #         universal_id=universal_id,
+    #         uuid=uuid4(),
+    #         update_ts=datetime.now(),
+    #     )
+    #     do_nothing_stmt = insert_stmt.on_conflict_do_nothing(
+    #         constraint=metadata.primary_key
+    #     )
+    #     self._conn.execute(do_nothing_stmt)
 
-        return 1
+    #     return 1
 
     def _store_observation(self, controler, items_dict):
         """Iterate through observations or forms and store.
@@ -974,11 +1007,11 @@ class StorePostgresql:
         )
         for i in range(0, len(items_dict["data"]["sightings"])):
             elem = items_dict["data"]["sightings"][i]
-            # Create UUID
-            self._store_uuid(
-                elem["observers"][0]["id_sighting"],
-                elem["observers"][0]["id_universal"],
-            )
+            # # Create UUID
+            # self._store_uuid(
+            #     elem["observers"][0]["id_sighting"],
+            #     elem["observers"][0]["id_universal"],
+            # )
             # Write observation to database
             store_1_observation(
                 ObservationItem(
@@ -993,48 +1026,62 @@ class StorePostgresql:
 
         if "forms" in items_dict["data"]:
             for f in range(0, len(items_dict["data"]["forms"])):
-                forms_data = {}
-                if "id_form_universal" in items_dict["data"]["forms"][f]:
-                    id_form_universal = items_dict["data"]["forms"][f][
-                        "id_form_universal"
-                    ]
-                else:
-                    id_form_universal = None
-                for (k, v) in items_dict["data"]["forms"][f].items():
-                    if k == "sightings":
-                        dates = []
-                        nb_s = len(v)
-                        logger.debug("Storing %d observations in form %d", nb_s, f)
-                        for i in range(0, nb_s):
-                            # Find max and min dates
-                            dates.append(
-                                date.fromtimestamp(int(v[i]["date"]["@timestamp"]))
-                            )
-                            # Create UUID
-                            self._store_uuid(
-                                v[i]["observers"][0]["id_sighting"],
-                                v[i]["observers"][0]["id_universal"],
-                            )
-                            store_1_observation(
-                                ObservationItem(
-                                    self._config.site,
-                                    self._table_defs[controler]["metadata"],
-                                    self._conn,
-                                    self._transformer.transform,
-                                    v[i],
-                                    id_form_universal,
-                                )
-                            )
-                            nb_obs += 1
-                        # Add presumed start and stop date from observations
-                        forms_data["date_start"] = min(dates).isoformat()
-                        forms_data["date_stop"] = max(dates).isoformat()
-                        # Add presumed observer from first observation
-                        forms_data["@uid"] = v[0]["observers"][0]["@uid"]
+                if "@id" in items_dict["data"]["forms"][f]:
+                    # It's a real form
+                    forms_data = {}
+                    if "id_form_universal" in items_dict["data"]["forms"][f]:
+                        id_form_universal = items_dict["data"]["forms"][f][
+                            "id_form_universal"
+                        ]
                     else:
-                        # Put anything except sightings in forms data
-                        forms_data[k] = v
-                self._store_form(forms_data, self._transformer.transform)
+                        id_form_universal = None
+                    for (k, v) in items_dict["data"]["forms"][f].items():
+                        if k == "sightings":
+                            dates = []
+                            nb_s = len(v)
+                            logger.debug("Storing %d observations in form %d", nb_s, f)
+                            for i in range(0, nb_s):
+                                # Find max and min dates
+                                dates.append(
+                                    date.fromtimestamp(int(v[i]["date"]["@timestamp"]))
+                                )
+                                # # Create UUID
+                                # self._store_uuid(
+                                #     v[i]["observers"][0]["id_sighting"],
+                                #     v[i]["observers"][0]["id_universal"],
+                                # )
+                                store_1_observation(
+                                    ObservationItem(
+                                        self._config.site,
+                                        self._table_defs[controler]["metadata"],
+                                        self._conn,
+                                        self._transformer.transform,
+                                        v[i],
+                                        id_form_universal,
+                                    )
+                                )
+                                nb_obs += 1
+                            # Add presumed start and stop date from observations
+                            forms_data["date_start"] = min(dates).isoformat()
+                            forms_data["date_stop"] = max(dates).isoformat()
+                            # Add presumed observer from first observation
+                            forms_data["@uid"] = v[0]["observers"][0]["@uid"]
+                        else:
+                            # Put everything except sightings in forms data
+                            forms_data[k] = v
+                    self._store_form(forms_data, self._transformer.transform)
+                else:
+                    # It's not a form, store it as a sighting
+                    store_1_observation(
+                        ObservationItem(
+                            self._config.site,
+                            self._table_defs[controler]["metadata"],
+                            self._conn,
+                            self._transformer.transform,
+                            items_dict["data"]["forms"][f],
+                            None,
+                        )
+                    )
 
         logger.debug(_("Stored %d observations or forms to database"), nb_obs)
         return nb_obs

@@ -7,7 +7,7 @@ See details in each class.
 
 Each Biolovision controler is mapped to a python class.
 Class name is derived from controler name by removing '_' and using CamelCase.
-Methods names are similar to the corresponding API call, prefixed by 'api\_'.
+Methods names are similar to the corresponding API call, prefixed by 'api'.
 For example, method 'api_list' in class 'LocalAdminUnits' will
 call 'local_admin_units'.
 
@@ -84,11 +84,12 @@ Exceptions:
 """
 import json
 import logging
+import re
 import time
-import urllib
 from functools import lru_cache
-
 from typing import Dict
+from urllib import parse
+
 import requests
 from requests_oauthlib import OAuth1
 
@@ -216,13 +217,14 @@ class BiolovisionAPI:
         """
         # Loop on chunks
         nb_chunks = 0
+        data_rec = None
         while nb_chunks < self._limits["max_chunks"]:
             # Remove DEBUG logging level to avoid too many details
             level = logging.getLogger().level
             logging.getLogger().setLevel(logging.INFO)
 
             # Prepare call to API
-            payload = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
+            payload = parse.urlencode(params, quote_via=parse.quote)
             logger.debug(_("Params: %s"), payload)
             headers = {"Content-Type": "application/json;charset=UTF-8"}
             if optional_headers is not None:
@@ -277,6 +279,7 @@ class BiolovisionAPI:
                     self._http_status <= 499
                 ):  # pragma: no cover
                     # Unreceverable error
+                    logger.error(resp)
                     logger.critical(
                         _("Unreceverable error %s, raising exception"),
                         self._http_status,
@@ -304,14 +307,17 @@ class BiolovisionAPI:
                     resp_chunk = json.loads("{}")
                 else:
                     try:
-                        resp_chunk = resp.json()
+                        logger.debug(
+                            _("Response content: %s, text: %s"), resp, resp.text
+                        )
+                        # TWEAK: remove extra text outside JSON response
+                        resp_chunk = json.loads(re.findall(r'([\[{].+[}\]])', resp.text)[0])
+                        # resp_chunk = resp.json()
                     except json.decoder.JSONDecodeError:  # pragma: no cover
                         # Error during JSON decoding =>
                         # Logging error and no further processing of empty chunk
                         resp_chunk = json.loads("{}")
-                        logger.error(_("Incorrect response content: %s"), resp.text)
-                        logger.exception(_("Exception raised during JSON decoding"))
-                        raise HTTPError("resp.json exception")
+                        logger.error(_("Incorrect response content: %s"), resp)
 
                 # Initialize or append to response dict, depending on content
                 if "data" in resp_chunk:
@@ -334,7 +340,9 @@ class BiolovisionAPI:
                                 # logger.error(_("No 'sightings' in previous data"))
                                 # logger.error(data_rec)
                                 # logger.error(resp_chunk)
-                                data_rec["data"]["sightings"] = resp_chunk["data"]["sightings"]
+                                data_rec["data"]["sightings"] = resp_chunk["data"][
+                                    "sightings"
+                                ]
                     if "forms" in resp_chunk["data"]:
                         observations = True
                         logger.debug(
@@ -465,7 +473,8 @@ class BiolovisionAPI:
         for key, value in kwargs.items():
             params[key] = value
         logger.debug(
-            _("In api_get for controler:%s, with parameters:%s"),
+            _("In api_get for controler:%s, entity: %s, with parameters:%s"),
+            self._ctrl,
             id_entity,
             self._clean_params(params),
         )
@@ -513,7 +522,7 @@ class BiolovisionAPI:
 
 
 class EntitiesAPI(BiolovisionAPI):
-    """ Implement api calls to entities controler.
+    """Implement api calls to entities controler.
 
     Methods:
 
@@ -528,7 +537,7 @@ class EntitiesAPI(BiolovisionAPI):
 
 
 class FamiliesAPI(BiolovisionAPI):
-    """ Implement api calls to families controler.
+    """Implement api calls to families controler.
 
     Methods:
 
@@ -543,7 +552,7 @@ class FamiliesAPI(BiolovisionAPI):
 
 
 class FieldsAPI(BiolovisionAPI):
-    """ Implement api calls to fields controler.
+    """Implement api calls to fields controler.
 
     Methods:
 
@@ -558,7 +567,7 @@ class FieldsAPI(BiolovisionAPI):
 
 
 class LocalAdminUnitsAPI(BiolovisionAPI):
-    """ Implement api calls to local_admin_units controler.
+    """Implement api calls to local_admin_units controler.
 
     Methods:
 
@@ -575,7 +584,7 @@ class LocalAdminUnitsAPI(BiolovisionAPI):
 
 
 class ObservationsAPI(BiolovisionAPI):
-    """ Implement api calls to observations controler.
+    """Implement api calls to observations controler.
 
     Methods:
 
@@ -583,7 +592,7 @@ class ObservationsAPI(BiolovisionAPI):
 
     - api_list     - Return a list of observations from the controler
 
-    - api_diff     - Return all changes in observations since a given date
+    - api_diff     - Deprecated: Return all changes in observations since a given date
 
     - api_search   - Search for observations based on parameter value
 
@@ -763,7 +772,7 @@ class ObservationsAPI(BiolovisionAPI):
 
 
 class ObserversAPI(BiolovisionAPI):
-    """ Implement api calls to observers controler.
+    """Implement api calls to observers controler.
 
     Methods:
 
@@ -778,7 +787,7 @@ class ObserversAPI(BiolovisionAPI):
 
 
 class PlacesAPI(BiolovisionAPI):
-    """ Implement api calls to places controler.
+    """Implement api calls to places controler.
 
     Methods:
 
@@ -793,7 +802,7 @@ class PlacesAPI(BiolovisionAPI):
 
 
 class SpeciesAPI(BiolovisionAPI):
-    """ Implement api calls to species controler.
+    """Implement api calls to species controler.
 
     Methods:
 
@@ -808,7 +817,7 @@ class SpeciesAPI(BiolovisionAPI):
 
 
 class TaxoGroupsAPI(BiolovisionAPI):
-    """ Implement api calls to taxo_groups controler.
+    """Implement api calls to taxo_groups controler.
 
     Methods:
 
@@ -828,7 +837,7 @@ class TaxoGroupsAPI(BiolovisionAPI):
 
 
 class TerritorialUnitsAPI(BiolovisionAPI):
-    """ Implement api calls to territorial_units controler.
+    """Implement api calls to territorial_units controler.
 
     Methods:
 
@@ -850,12 +859,12 @@ class TerritorialUnitsAPI(BiolovisionAPI):
 
 
 class ValidationsAPI(BiolovisionAPI):
-    """ Implement api calls to validations controler.
+    """Implement api calls to validations controler.
 
     Methods:
 
     - api_get                - Return a single validation from the controler
-    
+
     - api_list               - Return the list of validations from the controler
 
     """

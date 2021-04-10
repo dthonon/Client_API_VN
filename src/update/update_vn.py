@@ -107,72 +107,76 @@ def update(cfg_ctrl, input: str):
                 assert row[4].strip() == "value"
             else:
                 # Next rows are update commands
-                logger.info(
-                    _("Site %s: updating sighting %s, operation %s"),
-                    row[0].strip(),
-                    row[1].strip(),
-                    row[3].strip(),
-                )
-                if row[3].strip() not in [
-                    "delete_observation",
-                    "delete_attribute",
-                    "replace",
-                ]:
-                    logger.error(_("Unknown operation in row, ignored %s"), row)
-                elif row[3].strip() == "delete_observation":
-                    obs_api[row[0].strip()].api_delete(row[1].strip())
+                if len(row) < 5:
+                    logger.warning("Empty line ignored")
                 else:
-                    # Get current observation
-                    sighting = obs_api[row[0].strip()].api_get(
-                        row[1].strip(), short_version="1"
+                    logger.info(
+                        _("Site %s: updating sighting %s, operation %s"),
+                        row[0].strip(),
+                        row[1].strip(),
+                        row[3].strip(),
                     )
-                    logger.debug(
-                        _("Before: %s"),
-                        sighting["data"]["sightings"][0]["observers"][0],
-                    )
-                    # JSON path relative to "sighting"
-                    repl = row[2].strip().replace("$", "sighting")
-                    # Get current value, if exists
-                    try:
-                        old_attr = eval(repl)
-                    except KeyError:
-                        old_attr = None
-                    # Get current hidden_comment, if exists
-                    try:
-                        msg = sighting["data"]["sightings"][0]["observers"][0][
-                            "hidden_comment"
-                        ]
-                    except KeyError:  # pragma: no cover
-                        msg = ""
-                    # Prepare logging message to be appended to hidden_comment
-                    msg = msg + json.dumps(
-                        {
-                            "updated": datetime.datetime.now().strftime(
-                                "%Y-%m-%d %H:%M:%S"
-                            ),
-                            "op": row[3].strip(),
-                            "path": row[2].strip(),
-                            "old": old_attr,
-                            "new": row[4].strip(),
-                        }
-                    )
-                    if row[3].strip() == "replace":
-                        exec("{} = {}".format(repl, row[4].strip()))
+                    if row[3].strip() not in [
+                        "delete_observation",
+                        "delete_attribute",
+                        "replace",
+                    ]:
+                        logger.error(_("Unknown operation in row, ignored %s"), row)
+                    elif row[3].strip() == "delete_observation":
+                        obs_api[row[0].strip()].api_delete(row[1].strip())
                     else:
-                        try:
-                            exec("del {}".format(repl))
-                        except KeyError:  # pragma: no cover
-                            pass
-                    exec(
-                        """sighting['data']['sightings'][0]['observers'][0]['hidden_comment'] = '{}'""".format(
-                            msg.replace('"', '\\"').replace("'", "\\'")
+                        # Get current observation
+                        sighting = obs_api[row[0].strip()].api_get(
+                            row[1].strip(), short_version="1"
                         )
-                    )
-                    logger.debug(
-                        _("After: %s"), sighting["data"]["sightings"][0]["observers"][0]
-                    )
-                    # Update to remote site
-                    obs_api[row[0].strip()].api_update(row[1].strip(), sighting)
+                        if "forms" in sighting["data"]:
+                            # Received a form, changing to single sighting
+                            sighting["data"] = sighting["data"]["forms"][0]
+                        logger.debug(
+                            _("Before: %s"),
+                            sighting["data"],
+                        )
+                        # JSON path relative to "sighting"
+                        repl = row[2].strip().replace("$", "sighting")
+                        # Get current value, if exists
+                        try:
+                            old_attr = eval(repl)
+                        except KeyError:
+                            old_attr = None
+                        # Get current hidden_comment, if exists
+                        try:
+                            msg = sighting["data"]["sightings"][0]["observers"][0][
+                                "hidden_comment"
+                            ]
+                        except KeyError:  # pragma: no cover
+                            msg = ""
+                        # Prepare logging message to be appended to hidden_comment
+                        msg = msg + json.dumps(
+                            {
+                                "updated": datetime.datetime.now().strftime(
+                                    "%Y-%m-%d %H:%M:%S"
+                                ),
+                                "op": row[3].strip(),
+                                "path": row[2].strip(),
+                                "old": old_attr,
+                                "new": row[4].strip(),
+                            }
+                        )
+                        if row[3].strip() == "replace":
+                            exec("{} = {}".format(repl, row[4].strip()))
+                        else:
+                            try:
+                                exec("del {}".format(repl))
+                            except KeyError:  # pragma: no cover
+                                pass
+                        exec(
+                            """sighting['data']['sightings'][0]['observers'][0]['hidden_comment'] = '{}'""".format(
+                                msg.replace('"', '\\"').replace("'", "\\'")
+                            )
+                        )
+                        logger.debug(_("After: %s"), sighting["data"])
+                        # Update to remote site
+                        obs_api[row[0].strip()].api_update(row[1].strip(), sighting)
 
 
 def main(args):
@@ -246,8 +250,7 @@ def main(args):
 
 
 def run():
-    """Entry point for console_scripts
-    """
+    """Entry point for console_scripts"""
     main(sys.argv[1:])
 
 
