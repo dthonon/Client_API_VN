@@ -58,10 +58,17 @@
                     "type": "string"
                 },
                 "lat": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Latitude of place nearest to sightings (mobile) or selected by user (web)"
                 },
                 "lon": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Longitude of place nearest to sightings (mobile) or selected by user (web)"
+                },
+                "protocol": {
+                    "$ref": "#/definitions/_protocol",
+                    "title": "PROTOCOL",
+                    "description": "Protocol for this form"
                 },
                 "sightings": {
                     "type": "array",
@@ -84,11 +91,6 @@
                 "version": {
                     "type": "string",
                     "format": "integer"
-                },
-                "protocol": {
-                    "$ref": "#/definitions/_protocol",
-                    "title": "PROTOCOL",
-                    "description": "Protocol for this form"
                 }
             },
             "title": "_form"
@@ -665,6 +667,11 @@
                     "type": "string",
                     "title": "project_name"
                 },
+                "protocol": {
+                    "$ref": "#/definitions/_protocol",
+                    "title": "PROTOCOL",
+                    "description": "Protocol for this form"
+                },
                 "second_hand": {
                     "$ref": "#/definitions/_zero_one",
                     "title": "SECOND_HAND",
@@ -674,12 +681,14 @@
                     "type": "string",
                     "enum": [
                         "WEB",
-                        "MOBILE_LIVE",
-                        "MOBILE_LIVE_IOS",
                         "MOBILE_DELAYED",
-                        "MOBILE_DELAYED_IOS",
+                        "MOBILE_LIVE",
                         "MOBILE_FORM_LIVE",
-                        "MOBILE_FORM_DELAYED"
+                        "MOBILE_FORM_DELAYED",
+                        "MOBILE_LIVE_IOS",
+                        "MOBILE_DELAYED_IOS",
+                        "MOBILE_FORM_LIVE_IOS",
+                        "MOBILE_FORM_DELAYED_IOS"
                     ],
                     "title": "source"
                 },
@@ -690,13 +699,18 @@
                 },
                 "traid": {
                     "type": "string",
-                    "format": "integer",
+                    "format": "uuid",
                     "description": "Transmitter idenfier"
                 },
                 "update_date": {
                     "$ref": "#/definitions/_date",
                     "title": "UPDATE_DATE",
                     "description": "Date observation was updated"
+                },
+                "uuid": {
+                    "type": "string",
+                    "format": "integer",
+                    "description": "Observation UUID"
                 },
                 "version": {
                     "type": "string",
@@ -1739,33 +1753,7 @@
                     "type": "string",
                     "format": "integer"
                 },
-                "list_type": {
-                    "type": "string",
-                    "enum": [
-                        "-",
-                        "basic",
-                        "extended"
-                    ]
-                },
-                "local_site_code": {
-                    "type": "string"
-                },
-                "protocol_name": {
-                    "type": "string",
-                    "enum": [
-                        "GENERIC_BIRD",
-                        "SHOC",
-                        "STOC_EPS",
-                        "STOC_MONTAGNE",
-                        "STOC_SITES",
-                        "WATERBIRD"
-                    ],
-                    "title": "protocol_name"
-                },
-                "site_code": {
-                    "type": "string"
-                },
-                "sequence_number": {
+                "direction": {
                     "type": "string",
                     "format": "integer"
                 },
@@ -1787,6 +1775,37 @@
                             }
                         }
                     ]
+                },
+                "list_type": {
+                    "type": "string",
+                    "enum": [
+                        "-",
+                        "basic",
+                        "extended"
+                    ]
+                },
+                "local_site_code": {
+                    "type": "string"
+                },
+                "protocol_name": {
+                    "type": "string",
+                    "enum": [
+                        "GENERIC_BIRD",
+                        "LIMAT",
+                        "SHOC",
+                        "STOC_EPS",
+                        "STOC_MONTAGNE",
+                        "STOC_SITES",
+                        "WATERBIRD"
+                    ],
+                    "title": "protocol_name"
+                },
+                "sequence_number": {
+                    "type": "string",
+                    "format": "integer"
+                },
+                "site_code": {
+                    "type": "string"
                 },
                 "stoc_cloud": {
                     "OneOf": [
@@ -2117,6 +2136,9 @@
                             }
                         }
                     ]
+                },
+                "wkt": {
+                    "type": "string"
                 }
             },
             "title": "_protocol"
