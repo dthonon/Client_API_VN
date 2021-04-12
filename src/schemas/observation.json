@@ -1796,6 +1796,7 @@
                         "STOC_EPS",
                         "STOC_MONTAGNE",
                         "STOC_SITES",
+                        "TERRITORY_MAPPING",
                         "WATERBIRD"
                     ],
                     "title": "protocol_name"

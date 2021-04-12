@@ -37,6 +37,12 @@
                             "BH"
                         ]
                     },
+                    "english_name": {
+                        "type": "string"
+                    },
+                    "english_name_plur": {
+                        "type": "string"
+                    },
                     "french_name": {
                         "type": "string"
                     },
