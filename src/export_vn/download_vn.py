@@ -262,7 +262,7 @@ class LocalAdminUnits(DownloadVn):
         territorial_unit_ids : list
             List of territorial_units to include in storage.
         """
-        if territorial_unit_ids is not None:
+        if territorial_unit_ids is not None and len(territorial_unit_ids) > 0:
             for id_canton in territorial_unit_ids:
                 logger.debug(
                     _("Getting local_admin_units from id_canton %s, using API list"),
@@ -470,7 +470,7 @@ class Observations(DownloadVn):
                             q_param["entry_date"] = "1"
                         else:
                             q_param["entry_date"] = "0"
-                    if territorial_unit_ids is None:
+                    if territorial_unit_ids is None or len(territorial_unit_ids) == 0:
                         t_us = self._t_units
                     else:
                         t_us = [u for u in self._t_units if u[0]["short_name"] in territorial_unit_ids]
