@@ -11,8 +11,16 @@ Properties
 
 """
 import logging
+from collections import deque
 from datetime import datetime, timedelta
+from itertools import chain
+from sys import getsizeof
+from time import perf_counter_ns
 
+try:
+    from reprlib import repr
+except ImportError:
+    pass
 from biolovision.api import (
     EntitiesAPI,
     FamiliesAPI,
@@ -32,6 +40,45 @@ from export_vn.store_postgresql import ReadPostgresql
 from . import _, __version__
 
 logger = logging.getLogger("transfer_vn.download_vn")
+
+
+def total_size(o, handlers={}):
+    """Returns the approximate memory footprint an object and all of its contents.
+
+    Automatically finds the contents of the following builtin containers and
+    their subclasses:  tuple, list, deque, dict, set and frozenset.
+    To search other containers, add handlers to iterate over their contents:
+
+        handlers = {SomeContainerClass: iter,
+                    OtherContainerClass: OtherContainerClass.get_elements}
+
+    """
+    dict_handler = lambda d: chain.from_iterable(d.items())
+    all_handlers = {
+        tuple: iter,
+        list: iter,
+        deque: iter,
+        dict: dict_handler,
+        set: iter,
+        frozenset: iter,
+    }
+    all_handlers.update(handlers)  # user handlers take precedence
+    seen = set()  # track which object id's have already been seen
+    default_size = getsizeof(0)  # estimate sizeof object without __sizeof__
+
+    def sizeof(o):
+        if id(o) in seen:  # do not double count the same object
+            return 0
+        seen.add(id(o))
+        s = getsizeof(o, default_size)
+
+        for typ, handler in all_handlers.items():
+            if isinstance(o, typ):
+                s += sum(map(sizeof, handler(o)))
+                break
+        return s
+
+    return sizeof(o)
 
 
 class DownloadVnException(Exception):
@@ -473,7 +520,11 @@ class Observations(DownloadVn):
                     if territorial_unit_ids is None or len(territorial_unit_ids) == 0:
                         t_us = self._t_units
                     else:
-                        t_us = [u for u in self._t_units if u[0]["short_name"] in territorial_unit_ids]
+                        t_us = [
+                            u
+                            for u in self._t_units
+                            if u[0]["short_name"] in territorial_unit_ids
+                        ]
                     for t_u in t_us:
                         logger.debug(
                             _(
@@ -486,9 +537,12 @@ class Observations(DownloadVn):
                             t_u[0]["id_country"] + t_u[0]["short_name"]
                         ]
 
+                        timing = perf_counter_ns()
                         items_dict = self._api_instance.api_search(
                             q_param, short_version=short_version
                         )
+                        timing = (perf_counter_ns() - timing) / 1000
+
                         # Call backend to store results
                         nb_o = self._backend.store(
                             self._api_instance.controler,
@@ -515,6 +569,8 @@ class Observations(DownloadVn):
                             self._api_instance.transfer_errors,
                             self._api_instance.http_status,
                             log_msg,
+                            total_size(items_dict),
+                            timing,
                         )
                         logger.info(log_msg)
                     seq += 1

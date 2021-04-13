@@ -12,6 +12,7 @@ Properties
 """
 import logging
 from datetime import datetime, date
+
 # from uuid import uuid4
 
 from pyproj import Transformer
@@ -200,6 +201,8 @@ class PostgresqlUtils:
             Column("error_count", Integer, index=True),
             Column("http_status", Integer, index=True),
             Column("comment", String),
+            Column("length", Integer, index=True),
+            Column("duration", Integer, index=True),
         )
         return None
 
@@ -789,9 +792,9 @@ class ReadPostgresql(Postgresql):
             self._config.site,
         )
         metadata = self._table_defs[controler]["metadata"]
-        stmt = select([metadata.c.item]).where(
-            metadata.c.site == self._config.site)
+        stmt = select([metadata.c.item]).where(metadata.c.site == self._config.site)
         return self._conn.execute(stmt).fetchall()
+
 
 class StorePostgresql(Postgresql):
     """Provides store to Postgresql database method."""
@@ -1206,7 +1209,16 @@ class StorePostgresql(Postgresql):
 
         return nb_delete
 
-    def log(self, site, controler, error_count=0, http_status=0, comment=""):
+    def log(
+        self,
+        site,
+        controler,
+        error_count=0,
+        http_status=0,
+        comment="",
+        length=0,
+        duration=0,
+    ):
         """Write download log entries to database.
 
         Parameters
@@ -1221,6 +1233,10 @@ class StorePostgresql(Postgresql):
             HTTP status of latest download.
         comment : str
             Optional comment, in free text.
+        length : integer
+            Optional length of data transfer
+        duration : integer
+            Optional duration of data transfer, in ms
         """
         # Store to database, if enabled
         if self._config.db_enabled:
@@ -1233,6 +1249,8 @@ class StorePostgresql(Postgresql):
                 error_count=error_count,
                 http_status=http_status,
                 comment=comment,
+                length=length,
+                duration=duration,
             )
             self._conn.execute(stmt)
 

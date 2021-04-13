@@ -93,7 +93,16 @@ class StoreAll:
             nb_delete = self._db_backend.delete_obs(obs_list)
         return nb_delete
 
-    def log(self, site, controler, error_count=0, http_status=0, comment=""):
+    def log(
+        self,
+        site,
+        controler,
+        error_count=0,
+        http_status=0,
+        comment="",
+        length=0,
+        duration=0,
+    ):
         """Write download log entries to database.
 
         Parameters
@@ -108,13 +117,20 @@ class StoreAll:
             HTTP status of latest download.
         comment : str
             Optional comment, in free text.
-
+        length : integer
+            Optional length of data transfer
+        duration : integer
+            Optional duration of data transfer, in ms
         """
         # Call backends if needed
         if self._config.file_enabled:
-            self._file_backend.log(site, controler, error_count, http_status, comment)
+            self._file_backend.log(
+                site, controler, error_count, http_status, comment, length, duration
+            )
         if self._config.db_enabled:
-            self._db_backend.log(site, controler, error_count, http_status, comment)
+            self._db_backend.log(
+                site, controler, error_count, http_status, comment, length, duration
+            )
         return None
 
     def increment_log(self, site, taxo_group, last_ts):
