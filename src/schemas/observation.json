@@ -512,14 +512,25 @@
                     "title": "COMMENT",
                     "description": "Comment"
                 },
+                "confirmed_by": {
+                    "type": "string",
+                    "title": "CONFIRMED_BY",
+                    "description": "Confirmation of sighthing, as a string of idenfiers"
+                },
                 "committees_validation": {
                     "type": "object",
                     "additionalProperties": false,
                     "properties": {
-                        "chr": {
+                        "cha": {
+                            "$ref": "#/definitions/_committee_validation"
+                        },
+                        "chd": {
                             "$ref": "#/definitions/_committee_validation"
                         },
                         "chn": {
+                            "$ref": "#/definitions/_committee_validation"
+                        },
+                        "chr": {
                             "$ref": "#/definitions/_committee_validation"
                         }
                     }
@@ -2330,7 +2341,8 @@
                 "subplace",
                 "subplace_precise",
                 "transect",
-                "transect_precise"
+                "transect_precise",
+                "water"
             ],
             "title": "_place_type_id"
         },
