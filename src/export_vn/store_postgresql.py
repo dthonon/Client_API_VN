@@ -11,10 +11,9 @@ Properties
 
 """
 import logging
-from datetime import datetime, date
+from datetime import date, datetime
 
-# from uuid import uuid4
-
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from pyproj import Transformer
 from sqlalchemy import (
     Column,
@@ -25,6 +24,7 @@ from sqlalchemy import (
     String,
     Table,
     create_engine,
+    exc,
     func,
     select,
 )
@@ -32,9 +32,10 @@ from sqlalchemy.dialects.postgresql import ARRAY, JSONB, insert
 from sqlalchemy.engine.url import URL
 from sqlalchemy.sql import and_
 
-from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-
 from . import _, __version__
+
+# from uuid import uuid4
+
 
 logger = logging.getLogger("transfer_vn.store_postgresql")
 
@@ -478,9 +479,12 @@ class PostgresqlUtils:
             text = "DROP DATABASE IF EXISTS {}".format(self._config.db_name)
             logger.debug(_("Dropping database: %s"), text)
             conn.execute(text)
-            text = "DROP ROLE IF EXISTS {}".format(self._config.db_group)
-            logger.debug(_("Dropping role: %s"), text)
-            conn.execute(text)
+            try:
+                text = "DROP ROLE IF EXISTS {}".format(self._config.db_group)
+                logger.debug(_("Dropping role: %s"), text)
+                conn.execute(text)
+            except exc.SQLAlchemyError as e:
+                logger.warning(_("Error %s ignored when dropping role"), repr(e))
 
             conn.close()
             db.dispose()
