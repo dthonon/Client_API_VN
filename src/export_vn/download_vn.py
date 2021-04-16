@@ -160,7 +160,9 @@ class DownloadVn:
             i += 1
             log_msg = _("Iteration {}, opt_params = {}").format(i, opt_params)
             logger.debug(log_msg)
+            timing = perf_counter_ns()
             items_dict = self._api_instance.api_list(opt_params=opt_params)
+            timing = (perf_counter_ns() - timing) / 1000
             # Call backend to store generic log
             self._backend.log(
                 self._config.site,
@@ -168,6 +170,8 @@ class DownloadVn:
                 self._api_instance.transfer_errors,
                 self._api_instance.http_status,
                 log_msg,
+                total_size(items_dict),
+                timing,
             )
             # Call backend to store results
             self._backend.store(self._api_instance.controler, str(i), items_dict)
@@ -248,7 +252,9 @@ class Fields(DownloadVn):
             i += 1
             log_msg = _("Iteration {}, opt_params = {}").format(i, opt_params)
             logger.debug(log_msg)
+            timing = perf_counter_ns()
             items_dict = self._api_instance.api_list(opt_params=opt_params)
+            timing = (perf_counter_ns() - timing) / 1000
             # Call backend to store generic log
             self._backend.log(
                 self._config.site,
@@ -256,6 +262,8 @@ class Fields(DownloadVn):
                 self._api_instance.transfer_errors,
                 self._api_instance.http_status,
                 log_msg,
+                total_size(items_dict),
+                timing,
             )
             # Call backend to store groups of fields
             self._backend.store("field_groups", str(i), items_dict)
@@ -396,11 +404,13 @@ class Observations(DownloadVn):
                                 id_taxo_group,
                                 specie["id"],
                             )
+                            timing = perf_counter_ns()
                             items_dict = self._api_instance.api_list(
                                 id_taxo_group,
                                 id_species=specie["id"],
                                 short_version=short_version,
                             )
+                            timing = (perf_counter_ns() - timing) / 1000
                             # Call backend to store list by taxo_group, species log
                             self._backend.log(
                                 self._config.site,
@@ -412,6 +422,8 @@ class Observations(DownloadVn):
                                     id_taxo_group,
                                     specie["id"],
                                 ),
+                                total_size(items_dict),
+                                timing,
                             )
                             # Call backend to store results
                             self._backend.store(
@@ -420,9 +432,11 @@ class Observations(DownloadVn):
                                 items_dict,
                             )
                 else:
+                    timing = perf_counter_ns()
                     items_dict = self._api_instance.api_list(
                         id_taxo_group, short_version=short_version
                     )
+                    timing = (perf_counter_ns() - timing) / 1000
                     # Call backend to store list by taxo_group log
                     self._backend.log(
                         self._config.site,
@@ -430,6 +444,8 @@ class Observations(DownloadVn):
                         self._api_instance.transfer_errors,
                         self._api_instance.http_status,
                         (_("observations from taxo_group %s"), id_taxo_group),
+                        total_size(items_dict),
+                        timing,
                     )
                     # Call backend to store results
                     self._backend.store(
@@ -737,43 +753,48 @@ class Observations(DownloadVn):
                 logger.error(
                     _("No date found for last download, increment not performed")
                 )
-            print(updated)
+            # print(updated)
 
             # Process updates
             if len(updated) > 0:
                 log_msg = _("Creating or updating {} observations").format(len(updated))
                 logger.debug(log_msg)
                 # Update backend store, in chunks
-                [
+                for i in range(
+                    (len(updated) + self._config.tuning_max_list_length - 1)
+                    // self._config.tuning_max_list_length
+                ):
+                    timing = perf_counter_ns()
+                    uitems_dictpd = self._api_instance.api_list(
+                        taxo,
+                        id_sightings_list=",".join(
+                            updated[
+                                i
+                                * self._config.tuning_max_list_length : (i + 1)
+                                * self._config.tuning_max_list_length
+                            ]
+                        ),
+                        short_version=short_version,
+                    )
+                    timing = (perf_counter_ns() - timing) / 1000
+
                     # Call backend to store results
                     self._backend.store(
                         self._api_instance.controler,
-                        str(id_taxo_group) + "_1",
-                        self._api_instance.api_list(
-                            taxo,
-                            id_sightings_list=",".join(
-                                updated[
-                                    i
-                                    * self._config.tuning_max_list_length : (i + 1)
-                                    * self._config.tuning_max_list_length
-                                ]
-                            ),
-                            short_version=short_version,
-                        ),
+                        str(id_taxo_group) + "_upd_" + str(i),
+                        items_dict,
                     )
-                    for i in range(
-                        (len(updated) + self._config.tuning_max_list_length - 1)
-                        // self._config.tuning_max_list_length
+
+                    # Call backend to store log
+                    self._backend.log(
+                        self._config.site,
+                        self._api_instance.controler,
+                        self._api_instance.transfer_errors,
+                        self._api_instance.http_status,
+                        log_msg,
+                        total_size(items_dict),
+                        timing,
                     )
-                ]
-                # Call backend to store log
-                self._backend.log(
-                    self._config.site,
-                    self._api_instance.controler,
-                    self._api_instance.transfer_errors,
-                    self._api_instance.http_status,
-                    log_msg,
-                )
 
             # Process deletes
             if len(deleted) > 0:
