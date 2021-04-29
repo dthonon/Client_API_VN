@@ -311,13 +311,18 @@ class BiolovisionAPI:
                             _("Response content: %s, text: %s"), resp, resp.text
                         )
                         # TWEAK: remove extra text outside JSON response
-                        resp_chunk = json.loads(re.findall(r'([\[{].+[}\]])', resp.text)[0])
-                        # resp_chunk = resp.json()
+                        if len(resp.text) > 1:
+                            resp_chunk = json.loads(re.findall(r'([\[{].*[}\]])', resp.text)[0])
+                        else:
+                            resp_chunk = resp.json("{}")
                     except json.decoder.JSONDecodeError:  # pragma: no cover
                         # Error during JSON decoding =>
                         # Logging error and no further processing of empty chunk
                         resp_chunk = json.loads("{}")
                         logger.error(_("Incorrect response content: %s"), resp)
+                    except Exception as e:
+                        logger.exception(_("Response text causing exception: %s"), resp.text)
+                        raise
 
                 # Initialize or append to response dict, depending on content
                 if "data" in resp_chunk:

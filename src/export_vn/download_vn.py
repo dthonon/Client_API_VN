@@ -764,16 +764,18 @@ class Observations(DownloadVn):
                     (len(updated) + self._config.tuning_max_list_length - 1)
                     // self._config.tuning_max_list_length
                 ):
-                    timing = perf_counter_ns()
-                    uitems_dictpd = self._api_instance.api_list(
-                        taxo,
-                        id_sightings_list=",".join(
+                    s_list = ",".join(
                             updated[
                                 i
                                 * self._config.tuning_max_list_length : (i + 1)
                                 * self._config.tuning_max_list_length
                             ]
-                        ),
+                        )
+                    logger.debug(_("Updating slice %s"), s_list)
+                    timing = perf_counter_ns()
+                    items_dict = self._api_instance.api_list(
+                        taxo,
+                        id_sightings_list=s_list,
                         short_version=short_version,
                     )
                     timing = (perf_counter_ns() - timing) / 1000
