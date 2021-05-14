@@ -270,9 +270,10 @@ class BiolovisionAPI:
                 # Request returned an error.
                 # Logging and checking if not too many errors to continue
                 logger.error(
-                    _("%s status code = %s, for URL %s"),
+                    _("%s status code: %s, text: %s, for URL %s"),
                     method,
                     resp.status_code,
+                    resp.text,
                     protected_url,
                 )
                 if (self._http_status >= 400) and (
