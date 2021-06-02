@@ -9,7 +9,7 @@ Features
       ALTER TABLE import.download_log ADD COLUMN length integer;
       ALTER TABLE import.download_log ADD COLUMN duration integer;
       CREATE INDEX ix_import_download_log_duration ON import.download_log USING btree(duration);
-      CREATE INDEX ix_import_download_log_length ON import.download_log USING btree(length); (`#144 <https://framagit.org/lpo/Client_API_VN/issues/144>`_)
+      CREATE INDEX ix_import_download_log_length ON import.download_log USING btree(length); 
 - confirmed_by is now available in observations table. (`#151 <https://framagit.org/lpo/Client_API_VN/issues/151>`_)
 
 
