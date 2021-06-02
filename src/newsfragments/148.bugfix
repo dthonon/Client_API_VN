@@ -1,1 +1,0 @@
-When dropping database (--db_drop), transfer_vn just logs a warning if the role is still used and cannot be dropped.

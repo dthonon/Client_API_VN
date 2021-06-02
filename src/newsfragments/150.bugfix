@@ -1,2 +1,0 @@
-When no territorial_unit_ids parameter is defined in YAML configuration file,
-all territorial_units are downloaded.
