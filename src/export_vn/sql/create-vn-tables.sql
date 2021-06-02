@@ -620,6 +620,7 @@ CREATE TABLE {{ cfg.db_schema_vn }}.observations (
     behaviours          TEXT[],
     comment             TEXT,
     hidden_comment      TEXT,
+    confirmed_by        TEXT,
     mortality           BOOLEAN,
     death_cause2        TEXT,
     insert_date         TIMESTAMP,
@@ -720,6 +721,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
             behaviours        = {{ cfg.db_schema_vn }}.behaviour_array(((NEW.item -> 'observers') -> 0) -> 'behaviours'),
             comment           = ((NEW.item -> 'observers') -> 0) ->> 'comment',
             hidden_comment    = ((NEW.item -> 'observers') -> 0) ->> 'hidden_comment',
+            confirmed_by      = ((NEW.item -> 'observers') -> 0) ->> 'confirmed_by',
             mortality         = CAST(((((NEW.item -> 'observers') -> 0) #>> '{extended_info,mortality}'::text []) is not null) as BOOLEAN),
             death_cause2      = ((NEW.item -> 'observers') -> 0) #>> '{extended_info, mortality, death_cause2}',
             insert_date       = to_timestamp(CAST(((NEW.item -> 'observers') -> 0) ->> 'insert_date' AS DOUBLE PRECISION)),
@@ -732,7 +734,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
                                              id_species, taxonomy, date, date_year, timing, id_place, place,
                                              coord_lat, coord_lon, coord_x_local, coord_y_local, precision, estimation_code,
                                              count, atlas_code, altitude, project_code, hidden, admin_hidden, observer_uid, details,
-                                             behaviours, comment, hidden_comment, mortality, death_cause2, insert_date, update_date)
+                                             behaviours, comment, hidden_comment, confirmed_by, mortality, death_cause2, insert_date, update_date)
             VALUES (
                 NEW.site,
                 NEW.id,
@@ -765,6 +767,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
                 {{ cfg.db_schema_vn }}.behaviour_array(((NEW.item -> 'observers') -> 0) -> 'behaviours'),
                 ((NEW.item -> 'observers') -> 0) ->> 'comment',
                 ((NEW.item -> 'observers') -> 0) ->> 'hidden_comment',
+                ((NEW.item -> 'observers') -> 0) ->> 'confirmed_by',
                 CAST(((((NEW.item -> 'observers') -> 0) #>> '{extended_info,mortality}'::text []) is not null) as BOOLEAN),
                 ((NEW.item -> 'observers') -> 0) #>> '{extended_info, mortality, death_cause2}',
                 to_timestamp(CAST(((NEW.item -> 'observers') -> 0) ->> 'insert_date' AS DOUBLE PRECISION)),
@@ -778,7 +781,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
                                          id_species, taxonomy, date, date_year, timing, id_place, place,
                                          coord_lat, coord_lon, coord_x_local, coord_y_local, precision, estimation_code,
                                          count, atlas_code, altitude, project_code, hidden, admin_hidden, observer_uid, details,
-                                         behaviours, comment, hidden_comment, mortality, death_cause2, insert_date, update_date)
+                                         behaviours, comment, hidden_comment, confirmed_by, mortality, death_cause2, insert_date, update_date)
         VALUES (
             NEW.site,
             NEW.id,
@@ -811,6 +814,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
             {{ cfg.db_schema_vn }}.behaviour_array(((NEW.item -> 'observers') -> 0) -> 'behaviours'),
             ((NEW.item -> 'observers') -> 0) ->> 'comment',
             ((NEW.item -> 'observers') -> 0) ->> 'hidden_comment',
+            ((NEW.item -> 'observers') -> 0) ->> 'confirmed_by',
             CAST(((((NEW.item -> 'observers') -> 0) #>> '{extended_info,mortality}'::text []) is not null) as BOOLEAN),
             ((NEW.item -> 'observers') -> 0) #>> '{extended_info, mortality, death_cause2}',
             to_timestamp(CAST(((NEW.item -> 'observers') -> 0) ->> 'insert_date' AS DOUBLE PRECISION)),

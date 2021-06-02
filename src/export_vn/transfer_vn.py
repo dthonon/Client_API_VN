@@ -425,15 +425,15 @@ def full_download(cfg_ctrl):
     cfg = list(cfg_site_list.values())[0]
 
     logger.info(_("Defining full download jobs"))
-    db_url = {
-        "drivername": "postgresql+psycopg2",
-        "username": cfg.db_user,
-        "password": cfg.db_pw,
-        "host": cfg.db_host,
-        "port": cfg.db_port,
-        "database": "postgres",
-    }
-    jobs_o = Jobs(url=URL(**db_url), nb_executors=cfg.tuning_sched_executors)
+    # db_url = {
+    #     "drivername": "postgresql+psycopg2",
+    #     "username": cfg.db_user,
+    #     "password": cfg.db_pw,
+    #     "host": cfg.db_host,
+    #     "port": cfg.db_port,
+    #     "database": "postgres",
+    # }
+    jobs_o = Jobs(nb_executors=cfg.tuning_sched_executors)
     with jobs_o as jobs:
         # Cleanup any existing job
         jobs.start(paused=True)
@@ -527,16 +527,16 @@ def increment_download(cfg_ctrl):
     cfg = list(cfg_site_list.values())[0]
 
     logger.info(_("Starting incremental download jobs"))
-    db_url = {
-        "drivername": "postgresql+psycopg2",
-        "username": cfg.db_user,
-        "password": cfg.db_pw,
-        "host": cfg.db_host,
-        "port": cfg.db_port,
-        "database": "postgres",
-    }
+    # db_url = {
+    #     "drivername": "postgresql+psycopg2",
+    #     "username": cfg.db_user,
+    #     "password": cfg.db_pw,
+    #     "host": cfg.db_host,
+    #     "port": cfg.db_port,
+    #     "database": "postgres",
+    # }
 
-    jobs_o = Jobs(url=URL(**db_url), nb_executors=cfg.tuning_sched_executors)
+    jobs_o = Jobs(nb_executors=cfg.tuning_sched_executors)
     with jobs_o as jobs:
         # Start scheduler and wait for jobs to finish
         jobs.start()
@@ -557,15 +557,15 @@ def increment_schedule(cfg_ctrl):
     cfg = list(cfg_site_list.values())[0]
 
     logger.info(_("Defining incremental download jobs"))
-    db_url = {
-        "drivername": "postgresql+psycopg2",
-        "username": cfg.db_user,
-        "password": cfg.db_pw,
-        "host": cfg.db_host,
-        "port": cfg.db_port,
-        "database": "postgres",
-    }
-    jobs = Jobs(url=URL(**db_url), nb_executors=cfg.tuning_sched_executors)
+    # db_url = {
+    #     "drivername": "postgresql+psycopg2",
+    #     "username": cfg.db_user,
+    #     "password": cfg.db_pw,
+    #     "host": cfg.db_host,
+    #     "port": cfg.db_port,
+    #     "database": "postgres",
+    # }
+    jobs = Jobs(nb_executors=cfg.tuning_sched_executors)
     # Looping on sites
     for site, cfg in cfg_site_list.items():
         if cfg.enabled:
@@ -606,15 +606,15 @@ def status(cfg_ctrl):
     cfg = list(cfg_site_list.values())[0]
 
     logger.info(_("Download jobs status"))
-    db_url = {
-        "drivername": "postgresql+psycopg2",
-        "username": cfg.db_user,
-        "password": cfg.db_pw,
-        "host": cfg.db_host,
-        "port": cfg.db_port,
-        "database": "postgres",
-    }
-    jobs = Jobs(url=URL(**db_url), nb_executors=cfg.tuning_sched_executors)
+    # db_url = {
+    #     "drivername": "postgresql+psycopg2",
+    #     "username": cfg.db_user,
+    #     "password": cfg.db_pw,
+    #     "host": cfg.db_host,
+    #     "port": cfg.db_port,
+    #     "database": "postgres",
+    # }
+    jobs = Jobs(nb_executors=cfg.tuning_sched_executors)
     jobs.start(paused=True)
     jobs.print_jobs()
 

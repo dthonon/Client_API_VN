@@ -110,7 +110,7 @@ class StoreFile:
         # Not implemented
         return None
 
-    def log(self, site, controler, error_count=0, http_status=0, comment=""):
+    def log(self, site, controler, *args, **kwargs):
         """Write download log entries to database.
 
         Parameters
@@ -119,13 +119,6 @@ class StoreFile:
             VN site name.
         controler : str
             Name of API controler.
-        error_count : integer
-            Number of errors during download.
-        http_status : integer
-            HTTP status of latest download.
-        comment : str
-            Optional comment, in free text.
-
         """
         # Not implemented
         return None

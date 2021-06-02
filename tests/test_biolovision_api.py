@@ -1024,16 +1024,16 @@ def test_observations_crud_f():
     # Read created observation
     sighting = OBSERVATIONS_API.api_get(obs_1, short_version="1")
     assert (
-        sighting["data"]["forms"][0]["observers"][0]["id_sighting"]
+        sighting["data"]["forms"][0]["sightings"][0]["observers"][0]["id_sighting"]
         == obs_1
     )
     assert (
-        sighting["data"]["forms"][0]["observers"][0]["comment"]
+        sighting["data"]["forms"][0]["sightings"][0]["observers"][0]["comment"]
         == "TEST API !!! à supprimer !!!"
     )
 
     # Update
-    sighting["data"]["sightings"] = [sighting["data"]["forms"][0]]
+    sighting["data"] = sighting["data"]["forms"][0]
     logging.debug(sighting)
     sighting["data"]["sightings"][0]["observers"][0][
         "hidden_comment"
@@ -1042,7 +1042,7 @@ def test_observations_crud_f():
     # Check
     sighting = OBSERVATIONS_API.api_get(obs_1, short_version="1")
     assert (
-        sighting["data"]["forms"][0]["observers"][0]["hidden_comment"]
+        sighting["data"]["forms"][0]["sightings"][0]["observers"][0]["hidden_comment"]
         == "API update test"
     )
 

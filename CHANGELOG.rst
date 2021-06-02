@@ -1,3 +1,32 @@
+Client-API-VN v2.8.1 (2021-06-02)
+=================================
+
+Features
+--------
+
+- In order to get timing data of each request, table import.download_log is extended.
+  If you upgrade without recreating JSON tables, you must run the following script::
+      ALTER TABLE import.download_log ADD COLUMN length integer;
+      ALTER TABLE import.download_log ADD COLUMN duration integer;
+      CREATE INDEX ix_import_download_log_duration ON import.download_log USING btree(duration);
+      CREATE INDEX ix_import_download_log_length ON import.download_log USING btree(length); (`#144 <https://framagit.org/lpo/Client_API_VN/issues/144>`_)
+- confirmed_by is now available in observations table. (`#151 <https://framagit.org/lpo/Client_API_VN/issues/151>`_)
+
+
+Bugfixes
+--------
+
+- When dropping database (--db_drop), transfer_vn just logs a warning if the role is still used and cannot be dropped. (`#148 <https://framagit.org/lpo/Client_API_VN/issues/148>`_)
+- When no territorial_unit_ids parameter is defined in YAML configuration file,
+  all territorial_units are downloaded. (`#150 <https://framagit.org/lpo/Client_API_VN/issues/150>`_)
+
+
+Improved Documentation
+----------------------
+
+- JSON schemas are updated. (`#149 <https://framagit.org/lpo/Client_API_VN/issues/149>`_)
+
+
 Client-API-VN v2.8.0 (2021-04-10)
 =================================
 

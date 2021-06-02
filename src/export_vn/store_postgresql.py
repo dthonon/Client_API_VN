@@ -11,9 +11,9 @@ Properties
 
 """
 import logging
-from datetime import datetime, date
-# from uuid import uuid4
+from datetime import date, datetime
 
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from pyproj import Transformer
 from sqlalchemy import (
     Column,
@@ -24,6 +24,7 @@ from sqlalchemy import (
     String,
     Table,
     create_engine,
+    exc,
     func,
     select,
 )
@@ -31,9 +32,10 @@ from sqlalchemy.dialects.postgresql import ARRAY, JSONB, insert
 from sqlalchemy.engine.url import URL
 from sqlalchemy.sql import and_
 
-from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-
 from . import _, __version__
+
+# from uuid import uuid4
+
 
 logger = logging.getLogger("transfer_vn.store_postgresql")
 
@@ -200,6 +202,8 @@ class PostgresqlUtils:
             Column("error_count", Integer, index=True),
             Column("http_status", Integer, index=True),
             Column("comment", String),
+            Column("length", Integer, index=True),
+            Column("duration", Integer, index=True),
         )
         return None
 
@@ -475,9 +479,12 @@ class PostgresqlUtils:
             text = "DROP DATABASE IF EXISTS {}".format(self._config.db_name)
             logger.debug(_("Dropping database: %s"), text)
             conn.execute(text)
-            text = "DROP ROLE IF EXISTS {}".format(self._config.db_group)
-            logger.debug(_("Dropping role: %s"), text)
-            conn.execute(text)
+            try:
+                text = "DROP ROLE IF EXISTS {}".format(self._config.db_group)
+                logger.debug(_("Dropping role: %s"), text)
+                conn.execute(text)
+            except exc.SQLAlchemyError as e:
+                logger.warning(_("Error %s ignored when dropping role"), repr(e))
 
             conn.close()
             db.dispose()
@@ -789,9 +796,9 @@ class ReadPostgresql(Postgresql):
             self._config.site,
         )
         metadata = self._table_defs[controler]["metadata"]
-        stmt = select([metadata.c.item]).where(
-            metadata.c.site == self._config.site)
+        stmt = select([metadata.c.item]).where(metadata.c.site == self._config.site)
         return self._conn.execute(stmt).fetchall()
+
 
 class StorePostgresql(Postgresql):
     """Provides store to Postgresql database method."""
@@ -1206,7 +1213,16 @@ class StorePostgresql(Postgresql):
 
         return nb_delete
 
-    def log(self, site, controler, error_count=0, http_status=0, comment=""):
+    def log(
+        self,
+        site,
+        controler,
+        error_count=0,
+        http_status=0,
+        comment="",
+        length=0,
+        duration=0,
+    ):
         """Write download log entries to database.
 
         Parameters
@@ -1221,6 +1237,10 @@ class StorePostgresql(Postgresql):
             HTTP status of latest download.
         comment : str
             Optional comment, in free text.
+        length : integer
+            Optional length of data transfer
+        duration : integer
+            Optional duration of data transfer, in ms
         """
         # Store to database, if enabled
         if self._config.db_enabled:
@@ -1233,6 +1253,8 @@ class StorePostgresql(Postgresql):
                 error_count=error_count,
                 http_status=http_status,
                 comment=comment,
+                length=length,
+                duration=duration,
             )
             self._conn.execute(stmt)
 
