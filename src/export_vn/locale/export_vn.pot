@@ -7,9 +7,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Client_API_VN 2.7.1.post0.dev55+gfd7f077\n"
+"Project-Id-Version: Client_API_VN 2.8.0.post0.dev13+g5e5dbbe\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-04-10 20:41+0200\n"
+"POT-Creation-Date: 2021-06-02 16:29+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,231 +23,246 @@ msgstr ""
 msgid "Params: %s"
 msgstr ""
 
-#: src/biolovision/api.py:263 src/biolovision/api.py:273
+#: src/biolovision/api.py:263
 #, python-format
 msgid "%s status code = %s, for URL %s"
 msgstr ""
 
-#: src/biolovision/api.py:284
+#: src/biolovision/api.py:273
+#, python-format
+msgid "%s status code: %s, text: %s, for URL %s"
+msgstr ""
+
+#: src/biolovision/api.py:285
 #, python-format
 msgid "Unreceverable error %s, raising exception"
 msgstr ""
 
-#: src/biolovision/api.py:300
+#: src/biolovision/api.py:301
 #, python-format
 msgid "Too many error %s, raising exception"
 msgstr ""
 
-#: src/biolovision/api.py:311
+#: src/biolovision/api.py:312
 #, python-format
 msgid "Response content: %s, text: %s"
 msgstr ""
 
-#: src/biolovision/api.py:320
+#: src/biolovision/api.py:323
 #, python-format
 msgid "Incorrect response content: %s"
 msgstr ""
 
-#: src/biolovision/api.py:328
+#: src/biolovision/api.py:325
+#, python-format
+msgid "Response text causing exception: %s"
+msgstr ""
+
+#: src/biolovision/api.py:334
 #, python-format
 msgid "Received %d sightings in chunk %d"
 msgstr ""
 
-#: src/biolovision/api.py:349
+#: src/biolovision/api.py:355
 #, python-format
 msgid "Received %d forms in chunk %d"
 msgstr ""
 
-#: src/biolovision/api.py:368
+#: src/biolovision/api.py:374
 #, python-format
 msgid "Received %d data items in chunk %d"
 msgstr ""
 
-#: src/biolovision/api.py:377
+#: src/biolovision/api.py:383
 #, python-format
 msgid "Received non-data response: %s"
 msgstr ""
 
-#: src/biolovision/api.py:390
+#: src/biolovision/api.py:396
 #, python-format
 msgid "Chunked transfer => requesting for more, with key: %s"
 msgstr ""
 
-#: src/biolovision/api.py:397
+#: src/biolovision/api.py:403
 msgid "Non-chunked transfer => finished requests"
 msgstr ""
 
-#: src/biolovision/api.py:402
+#: src/biolovision/api.py:408
 #, python-format
 msgid "Received %d chunks"
 msgstr ""
 
-#: src/biolovision/api.py:434
+#: src/biolovision/api.py:440
 #, python-format
 msgid "List from:%s, with options:%s, optional_headers:%s"
 msgstr ""
 
-#: src/biolovision/api.py:443
+#: src/biolovision/api.py:449
 #, python-format
 msgid "Number of entities = %i"
 msgstr ""
 
-#: src/biolovision/api.py:476
+#: src/biolovision/api.py:482
 #, python-format
 msgid "In api_get for controler:%s, entity: %s, with parameters:%s"
 msgstr ""
 
-#: src/biolovision/api.py:631
+#: src/biolovision/api.py:637
 #, python-format
 msgid "In api_list, with parameters %s"
 msgstr ""
 
-#: src/biolovision/api.py:699
+#: src/biolovision/api.py:705
 #, python-format
 msgid "Search from %s, with option %s and body %s"
 msgstr ""
 
-#: src/biolovision/api.py:722
+#: src/biolovision/api.py:728
 #, python-format
 msgid "Create observation, with data %s"
 msgstr ""
 
-#: src/biolovision/api.py:748
+#: src/biolovision/api.py:754
 #, python-format
 msgid "Update observation %s, with data %s"
 msgstr ""
 
-#: src/biolovision/api.py:769
+#: src/biolovision/api.py:775
 #, python-format
 msgid "Delete observation %s"
 msgstr ""
 
-#: src/export_vn/download_vn.py:108 src/export_vn/download_vn.py:196
+#: src/export_vn/download_vn.py:155 src/export_vn/download_vn.py:247
 #, python-format
 msgid "Getting items from controler %s"
 msgstr ""
 
-#: src/export_vn/download_vn.py:114 src/export_vn/download_vn.py:202
+#: src/export_vn/download_vn.py:161 src/export_vn/download_vn.py:253
 msgid "Iteration {}, opt_params = {}"
 msgstr ""
 
-#: src/export_vn/download_vn.py:223
+#: src/export_vn/download_vn.py:278
 #, python-format
 msgid "Details for field group %s = %s"
 msgstr ""
 
-#: src/export_vn/download_vn.py:268
+#: src/export_vn/download_vn.py:323
 #, python-format
 msgid "Getting local_admin_units from id_canton %s, using API list"
 msgstr ""
 
-#: src/export_vn/download_vn.py:275
+#: src/export_vn/download_vn.py:330
 msgid "Getting local_admin_units, using API list"
 msgstr ""
 
-#: src/export_vn/download_vn.py:324
+#: src/export_vn/download_vn.py:379
 #, python-format
 msgid "Getting observations from controler %s, using API list"
 msgstr ""
 
-#: src/export_vn/download_vn.py:338
+#: src/export_vn/download_vn.py:393
 #, python-format
 msgid "Getting observations from taxo_group %s, in _store_list"
 msgstr ""
 
-#: src/export_vn/download_vn.py:348
+#: src/export_vn/download_vn.py:403
 #, python-format
 msgid "Getting observations from taxo_group %s, specie %s"
 msgstr ""
 
-#: src/export_vn/download_vn.py:364
+#: src/export_vn/download_vn.py:421
 #, python-format
 msgid "observations from taxo_group %s, species %s"
 msgstr ""
 
-#: src/export_vn/download_vn.py:385
+#: src/export_vn/download_vn.py:446
 #, python-format
 msgid "observations from taxo_group %s"
 msgstr ""
 
-#: src/export_vn/download_vn.py:418
+#: src/export_vn/download_vn.py:481
 #, python-format
 msgid "Getting observations from controler %s, using API search"
 msgstr ""
 
-#: src/export_vn/download_vn.py:479
+#: src/export_vn/download_vn.py:546
 #, python-format
 msgid "Getting observations from territorial_unit %s, using API search"
 msgstr ""
 
-#: src/export_vn/download_vn.py:500
+#: src/export_vn/download_vn.py:570
 msgid ""
 "{} => Iter: {}, {} obs, taxo_group: {}, territorial_unit: {}, date: {}, "
 "interval: {}"
 msgstr ""
 
-#: src/export_vn/download_vn.py:536
+#: src/export_vn/download_vn.py:608
 #, python-format
 msgid "Starting to download observations from taxo_group %s: %s"
 msgstr ""
 
-#: src/export_vn/download_vn.py:586
+#: src/export_vn/download_vn.py:658
 #, python-format
 msgid "%s => Downloading taxo_groups: %s, territorial_units: %s"
 msgstr ""
 
-#: src/export_vn/download_vn.py:599
+#: src/export_vn/download_vn.py:671
 msgid "Download using list method is deprecated. Please use search method only"
 msgstr ""
 
-#: src/export_vn/download_vn.py:634
+#: src/export_vn/download_vn.py:706
 #, python-format
 msgid "Getting updated observations from controler %s"
 msgstr ""
 
-#: src/export_vn/download_vn.py:640
+#: src/export_vn/download_vn.py:712
 #, python-format
 msgid "Downloaded taxo_groups: %s"
 msgstr ""
 
-#: src/export_vn/download_vn.py:651
+#: src/export_vn/download_vn.py:723
 #, python-format
 msgid "Getting updates for taxo_group %s since %s"
 msgstr ""
 
-#: src/export_vn/download_vn.py:660
+#: src/export_vn/download_vn.py:732
 #, python-format
 msgid "Observation %s was %s"
 msgstr ""
 
-#: src/export_vn/download_vn.py:670
+#: src/export_vn/download_vn.py:742
 #, python-format
 msgid "Observation %s has unknown processing %s"
 msgstr ""
 
-#: src/export_vn/download_vn.py:676
+#: src/export_vn/download_vn.py:748
 #, python-format
 msgid "Received %d updated and %d deleted items"
 msgstr ""
 
-#: src/export_vn/download_vn.py:682
+#: src/export_vn/download_vn.py:754
 msgid "No date found for last download, increment not performed"
 msgstr ""
 
-#: src/export_vn/download_vn.py:688
+#: src/export_vn/download_vn.py:760
 msgid "Creating or updating {} observations"
 msgstr ""
 
-#: src/export_vn/download_vn.py:783
+#: src/export_vn/download_vn.py:774
+#, python-format
+msgid "Updating slice %s"
+msgstr ""
+
+#: src/export_vn/download_vn.py:862
 #, python-format
 msgid "Getting places from id_canton %s, id_commune %s, using API list"
 msgstr ""
 
-#: src/export_vn/download_vn.py:792
+#: src/export_vn/download_vn.py:871
 msgid "Getting places, using API list"
 msgstr ""
 
-#: src/export_vn/download_vn.py:818
+#: src/export_vn/download_vn.py:897
 #, python-format
 msgid "Storing species from taxo_group %s"
 msgstr ""
@@ -333,111 +348,116 @@ msgstr ""
 msgid "Received data, storing json to %s"
 msgstr ""
 
-#: src/export_vn/store_postgresql.py:122
+#: src/export_vn/store_postgresql.py:124
 #, python-format
 msgid "Storing observation %s to database"
 msgstr ""
 
-#: src/export_vn/store_postgresql.py:185
+#: src/export_vn/store_postgresql.py:187
 #, python-format
 msgid "Table %s not found => Creating it"
 msgstr ""
 
-#: src/export_vn/store_postgresql.py:189
+#: src/export_vn/store_postgresql.py:191
 #, python-format
 msgid "Table %s already exists => Keeping it"
 msgstr ""
 
-#: src/export_vn/store_postgresql.py:384
+#: src/export_vn/store_postgresql.py:388
 #, python-format
 msgid "Connecting to postgres database, to create %s database"
 msgstr ""
 
-#: src/export_vn/store_postgresql.py:446
+#: src/export_vn/store_postgresql.py:450
 #, python-format
 msgid "Connecting to postgres database, to delete %s database"
 msgstr ""
 
-#: src/export_vn/store_postgresql.py:473
+#: src/export_vn/store_postgresql.py:477
 #, python-format
 msgid "Dropping tables: %s"
 msgstr ""
 
-#: src/export_vn/store_postgresql.py:476
+#: src/export_vn/store_postgresql.py:480
 #, python-format
 msgid "Dropping database: %s"
 msgstr ""
 
-#: src/export_vn/store_postgresql.py:479
+#: src/export_vn/store_postgresql.py:484
 #, python-format
 msgid "Dropping role: %s"
 msgstr ""
 
-#: src/export_vn/store_postgresql.py:503
+#: src/export_vn/store_postgresql.py:487
+#, python-format
+msgid "Error %s ignored when dropping role"
+msgstr ""
+
+#: src/export_vn/store_postgresql.py:510
 #, python-format
 msgid "Connecting to %s database, to finalize creation"
 msgstr ""
 
-#: src/export_vn/store_postgresql.py:581 src/export_vn/store_postgresql.py:622
+#: src/export_vn/store_postgresql.py:588 src/export_vn/store_postgresql.py:629
 msgid "Counting observations in database for all sites"
 msgstr ""
 
-#: src/export_vn/store_postgresql.py:592 src/export_vn/store_postgresql.py:633
-#: src/export_vn/store_postgresql.py:674
+#: src/export_vn/store_postgresql.py:599 src/export_vn/store_postgresql.py:640
+#: src/export_vn/store_postgresql.py:681
 #, python-format
 msgid "Connecting to database %s"
 msgstr ""
 
-#: src/export_vn/store_postgresql.py:751
+#: src/export_vn/store_postgresql.py:758
 msgid "Entry into StorePostgresql"
 msgstr ""
 
-#: src/export_vn/store_postgresql.py:757
+#: src/export_vn/store_postgresql.py:764
 #, python-format
 msgid "Closing connection to database %s"
 msgstr ""
 
-#: src/export_vn/store_postgresql.py:787
+#: src/export_vn/store_postgresql.py:794
 #, python-format
 msgid "Reading from %s of site %s"
 msgstr ""
 
-#: src/export_vn/store_postgresql.py:823 src/export_vn/store_postgresql.py:920
+#: src/export_vn/store_postgresql.py:830 src/export_vn/store_postgresql.py:927
 #, python-format
 msgid "Storing %d items from %s of site %s"
 msgstr ""
 
-#: src/export_vn/store_postgresql.py:831 src/export_vn/store_postgresql.py:891
-#: src/export_vn/store_postgresql.py:933 src/export_vn/store_postgresql.py:1117
+#: src/export_vn/store_postgresql.py:838 src/export_vn/store_postgresql.py:898
+#: src/export_vn/store_postgresql.py:940 src/export_vn/store_postgresql.py:1124
 #, python-format
 msgid "Storing element %s"
 msgstr ""
 
-#: src/export_vn/store_postgresql.py:888
+#: src/export_vn/store_postgresql.py:895
 #, python-format
 msgid "Storing %d items from %s"
 msgstr ""
 
-#: src/export_vn/store_postgresql.py:1006
+#: src/export_vn/store_postgresql.py:1013
 #, python-format
 msgid "Storing %d single observations"
 msgstr ""
 
-#: src/export_vn/store_postgresql.py:1086
+#: src/export_vn/store_postgresql.py:1093
 #, python-format
 msgid "Stored %d observations or forms to database"
 msgstr ""
 
-#: src/export_vn/store_postgresql.py:1110
+#: src/export_vn/store_postgresql.py:1117
 #, python-format
 msgid "Storing %d observers from site %s"
 msgstr ""
 
-#: src/export_vn/store_postgresql.py:1171
+#: src/export_vn/store_postgresql.py:1178
 msgid "Not implemented"
 msgstr ""
 
-#: src/export_vn/store_postgresql.py:1191
+#: src/export_vn/store_postgresql.py:1198
 #, python-format
 msgid "Deleting %d observations from database"
 msgstr ""
