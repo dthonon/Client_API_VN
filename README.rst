@@ -109,7 +109,7 @@ Note: this script should run hourly or dayly in a cron job.
 It must run at least every week.
 
 Getting Started - update_vn
-----------------------------
+---------------------------
 
 Initialize the sample YAML file in your HOME directory and edit with
 your local details. The YAML file is self documented::
@@ -122,7 +122,7 @@ Prerequisites
 -------------
 
 For Linux and Postgresql installation, refer to
-`Server installation <https://client-api-vn1.readthedocs.io/en/stable/apps/server_install.html>`_.
+`server installation <https://client-api-vn1.readthedocs.io/en/stable/apps/server_install.html>`_.
 
 Installation requires the following python module::
 
@@ -159,7 +159,7 @@ where::
 --profile              Gather and print profiling times
 
 Command-line options - update_vn
-----------------------------------
+--------------------------------
 
 The application runs as::
 
