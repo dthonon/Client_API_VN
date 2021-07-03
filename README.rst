@@ -31,9 +31,10 @@ They are tested under Linux Ubuntu or Debian. Other Linux
 distributions could work. Windows is not tested at all and will
 probably not work.
 
-See `Documentation <https://client-api-vn1.readthedocs.io/en/stable/>`_ for more informations.
+See `Documentation <https://client-api-vn1.readthedocs.io/en/stable/>`_
+for more informations.
 
-A thin Python layer on top of Biolovision API is provided,as described in
+A thin Python layer on top of Biolovision API is provided, as described in
 `API Documentation <https://client-api-vn1.readthedocs.io/en/stable/api/modules.html>`_.
 
 Installation - Python
@@ -121,7 +122,7 @@ Prerequisites
 -------------
 
 For Linux and Postgresql installation, refer to
-`Documentation <https://client-api-vn1.readthedocs.io/en/stable/apps/server_install.html>`_
+`Server installation <https://client-api-vn1.readthedocs.io/en/stable/apps/server_install.html>`_.
 
 Installation requires the following python module::
 
