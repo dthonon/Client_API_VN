@@ -45,13 +45,13 @@ Python applications.
 
 Add the follwing debian packages::
 
-    sudo apt install python3-dev
-    sudo apt install python3-venv
+    sudo apt -y install build-essential python3-dev python3-venv
 
 Create a python virtual environment, activate it and update basic tools::
 
-    python3 -m venv VN_env
-    source VN_env/bin/activate
+    sudo -iu xfer38
+    python3 -m venv env_VN
+    source env_VN/bin/activate
     python -m pip install --upgrade pip
 
 Install from PyPI::
