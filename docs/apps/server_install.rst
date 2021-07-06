@@ -2,7 +2,7 @@
 Guide d'installation d'un serveur debian
 ========================================
 
-Procédure d'installation sur Linux Debian 9.
+Procédure d'installation sur Linux Debian 10.
 
 Notes :
 
@@ -46,32 +46,23 @@ les paquets utiles.
 2. Installer postgresql
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-L'installation depuis le dépôt postgresql (11 actuellement) est réalisée
+L'installation depuis le dépôt debian standard est réalisée
 de la manière suivante.
 
 .. code:: bash
 
-    sudo apt -y install curl ca-certificates gnupg
-    sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-    curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-
-    sudo apt update
-    sudo apt -y install postgresql postgresql-contrib postgis postgresql-12-postgis-3 postgresql-12-postgis-3-scripts
-    sudo apt -y install pgadmin4 # Optionnel, pour l'accès par PgAdmin
-    sudo apt -y install postgresql-12-pgaudit # Optionnel, pour l'audit détaillé des accès à la base
-    sudo apt install postgresql-12-pgaudit
-    sudo nano /etc/postgresql/12/main/postgresql.conf
+    sudo apt -y install postgresql postgresql-contrib postgis
+    sudo nano /etc/postgresql/11/main/postgresql.conf
 
 => changer :
 
 .. code:: cfg
 
     listen_addresses='*'
-    shared_preload_libraries = 'pgaudit'    # Optionnel, pour l'audit détaillé des accès à la Postgresql
 
 .. code:: bash
 
-    sudo nano /etc/postgresql/12/main/pg_hba.conf
+    sudo nano /etc/postgresql/11/main/pg_hba.conf
 
 => ajouter la ligne suivante pour autoriser l'accès exterieur à postgresql.
 `host all all  0.0.0.0/0   md5`
@@ -88,12 +79,6 @@ de la manière suivante.
     CREATE EXTENSION postgis;
     CREATE EXTENSION postgis_topology;
     CREATE ROLE xfer38 LOGIN PASSWORD '*whateveryouwant*' SUPERUSER CREATEDB CREATEROLE;
-
-Optionnel, pour fournir pgAdmin4 serveur:
-
-.. code:: bash
-
-    sudo apt -y install pgadmin4-apache2
 
 3. Installer les modules python
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
