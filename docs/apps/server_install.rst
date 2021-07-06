@@ -80,19 +80,7 @@ de la manière suivante.
     CREATE EXTENSION postgis_topology;
     CREATE ROLE xfer38 LOGIN PASSWORD '*whateveryouwant*' SUPERUSER CREATEDB CREATEROLE;
 
-3. Installer les modules python
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Les modules python suivants doivent être installés dans le système de base.
-D'autres modules peuvent être nécessaires, à vérifier.
-Les autres modules seront installés dans l'environnement virtuel de
-l'utilisateur :
-
-.. code:: bash
-
-    sudo apt -y install python3-venv
-
-4. Sécurisation du système
+3. Sécurisation du système
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 L'accès au serveur est sécurisé en retirant les accès aux comptes
@@ -139,7 +127,7 @@ par défaut et installant un firewall:
     sudo ufw enable
     sudo reboot
 
-5. Créer le compte
+4. Créer le compte
 ~~~~~~~~~~~~~~~~~~
 
 La création du compte de téléchargement est assurée par:
@@ -147,9 +135,8 @@ La création du compte de téléchargement est assurée par:
 .. code:: bash
 
     sudo adduser xfer38
-    sudo -iu xfer38
 
-6. Installer l'application
+5. Installer l'application
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Voir README.
