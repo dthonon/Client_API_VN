@@ -27,7 +27,7 @@ Applications are available either as:
 - Python modules from PyPI
 - Docker images from Docker Hub
 
-They are tested under Linux Ubuntu or Debian. Other Linux
+They are tested under Linux Ubuntu (version TBD) or Debian 10. Other Linux
 distributions could work. Windows is not tested at all and will
 probably not work.
 
