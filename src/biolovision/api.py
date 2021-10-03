@@ -87,7 +87,7 @@ import logging
 import re
 import time
 from functools import lru_cache
-from typing import Dict
+from typing import Dict, Optional
 from urllib import parse
 
 import requests
@@ -313,7 +313,11 @@ class BiolovisionAPI:
                         )
                         # TWEAK: remove extra text outside JSON response
                         if len(resp.text) > 1:
-                            resp_chunk = json.loads(re.findall(r'([\[{].*[}\]])', resp.text)[0])
+                            rsp = re.findall(r'([\[{].*[}\]])', resp.text)
+                            if len(rsp) > 0:
+                                resp_chunk = json.loads(rsp[0])
+                            else:
+                                resp_chunk = {}
                         else:
                             resp_chunk = resp.json("{}")
                     except json.decoder.JSONDecodeError:  # pragma: no cover
@@ -594,19 +598,22 @@ class ObservationsAPI(BiolovisionAPI):
 
     Methods:
 
-    - api_get      - Return a single observations from the controler
+    - api_get         - Return a single observations from the controler
 
-    - api_list     - Return a list of observations from the controler
+    - api_list        - Return a list of observations from the controler
 
-    - api_diff     - Deprecated: Return all changes in observations since a given date
+    - api_diff        - Deprecated: Return all changes in observations since a given date
 
-    - api_search   - Search for observations based on parameter value
+    - api_search      - Search for observations based on parameter value
 
-    - api_create   - Create a single observation
+    - api_create      - Create a single observation
 
-    - api_update   - Update an existing observation
+    - api_update      - Update an existing observation
 
-    - api_delete   - Delete an observation
+    - api_delete      - Delete an observation
+
+    - api_delete_list - Delete a list/form
+
     """
 
     def __init__(self, config, max_retry=None, max_requests=None, max_chunks=None):
@@ -775,6 +782,30 @@ class ObservationsAPI(BiolovisionAPI):
         logger.debug(_("Delete observation %s"), id)
         # DELETE to API
         return super()._url_get(params, "observations/" + id, "DELETE")
+
+    def api_delete_list(self, data: Optional[Dict] = None) -> None:
+        """Deleta a list/form.
+
+        Calls POST on /observations/delete_list/%id% to delete the observation.
+
+        Parameters
+        ----------
+        data: Dict
+            id_form or id_form_universal to delete
+        """
+        # Mandatory parameters.
+        params = {
+            "user_email": self._config.user_email,
+            "user_pw": self._config.user_pw,
+        }
+        logger.debug(_("Delete observation %s"), id)
+        # POST to API
+        if data is not None:
+            res = super()._url_get(params, "observations/delete_list", "POST", body=json.dumps(data))
+        else:
+            logger.warn(_("No parameter passed: call ignored"))
+            res = None
+        return res
 
 
 class ObserversAPI(BiolovisionAPI):
