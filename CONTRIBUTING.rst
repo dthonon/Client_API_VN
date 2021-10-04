@@ -84,9 +84,22 @@ To document a change :
 Running the tests
 -----------------
 
-Create .evn_test.yaml file in your root directory, with values. 
+Create .evn_test.yaml file in your root directory, 
+with actual data (site, user, password...)::
+
+    transfer_vn --init .evn_test.yaml
+
 The tests access the active production site of biolovision and
 requires admin rights.
+
+Currently, tests are only defined for the following sites::
+
+    t07: https://www.faune-ardeche.org/
+    t38: https://www.faune-isere.org/
+
+Create the test database::
+
+    transfer_vn --db_create .evn_test.yaml
 
 Run tests (try one or the other, as I haven't found which one is best)::
 

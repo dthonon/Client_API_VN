@@ -23,8 +23,8 @@ from export_vn.evnconf import EvnConf
 from export_vn.store_postgresql import PostgresqlUtils, ReadPostgresql, StorePostgresql
 
 # Using faune-ardeche or faune-isere site, that needs to be created first
-SITE = "t07"
-# SITE = 't38'
+# SITE = "t07"
+SITE = 't38'
 FILE = ".evn_test.yaml"
 
 # Get configuration for test site
@@ -116,7 +116,7 @@ def test_local_adm_u_api_pg_store():
     """Store local_admin_units to database."""
     LOCAL_ADMIN_UNITS.store()
 
-
+@pytest.mark.slow
 def test_local_adm_u_api_pg_read():
     """Read local admin units from database."""
     l_a_u = READ_PG.read("local_admin_units")

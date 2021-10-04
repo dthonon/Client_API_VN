@@ -488,6 +488,10 @@ class Observations(DownloadVn):
         for taxo in taxo_groups:
             if taxo["access_mode"] != "none":
                 id_taxo_group = taxo["id"]
+                logger.debug(
+                    _("Getting observations from taxo_group %s"),
+                    id_taxo_group,
+                )
 
                 # Record end of download interval
                 if self._config.end_date is None:

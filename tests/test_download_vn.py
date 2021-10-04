@@ -25,8 +25,8 @@ from export_vn.evnconf import EvnConf
 from export_vn.store_file import StoreFile
 
 # Using faune-ardeche or faune-isere site, that needs to be created first
-SITE = "t07"
-# SITE = 't38'
+# SITE = "t07"
+SITE = 't38'
 FILE = ".evn_test.yaml"
 
 # Get configuration for test site
@@ -63,7 +63,7 @@ def test_entities_store(capsys):
     with gzip.open(file_json, "rb") as g:
         items_dict = json.loads(g.read().decode("utf-8"))
     if SITE == "t38":
-        assert len(items_dict["data"]) >= 20
+        assert len(items_dict["data"]) >= 16
     elif SITE == "t07":
         assert len(items_dict["data"]) >= 8
 
