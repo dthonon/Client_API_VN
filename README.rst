@@ -96,8 +96,9 @@ group first::
 After this full download, data can be updated. For observations, only new,
 modified or deleted observations are downloaded. For other controlers, a full
 download is always performed. Each controler runs on its own schedule,
-defined in the YAML configuration file. To create or update, after
-modifying the configuration file, the schedule::
+defined in the YAML configuration file. This step needs to be performed
+after each ``--full`` execution or YAML file modification. To create or update,
+after modifying the configuration file, the schedule::
 
     transfer_vn --schedule .evn_your_site.yaml
 
@@ -105,8 +106,15 @@ Once this is done, you can update the database with new observations::
 
     transfer_vn --update .evn_your_site.yaml
 
-Note: this script should run hourly or dayly in a cron job.
-It must run at least every week.
+This can be done by cron, every hour for example. At each run, all scheduled
+tasks are performed. Note: you must wait until the first scheduled task has
+expired for a transfer to be carried out. With the default schedule, you must
+therefore wait for the next round hour ``--schedule``. It must run at least
+once a week. The virtual environment must be activated in the cron job, for
+example::
+
+    0 * * * * echo 'source client_api_vn/env_VN/bin/activate;cd client_api_vn/;transfer_vn --update .evn_your_site.yaml --verbose'| /bin/bash > /dev/null
+
 
 Getting Started - update_vn
 ---------------------------
