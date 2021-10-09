@@ -327,8 +327,7 @@ class LocalAdminUnits(DownloadVn):
                 super().store([q_param])
         else:
             logger.debug(
-                _("Getting local_admin_units, using API list"),
-                self._api_instance.controler,
+                _("Getting all local_admin_units, using API list")
             )
             super().store()
 
