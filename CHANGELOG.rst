@@ -1,3 +1,38 @@
+Client-API-VN v2.9.0 (2021-10-11)
+=================================
+
+Features
+--------
+
+- In case of HTTP error, the error message in the text included
+  in the response is printed. (`#156 <https://framagit.org/lpo/Client_API_VN/issues/156>`_)
+- Supported python versions are 3.7 to 3.9.
+  Previous versions are not supported and will not work. (`#172 <https://framagit.org/lpo/Client_API_VN/issues/172>`_)
+- observations/delete_list is available in biolovision/apy.
+  Note that id_form or id_form_universal to delete must be
+  included in data dict. (`#173 <https://framagit.org/lpo/Client_API_VN/issues/173>`_)
+
+
+Bugfixes
+--------
+
+- update_vn now accepts single quote "'" in value parameter.
+  It must be quoted with double-quote, i.e. "aujourd'hui". (`#154 <https://framagit.org/lpo/Client_API_VN/issues/154>`_)
+
+
+Improved Documentation
+----------------------
+
+- Link to documentation now refer to readthedocs/stable. (`#160 <https://framagit.org/lpo/Client_API_VN/issues/160>`_)
+- Running transfer_vn from cron is now documented in README (`#174 <https://framagit.org/lpo/Client_API_VN/issues/174>`_)
+
+
+Misc
+----
+
+- `#68 <https://framagit.org/lpo/Client_API_VN/issues/68>`_
+
+
 Client-API-VN v2.8.1 (2021-06-02)
 =================================
 

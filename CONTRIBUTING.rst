@@ -129,7 +129,7 @@ Generating and uploading
 
 Generate CHANGELOG.rst from news fragment::
 
-    LANG=C.UTF-8; towncrier --name=Client-API-VN --version=vX.Y.Z
+    LANG=C.UTF-8; towncrier build --name=Client-API-VN --version=vX.Y.Z
 
 Commit pending changes and tag vX.Y.Z.
 
