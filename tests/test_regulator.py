@@ -7,12 +7,12 @@ from export_vn.regulator import PID
 
 import pytest
 
+
 @pytest.mark.order(index=90)
 class TestRegulator:
     def test_version(self):
         """Check if version is defined."""
         logging.debug("package version: %s", PID().version)
-
 
     def test_tunings(self):
         """Check tunings property and setter."""
@@ -26,18 +26,15 @@ class TestRegulator:
         with pytest.raises(ValueError):
             pid.output_limits = (30, 0)
 
-
     def test_zero(self):
         pid = PID(1, 1, 1, setpoint=0)
         assert pid(0) == 0
-
 
     def test_P(self):
         pid = PID(1, 0, 0, setpoint=10)
         assert pid(0) == 10
         assert pid(5) == 5
         assert pid(-5) == 15
-
 
     def test_P_negative_setpoint(self):
         pid = PID(1, 0, 0, setpoint=-10)
@@ -46,18 +43,15 @@ class TestRegulator:
         assert pid(-5) == -5
         assert pid(-15) == 5
 
-
     def test_I(self):
         pid = PID(0, 10, 0, setpoint=10)
         assert round(pid(0)) == 100.0  # make sure we are close to expected value
         assert round(pid(0)) == 200.0
 
-
     def test_I_negative_setpoint(self):
         pid = PID(0, 10, 0, setpoint=-10)
         assert round(pid(0)) == -100.0
         assert round(pid(0)) == -200.0
-
 
     def test_D(self):
         pid = PID(0, 0, 1, setpoint=10)
@@ -69,7 +63,6 @@ class TestRegulator:
         assert pid(0) == 0
         assert pid(5) == -5
         assert pid(20) == -15
-
 
     def test_D_negative_setpoint(self):
         pid = PID(0, 0, 1, setpoint=-10)
@@ -83,12 +76,10 @@ class TestRegulator:
         assert pid(-5) == 10
         assert pid(-30) == 25
 
-
     def test_desired_state(self):
         pid = PID(10, 5, 2, setpoint=10)
         # should not make any adjustment when setpoint is achieved
         assert pid(10) == 0
-
 
     def test_output_limits(self):
         pid = PID(100, 20, 40, setpoint=10, output_limits=(0, 100))

@@ -47,6 +47,7 @@ TAXO_GROUPS_API = TaxoGroupsAPI(CFG)
 TERRITORIAL_UNITS_API = TerritorialUnitsAPI(CFG)
 VALIDATIONS_API = ValidationsAPI(CFG)
 
+
 # ---------------
 # Various testing
 # ---------------
@@ -187,8 +188,8 @@ class TestSpecies:
     def test_species_list_error(self):
         """Get a list of species from taxo_group 1, limited to 1 chunk."""
         with pytest.raises(MaxChunksError) as excinfo:  # noqa: F841
-            species_list = SPECIES_API_ERR.api_list(
-                {"id_taxo_group": "1"}
+            species_list = SPECIES_API_ERR.api_list(  # noqa: F841
+                {"id_taxo_group": "1"}  # noqa: F841
             )  # noqa: F841
 
 
@@ -1534,5 +1535,3 @@ class TestObservations:
             data={"id_form_universal": id_form_universal}
         )
         logging.debug(res)
-
-

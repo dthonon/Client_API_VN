@@ -6,6 +6,7 @@ Features
 
 - In order to get timing data of each request, table import.download_log is extended.
   If you upgrade without recreating JSON tables, you must run the following script::
+
       ALTER TABLE import.download_log ADD COLUMN length integer;
       ALTER TABLE import.download_log ADD COLUMN duration integer;
       CREATE INDEX ix_import_download_log_duration ON import.download_log USING btree(duration);
@@ -35,10 +36,12 @@ Features
 
 - It is now possible to filter download by territorial_unit.
   An optional parameter is available in YAML configuration file, `filter` section::
+
       # List of territorial_unit_ids to download
       territorial_unit_ids:
           - 01
           - 03
+
   (`#134 <https://framagit.org/lpo/Client_API_VN/issues/134>`_)
 - In observations table, project_code is indexed. (`#142 <https://framagit.org/lpo/Client_API_VN/issues/142>`_)
 - UUID, from JSON dowloaded, is now stored in observations table.
@@ -54,7 +57,9 @@ Bugfixes
 - Both schemas are now created with `db_group` owner. (`#140 <https://framagit.org/lpo/Client_API_VN/issues/140>`_)
 - Updating sightings within forms is now possible.
   Changing data of a sighting inside a forms should use the simple path::
+
     Isère;3079911;$['data']['sightings'][0]['observers'][0]['project'];replace;26
+
   and not include `['forms'][0]`. (`#141 <https://framagit.org/lpo/Client_API_VN/issues/141>`_)
 
 

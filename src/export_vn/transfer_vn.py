@@ -21,7 +21,6 @@ import requests
 from bs4 import BeautifulSoup
 from jinja2 import Environment, PackageLoader
 from pytz import utc
-from sqlalchemy.engine.url import URL
 
 import yappi
 from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED, EVENT_JOB_SUBMITTED
@@ -402,9 +401,13 @@ def full_download_1(ctrl, cfg_crtl_list, cfg):
                     territorial_unit_ids=cfg.territorial_unit_ids,
                     short_version=(1 if cfg.json_format == "short" else 0),
                 )
-            elif (downloader.name == "local_admin_units") or (downloader.name == "places"):
+            elif (downloader.name == "local_admin_units") or (
+                downloader.name == "places"
+            ):
                 logger.info(
-                    _("%s => Included territorial_unit_ids: %s"), cfg.site, cfg.territorial_unit_ids
+                    _("%s => Included territorial_unit_ids: %s"),
+                    cfg.site,
+                    cfg.territorial_unit_ids,
                 )
                 downloader.store(
                     territorial_unit_ids=cfg.territorial_unit_ids,
@@ -505,9 +508,13 @@ def increment_download_1(ctrl, cfg_crtl_list, cfg):
                     _("%s => Excluded taxo_groups: %s"), cfg.site, cfg.taxo_exclude
                 )
                 downloader.update(taxo_groups_ex=cfg.taxo_exclude)
-            elif (downloader.name == "local_admin_units") or (downloader.name == "places"):
+            elif (downloader.name == "local_admin_units") or (
+                downloader.name == "places"
+            ):
                 logger.info(
-                    _("%s => Included territorial_unit_ids: %s"), cfg.site, cfg.territorial_unit_ids
+                    _("%s => Included territorial_unit_ids: %s"),
+                    cfg.site,
+                    cfg.territorial_unit_ids,
                 )
                 downloader.store(
                     territorial_unit_ids=cfg.territorial_unit_ids,

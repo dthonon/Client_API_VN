@@ -17,10 +17,6 @@ from itertools import chain
 from sys import getsizeof
 from time import perf_counter_ns
 
-try:
-    from reprlib import repr
-except ImportError:
-    pass
 from biolovision.api import (
     EntitiesAPI,
     FamiliesAPI,
@@ -53,12 +49,11 @@ def total_size(o, handlers={}):
                     OtherContainerClass: OtherContainerClass.get_elements}
 
     """
-    dict_handler = lambda d: chain.from_iterable(d.items())
     all_handlers = {
         tuple: iter,
         list: iter,
         deque: iter,
-        dict: dict_handler,
+        dict: lambda d: chain.from_iterable(d.items()),
         set: iter,
         frozenset: iter,
     }

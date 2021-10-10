@@ -11,7 +11,7 @@ Properties
 
 """
 import logging
-from datetime import date, datetime
+from datetime import date
 
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from pyproj import Transformer
@@ -28,7 +28,7 @@ from sqlalchemy import (
     func,
     select,
 )
-from sqlalchemy.dialects.postgresql import ARRAY, JSONB, insert
+from sqlalchemy.dialects.postgresql import JSONB, insert
 from sqlalchemy.engine.url import URL
 from sqlalchemy.sql import and_
 
