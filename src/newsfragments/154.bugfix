@@ -1,0 +1,2 @@
+update_vn now accepts single quote "'" in value parameter.
+It must be quoted with double-quote, i.e. "aujourd'hui".
