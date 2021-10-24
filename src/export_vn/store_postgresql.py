@@ -19,6 +19,7 @@ from sqlalchemy import (
     Column,
     DateTime,
     Integer,
+    BigInteger,
     MetaData,
     PrimaryKeyConstraint,
     String,
@@ -203,7 +204,7 @@ class PostgresqlUtils:
             Column("http_status", Integer, index=True),
             Column("comment", String),
             Column("length", Integer, index=True),
-            Column("duration", Integer, index=True),
+            Column("duration", BigInteger, index=True),
         )
         return None
 
