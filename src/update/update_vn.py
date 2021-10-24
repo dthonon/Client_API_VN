@@ -163,7 +163,7 @@ def update(cfg_ctrl, input: str):
                             }
                         )
                         if row[3].strip() == "replace":
-                            exec("{} = {}".format(repl, row[4].strip()))
+                            exec("{} = {}".format(repl, "row[4].strip()"))
                         else:
                             try:
                                 exec("del {}".format(repl))

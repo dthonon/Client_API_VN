@@ -27,14 +27,15 @@ Applications are available either as:
 - Python modules from PyPI
 - Docker images from Docker Hub
 
-They are tested under Linux Ubuntu or Debian. Other Linux
+They are tested under Linux Ubuntu (version TBD) or Debian 10. Other Linux
 distributions could work. Windows is not tested at all and will
 probably not work.
 
-See `Documentation <https://client-api-vn1.readthedocs.io/en/latest/>`_ for more informations.
+See `Documentation <https://client-api-vn1.readthedocs.io/en/stable/>`_
+for more informations.
 
-A thin Python layer on top of Biolovision API is provided,as described in
-`API Documentation <https://client-api-vn1.readthedocs.io/en/latest/api/modules.html>`_.
+A thin Python layer on top of Biolovision API is provided, as described in
+`API Documentation <https://client-api-vn1.readthedocs.io/en/stable/api/modules.html>`_.
 
 Installation - Python
 ---------------------
@@ -44,13 +45,13 @@ Python applications.
 
 Add the follwing debian packages::
 
-    sudo apt install python3-dev
-    sudo apt install python3-venv
+    sudo apt -y install build-essential python3-dev python3-venv
 
 Create a python virtual environment, activate it and update basic tools::
 
-    python3 -m venv VN_env
-    source VN_env/bin/activate
+    sudo -iu xfer38
+    python3 -m venv env_VN
+    source env_VN/bin/activate
     python -m pip install --upgrade pip
 
 Install from PyPI::
@@ -95,8 +96,9 @@ group first::
 After this full download, data can be updated. For observations, only new,
 modified or deleted observations are downloaded. For other controlers, a full
 download is always performed. Each controler runs on its own schedule,
-defined in the YAML configuration file. To create or update, after
-modifying the configuration file, the schedule::
+defined in the YAML configuration file. This step needs to be performed
+after each ``--full`` execution or YAML file modification. To create or update,
+after modifying the configuration file, the schedule::
 
     transfer_vn --schedule .evn_your_site.yaml
 
@@ -104,11 +106,18 @@ Once this is done, you can update the database with new observations::
 
     transfer_vn --update .evn_your_site.yaml
 
-Note: this script should run hourly or dayly in a cron job.
-It must run at least every week.
+This can be done by cron, every hour for example. At each run, all scheduled
+tasks are performed. Note: you must wait until the first scheduled task has
+expired for a transfer to be carried out. With the default schedule, you must
+therefore wait for the next round hour ``--schedule``. It must run at least
+once a week. The virtual environment must be activated in the cron job, for
+example::
+
+    0 * * * * echo 'source client_api_vn/env_VN/bin/activate;cd client_api_vn/;transfer_vn --update .evn_your_site.yaml --verbose'| /bin/bash > /dev/null
+
 
 Getting Started - update_vn
-----------------------------
+---------------------------
 
 Initialize the sample YAML file in your HOME directory and edit with
 your local details. The YAML file is self documented::
@@ -120,9 +129,8 @@ your local details. The YAML file is self documented::
 Prerequisites
 -------------
 
-For Linux and Postgresql installation, refer to `server installation`_
-
-.. _server installation: docs/server_install.rst
+For Linux and Postgresql installation, refer to
+`server installation <https://client-api-vn1.readthedocs.io/en/stable/apps/server_install.html>`_.
 
 Installation requires the following python module::
 
@@ -159,7 +167,7 @@ where::
 --profile              Gather and print profiling times
 
 Command-line options - update_vn
-----------------------------------
+--------------------------------
 
 The application runs as::
 

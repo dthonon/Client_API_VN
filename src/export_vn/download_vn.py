@@ -17,10 +17,6 @@ from itertools import chain
 from sys import getsizeof
 from time import perf_counter_ns
 
-try:
-    from reprlib import repr
-except ImportError:
-    pass
 from biolovision.api import (
     EntitiesAPI,
     FamiliesAPI,
@@ -53,12 +49,11 @@ def total_size(o, handlers={}):
                     OtherContainerClass: OtherContainerClass.get_elements}
 
     """
-    dict_handler = lambda d: chain.from_iterable(d.items())
     all_handlers = {
         tuple: iter,
         list: iter,
         deque: iter,
-        dict: dict_handler,
+        dict: lambda d: chain.from_iterable(d.items()),
         set: iter,
         frozenset: iter,
     }
@@ -327,8 +322,7 @@ class LocalAdminUnits(DownloadVn):
                 super().store([q_param])
         else:
             logger.debug(
-                _("Getting local_admin_units, using API list"),
-                self._api_instance.controler,
+                _("Getting all local_admin_units, using API list")
             )
             super().store()
 
@@ -488,6 +482,10 @@ class Observations(DownloadVn):
         for taxo in taxo_groups:
             if taxo["access_mode"] != "none":
                 id_taxo_group = taxo["id"]
+                logger.debug(
+                    _("Getting observations from taxo_group %s"),
+                    id_taxo_group,
+                )
 
                 # Record end of download interval
                 if self._config.end_date is None:

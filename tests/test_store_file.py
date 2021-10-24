@@ -11,8 +11,8 @@ from export_vn.evnconf import EvnConf
 from export_vn.store_file import StoreFile
 
 # Using faune-ardeche or faune-isere site, that needs to be created first
-SITE = "t07"
-# SITE = 't38'
+# SITE = "t07"
+SITE = 't38'
 FILE = ".evn_test.yaml"
 
 # Get configuration for test site
