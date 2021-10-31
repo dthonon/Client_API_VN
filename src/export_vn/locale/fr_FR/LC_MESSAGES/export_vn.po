@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: export_vn 2.0.0b3.dev8+g77a983a.d20190320\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-10-11 00:06+0200\n"
+"POT-Creation-Date: 2021-10-31 23:48+0100\n"
 "PO-Revision-Date: 2019-03-21 00:01+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -43,96 +43,96 @@ msgstr "Erreur irrecupérable %s, exception levée"
 msgid "Too many error %s, raising exception"
 msgstr "Trop d'erreur %s, exception levée"
 
-#: src/biolovision/api.py:312
+#: src/biolovision/api.py:314
 #, python-format
 msgid "Response content: %s, text: %s"
 msgstr "Contenu de la réponse : %s, texte : %s"
 
-#: src/biolovision/api.py:327
+#: src/biolovision/api.py:329
 #, python-format
 msgid "Incorrect response content: %s"
 msgstr "Contenu de la réponse incorrect : %s"
 
-#: src/biolovision/api.py:329
+#: src/biolovision/api.py:331
 #, python-format
 msgid "Response text causing exception: %s"
 msgstr "Texte de la réponse causant l'exception : %s"
 
-#: src/biolovision/api.py:338
+#: src/biolovision/api.py:340
 #, python-format
 msgid "Received %d sightings in chunk %d"
 msgstr "Reçu %d observations dans le morceau %d"
 
-#: src/biolovision/api.py:359
+#: src/biolovision/api.py:361
 #, python-format
 msgid "Received %d forms in chunk %d"
 msgstr "Reçu %d formulaires dans le morceau %d"
 
-#: src/biolovision/api.py:378
+#: src/biolovision/api.py:380
 #, python-format
 msgid "Received %d data items in chunk %d"
 msgstr "Reçu %d éléments avec données dans le morceau %d"
 
-#: src/biolovision/api.py:387
+#: src/biolovision/api.py:389
 #, python-format
 msgid "Received non-data response: %s"
 msgstr "Réception d'une réponse sans données : %s"
 
-#: src/biolovision/api.py:400
+#: src/biolovision/api.py:402
 #, python-format
 msgid "Chunked transfer => requesting for more, with key: %s"
 msgstr "Transfert par morceau => demande du suivant, avec la clé %s"
 
-#: src/biolovision/api.py:407
+#: src/biolovision/api.py:409
 msgid "Non-chunked transfer => finished requests"
 msgstr "Transfert sans morceau => fin de la requête"
 
-#: src/biolovision/api.py:412
+#: src/biolovision/api.py:414
 #, python-format
 msgid "Received %d chunks"
 msgstr "Reçu %d morceaux"
 
-#: src/biolovision/api.py:444
+#: src/biolovision/api.py:446
 #, python-format
 msgid "List from:%s, with options:%s, optional_headers:%s"
 msgstr "Liste depuis:%s, avec options:%s, optional_headers:%s"
 
-#: src/biolovision/api.py:453
+#: src/biolovision/api.py:455
 #, python-format
 msgid "Number of entities = %i"
 msgstr "Nombre d'entités = %i"
 
-#: src/biolovision/api.py:486
+#: src/biolovision/api.py:488
 #, python-format
 msgid "In api_get for controler:%s, entity: %s, with parameters:%s"
 msgstr "Dans api_get du controleur:%s, entité: %s, paramètres:%s"
 
-#: src/biolovision/api.py:644
+#: src/biolovision/api.py:646
 #, python-format
 msgid "In api_list, with parameters %s"
 msgstr "Dans api_list, avec les paramètres %s"
 
-#: src/biolovision/api.py:712
+#: src/biolovision/api.py:714
 #, python-format
 msgid "Search from %s, with option %s and body %s"
 msgstr "Dans api_search depuis %s, avec les options %s et le corps %s"
 
-#: src/biolovision/api.py:735
+#: src/biolovision/api.py:737
 #, python-format
 msgid "Create observation, with data %s"
 msgstr "Création d'une observation, avec data %s"
 
-#: src/biolovision/api.py:761
+#: src/biolovision/api.py:763
 #, python-format
 msgid "Update observation %s, with data %s"
 msgstr "Mise à jour de l'observation %s, avec data %s"
 
-#: src/biolovision/api.py:782 src/biolovision/api.py:801
+#: src/biolovision/api.py:784 src/biolovision/api.py:803
 #, python-format
 msgid "Delete observation %s"
 msgstr "Suppression de l'observation %s"
 
-#: src/biolovision/api.py:806
+#: src/biolovision/api.py:808
 msgid "No parameter passed: call ignored"
 msgstr "Pas de paramètre transmis : appel ignoré"
 
@@ -361,116 +361,116 @@ msgstr "Conversion en JSON de %d items"
 msgid "Received data, storing json to %s"
 msgstr "Reçu des données, stockage json dans %s"
 
-#: src/export_vn/store_postgresql.py:124
+#: src/export_vn/store_postgresql.py:125
 #, python-format
 msgid "Storing observation %s to database"
 msgstr "Stockage de l'observation %s en base de données"
 
-#: src/export_vn/store_postgresql.py:187
+#: src/export_vn/store_postgresql.py:188
 #, python-format
 msgid "Table %s not found => Creating it"
 msgstr "Table %s non trouvée => Création"
 
-#: src/export_vn/store_postgresql.py:191
+#: src/export_vn/store_postgresql.py:192
 #, python-format
 msgid "Table %s already exists => Keeping it"
 msgstr "La table %s existe déjà => elle est conservée"
 
-#: src/export_vn/store_postgresql.py:388
+#: src/export_vn/store_postgresql.py:389
 #, python-format
 msgid "Connecting to postgres database, to create %s database"
 msgstr "Connexion à la base de données postgres, pour créer la base %s"
 
-#: src/export_vn/store_postgresql.py:450
+#: src/export_vn/store_postgresql.py:451
 #, python-format
 msgid "Connecting to postgres database, to delete %s database"
 msgstr "Connexion à la base de données postgres, pour supprime la base %s"
 
-#: src/export_vn/store_postgresql.py:477
+#: src/export_vn/store_postgresql.py:478
 #, python-format
 msgid "Dropping tables: %s"
 msgstr "Supression des tables : %s"
 
-#: src/export_vn/store_postgresql.py:480
+#: src/export_vn/store_postgresql.py:481
 #, python-format
 msgid "Dropping database: %s"
 msgstr "Suppression de la base : %s"
 
-#: src/export_vn/store_postgresql.py:484
+#: src/export_vn/store_postgresql.py:485
 #, python-format
 msgid "Dropping role: %s"
 msgstr "Suppression du rôle : %s"
 
-#: src/export_vn/store_postgresql.py:487
+#: src/export_vn/store_postgresql.py:488
 #, python-format
 msgid "Error %s ignored when dropping role"
 msgstr "Erreur %s ignoré pendant la suppression du rôle"
 
-#: src/export_vn/store_postgresql.py:510
+#: src/export_vn/store_postgresql.py:511
 #, python-format
 msgid "Connecting to %s database, to finalize creation"
 msgstr "Connexion à la base de données %s, pour finaliser la création"
 
-#: src/export_vn/store_postgresql.py:588 src/export_vn/store_postgresql.py:629
+#: src/export_vn/store_postgresql.py:589 src/export_vn/store_postgresql.py:630
 msgid "Counting observations in database for all sites"
 msgstr "Comptage des observations en base, pour tous les sites"
 
-#: src/export_vn/store_postgresql.py:599 src/export_vn/store_postgresql.py:640
-#: src/export_vn/store_postgresql.py:681
+#: src/export_vn/store_postgresql.py:600 src/export_vn/store_postgresql.py:641
+#: src/export_vn/store_postgresql.py:682
 #, python-format
 msgid "Connecting to database %s"
 msgstr "Connexion à la base de données %s"
 
-#: src/export_vn/store_postgresql.py:758
+#: src/export_vn/store_postgresql.py:759
 msgid "Entry into StorePostgresql"
 msgstr "Entrée dans StorePostgresql"
 
-#: src/export_vn/store_postgresql.py:764
+#: src/export_vn/store_postgresql.py:765
 #, python-format
 msgid "Closing connection to database %s"
 msgstr "Fermeture de la connexion à la base de données %s"
 
-#: src/export_vn/store_postgresql.py:794
+#: src/export_vn/store_postgresql.py:795
 #, python-format
 msgid "Reading from %s of site %s"
 msgstr "Lecture de %s du site %s"
 
-#: src/export_vn/store_postgresql.py:830 src/export_vn/store_postgresql.py:927
+#: src/export_vn/store_postgresql.py:831 src/export_vn/store_postgresql.py:928
 #, python-format
 msgid "Storing %d items from %s of site %s"
 msgstr "Stockage de %d items depuis %s du site %s"
 
-#: src/export_vn/store_postgresql.py:838 src/export_vn/store_postgresql.py:898
-#: src/export_vn/store_postgresql.py:940 src/export_vn/store_postgresql.py:1124
+#: src/export_vn/store_postgresql.py:839 src/export_vn/store_postgresql.py:899
+#: src/export_vn/store_postgresql.py:941 src/export_vn/store_postgresql.py:1125
 #, python-format
 msgid "Storing element %s"
 msgstr "Stockage de l'élement %s"
 
-#: src/export_vn/store_postgresql.py:895
+#: src/export_vn/store_postgresql.py:896
 #, python-format
 msgid "Storing %d items from %s"
 msgstr "Stockage de %d éléments de %s"
 
-#: src/export_vn/store_postgresql.py:1013
+#: src/export_vn/store_postgresql.py:1014
 #, python-format
 msgid "Storing %d single observations"
 msgstr "Stockage de %d observations unitaires"
 
-#: src/export_vn/store_postgresql.py:1093
+#: src/export_vn/store_postgresql.py:1094
 #, python-format
 msgid "Stored %d observations or forms to database"
 msgstr "Stockage de %d observations ou formulaires en base de données"
 
-#: src/export_vn/store_postgresql.py:1117
+#: src/export_vn/store_postgresql.py:1118
 #, python-format
 msgid "Storing %d observers from site %s"
 msgstr "Stockage de %d observateurs du site %s"
 
-#: src/export_vn/store_postgresql.py:1178
+#: src/export_vn/store_postgresql.py:1179
 msgid "Not implemented"
 msgstr "Non implémenté"
 
-#: src/export_vn/store_postgresql.py:1198
+#: src/export_vn/store_postgresql.py:1199
 #, python-format
 msgid "Deleting %d observations from database"
 msgstr "Suppression de %d observation en base de données"
@@ -903,3 +903,4 @@ msgstr "Après : %s"
 #, python-format
 msgid "Input file %s does not exist"
 msgstr "Le fichier d'entrée %s n'existe pas"
+

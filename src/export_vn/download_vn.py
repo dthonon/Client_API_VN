@@ -850,7 +850,7 @@ class Places(DownloadVn):
         territorial_unit_ids : list
             List of territorial_units to include in storage.
         """
-        if territorial_unit_ids is not None:
+        if territorial_unit_ids is not None and len(territorial_unit_ids) > 0:
             # Get local_admin_units
             for id_canton in territorial_unit_ids:
                 # Loop on local_admin_units of the territorial_unit

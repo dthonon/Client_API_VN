@@ -303,6 +303,8 @@ class BiolovisionAPI:
                     raise HTTPError(resp.status_code)
             else:
                 # No error from request: processing response if needed
+                # Resetting error count after successful transfer
+                self._transfer_errors = 0
                 if method in ["PUT", "DELETE"]:
                     # No response expected
                     resp_chunk = json.loads("{}")
