@@ -1,2 +1,0 @@
-Several transient errors could stop transfer_vn after max_retry errors.
-This is fixed: a succesful transfer resets the error counter. 

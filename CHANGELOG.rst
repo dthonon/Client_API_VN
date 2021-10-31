@@ -1,3 +1,15 @@
+Client-API-VN v2.9.1 (2021-10-31)
+=================================
+
+Bugfixes
+--------
+
+- Several transient errors could stop transfer_vn after max_retry errors.
+  This is fixed: a succesful transfer resets the error counter. (`#155 <https://framagit.org/lpo/Client_API_VN/issues/155>`_)
+- Places are now downloaded and stored correctly. (`#168 <https://framagit.org/lpo/Client_API_VN/issues/168>`_)
+- Very long transfer duration are now handled without error. (`#176 <https://framagit.org/lpo/Client_API_VN/issues/176>`_)
+
+
 Client-API-VN v2.9.0 (2021-10-11)
 =================================
 
