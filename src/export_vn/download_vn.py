@@ -77,7 +77,7 @@ def total_size(o, handlers={}):
 
 
 class DownloadVnException(Exception):
-    """An exception occurred while handling download or store. """
+    """An exception occurred while handling download or store."""
 
 
 class NotImplementedException(DownloadVnException):
@@ -321,9 +321,7 @@ class LocalAdminUnits(DownloadVn):
                 q_param = {"id_canton": id_canton}
                 super().store([q_param])
         else:
-            logger.debug(
-                _("Getting all local_admin_units, using API list")
-            )
+            logger.debug(_("Getting all local_admin_units, using API list"))
             super().store()
 
 
@@ -751,24 +749,22 @@ class Observations(DownloadVn):
                 logger.error(
                     _("No date found for last download, increment not performed")
                 )
-            # print(updated)
 
             # Process updates
             if len(updated) > 0:
-                log_msg = _("Creating or updating {} observations").format(len(updated))
-                logger.debug(log_msg)
+                logger.debug(_("Creating or updating %d observations"), len(updated))
                 # Update backend store, in chunks
                 for i in range(
                     (len(updated) + self._config.tuning_max_list_length - 1)
                     // self._config.tuning_max_list_length
                 ):
                     s_list = ",".join(
-                            updated[
-                                i
-                                * self._config.tuning_max_list_length : (i + 1)
-                                * self._config.tuning_max_list_length
-                            ]
-                        )
+                        updated[
+                            i
+                            * self._config.tuning_max_list_length : (i + 1)
+                            * self._config.tuning_max_list_length
+                        ]
+                    )
                     logger.debug(_("Updating slice %s"), s_list)
                     timing = perf_counter_ns()
                     items_dict = self._api_instance.api_list(
@@ -791,7 +787,8 @@ class Observations(DownloadVn):
                         self._api_instance.controler,
                         self._api_instance.transfer_errors,
                         self._api_instance.http_status,
-                        log_msg,
+                        _("Creating or updating %d observations")
+                        % (s_list.count(",") + 1),
                         total_size(items_dict),
                         timing,
                     )

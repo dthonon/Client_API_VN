@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: export_vn 2.0.0b3.dev8+g77a983a.d20190320\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-10-31 23:48+0100\n"
+"POT-Creation-Date: 2021-11-02 23:59+0100\n"
 "PO-Revision-Date: 2019-03-21 00:01+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -155,51 +155,51 @@ msgstr "Détails pour le groupe de champs %s = %s"
 msgid "Getting local_admin_units from id_canton %s, using API list"
 msgstr "Récupération de local_admin_units du id_canton %s, par API list"
 
-#: src/export_vn/download_vn.py:325
+#: src/export_vn/download_vn.py:324
 msgid "Getting all local_admin_units, using API list"
 msgstr "Téléchargement des toutes les local_admin_units, par l'API list"
 
-#: src/export_vn/download_vn.py:373
+#: src/export_vn/download_vn.py:371
 #, python-format
 msgid "Getting observations from controler %s, using API list"
 msgstr "Réception d'observations depuis le contrôleur %s, par API list"
 
-#: src/export_vn/download_vn.py:387
+#: src/export_vn/download_vn.py:385
 #, python-format
 msgid "Getting observations from taxo_group %s, in _store_list"
 msgstr "Réception d'observations du taxo_group %s, dans _store_list"
 
-#: src/export_vn/download_vn.py:397
+#: src/export_vn/download_vn.py:395
 #, python-format
 msgid "Getting observations from taxo_group %s, specie %s"
 msgstr "Réception des observations depuis taxo_group %s, specie %s"
 
-#: src/export_vn/download_vn.py:415
+#: src/export_vn/download_vn.py:413
 #, python-format
 msgid "observations from taxo_group %s, species %s"
 msgstr "observations du taxo_group %s, espèce %s"
 
-#: src/export_vn/download_vn.py:440
+#: src/export_vn/download_vn.py:438
 #, python-format
 msgid "observations from taxo_group %s"
 msgstr "Réception d'observations du taxo_group %s"
 
-#: src/export_vn/download_vn.py:475
+#: src/export_vn/download_vn.py:473
 #, python-format
 msgid "Getting observations from controler %s, using API search"
 msgstr "Réception d'observations depuis le contrôleur %s, par API search"
 
-#: src/export_vn/download_vn.py:486
+#: src/export_vn/download_vn.py:484
 #, python-format
 msgid "Getting observations from taxo_group %s"
 msgstr "Récupération des observations du taxo_group %s"
 
-#: src/export_vn/download_vn.py:544
+#: src/export_vn/download_vn.py:542
 #, python-format
 msgid "Getting observations from territorial_unit %s, using API search"
 msgstr "Récupération des observations du territorial_unit %s, par API search"
 
-#: src/export_vn/download_vn.py:568
+#: src/export_vn/download_vn.py:566
 msgid ""
 "{} => Iter: {}, {} obs, taxo_group: {}, territorial_unit: {}, date: {}, "
 "interval: {}"
@@ -207,75 +207,76 @@ msgstr ""
 "{} => Iter : {}, {} obs, taxo_group : {}, territorial_unit : {}, date : "
 "{}, intervalle : {}"
 
-#: src/export_vn/download_vn.py:606
+#: src/export_vn/download_vn.py:604
 #, python-format
 msgid "Starting to download observations from taxo_group %s: %s"
 msgstr "Début du téléchargement des observations du taxo_group %s : %s"
 
-#: src/export_vn/download_vn.py:656
+#: src/export_vn/download_vn.py:654
 #, python-format
 msgid "%s => Downloading taxo_groups: %s, territorial_units: %s"
 msgstr "%s => Téléchargement taxo_groups: %s, territorial_units: %s"
 
-#: src/export_vn/download_vn.py:669
+#: src/export_vn/download_vn.py:667
 msgid "Download using list method is deprecated. Please use search method only"
 msgstr ""
 "Le téléchargement par la méthode list est obsolète. Utilisez plutôt la "
 "méthode search"
 
-#: src/export_vn/download_vn.py:704
+#: src/export_vn/download_vn.py:702
 #, python-format
 msgid "Getting updated observations from controler %s"
 msgstr "Réception des observations mises à jour depuis le contrôleur %s"
 
-#: src/export_vn/download_vn.py:710
+#: src/export_vn/download_vn.py:708
 #, python-format
 msgid "Downloaded taxo_groups: %s"
 msgstr "Téléchargé taxo_groups: %s"
 
-#: src/export_vn/download_vn.py:721
+#: src/export_vn/download_vn.py:719
 #, python-format
 msgid "Getting updates for taxo_group %s since %s"
 msgstr "Réception de mises à jour du taxo_group %s depuis %s"
 
-#: src/export_vn/download_vn.py:730
+#: src/export_vn/download_vn.py:728
 #, python-format
 msgid "Observation %s was %s"
 msgstr "L'observation %s était %s"
 
-#: src/export_vn/download_vn.py:740
+#: src/export_vn/download_vn.py:738
 #, python-format
 msgid "Observation %s has unknown processing %s"
 msgstr "L'observation %s a un type de traitement inconnu : %s"
 
-#: src/export_vn/download_vn.py:746
+#: src/export_vn/download_vn.py:744
 #, python-format
 msgid "Received %d updated and %d deleted items"
 msgstr "Reçu %d mises à jour et %d suppressions"
 
-#: src/export_vn/download_vn.py:752
+#: src/export_vn/download_vn.py:750
 msgid "No date found for last download, increment not performed"
 msgstr "Pas de date de dernier téléchargement, incrémentale abandonnée"
 
-#: src/export_vn/download_vn.py:758
-msgid "Creating or updating {} observations"
-msgstr "Création ou mise à jour de {} observations"
+#: src/export_vn/download_vn.py:755 src/export_vn/download_vn.py:790
+#, python-format
+msgid "Creating or updating %d observations"
+msgstr "Création ou mise à jour de %d observations"
 
-#: src/export_vn/download_vn.py:772
+#: src/export_vn/download_vn.py:768
 #, python-format
 msgid "Updating slice %s"
 msgstr "Mise à jour de la tranche %s"
 
-#: src/export_vn/download_vn.py:860
+#: src/export_vn/download_vn.py:857
 #, python-format
 msgid "Getting places from id_canton %s, id_commune %s, using API list"
 msgstr "Récupération de places du id_canton %s, id_commune %s, par API list"
 
-#: src/export_vn/download_vn.py:869
+#: src/export_vn/download_vn.py:866
 msgid "Getting places, using API list"
 msgstr "Récupération de places, par API list"
 
-#: src/export_vn/download_vn.py:895
+#: src/export_vn/download_vn.py:892
 #, python-format
 msgid "Storing species from taxo_group %s"
 msgstr "Stockage des espèces du taxo_group %s"
