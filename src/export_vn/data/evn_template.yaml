@@ -98,6 +98,7 @@ controler:
 filter:
     # List of taxo_groups to exclude from download
     # Uncommment taxo_groups to disable download
+    # Taxo_groups with limited access must be excluded, if no access right is granted to the account
     taxo_exclude:
         #- TAXO_GROUP_BIRD
         #- TAXO_GROUP_BAT
