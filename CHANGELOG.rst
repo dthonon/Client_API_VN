@@ -1,3 +1,23 @@
+Client-API-VN v2.9.2 (2021-11-03)
+=================================
+
+Bugfixes
+--------
+
+- In download_log table, the number of observations updated is now correct. (`#157 <https://framagit.org/lpo/Client_API_VN/issues/157>`_)
+- Downloading a taxo_group with limited access will raise HTTP 401 error,
+  it the account does not have access right. In that case, 
+  it must be excluded in YAML file. (`#165 <https://framagit.org/lpo/Client_API_VN/issues/165>`_)
+
+
+Improved Documentation
+----------------------
+
+- Minimal versions of supported OS has been updated.
+  They are tested under Linux Ubuntu >20 or Debian 10. (`#163 <https://framagit.org/lpo/Client_API_VN/issues/163>`_)
+- Minimal documentation of transfer_vn is available. (`#164 <https://framagit.org/lpo/Client_API_VN/issues/164>`_)
+
+
 Client-API-VN v2.9.1 (2021-10-31)
 =================================
 

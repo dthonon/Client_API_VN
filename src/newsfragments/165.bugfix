@@ -1,3 +1,0 @@
-Downloading a taxo_group with limited access will raise HTTP 401 error,
-it the account does not have access right. In that case, 
-it must be excluded in YAML file.
