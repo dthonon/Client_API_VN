@@ -787,7 +787,8 @@ class Observations(DownloadVn):
                         self._api_instance.controler,
                         self._api_instance.transfer_errors,
                         self._api_instance.http_status,
-                        _("Creating or updating %d observations") % s_list.count(","),
+                        _("Creating or updating %d observations")
+                        % (s_list.count(",") + 1),
                         total_size(items_dict),
                         timing,
                     )
