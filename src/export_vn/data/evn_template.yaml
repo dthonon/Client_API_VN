@@ -210,7 +210,7 @@ tuning:
     # Longer lists are split by API in max_list_length chunks.
     max_list_length: 100
     # Max chunks in a request before aborting.
-    max_chunks: 10
+    max_chunks: 1000
     # Max retries of API calls before aborting.
     max_retry: 5
     # Maximum number of API requests, for debugging only.
