@@ -719,7 +719,7 @@ class Observations(DownloadVn):
                     _("Getting updates for taxo_group %s since %s"), taxo, since
                 )
                 items_dict = self._api_instance.api_diff(
-                    taxo, since, modification_type="only_modified"
+                    taxo, since, modification_type="all"
                 )
 
                 # List by processing type

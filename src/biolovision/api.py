@@ -327,7 +327,7 @@ class BiolovisionAPI:
                         # Logging error and no further processing of empty chunk
                         resp_chunk = json.loads("{}")
                         logger.error(_("Incorrect response content: %s"), resp)
-                    except Exception as e:
+                    except Exception:
                         logger.exception(_("Response text causing exception: %s"), resp.text)
                         raise
 
