@@ -1,3 +1,17 @@
+Client-API-VN v2.9.3 (2021-11-08)
+=================================
+
+Bugfixes
+--------
+
+- Observations were not deleted from PG database if deleted in Biolovision site.
+  This is fixed and deletion are now synchronized.
+  A full download is required to delete previous observations. (`#171 <https://framagit.org/lpo/Client_API_VN/issues/171>`_)
+- Parameter max_chunks has been raised, by default to 1000, 
+  to allow for much larger transfers.
+  Please consider modifying your existing YAML configuration files. (`#178 <https://framagit.org/lpo/Client_API_VN/issues/178>`_)
+
+
 Client-API-VN v2.9.2 (2021-11-03)
 =================================
 

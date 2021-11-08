@@ -1,3 +1,0 @@
-Parameter max_chunks has been raised, by default to 1000, 
-to allow for much larger transfers.
-Please consider modifying your existing YAML configuration files.
