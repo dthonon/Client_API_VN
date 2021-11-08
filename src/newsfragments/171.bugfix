@@ -1,0 +1,3 @@
+Observations were not deleted from PG database if deleted in Biolovision site.
+This is fixed and deletion are now synchronized.
+A full download is required to delete previous observations.
