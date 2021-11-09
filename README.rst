@@ -118,11 +118,8 @@ example::
 Getting Started - update_vn
 ---------------------------
 
-Initialize the sample YAML file in your HOME directory and edit with
-your local details. The YAML file is self documented::
-
-    update_vn --init .evn_your_site.yaml
-    editor $HOME/.evn_your_site.yaml
+See `Documentation <https://client-api-vn1.readthedocs.io/en/stable/>`_
+for more informations.
 
 
 Prerequisites
@@ -165,43 +162,4 @@ where::
 --count                Count observations by site and taxo_group
 --profile              Gather and print profiling times
 
-Command-line options - update_vn
---------------------------------
-
-The application runs as::
-
-    update_vn options config input
-
-where::
-
-    options  command line options described below
-    config   YAML file, located in $HOME directory, described in sample file
-    input    CSV file listing sightings to be updated
-
--h, --help             Prints help and exits
---version              Print version number
---verbose              Increase output verbosity
---quiet                Reduce output verbosity
---init                 Initialize the YAML configuration file
-
-CSV input file must contain the following columns:
-
-- site, as defined in YAML site section
-- id_universal of the sighting to modify
-- path to the attribute to modify, in JSONPath syntax, unused if operation is delete_observation
-- operation:
-  - replace: add if not present or update a sighting attribute
-  - delete_attribute: to keep the observation and remove the attribute with the given path
-  - delete_observation, to remove completely the observation
-- value: if operation is replace, new value inserted or updated
-
-Note: each operation is logged in hidden_comment, as a JSON message.
-It is not possible to replace hidden_comment, as logging is appended.
-
-For example::
-
-    site;id_universal;path;operation;value
-    Isère;2246086;$['data']['sightings'][0]['observers'][0]['atlas_code'];replace;4
-    Isère;2246086;$['data']['sightings'][0]['observers'][0]['atlas_code'];delete_attribute;
-    Isère;2246086;;delete_observation;
 

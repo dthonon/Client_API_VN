@@ -26,9 +26,6 @@ your local details. The YAML file is self documented::
 Running the application
 -----------------------
 
-Command-line options - update_vn
---------------------------------
-
 The application runs as::
 
     update_vn options config input
