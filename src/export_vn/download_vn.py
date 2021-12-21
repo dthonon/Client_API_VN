@@ -345,7 +345,13 @@ class Observations(DownloadVn):
             max_requests,
             max_chunks,
         )
-        self._t_units = ReadPostgresql(self._config).read("territorial_units")
+        self._t_units = None
+        if self._config.db_enabled:
+            # Try to read from local database
+            self._t_units = ReadPostgresql(self._config).read("territorial_units")
+        if (self._t_units is None) or (len(self._t_units) == 0):
+            # No territorial_units available, read from API
+            self._t_units = [TerritorialUnitsAPI(self._config).api_list()["data"]]
         return None
 
     def _store_list(self, id_taxo_group, by_specie, short_version="1"):
@@ -831,7 +837,12 @@ class Places(DownloadVn):
         super().__init__(
             config, PlacesAPI(config), backend, max_retry, max_requests, max_chunks
         )
-        self._l_a_units = ReadPostgresql(self._config).read("local_admin_units")
+        if self._config.db_enabled:
+            self._l_a_units = ReadPostgresql(self._config).read("local_admin_units")
+        else:
+            # WIP: No filter on local_admin_units
+            self._l_a_units = []
+
         return None
 
     def store(

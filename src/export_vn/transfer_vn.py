@@ -18,10 +18,6 @@ from pathlib import Path
 import pkg_resources
 import psutil
 import requests
-from bs4 import BeautifulSoup
-from jinja2 import Environment, PackageLoader
-from pytz import utc
-
 import yappi
 from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED, EVENT_JOB_SUBMITTED
 from apscheduler.executors.pool import ProcessPoolExecutor
@@ -29,6 +25,12 @@ from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers import SchedulerNotRunningError
 from apscheduler.schedulers.background import BackgroundScheduler
+from bs4 import BeautifulSoup
+from jinja2 import Environment, PackageLoader
+from pytz import utc
+from strictyaml import YAMLValidationError
+from tabulate import tabulate
+
 from export_vn.download_vn import (
     Entities,
     Families,
@@ -46,8 +48,6 @@ from export_vn.evnconf import EvnConf
 from export_vn.store_all import StoreAll
 from export_vn.store_file import StoreFile
 from export_vn.store_postgresql import PostgresqlUtils, StorePostgresql
-from strictyaml import YAMLValidationError
-from tabulate import tabulate
 
 from . import _, __version__
 
