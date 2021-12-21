@@ -268,7 +268,6 @@ class PostgresqlUtils:
             Column("id", Integer, nullable=False, index=True),
             Column("site", String, nullable=False),
             Column("item", JSONB, nullable=False),
-            Column("id_form_universal", String, index=True)
             PrimaryKeyConstraint("id", "site", name="forms_json_pk"),
         )
         return None
