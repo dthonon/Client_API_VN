@@ -305,7 +305,7 @@ class PostgresqlUtils:
             Column("site", String, nullable=False),
             Column("item", JSONB, nullable=False),
             Column("update_ts", Integer, nullable=False),
-            Column("id_form_universal", String),
+            Column("id_form_universal", String, index=True),
             PrimaryKeyConstraint("id", "site", name="observations_json_pk"),
         )
         return None
