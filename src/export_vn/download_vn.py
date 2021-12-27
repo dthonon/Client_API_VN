@@ -837,11 +837,13 @@ class Places(DownloadVn):
         super().__init__(
             config, PlacesAPI(config), backend, max_retry, max_requests, max_chunks
         )
+        self._l_a_units = None
         if self._config.db_enabled:
+            # Try to read from local database
             self._l_a_units = ReadPostgresql(self._config).read("local_admin_units")
-        else:
-            # WIP: No filter on local_admin_units
-            self._l_a_units = []
+        if (self._l_a_units is None) or (len(self._l_a_units) == 0):
+            # No local_admin_units available, read from API
+            self._l_a_units = [LocalAdminUnitsAPI(self._config).api_list()["data"]]
 
         return None
 
