@@ -379,6 +379,43 @@ def col_table_create(cfg, sql_quiet, client_min_message):
 
     return None
 
+def migrate(cfg, sql_quiet, client_min_message):
+    """Create the column based tables, by running psql script."""
+    logger.debug(_("Migrating database to current version"))
+    env = Environment(
+        loader=PackageLoader("export_vn", "sql"),
+        keep_trailing_newline=True,
+    )
+    # template = env.get_template("create-vn-tables.sql")
+    # cmd = template.render(cfg=db_config(cfg))
+    # tmp_sql = Path.home() / "tmp/create-vn-tables.sql"
+    # with tmp_sql.open(mode="w") as myfile:
+    #     myfile.write(cmd)
+    # try:
+    #     subprocess.run(
+    #         ' PGPASSWORD="' + cfg.db_pw + '" '
+    #         'env PGOPTIONS="-c client-min-messages='
+    #         + client_min_message
+    #         + '" psql '
+    #         + sql_quiet
+    #         + " --host="
+    #         + cfg.db_host
+    #         + " --port="
+    #         + cfg.db_port
+    #         + " --dbname="
+    #         + cfg.db_name
+    #         + " --user="
+    #         + cfg.db_user
+    #         + " --file="
+    #         + str(tmp_sql),
+    #         check=True,
+    #         shell=True,
+    #     )
+    # except subprocess.CalledProcessError as err:  # pragma: no cover
+    #     logger.error(err)
+
+    return None
+
 
 def full_download_1(ctrl, cfg_crtl_list, cfg):
     """Downloads from a single controler."""
@@ -770,7 +807,8 @@ def main(args):
         manage_pg.create_database()
 
     if args.db_migrate:
-        logger.warning(_("Not implemented"))
+        logger.info(_("Migrating database to current version"))
+        migrate(cfg, sql_quiet, client_min_message)
 
     if args.json_tables_create:
         logger.info(_("Create, if not exists, json tables"))
