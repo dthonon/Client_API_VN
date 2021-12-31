@@ -21,9 +21,11 @@ def upgrade():
         index_name="ix_import_observations_json_id_form_universal",
         table_name="observations_json",
         columns=["id_form_universal"],
-        schema="import",
     )
 
 
 def downgrade():
-    pass
+    op.drop_index(
+        index_name="ix_import_observations_json_id_form_universal",
+        table_name="observations_json",
+    )
