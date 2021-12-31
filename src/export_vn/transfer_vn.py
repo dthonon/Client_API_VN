@@ -392,6 +392,7 @@ def migrate(cfg, sql_quiet, client_min_message):
     # with tmp_sql.open(mode="w") as myfile:
     #     myfile.write(cmd)
     # try:
+    # alembic -x db_schema_import=import --config src/alembic.ini upgrade head
     #     subprocess.run(
     #         ' PGPASSWORD="' + cfg.db_pw + '" '
     #         'env PGOPTIONS="-c client-min-messages='
