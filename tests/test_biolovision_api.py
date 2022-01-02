@@ -410,16 +410,19 @@ class TestPlaces:
             assert len(places_list["data"]) >= 23566
             assert places_list["data"][0]["name"] == "Accons - sans lieu-dit défini"
 
-    def test_places_list_diff(self):
+    def test_places_diff(self):
         """Get list of all places."""
-        places_list = PLACES_API.api_list(
-            optional_headers={
-                "If-Modified-Since": datetime(2019, 2, 1).strftime(
-                    "%a, %d %b %Y %H:%M:%S GMT"
-                )
-            }
-        )
-        logging.debug("Received %d places", len(places_list["data"]))
+        # places_list = PLACES_API.api_list(
+        #     optional_headers={
+        #         "If-Modified-Since": datetime(2019, 2, 1).strftime(
+        #             "%a, %d %b %Y %H:%M:%S GMT"
+        #         )
+        #     }
+        # )
+        since = (datetime.now() - timedelta(days=1)).strftime("%H:%M:%S %d.%m.%Y")
+        logging.debug("Getting updates since {}".format(since))
+        places_list = PLACES_API.api_diff(since)
+        logging.debug("Received %d places", len(places_list))
         assert PLACES_API.transfer_errors == 0
 
     def test_places_list_1(self):

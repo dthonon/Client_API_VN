@@ -834,11 +834,42 @@ class PlacesAPI(BiolovisionAPI):
 
     - api_list               - Return a list of places from the controler
 
+    - api_diff               - Search for change in places
+
     """
 
     def __init__(self, config, max_retry=None, max_requests=None, max_chunks=None):
         super().__init__(config, "places", max_retry, max_requests, max_chunks)
 
+    def api_diff(self, delta_time, modification_type="all"):
+        """Query for a list of updates or deletions since a given date.
+
+        Calls /places/diff to get list of created/updated or deleted
+        places since a given date (max 10 weeks backward).
+
+        Parameters
+        ----------
+        delta_time : str
+            Start of time interval to query.
+        modification_type : str
+            Type of diff queried : can be only_modified, only_deleted or
+            all (default).
+
+        Returns
+        -------
+        json : dict or None
+            dict decoded from json if status OK, else None
+        """
+        # Mandatory parameters.
+        params = {
+            "user_email": self._config.user_email,
+            "user_pw": self._config.user_pw,
+        }
+        # Specific parameters.
+        params["modification_type"] = modification_type
+        params["date"] = delta_time
+        # GET from API
+        return super()._url_get(params, "places/diff/")
 
 class SpeciesAPI(BiolovisionAPI):
     """Implement api calls to species controler.
