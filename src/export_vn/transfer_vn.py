@@ -386,34 +386,15 @@ def migrate(cfg, sql_quiet, client_min_message):
         loader=PackageLoader("export_vn", "sql"),
         keep_trailing_newline=True,
     )
-    # template = env.get_template("create-vn-tables.sql")
-    # cmd = template.render(cfg=db_config(cfg))
-    # tmp_sql = Path.home() / "tmp/create-vn-tables.sql"
-    # with tmp_sql.open(mode="w") as myfile:
-    #     myfile.write(cmd)
-    # try:
-    # alembic -x db_schema_import=import --config src/alembic.ini upgrade head
-    #     subprocess.run(
-    #         ' PGPASSWORD="' + cfg.db_pw + '" '
-    #         'env PGOPTIONS="-c client-min-messages='
-    #         + client_min_message
-    #         + '" psql '
-    #         + sql_quiet
-    #         + " --host="
-    #         + cfg.db_host
-    #         + " --port="
-    #         + cfg.db_port
-    #         + " --dbname="
-    #         + cfg.db_name
-    #         + " --user="
-    #         + cfg.db_user
-    #         + " --file="
-    #         + str(tmp_sql),
-    #         check=True,
-    #         shell=True,
-    #     )
-    # except subprocess.CalledProcessError as err:  # pragma: no cover
-    #     logger.error(err)
+    try:
+        subprocess.run(
+            "alembic -x db_schema_import=import -x db_url=postgresql://" 
+            + cfg.db_user + ":" + cfg.db_pw + "@" + cfg.db_host + "/" + cfg.db_name + "--config src/alembic.ini upgrade head",
+            check=True,
+            shell=True,
+        )
+    except subprocess.CalledProcessError as err:  # pragma: no cover
+        logger.error(err)
 
     return None
 

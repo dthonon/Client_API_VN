@@ -1,6 +1,6 @@
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
+from sqlalchemy import create_engine
 from sqlalchemy import pool
 
 from alembic import context
@@ -25,6 +25,12 @@ target_metadata = None
 # ... etc.
 
 
+def get_url():
+    url = context.get_x_argument(as_dictionary=True).get("db_url")
+    assert url, "Database URL must be specified on command line with -x url=<DB_URL>"
+    return url
+
+
 def run_migrations_offline():
     """Run migrations in 'offline' mode.
 
@@ -37,7 +43,7 @@ def run_migrations_offline():
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
+    url = get_url()
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -56,13 +62,11 @@ def run_migrations_online():
     and associate a connection with the context.
 
     """
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section),
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
-    )
+    connectable = create_engine(get_url(), poolclass=pool.NullPool)
 
-    db_schema_import = context.get_x_argument(as_dictionary=True).get("db_schema_import")
+    db_schema_import = context.get_x_argument(as_dictionary=True).get(
+        "db_schema_import"
+    )
     with connectable.connect() as connection:
         # Set search path on the connection, which ensures that
         # PostgreSQL will emit all CREATE / ALTER / DROP statements
@@ -73,9 +77,7 @@ def run_migrations_online():
         # the dialect reflects tables in terms of the current tenant name
         connection.dialect.default_schema_name = db_schema_import
 
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()
