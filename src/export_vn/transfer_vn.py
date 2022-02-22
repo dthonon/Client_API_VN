@@ -379,17 +379,25 @@ def col_table_create(cfg, sql_quiet, client_min_message):
 
     return None
 
+
 def migrate(cfg, sql_quiet, client_min_message):
     """Create the column based tables, by running psql script."""
     logger.debug(_("Migrating database to current version"))
-    env = Environment(
+    Environment(
         loader=PackageLoader("export_vn", "sql"),
         keep_trailing_newline=True,
     )
     try:
         subprocess.run(
-            "alembic -x db_schema_import=import -x db_url=postgresql://" 
-            + cfg.db_user + ":" + cfg.db_pw + "@" + cfg.db_host + "/" + cfg.db_name + "--config src/alembic.ini upgrade head",
+            "alembic -x db_schema_import=import -x db_url=postgresql://"
+            + cfg.db_user
+            + ":"
+            + cfg.db_pw
+            + "@"
+            + cfg.db_host
+            + "/"
+            + cfg.db_name
+            + "--config src/alembic.ini upgrade head",
             check=True,
             shell=True,
         )
@@ -528,9 +536,16 @@ def increment_download_1(ctrl, cfg_crtl_list, cfg):
                     _("%s => Excluded taxo_groups: %s"), cfg.site, cfg.taxo_exclude
                 )
                 downloader.update(taxo_groups_ex=cfg.taxo_exclude)
-            elif (downloader.name == "local_admin_units") or (
-                downloader.name == "places"
-            ):
+            elif downloader.name == "places":
+                logger.info(
+                    _("%s => Included territorial_unit_ids: %s"),
+                    cfg.site,
+                    cfg.territorial_unit_ids,
+                )
+                downloader.update(
+                    territorial_unit_ids=cfg.territorial_unit_ids,
+                )
+            elif downloader.name == "local_admin_units":
                 logger.info(
                     _("%s => Included territorial_unit_ids: %s"),
                     cfg.site,

@@ -828,6 +828,7 @@ class Places(DownloadVn):
 
     Methods
     - store               - Download and store to json
+    - update              - Download (by date interval) and store to json
 
     """
 
@@ -878,6 +879,29 @@ class Places(DownloadVn):
         else:
             logger.debug(_("Getting places, using API list"))
             super().store()
+
+    def update(self, territorial_unit_ids=None, since=None):
+        """Download increment from VN by API and store json to file.
+
+        Gets previous update date from database and updates since then.
+        Calls  biolovision_api, finds if update or delete.
+        If update, get full place and store to db.
+        If delete, delete from db.
+
+        Parameters
+        ----------
+        territorial_unit_ids : str or None
+            If not None, territorial_unit to be downloaded.
+        since : str or None
+            If None, updates since last download
+            Or if provided, updates since that given date.
+
+        """
+        # GET from API
+        logger.debug(
+            _("Getting updated places from controler %s"),
+            self._api_instance.controler,
+        )
 
 
 class Species(DownloadVn):

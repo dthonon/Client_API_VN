@@ -1,12 +1,11 @@
 """Add index on observations_json.id_form_universal
 
 Revision ID: 1929ad3f463c
-Revises: 
+Revises: None
 Create Date: 2021-12-29 23:29:06.208386
 
 """
 from alembic import op
-import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.

@@ -315,7 +315,7 @@ class BiolovisionAPI:
                         )
                         # TWEAK: remove extra text outside JSON response
                         if len(resp.text) > 1:
-                            rsp = re.findall(r'([\[{].*[}\]])', resp.text)
+                            rsp = re.findall(r"([\[{].*[}\]])", resp.text)
                             if len(rsp) > 0:
                                 resp_chunk = json.loads(rsp[0])
                             else:
@@ -328,7 +328,9 @@ class BiolovisionAPI:
                         resp_chunk = json.loads("{}")
                         logger.error(_("Incorrect response content: %s"), resp)
                     except Exception:
-                        logger.exception(_("Response text causing exception: %s"), resp.text)
+                        logger.exception(
+                            _("Response text causing exception: %s"), resp.text
+                        )
                         raise
 
                 # Initialize or append to response dict, depending on content
@@ -803,7 +805,9 @@ class ObservationsAPI(BiolovisionAPI):
         logger.debug(_("Delete observation %s"), id)
         # POST to API
         if data is not None:
-            res = super()._url_get(params, "observations/delete_list", "POST", body=json.dumps(data))
+            res = super()._url_get(
+                params, "observations/delete_list", "POST", body=json.dumps(data)
+            )
         else:
             logger.warn(_("No parameter passed: call ignored"))
             res = None
@@ -870,6 +874,7 @@ class PlacesAPI(BiolovisionAPI):
         params["date"] = delta_time
         # GET from API
         return super()._url_get(params, "places/diff/")
+
 
 class SpeciesAPI(BiolovisionAPI):
     """Implement api calls to species controler.
