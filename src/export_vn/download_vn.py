@@ -897,19 +897,16 @@ class Places(DownloadVn):
             Or if provided, updates since that given date.
 
         """
+        PLACE_ID = -1  # Integer index, to comply with taxo_groups, for increment log
         updated = list()
         deleted = list()
         if since is None:
-            since = self._backend.increment_get(self._config.site, "places")
+            since = self._backend.increment_get(self._config.site, PLACE_ID)
         if since is not None:
             # Valid since date provided or found in database
-            self._backend.increment_log(self._config.site, "places", datetime.now())
-            logger.info(
-                _("Getting updates for places since %s"), since
-            )
-            items_dict = self._api_instance.api_diff(
-                since, modification_type="all"
-            )
+            self._backend.increment_log(self._config.site, PLACE_ID, datetime.now())
+            logger.info(_("Getting updates for places since %s"), since)
+            items_dict = self._api_instance.api_diff(since, modification_type="all")
 
             # List by processing type
             for item in items_dict:
@@ -935,9 +932,7 @@ class Places(DownloadVn):
                 len(deleted),
             )
         else:
-            logger.error(
-                _("No date found for last download, increment not performed")
-            )
+            logger.error(_("No date found for last download, increment not performed"))
 
         # Process updates
         if len(updated) > 0:
@@ -985,6 +980,7 @@ class Places(DownloadVn):
         # # Process deletes
         # if len(deleted) > 0:
         #     self._backend.delete_obs(deleted)
+
 
 class Species(DownloadVn):
     """Implement store from species controler.
