@@ -828,6 +828,7 @@ class Places(DownloadVn):
 
     Methods
     - store               - Download and store to json
+    - update              - Retrieve list of updates, then and update or delete places
 
     """
 
@@ -879,6 +880,112 @@ class Places(DownloadVn):
             logger.debug(_("Getting places, using API list"))
             super().store()
 
+    def update(
+        self,
+        since=None
+    ):
+        """Get list of updates, then update or delete places.
+
+        Call /places/diff API to retrieve lists of updated or deleted places.
+        Then process list:
+        - for updates, get place and update in backend
+        - for deletes, delete from backend
+
+        Parameters
+        ----------
+        since : str or None
+            If None, updates since last download
+            Or if provided, updates since that given date.
+
+        """
+        updated = list()
+        deleted = list()
+        if since is None:
+            since = self._backend.increment_get(self._config.site, "places")
+        if since is not None:
+            # Valid since date provided or found in database
+            self._backend.increment_log(self._config.site, "places", datetime.now())
+            logger.info(
+                _("Getting updates for places since %s"), since
+            )
+            items_dict = self._api_instance.api_diff(
+                since, modification_type="all"
+            )
+
+            # List by processing type
+            for item in items_dict:
+                logger.debug(
+                    _("Place %s was %s"),
+                    item["id_sighting"],
+                    item["modification_type"],
+                )
+                if item["modification_type"] == "updated":
+                    updated.append(item["id_sighting"])
+                elif item["modification_type"] == "deleted":
+                    deleted.append(item["id_sighting"])
+                else:
+                    logger.error(
+                        _("Observation %s has unknown processing %s"),
+                        item["id_universal"],
+                        item["modification_type"],
+                    )
+                    raise NotImplementedException
+            logger.info(
+                _("Received %d updated and %d deleted items"),
+                len(updated),
+                len(deleted),
+            )
+        else:
+            logger.error(
+                _("No date found for last download, increment not performed")
+            )
+
+        # Process updates
+        if len(updated) > 0:
+            logger.debug(_("Creating or updating %d places"), len(updated))
+            # # Update backend store, in chunks
+            # for i in range(
+            #     (len(updated) + self._config.tuning_max_list_length - 1)
+            #     // self._config.tuning_max_list_length
+            # ):
+            #     s_list = ",".join(
+            #         updated[
+            #             i
+            #             * self._config.tuning_max_list_length : (i + 1)
+            #             * self._config.tuning_max_list_length
+            #         ]
+            #     )
+            #     logger.debug(_("Updating slice %s"), s_list)
+            #     timing = perf_counter_ns()
+            #     items_dict = self._api_instance.api_list(
+            #         taxo,
+            #         id_sightings_list=s_list,
+            #         short_version=short_version,
+            #     )
+            #     timing = (perf_counter_ns() - timing) / 1000
+
+            #     # Call backend to store results
+            #     self._backend.store(
+            #         self._api_instance.controler,
+            #         str(id_taxo_group) + "_upd_" + str(i),
+            #         items_dict,
+            #     )
+
+            #     # Call backend to store log
+            #     self._backend.log(
+            #         self._config.site,
+            #         self._api_instance.controler,
+            #         self._api_instance.transfer_errors,
+            #         self._api_instance.http_status,
+            #         _("Creating or updating %d observations")
+            #         % (s_list.count(",") + 1),
+            #         total_size(items_dict),
+            #         timing,
+            #     )
+
+        # # Process deletes
+        # if len(deleted) > 0:
+        #     self._backend.delete_obs(deleted)
 
 class Species(DownloadVn):
     """Implement store from species controler.
