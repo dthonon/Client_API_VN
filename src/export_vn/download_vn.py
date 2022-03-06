@@ -838,6 +838,7 @@ class Places(DownloadVn):
         super().__init__(
             config, PlacesAPI(config), backend, max_retry, max_requests, max_chunks
         )
+        self._place_id = -1  # Integer index, to comply with taxo_groups, for increment log
         self._l_a_units = None
         if self._config.db_enabled:
             # Try to read from local database
@@ -861,6 +862,7 @@ class Places(DownloadVn):
         territorial_unit_ids : list
             List of territorial_units to include in storage.
         """
+        self._backend.increment_log(self._config.site, self._place_id, datetime.now())
         if territorial_unit_ids is not None and len(territorial_unit_ids) > 0:
             # Get local_admin_units
             for id_canton in territorial_unit_ids:
@@ -897,14 +899,13 @@ class Places(DownloadVn):
             Or if provided, updates since that given date.
 
         """
-        PLACE_ID = -1  # Integer index, to comply with taxo_groups, for increment log
         updated = list()
         deleted = list()
         if since is None:
-            since = self._backend.increment_get(self._config.site, PLACE_ID)
+            since = self._backend.increment_get(self._config.site, self._place_id)
         if since is not None:
             # Valid since date provided or found in database
-            self._backend.increment_log(self._config.site, PLACE_ID, datetime.now())
+            self._backend.increment_log(self._config.site, self._place_id, datetime.now())
             logger.info(_("Getting updates for places since %s"), since)
             items_dict = self._api_instance.api_diff(since, modification_type="all")
 
@@ -912,13 +913,13 @@ class Places(DownloadVn):
             for item in items_dict:
                 logger.debug(
                     _("Place %s was %s"),
-                    item["id_sighting"],
+                    item["id_place"],
                     item["modification_type"],
                 )
                 if item["modification_type"] == "updated":
-                    updated.append(item["id_sighting"])
+                    updated.append(item["id_place"])
                 elif item["modification_type"] == "deleted":
-                    deleted.append(item["id_sighting"])
+                    deleted.append(item["id_place"])
                 else:
                     logger.error(
                         _("Observation %s has unknown processing %s"),
