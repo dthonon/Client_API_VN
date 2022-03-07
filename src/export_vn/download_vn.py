@@ -838,7 +838,9 @@ class Places(DownloadVn):
         super().__init__(
             config, PlacesAPI(config), backend, max_retry, max_requests, max_chunks
         )
-        self._place_id = -1  # Integer index, to comply with taxo_groups, for increment log
+        self._place_id = (
+            -1
+        )  # Integer index, to comply with taxo_groups, for increment log
         self._l_a_units = None
         if self._config.db_enabled:
             # Try to read from local database
@@ -905,7 +907,9 @@ class Places(DownloadVn):
             since = self._backend.increment_get(self._config.site, self._place_id)
         if since is not None:
             # Valid since date provided or found in database
-            self._backend.increment_log(self._config.site, self._place_id, datetime.now())
+            self._backend.increment_log(
+                self._config.site, self._place_id, datetime.now()
+            )
             logger.info(_("Getting updates for places since %s"), since)
             items_dict = self._api_instance.api_diff(since, modification_type="all")
 
@@ -978,9 +982,9 @@ class Places(DownloadVn):
             #         timing,
             #     )
 
-        # # Process deletes
-        # if len(deleted) > 0:
-        #     self._backend.delete_obs(deleted)
+        # Process deletes
+        if len(deleted) > 0:
+            self._backend.delete_place(deleted)
 
 
 class Species(DownloadVn):

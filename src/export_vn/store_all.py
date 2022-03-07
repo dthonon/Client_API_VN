@@ -73,12 +73,12 @@ class StoreAll:
         return nb_item
 
     def delete_obs(self, obs_list):
-        """Delete observations stored in database.
+        """Delete observations stored in files: NOT IMPLEMENTED.
 
         Parameters
         ----------
         obs_list : list
-            Data returned from API call.
+            List of observations id to be deleted.
 
         Returns
         -------
@@ -91,6 +91,27 @@ class StoreAll:
             nb_delete = self._file_backend.delete_obs(obs_list)
         if self._config.db_enabled:
             nb_delete = self._db_backend.delete_obs(obs_list)
+        return nb_delete
+
+    def delete_place(self, place_list):
+        """Delete places stored in files: NOT IMPLEMENTED.
+
+        Parameters
+        ----------
+        place_list : list
+            List of places id to be deleted.
+
+        Returns
+        -------
+        int
+            Count of items deleted.
+        """
+        # Call backends if needed
+        nb_delete = 0
+        if self._config.file_enabled:
+            nb_delete = self._file_backend.delete_place(place_list)
+        if self._config.db_enabled:
+            nb_delete = self._db_backend.delete_place(place_list)
         return nb_delete
 
     def log(

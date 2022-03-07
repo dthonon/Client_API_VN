@@ -42,7 +42,7 @@ logger = logging.getLogger("transfer_vn.store_postgresql")
 
 
 class StorePostgresqlException(Exception):
-    """An exception occurred while handling download or store. """
+    """An exception occurred while handling download or store."""
 
 
 class ObservationItem:
@@ -1186,7 +1186,7 @@ class StorePostgresql(Postgresql):
         Parameters
         ----------
         obs_list : list
-            Data returned from API call.
+            List of observations id to be deleted.
 
         Returns
         -------
@@ -1206,6 +1206,40 @@ class StorePostgresql(Postgresql):
                         and_(
                             self._table_defs["observations"]["metadata"].c.id == obs,
                             self._table_defs["observations"]["metadata"].c.site
+                            == self._config.site,
+                        )
+                    )
+                )
+                nb_delete += nd.rowcount
+
+        return nb_delete
+
+    def delete_place(self, place_list):
+        """Delete places stored in database.
+
+        Parameters
+        ----------
+        place_list : list
+            List of place id to be deleted.
+
+        Returns
+        -------
+        int
+            Count of items deleted.
+        """
+        nb_delete = 0
+        # Store to database, if enabled
+        if self._config.db_enabled:
+            logger.info(_("Deleting %d places from database"), len(place_list))
+            nb_delete = 0
+            for obs in place_list:
+                nd = self._conn.execute(
+                    self._table_defs["places"]["metadata"]
+                    .delete()
+                    .where(
+                        and_(
+                            self._table_defs["places"]["metadata"].c.id == obs,
+                            self._table_defs["places"]["metadata"].c.site
                             == self._config.site,
                         )
                     )
