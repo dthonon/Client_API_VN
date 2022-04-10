@@ -375,6 +375,7 @@ class TestPlaces:
                         "name": "Rochachon",
                         "place_type": "place",
                         "visible": "1",
+                        "wkt": "",
                     }
                 ]
             }

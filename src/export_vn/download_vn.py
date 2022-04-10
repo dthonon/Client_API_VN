@@ -151,25 +151,34 @@ class DownloadVn:
         i = 0
         if opt_params_iter is None:
             opt_params_iter = iter([None])
-        for opt_params in opt_params_iter:
-            i += 1
-            log_msg = _("Iteration {}, opt_params = {}").format(i, opt_params)
-            logger.debug(log_msg)
-            timing = perf_counter_ns()
-            items_dict = self._api_instance.api_list(opt_params=opt_params)
-            timing = (perf_counter_ns() - timing) / 1000
-            # Call backend to store generic log
+        try:
+            for opt_params in opt_params_iter:
+                i += 1
+                log_msg = _("Iteration {}, opt_params = {}").format(i, opt_params)
+                logger.debug(log_msg)
+                timing = perf_counter_ns()
+                items_dict = self._api_instance.api_list(opt_params=opt_params)
+                timing = (perf_counter_ns() - timing) / 1000
+                # Call backend to store generic log
+                self._backend.log(
+                    self._config.site,
+                    self._api_instance.controler,
+                    self._api_instance.transfer_errors,
+                    self._api_instance.http_status,
+                    log_msg,
+                    total_size(items_dict),
+                    timing,
+                )
+                # Call backend to store results
+                self._backend.store(self._api_instance.controler, str(i), items_dict)
+        except self._api_instance.HTTPError:
             self._backend.log(
                 self._config.site,
                 self._api_instance.controler,
                 self._api_instance.transfer_errors,
                 self._api_instance.http_status,
-                log_msg,
-                total_size(items_dict),
-                timing,
+                _("HTTP error during download"),
             )
-            # Call backend to store results
-            self._backend.store(self._api_instance.controler, str(i), items_dict)
 
         return None
 
@@ -243,37 +252,46 @@ class Fields(DownloadVn):
         i = 0
         if opt_params_iter is None:
             opt_params_iter = iter([None])
-        for opt_params in opt_params_iter:
-            i += 1
-            log_msg = _("Iteration {}, opt_params = {}").format(i, opt_params)
-            logger.debug(log_msg)
-            timing = perf_counter_ns()
-            items_dict = self._api_instance.api_list(opt_params=opt_params)
-            timing = (perf_counter_ns() - timing) / 1000
-            # Call backend to store generic log
+        try:
+            for opt_params in opt_params_iter:
+                i += 1
+                log_msg = _("Iteration {}, opt_params = {}").format(i, opt_params)
+                logger.debug(log_msg)
+                timing = perf_counter_ns()
+                items_dict = self._api_instance.api_list(opt_params=opt_params)
+                timing = (perf_counter_ns() - timing) / 1000
+                # Call backend to store generic log
+                self._backend.log(
+                    self._config.site,
+                    self._api_instance.controler,
+                    self._api_instance.transfer_errors,
+                    self._api_instance.http_status,
+                    log_msg,
+                    total_size(items_dict),
+                    timing,
+                )
+                # Call backend to store groups of fields
+                self._backend.store("field_groups", str(i), items_dict)
+
+                # Loop on field groups to get details
+                for field in items_dict["data"]:
+                    field_id = field["id"]
+                    field_details = self._api_instance.api_get(field_id)
+                    for detail in field_details["data"]:
+                        detail["group"] = field_id
+                    logger.debug(
+                        _("Details for field group %s = %s"), field_id, field_details
+                    )
+                    # Call backend to store groups of fields
+                    self._backend.store("field_details", str(i), field_details)
+        except self._api_instance.HTTPError:
             self._backend.log(
                 self._config.site,
                 self._api_instance.controler,
                 self._api_instance.transfer_errors,
                 self._api_instance.http_status,
-                log_msg,
-                total_size(items_dict),
-                timing,
+                _("HTTP error during download"),
             )
-            # Call backend to store groups of fields
-            self._backend.store("field_groups", str(i), items_dict)
-
-            # Loop on field groups to get details
-            for field in items_dict["data"]:
-                field_id = field["id"]
-                field_details = self._api_instance.api_get(field_id)
-                for detail in field_details["data"]:
-                    detail["group"] = field_id
-                logger.debug(
-                    _("Details for field group %s = %s"), field_id, field_details
-                )
-                # Call backend to store groups of fields
-                self._backend.store("field_details", str(i), field_details)
 
         return None
 
@@ -381,76 +399,89 @@ class Observations(DownloadVn):
             taxo_groups = TaxoGroupsAPI(self._config).api_list()["data"]
         else:
             taxo_groups = [{"id": id_taxo_group, "access_mode": "full"}]
-        for taxo in taxo_groups:
-            if taxo["access_mode"] != "none":
-                id_taxo_group = taxo["id"]
-                self._backend.increment_log(
-                    self._config.site, id_taxo_group, datetime.now()
-                )
-                logger.info(
-                    _("Getting observations from taxo_group %s, in _store_list"),
-                    id_taxo_group,
-                )
-                if by_specie:
-                    species = SpeciesAPI(self._config).api_list(
-                        {"id_taxo_group": str(id_taxo_group)}
-                    )["data"]
-                    for specie in species:
-                        if specie["is_used"] == "1":
-                            logger.info(
-                                _("Getting observations from taxo_group %s, specie %s"),
-                                id_taxo_group,
-                                specie["id"],
-                            )
-                            timing = perf_counter_ns()
-                            items_dict = self._api_instance.api_list(
-                                id_taxo_group,
-                                id_species=specie["id"],
-                                short_version=short_version,
-                            )
-                            timing = (perf_counter_ns() - timing) / 1000
-                            # Call backend to store list by taxo_group, species log
-                            self._backend.log(
-                                self._config.site,
-                                self._api_instance.controler,
-                                self._api_instance.transfer_errors,
-                                self._api_instance.http_status,
-                                (
-                                    _("observations from taxo_group %s, species %s"),
+        try:
+            for taxo in taxo_groups:
+                if taxo["access_mode"] != "none":
+                    id_taxo_group = taxo["id"]
+                    self._backend.increment_log(
+                        self._config.site, id_taxo_group, datetime.now()
+                    )
+                    logger.info(
+                        _("Getting observations from taxo_group %s, in _store_list"),
+                        id_taxo_group,
+                    )
+                    if by_specie:
+                        species = SpeciesAPI(self._config).api_list(
+                            {"id_taxo_group": str(id_taxo_group)}
+                        )["data"]
+                        for specie in species:
+                            if specie["is_used"] == "1":
+                                logger.info(
+                                    _(
+                                        "Getting observations from taxo_group %s, specie %s"
+                                    ),
                                     id_taxo_group,
                                     specie["id"],
-                                ),
-                                total_size(items_dict),
-                                timing,
-                            )
-                            # Call backend to store results
-                            self._backend.store(
-                                self._api_instance.controler,
-                                str(id_taxo_group) + "_" + specie["id"],
-                                items_dict,
-                            )
-                else:
-                    timing = perf_counter_ns()
-                    items_dict = self._api_instance.api_list(
-                        id_taxo_group, short_version=short_version
-                    )
-                    timing = (perf_counter_ns() - timing) / 1000
-                    # Call backend to store list by taxo_group log
-                    self._backend.log(
-                        self._config.site,
-                        self._api_instance.controler,
-                        self._api_instance.transfer_errors,
-                        self._api_instance.http_status,
-                        (_("observations from taxo_group %s"), id_taxo_group),
-                        total_size(items_dict),
-                        timing,
-                    )
-                    # Call backend to store results
-                    self._backend.store(
-                        self._api_instance.controler,
-                        str(id_taxo_group) + "_1",
-                        items_dict,
-                    )
+                                )
+                                timing = perf_counter_ns()
+                                items_dict = self._api_instance.api_list(
+                                    id_taxo_group,
+                                    id_species=specie["id"],
+                                    short_version=short_version,
+                                )
+                                timing = (perf_counter_ns() - timing) / 1000
+                                # Call backend to store list by taxo_group, species log
+                                self._backend.log(
+                                    self._config.site,
+                                    self._api_instance.controler,
+                                    self._api_instance.transfer_errors,
+                                    self._api_instance.http_status,
+                                    (
+                                        _(
+                                            "observations from taxo_group %s, species %s"
+                                        ),
+                                        id_taxo_group,
+                                        specie["id"],
+                                    ),
+                                    total_size(items_dict),
+                                    timing,
+                                )
+                                # Call backend to store results
+                                self._backend.store(
+                                    self._api_instance.controler,
+                                    str(id_taxo_group) + "_" + specie["id"],
+                                    items_dict,
+                                )
+                    else:
+                        timing = perf_counter_ns()
+                        items_dict = self._api_instance.api_list(
+                            id_taxo_group, short_version=short_version
+                        )
+                        timing = (perf_counter_ns() - timing) / 1000
+                        # Call backend to store list by taxo_group log
+                        self._backend.log(
+                            self._config.site,
+                            self._api_instance.controler,
+                            self._api_instance.transfer_errors,
+                            self._api_instance.http_status,
+                            (_("observations from taxo_group %s"), id_taxo_group),
+                            total_size(items_dict),
+                            timing,
+                        )
+                        # Call backend to store results
+                        self._backend.store(
+                            self._api_instance.controler,
+                            str(id_taxo_group) + "_1",
+                            items_dict,
+                        )
+        except self._api_instance.HTTPError:
+            self._backend.log(
+                self._config.site,
+                self._api_instance.controler,
+                self._api_instance.transfer_errors,
+                self._api_instance.http_status,
+                _("HTTP error during download"),
+            )
 
         return None
 
@@ -483,117 +514,132 @@ class Observations(DownloadVn):
             taxo_groups = TaxoGroupsAPI(self._config).api_list()["data"]
         else:
             taxo_groups = [{"id": id_taxo_group, "access_mode": "full"}]
-        for taxo in taxo_groups:
-            if taxo["access_mode"] != "none":
-                id_taxo_group = taxo["id"]
-                logger.debug(
-                    _("Getting observations from taxo_group %s"),
-                    id_taxo_group,
-                )
+        try:
+            for taxo in taxo_groups:
+                if taxo["access_mode"] != "none":
+                    id_taxo_group = taxo["id"]
+                    logger.debug(
+                        _("Getting observations from taxo_group %s"),
+                        id_taxo_group,
+                    )
 
-                # Record end of download interval
-                if self._config.end_date is None:
-                    end_date = datetime.now()
-                else:
-                    end_date = self._config.end_date
-                since = self._backend.increment_get(self._config.site, id_taxo_group)
-                if since is None:
-                    since = end_date
-                self._backend.increment_log(self._config.site, id_taxo_group, since)
-
-                # When to start download interval
-                start_date = end_date
-                min_date = (
-                    datetime(1900, 1, 1)
-                    if self._config.start_date is None
-                    else self._config.start_date
-                )
-                seq = 1
-                pid = PID(
-                    kp=self._config.tuning_pid_kp,
-                    ki=self._config.tuning_pid_ki,
-                    kd=self._config.tuning_pid_kd,
-                    setpoint=self._config.tuning_pid_setpoint,
-                    output_limits=(
-                        self._config.tuning_pid_limit_min,
-                        self._config.tuning_pid_limit_max,
-                    ),
-                )
-                delta_days = self._config.tuning_pid_delta_days
-                while start_date > min_date:
-                    nb_obs = 0
-                    start_date = end_date - timedelta(days=delta_days)
-                    q_param = {
-                        "period_choice": "range",
-                        "date_from": start_date.strftime("%d.%m.%Y"),
-                        "date_to": end_date.strftime("%d.%m.%Y"),
-                        "species_choice": "all",
-                        "taxonomic_group": taxo["id"],
-                    }
-                    if self._config._type_date is not None:
-                        if self._config._type_date == "entry":
-                            q_param["entry_date"] = "1"
-                        else:
-                            q_param["entry_date"] = "0"
-                    if territorial_unit_ids is None or len(territorial_unit_ids) == 0:
-                        t_us = self._t_units
+                    # Record end of download interval
+                    if self._config.end_date is None:
+                        end_date = datetime.now()
                     else:
-                        t_us = [
-                            u
-                            for u in self._t_units
-                            if u[0]["short_name"] in territorial_unit_ids
-                        ]
-                    for t_u in t_us:
-                        logger.debug(
-                            _(
-                                "Getting observations from territorial_unit %s, using API search"
-                            ),
-                            t_u[0]["name"],
-                        )
-                        q_param["location_choice"] = "territorial_unit"
-                        q_param["territorial_unit_ids"] = [
-                            t_u[0]["id_country"] + t_u[0]["short_name"]
-                        ]
+                        end_date = self._config.end_date
+                    since = self._backend.increment_get(
+                        self._config.site, id_taxo_group
+                    )
+                    if since is None:
+                        since = end_date
+                    self._backend.increment_log(self._config.site, id_taxo_group, since)
 
-                        timing = perf_counter_ns()
-                        items_dict = self._api_instance.api_search(
-                            q_param, short_version=short_version
-                        )
-                        timing = (perf_counter_ns() - timing) / 1000
+                    # When to start download interval
+                    start_date = end_date
+                    min_date = (
+                        datetime(1900, 1, 1)
+                        if self._config.start_date is None
+                        else self._config.start_date
+                    )
+                    seq = 1
+                    pid = PID(
+                        kp=self._config.tuning_pid_kp,
+                        ki=self._config.tuning_pid_ki,
+                        kd=self._config.tuning_pid_kd,
+                        setpoint=self._config.tuning_pid_setpoint,
+                        output_limits=(
+                            self._config.tuning_pid_limit_min,
+                            self._config.tuning_pid_limit_max,
+                        ),
+                    )
+                    delta_days = self._config.tuning_pid_delta_days
+                    while start_date > min_date:
+                        nb_obs = 0
+                        start_date = end_date - timedelta(days=delta_days)
+                        q_param = {
+                            "period_choice": "range",
+                            "date_from": start_date.strftime("%d.%m.%Y"),
+                            "date_to": end_date.strftime("%d.%m.%Y"),
+                            "species_choice": "all",
+                            "taxonomic_group": taxo["id"],
+                        }
+                        if self._config._type_date is not None:
+                            if self._config._type_date == "entry":
+                                q_param["entry_date"] = "1"
+                            else:
+                                q_param["entry_date"] = "0"
+                        if (
+                            territorial_unit_ids is None
+                            or len(territorial_unit_ids) == 0
+                        ):
+                            t_us = self._t_units
+                        else:
+                            t_us = [
+                                u
+                                for u in self._t_units
+                                if u[0]["short_name"] in territorial_unit_ids
+                            ]
+                        for t_u in t_us:
+                            logger.debug(
+                                _(
+                                    "Getting observations from territorial_unit %s, using API search"
+                                ),
+                                t_u[0]["name"],
+                            )
+                            q_param["location_choice"] = "territorial_unit"
+                            q_param["territorial_unit_ids"] = [
+                                t_u[0]["id_country"] + t_u[0]["short_name"]
+                            ]
 
-                        # Call backend to store results
-                        nb_o = self._backend.store(
-                            self._api_instance.controler,
-                            str(id_taxo_group) + "_" + str(seq),
-                            items_dict,
-                        )
-                        # Throttle on max size downloaded during each interval
-                        nb_obs = max(nb_o, nb_obs)
-                        log_msg = _(
-                            "{} => Iter: {}, {} obs, taxo_group: {}, territorial_unit: {}, date: {}, interval: {}"
-                        ).format(
-                            self._config.site,
-                            seq,
-                            nb_o,
-                            id_taxo_group,
-                            t_u[0]["short_name"],
-                            start_date.strftime("%d/%m/%Y"),
-                            str(delta_days),
-                        )
-                        # Call backend to store log
-                        self._backend.log(
-                            self._config.site,
-                            self._api_instance.controler,
-                            self._api_instance.transfer_errors,
-                            self._api_instance.http_status,
-                            log_msg,
-                            total_size(items_dict),
-                            timing,
-                        )
-                        logger.info(log_msg)
-                    seq += 1
-                    end_date = start_date
-                    delta_days = int(pid(nb_obs))
+                            timing = perf_counter_ns()
+                            items_dict = self._api_instance.api_search(
+                                q_param, short_version=short_version
+                            )
+                            timing = (perf_counter_ns() - timing) / 1000
+
+                            # Call backend to store results
+                            nb_o = self._backend.store(
+                                self._api_instance.controler,
+                                str(id_taxo_group) + "_" + str(seq),
+                                items_dict,
+                            )
+                            # Throttle on max size downloaded during each interval
+                            nb_obs = max(nb_o, nb_obs)
+                            log_msg = _(
+                                "{} => Iter: {}, {} obs, taxo_group: {}, territorial_unit: {}, date: {}, interval: {}"
+                            ).format(
+                                self._config.site,
+                                seq,
+                                nb_o,
+                                id_taxo_group,
+                                t_u[0]["short_name"],
+                                start_date.strftime("%d/%m/%Y"),
+                                str(delta_days),
+                            )
+                            # Call backend to store log
+                            self._backend.log(
+                                self._config.site,
+                                self._api_instance.controler,
+                                self._api_instance.transfer_errors,
+                                self._api_instance.http_status,
+                                log_msg,
+                                total_size(items_dict),
+                                timing,
+                            )
+                            logger.info(log_msg)
+                        seq += 1
+                        end_date = start_date
+                        delta_days = int(pid(nb_obs))
+        except self._api_instance.HTTPError:
+            self._backend.log(
+                self._config.site,
+                self._api_instance.controler,
+                self._api_instance.transfer_errors,
+                self._api_instance.http_status,
+                _("HTTP error during download"),
+            )
+
         return None
 
     def _list_taxo_groups(self, id_taxo_group, taxo_groups_ex=None):
@@ -757,47 +803,58 @@ class Observations(DownloadVn):
                 )
 
             # Process updates
-            if len(updated) > 0:
-                logger.debug(_("Creating or updating %d observations"), len(updated))
-                # Update backend store, in chunks
-                for i in range(
-                    (len(updated) + self._config.tuning_max_list_length - 1)
-                    // self._config.tuning_max_list_length
-                ):
-                    s_list = ",".join(
-                        updated[
-                            i
-                            * self._config.tuning_max_list_length : (i + 1)
-                            * self._config.tuning_max_list_length
-                        ]
+            try:
+                if len(updated) > 0:
+                    logger.debug(
+                        _("Creating or updating %d observations"), len(updated)
                     )
-                    logger.debug(_("Updating slice %s"), s_list)
-                    timing = perf_counter_ns()
-                    items_dict = self._api_instance.api_list(
-                        taxo,
-                        id_sightings_list=s_list,
-                        short_version=short_version,
-                    )
-                    timing = (perf_counter_ns() - timing) / 1000
+                    # Update backend store, in chunks
+                    for i in range(
+                        (len(updated) + self._config.tuning_max_list_length - 1)
+                        // self._config.tuning_max_list_length
+                    ):
+                        s_list = ",".join(
+                            updated[
+                                i
+                                * self._config.tuning_max_list_length : (i + 1)
+                                * self._config.tuning_max_list_length
+                            ]
+                        )
+                        logger.debug(_("Updating slice %s"), s_list)
+                        timing = perf_counter_ns()
+                        items_dict = self._api_instance.api_list(
+                            taxo,
+                            id_sightings_list=s_list,
+                            short_version=short_version,
+                        )
+                        timing = (perf_counter_ns() - timing) / 1000
 
-                    # Call backend to store results
-                    self._backend.store(
-                        self._api_instance.controler,
-                        str(id_taxo_group) + "_upd_" + str(i),
-                        items_dict,
-                    )
+                        # Call backend to store results
+                        self._backend.store(
+                            self._api_instance.controler,
+                            str(id_taxo_group) + "_upd_" + str(i),
+                            items_dict,
+                        )
 
-                    # Call backend to store log
-                    self._backend.log(
-                        self._config.site,
-                        self._api_instance.controler,
-                        self._api_instance.transfer_errors,
-                        self._api_instance.http_status,
-                        _("Creating or updating %d observations")
-                        % (s_list.count(",") + 1),
-                        total_size(items_dict),
-                        timing,
-                    )
+                        # Call backend to store log
+                        self._backend.log(
+                            self._config.site,
+                            self._api_instance.controler,
+                            self._api_instance.transfer_errors,
+                            self._api_instance.http_status,
+                            _("Creating or updating %d observations")
+                            % (s_list.count(",") + 1),
+                            total_size(items_dict),
+                            timing,
+                        )
+            except self._api_instance.HTTPError:
+                self._backend.log(
+                    self._config.site,
+                    self._api_instance.controler,
+                    self._api_instance.transfer_errors,
+                    self._api_instance.http_status,
+                    _("HTTP error during download"),
+                )
 
             # Process deletes
             if len(deleted) > 0:
