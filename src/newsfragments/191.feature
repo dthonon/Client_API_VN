@@ -1,0 +1,1 @@
+wkt field, containing transects, is available in places table.

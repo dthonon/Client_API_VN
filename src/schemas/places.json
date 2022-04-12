@@ -65,6 +65,9 @@
                             "transect"
                         ]
                     },
+                    "wkt": {
+                        "type": "string"
+                    },
                     "visible": {
                         "$ref": "#/definitions/_zero_one"
                     }
