@@ -507,6 +507,11 @@
                         }
                     ]
                 },
+                "code": {
+                    "type": "string",
+                    "title": "CODE",
+                    "description": "Code"
+                },
                 "comment": {
                     "type": "string",
                     "title": "COMMENT",
