@@ -599,7 +599,7 @@ CREATE TABLE {{ cfg.db_schema_vn }}.observations (
     id_species          INTEGER,
     taxonomy            INTEGER,
     date                TIMESTAMP,
-    date_year           INTEGER, -- Missing time_start & time_stop
+    date_year           INTEGER,
     timing              TIMESTAMP,
     id_place            INTEGER,
     place               TEXT,
@@ -608,6 +608,7 @@ CREATE TABLE {{ cfg.db_schema_vn }}.observations (
     coord_x_local       FLOAT,
     coord_y_local       FLOAT,
     precision           TEXT,
+    source              TEXT,
     estimation_code     TEXT,
     count               INTEGER,
     atlas_code          INTEGER,
@@ -709,6 +710,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
             coord_x_local     = CAST(((NEW.item -> 'observers') -> 0) ->> 'coord_x_local' AS FLOAT),
             coord_y_local     = CAST(((NEW.item -> 'observers') -> 0) ->> 'coord_y_local' AS FLOAT),
             precision         = ((NEW.item -> 'observers') -> 0) ->> 'precision',
+            source            = ((NEW.item -> 'observers') -> 0) ->> 'source',
             estimation_code   = ((NEW.item -> 'observers') -> 0) ->> 'estimation_code',
             count             = CAST(((NEW.item -> 'observers') -> 0) ->> 'count' AS INTEGER),
             atlas_code        = CAST(((NEW.item -> 'observers') -> 0) ->> 'atlas_code' AS INTEGER),
@@ -732,7 +734,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
             -- Inserting data on src_vn.observations when raw data is inserted
             INSERT INTO {{ cfg.db_schema_vn }}.observations (site, id_sighting, pseudo_id_sighting, id_universal, uuid, id_form_universal,
                                              id_species, taxonomy, date, date_year, timing, id_place, place,
-                                             coord_lat, coord_lon, coord_x_local, coord_y_local, precision, estimation_code,
+                                             coord_lat, coord_lon, coord_x_local, coord_y_local, precision, source, estimation_code,
                                              count, atlas_code, altitude, project_code, hidden, admin_hidden, observer_uid, details,
                                              behaviours, comment, hidden_comment, confirmed_by, mortality, death_cause2, insert_date, update_date)
             VALUES (
@@ -755,6 +757,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
                 CAST(((NEW.item -> 'observers') -> 0) ->> 'coord_x_local' AS FLOAT),
                 CAST(((NEW.item -> 'observers') -> 0) ->> 'coord_y_local' AS FLOAT),
                 ((NEW.item -> 'observers') -> 0) ->> 'precision',
+                ((NEW.item -> 'observers') -> 0) ->> 'source',
                 ((NEW.item -> 'observers') -> 0) ->> 'estimation_code',
                 CAST(((NEW.item -> 'observers') -> 0) ->> 'count' AS INTEGER),
                 CAST(((NEW.item -> 'observers') -> 0) ->> 'atlas_code' AS INTEGER),
@@ -779,7 +782,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
         -- Inserting data on src_vn.observations when raw data is inserted
         INSERT INTO {{ cfg.db_schema_vn }}.observations (site, id_sighting, pseudo_id_sighting, id_universal, uuid, id_form_universal,
                                          id_species, taxonomy, date, date_year, timing, id_place, place,
-                                         coord_lat, coord_lon, coord_x_local, coord_y_local, precision, estimation_code,
+                                         coord_lat, coord_lon, coord_x_local, coord_y_local, source, precision, estimation_code,
                                          count, atlas_code, altitude, project_code, hidden, admin_hidden, observer_uid, details,
                                          behaviours, comment, hidden_comment, confirmed_by, mortality, death_cause2, insert_date, update_date)
         VALUES (
@@ -801,6 +804,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
             CAST(((NEW.item -> 'observers') -> 0) ->> 'coord_lon' AS FLOAT),
             CAST(((NEW.item -> 'observers') -> 0) ->> 'coord_x_local' AS FLOAT),
             CAST(((NEW.item -> 'observers') -> 0) ->> 'coord_y_local' AS FLOAT),
+            ((NEW.item -> 'observers') -> 0) ->> 'source',
             ((NEW.item -> 'observers') -> 0) ->> 'precision',
             ((NEW.item -> 'observers') -> 0) ->> 'estimation_code',
             CAST(((NEW.item -> 'observers') -> 0) ->> 'count' AS INTEGER),
