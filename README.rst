@@ -11,11 +11,11 @@ Client_API_VN
 .. image:: https://img.shields.io/pypi/l/Client-API-VN
     :alt: PyPI - License
 .. image:: https://codecov.io/gh/dthonon/Client_API_VN/branch/develop/graph/badge.svg
-  :target: https://codecov.io/gh/dthonon/Client_API_VN
+    :target: https://codecov.io/gh/dthonon/Client_API_VN
 
 
-Description
-===========
+Presentation
+============
 
 Python applications that use Biolovision/VisioNature (VN) API to:
 
@@ -35,7 +35,7 @@ See `Documentation <https://client-api-vn1.readthedocs.io/en/stable/>`_
 for more informations.
 
 A thin Python layer on top of Biolovision API is provided, as described in
-`API Documentation <https://client-api-vn1.readthedocs.io/en/stable/api/modules.html>`_.
+`API Manual <https://client-api-vn1.readthedocs.io/en/stable/api/modules.html>`_.
 
 Installation - Python
 ---------------------
@@ -75,14 +75,14 @@ The following steps are the common to both Python and Docker installation.
 Getting Started - transfer_vn
 -----------------------------
 
-See `Documentation <https://client-api-vn1.readthedocs.io/en/latest/apps/transfer_vn.html>`_
+See `Documentation <https://client-api-vn1.readthedocs.io/en/latest/apps/transfer_vn.html>`__
 for more informations.
 
 
 Getting Started - update_vn
 ---------------------------
 
-See `Documentation <https://client-api-vn1.readthedocs.io/en/latest/apps/update_vn.html>`_
+See `Documentation <https://client-api-vn1.readthedocs.io/en/latest/apps/update_vn.html>`__
 for more informations.
 
 
@@ -90,7 +90,7 @@ Prerequisites
 -------------
 
 For Linux and Postgresql installation, refer to
-`server installation <https://client-api-vn1.readthedocs.io/en/latest/apps/server_install.html>`_.
+`Server installation <https://client-api-vn1.readthedocs.io/en/latest/apps/server_install.html>`_.
 
 Installation requires the following python module::
 
