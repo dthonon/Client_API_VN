@@ -18,10 +18,6 @@ from pathlib import Path
 import pkg_resources
 import psutil
 import requests
-from bs4 import BeautifulSoup
-from jinja2 import Environment, PackageLoader
-from pytz import utc
-
 import yappi
 from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED, EVENT_JOB_SUBMITTED
 from apscheduler.executors.pool import ProcessPoolExecutor
@@ -29,6 +25,12 @@ from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers import SchedulerNotRunningError
 from apscheduler.schedulers.background import BackgroundScheduler
+from bs4 import BeautifulSoup
+from jinja2 import Environment, PackageLoader
+from pytz import utc
+from strictyaml import YAMLValidationError
+from tabulate import tabulate
+
 from export_vn.download_vn import (
     Entities,
     Families,
@@ -46,8 +48,6 @@ from export_vn.evnconf import EvnConf
 from export_vn.store_all import StoreAll
 from export_vn.store_file import StoreFile
 from export_vn.store_postgresql import PostgresqlUtils, StorePostgresql
-from strictyaml import YAMLValidationError
-from tabulate import tabulate
 
 from . import _, __version__
 
@@ -64,6 +64,7 @@ CTRL_DEFS = {
     "territorial_units": TerritorialUnits,
     "validations": Validations,
 }
+
 logger = logging.getLogger("transfer_vn")
 
 
@@ -288,6 +289,11 @@ def arguments(args):
         "--db_create", help=_("Create database and roles"), action="store_true"
     )
     parser.add_argument(
+        "--db_migrate",
+        help=_("Migrate database to current version"),
+        action="store_true",
+    )
+    parser.add_argument(
         "--json_tables_create",
         help=_("Create or recreate json tables"),
         action="store_true",
@@ -329,7 +335,6 @@ def arguments(args):
 
 def init(file: str):
     """Copy template YAML file to home directory."""
-    logger = logging.getLogger("transfer_vn")
     yaml_src = pkg_resources.resource_filename(__name__, "data/evn_template.yaml")
     yaml_dst = str(Path.home() / file)
     logger.info(_("Creating YAML configuration file %s, from %s"), yaml_dst, yaml_src)
@@ -339,7 +344,6 @@ def init(file: str):
 
 def col_table_create(cfg, sql_quiet, client_min_message):
     """Create the column based tables, by running psql script."""
-    logger = logging.getLogger("transfer_vn")
     logger.debug(_("Creating SQL file from template"))
     env = Environment(
         loader=PackageLoader("export_vn", "sql"),
@@ -376,9 +380,35 @@ def col_table_create(cfg, sql_quiet, client_min_message):
     return None
 
 
+def migrate(cfg, sql_quiet, client_min_message):
+    """Create the column based tables, by running psql script."""
+    logger.debug(_("Migrating database to current version"))
+    Environment(
+        loader=PackageLoader("export_vn", "sql"),
+        keep_trailing_newline=True,
+    )
+    try:
+        subprocess.run(
+            "alembic -x db_schema_import=import -x db_url=postgresql://"
+            + cfg.db_user
+            + ":"
+            + cfg.db_pw
+            + "@"
+            + cfg.db_host
+            + "/"
+            + cfg.db_name
+            + "--config src/alembic.ini upgrade head",
+            check=True,
+            shell=True,
+        )
+    except subprocess.CalledProcessError as err:  # pragma: no cover
+        logger.error(err)
+
+    return None
+
+
 def full_download_1(ctrl, cfg_crtl_list, cfg):
     """Downloads from a single controler."""
-    logger = logging.getLogger("transfer_vn")
     logger.debug(_("Enter full_download_1: %s"), ctrl.__name__)
     with StorePostgresql(cfg) as store_pg, StoreFile(cfg) as store_f:
         store_all = StoreAll(cfg, db_backend=store_pg, file_backend=store_f)
@@ -422,7 +452,6 @@ def full_download_1(ctrl, cfg_crtl_list, cfg):
 def full_download(cfg_ctrl):
     """Performs a full download of all sites and controlers,
     based on configuration file."""
-    logger = logging.getLogger("transfer_vn")
     cfg_crtl_list = cfg_ctrl.ctrl_list
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
@@ -492,7 +521,6 @@ def full_download(cfg_ctrl):
 
 def increment_download_1(ctrl, cfg_crtl_list, cfg):
     """Download incremental updates from one site."""
-    logger = logging.getLogger("transfer_vn")
     logger.debug(_("Enter increment_download_1: %s"), ctrl.__name__)
     with StorePostgresql(cfg) as store_pg, StoreFile(cfg) as store_f:
         store_all = StoreAll(cfg, db_backend=store_pg, file_backend=store_f)
@@ -508,9 +536,16 @@ def increment_download_1(ctrl, cfg_crtl_list, cfg):
                     _("%s => Excluded taxo_groups: %s"), cfg.site, cfg.taxo_exclude
                 )
                 downloader.update(taxo_groups_ex=cfg.taxo_exclude)
-            elif (downloader.name == "local_admin_units") or (
-                downloader.name == "places"
-            ):
+            elif downloader.name == "places":
+                logger.info(
+                    _("%s => Included territorial_unit_ids: %s"),
+                    cfg.site,
+                    cfg.territorial_unit_ids,
+                )
+                downloader.update(
+                    territorial_unit_ids=cfg.territorial_unit_ids,
+                )
+            elif downloader.name == "local_admin_units":
                 logger.info(
                     _("%s => Included territorial_unit_ids: %s"),
                     cfg.site,
@@ -529,7 +564,6 @@ def increment_download_1(ctrl, cfg_crtl_list, cfg):
 def increment_download(cfg_ctrl):
     """Performs an incremental download of observations from all sites
     and controlers, based on configuration file."""
-    logger = logging.getLogger("transfer_vn")
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
 
@@ -558,7 +592,6 @@ def increment_download(cfg_ctrl):
 def increment_schedule(cfg_ctrl):
     """Creates or modify the incremental download schedule,
     based on YAML controler configuration."""
-    logger = logging.getLogger("transfer_vn")
     cfg_crtl_list = cfg_ctrl.ctrl_list
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
@@ -607,7 +640,6 @@ def increment_schedule(cfg_ctrl):
 
 def status(cfg_ctrl):
     """Print download status, using logger."""
-    logger = logging.getLogger("transfer_vn")
     cfg_site_list = cfg_ctrl.site_list
     cfg_site_list = cfg_ctrl.site_list
     cfg = list(cfg_site_list.values())[0]
@@ -628,7 +660,6 @@ def status(cfg_ctrl):
 
 def count_observations(cfg_ctrl):
     """Count observations by site and taxo_group."""
-    logger = logging.getLogger("transfer_vn")
     cfg_site_list = cfg_ctrl.site_list
 
     col_counts = None
@@ -698,8 +729,6 @@ def main(args):
     # Create $HOME/tmp directory if it does not exist
     (Path.home() / "tmp").mkdir(exist_ok=True)
 
-    # Define logger format and handlers
-    logger = logging.getLogger("transfer_vn")
     # create file handler which logs even debug messages
     fh = TimedRotatingFileHandler(
         str(Path.home()) + "/tmp/transfer_vn.log",
@@ -773,6 +802,10 @@ def main(args):
     if args.db_create:
         logger.info(_("Create database and roles"))
         manage_pg.create_database()
+
+    if args.db_migrate:
+        logger.info(_("Migrating database to current version"))
+        migrate(cfg, sql_quiet, client_min_message)
 
     if args.json_tables_create:
         logger.info(_("Create, if not exists, json tables"))

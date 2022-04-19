@@ -1,3 +1,45 @@
+Client-API-VN v2.10.0 (2022-04-17)
+==================================
+
+Features
+--------
+
+- A new action is available: ``transfer_vn --migrate``.
+  This action updates the JSON schema to the latest version.
+  Running this action is requsted in the CHANGELOG, if needed. (`#184 <https://framagit.org/lpo/Client_API_VN/issues/184>`_)
+- New missing index on observations_json.id_form_universal field.
+
+  Please run `transfer_vn --migrate` to update your database to
+  revision ID: 1929ad3f463c. (`#185 <https://framagit.org/lpo/Client_API_VN/issues/185>`_)
+- wkt field, containing transects, is available in places table.
+  Please run ``transfer_vn --col-table-create`` to update the database. (`#191 <https://framagit.org/lpo/Client_API_VN/issues/191>`_)
+- Column source has been added to observations table.
+  Please run ``transfer_vn --col-table-create`` to update the database. (`#192 <https://framagit.org/lpo/Client_API_VN/issues/192>`_)
+
+
+Bugfixes
+--------
+
+- Storing to files works. (`#175 <https://framagit.org/lpo/Client_API_VN/issues/175>`_)
+- Storing to files in JSON long format works. (`#183 <https://framagit.org/lpo/Client_API_VN/issues/183>`_)
+- Transfers ending with HTTPerror are now logged in download_log table. (`#189 <https://framagit.org/lpo/Client_API_VN/issues/189>`_)
+
+
+Improved Documentation
+----------------------
+
+- Documentation is available for transfer_vn and update_vn, see 
+  `Documentation <https://client-api-vn1.readthedocs.io/en/latest/apps/transfer_vn.html>`_ and
+  `Documentation <https://client-api-vn1.readthedocs.io/en/latest/apps/update_vn.html>`_ (`#180 <https://framagit.org/lpo/Client_API_VN/issues/180>`_)
+- JSON schemas are updated to reflect latest API downloads. (`#193 <https://framagit.org/lpo/Client_API_VN/issues/193>`_)
+
+
+Misc
+----
+
+- `#188 <https://framagit.org/lpo/Client_API_VN/issues/188>`_
+
+
 Client-API-VN v2.9.3 (2021-11-08)
 =================================
 

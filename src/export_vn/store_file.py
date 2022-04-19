@@ -100,7 +100,23 @@ class StoreFile:
         Parameters
         ----------
         obs_list : list
-            Data returned from API call.
+            List of observations id to be deletec.
+
+        Returns
+        -------
+        int
+            Count of items deleted.
+        """
+        # Not implemented
+        return None
+
+    def delete_place(self, place_list):
+        """Delete observations stored in database.
+
+        Parameters
+        ----------
+        obs_list : list
+            List of places id to be deletec.
 
         Returns
         -------

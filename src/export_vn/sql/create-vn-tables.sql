@@ -599,7 +599,7 @@ CREATE TABLE {{ cfg.db_schema_vn }}.observations (
     id_species          INTEGER,
     taxonomy            INTEGER,
     date                TIMESTAMP,
-    date_year           INTEGER, -- Missing time_start & time_stop
+    date_year           INTEGER,
     timing              TIMESTAMP,
     id_place            INTEGER,
     place               TEXT,
@@ -608,6 +608,7 @@ CREATE TABLE {{ cfg.db_schema_vn }}.observations (
     coord_x_local       FLOAT,
     coord_y_local       FLOAT,
     precision           TEXT,
+    source              TEXT,
     estimation_code     TEXT,
     count               INTEGER,
     atlas_code          INTEGER,
@@ -709,6 +710,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
             coord_x_local     = CAST(((NEW.item -> 'observers') -> 0) ->> 'coord_x_local' AS FLOAT),
             coord_y_local     = CAST(((NEW.item -> 'observers') -> 0) ->> 'coord_y_local' AS FLOAT),
             precision         = ((NEW.item -> 'observers') -> 0) ->> 'precision',
+            source            = ((NEW.item -> 'observers') -> 0) ->> 'source',
             estimation_code   = ((NEW.item -> 'observers') -> 0) ->> 'estimation_code',
             count             = CAST(((NEW.item -> 'observers') -> 0) ->> 'count' AS INTEGER),
             atlas_code        = CAST(((NEW.item -> 'observers') -> 0) ->> 'atlas_code' AS INTEGER),
@@ -732,7 +734,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
             -- Inserting data on src_vn.observations when raw data is inserted
             INSERT INTO {{ cfg.db_schema_vn }}.observations (site, id_sighting, pseudo_id_sighting, id_universal, uuid, id_form_universal,
                                              id_species, taxonomy, date, date_year, timing, id_place, place,
-                                             coord_lat, coord_lon, coord_x_local, coord_y_local, precision, estimation_code,
+                                             coord_lat, coord_lon, coord_x_local, coord_y_local, precision, source, estimation_code,
                                              count, atlas_code, altitude, project_code, hidden, admin_hidden, observer_uid, details,
                                              behaviours, comment, hidden_comment, confirmed_by, mortality, death_cause2, insert_date, update_date)
             VALUES (
@@ -755,6 +757,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
                 CAST(((NEW.item -> 'observers') -> 0) ->> 'coord_x_local' AS FLOAT),
                 CAST(((NEW.item -> 'observers') -> 0) ->> 'coord_y_local' AS FLOAT),
                 ((NEW.item -> 'observers') -> 0) ->> 'precision',
+                ((NEW.item -> 'observers') -> 0) ->> 'source',
                 ((NEW.item -> 'observers') -> 0) ->> 'estimation_code',
                 CAST(((NEW.item -> 'observers') -> 0) ->> 'count' AS INTEGER),
                 CAST(((NEW.item -> 'observers') -> 0) ->> 'atlas_code' AS INTEGER),
@@ -779,7 +782,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
         -- Inserting data on src_vn.observations when raw data is inserted
         INSERT INTO {{ cfg.db_schema_vn }}.observations (site, id_sighting, pseudo_id_sighting, id_universal, uuid, id_form_universal,
                                          id_species, taxonomy, date, date_year, timing, id_place, place,
-                                         coord_lat, coord_lon, coord_x_local, coord_y_local, precision, estimation_code,
+                                         coord_lat, coord_lon, coord_x_local, coord_y_local, source, precision, estimation_code,
                                          count, atlas_code, altitude, project_code, hidden, admin_hidden, observer_uid, details,
                                          behaviours, comment, hidden_comment, confirmed_by, mortality, death_cause2, insert_date, update_date)
         VALUES (
@@ -801,6 +804,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
             CAST(((NEW.item -> 'observers') -> 0) ->> 'coord_lon' AS FLOAT),
             CAST(((NEW.item -> 'observers') -> 0) ->> 'coord_x_local' AS FLOAT),
             CAST(((NEW.item -> 'observers') -> 0) ->> 'coord_y_local' AS FLOAT),
+            ((NEW.item -> 'observers') -> 0) ->> 'source',
             ((NEW.item -> 'observers') -> 0) ->> 'precision',
             ((NEW.item -> 'observers') -> 0) ->> 'estimation_code',
             CAST(((NEW.item -> 'observers') -> 0) ->> 'count' AS INTEGER),
@@ -940,6 +944,7 @@ CREATE TABLE {{ cfg.db_schema_vn }}.places(
     loc_precision       INTEGER,
     altitude            INTEGER,
     place_type          TEXT,
+    wkt                 TEXT,
     visible             BOOLEAN,
     coord_lat           FLOAT,
     coord_lon           FLOAT,
@@ -990,6 +995,7 @@ CREATE OR REPLACE FUNCTION update_places() RETURNS TRIGGER AS $$
             loc_precision = CAST(NEW.item->>'loc_precision' AS INTEGER),
             altitude      = CAST(NEW.item->>'altitude' AS INTEGER),
             place_type    = NEW.item->>'place_type',
+            wkt           = NEW.item->>'wkt',
             visible       = CAST(NEW.item->>'visible' AS BOOLEAN),
             coord_lat     = CAST(NEW.item->>'coord_lat' AS FLOAT),
             coord_lon     = CAST(NEW.item->>'coord_lon' AS FLOAT),
@@ -999,7 +1005,7 @@ CREATE OR REPLACE FUNCTION update_places() RETURNS TRIGGER AS $$
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
             INSERT INTO {{ cfg.db_schema_vn }}.places(site, id, id_commune, id_region, name, is_private,
-                                               loc_precision, altitude, place_type, visible,
+                                               loc_precision, altitude, place_type, wkt, visible,
                                                coord_lat, coord_lon, coord_x_local, coord_y_local)
             VALUES (
                 NEW.site,
@@ -1011,6 +1017,7 @@ CREATE OR REPLACE FUNCTION update_places() RETURNS TRIGGER AS $$
                 CAST(NEW.item->>'loc_precision' AS INTEGER),
                 CAST(NEW.item->>'altitude' AS INTEGER),
                 NEW.item->>'place_type',
+                NEW.item->>'wkt',
                 CAST(NEW.item->>'visible' AS BOOLEAN),
                 CAST(NEW.item->>'coord_lat' AS FLOAT),
                 CAST(NEW.item->>'coord_lon' AS FLOAT),
@@ -1023,7 +1030,7 @@ CREATE OR REPLACE FUNCTION update_places() RETURNS TRIGGER AS $$
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting data on src_vn.observations when raw data is inserted
         INSERT INTO {{ cfg.db_schema_vn }}.places(site, id, id_commune, id_region, name, is_private,
-                                           loc_precision, altitude, place_type, visible,
+                                           loc_precision, altitude, place_type, wkt, visible,
                                            coord_lat, coord_lon, coord_x_local, coord_y_local)
         VALUES (
             NEW.site,
@@ -1035,6 +1042,7 @@ CREATE OR REPLACE FUNCTION update_places() RETURNS TRIGGER AS $$
             CAST(NEW.item->>'loc_precision' AS INTEGER),
             CAST(NEW.item->>'altitude' AS INTEGER),
             NEW.item->>'place_type',
+            NEW.item->>'wkt',
             CAST(NEW.item->>'visible' AS BOOLEAN),
             CAST(NEW.item->>'coord_lat' AS FLOAT),
             CAST(NEW.item->>'coord_lon' AS FLOAT),

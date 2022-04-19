@@ -131,9 +131,18 @@ Generate CHANGELOG.rst from news fragment::
 
     LANG=C.UTF-8; towncrier build --name=Client-API-VN --version=vX.Y.Z
 
-Commit pending changes and tag vX.Y.Z.
+Generate draft distribution and check if packaging is compatible with PYPI::
 
-Generate distribution archives::
+    ./setup.py clean --all
+    rm dist/*
+    ./setup.py sdist bdist_wheel
+    twine check dist/*
+
+Commit pending changes and tag vX.Y.Z::
+
+    git tag -a vX.Y.Z -m "Delivering vX.Y.Z"
+
+Generate final distribution archives::
 
     ./setup.py clean --all
     rm dist/*

@@ -507,6 +507,11 @@
                         }
                     ]
                 },
+                "code": {
+                    "type": "string",
+                    "title": "CODE",
+                    "description": "Code"
+                },
                 "comment": {
                     "type": "string",
                     "title": "COMMENT",
@@ -875,6 +880,229 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
+                "colony": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "nests": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "nests_is_min": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "couples": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "occupied_nests": {
+                            "type": "string",
+                            "format": "integer"
+                        }
+                    },
+                    "title": "Colony"
+                },
+                "colony_extended": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "couples": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "nb_artificial_destructed_nests": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "nb_artificial_nests": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "nb_artificial_nests_is_min": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "nb_artificial_occup_nests": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "nb_artificial_other_species_nests": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "nb_construction_nests": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "nb_natural_destructed_nests": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "nb_natural_nests": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "nb_natural_nests_is_min": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "nb_natural_occup_nests": {
+                            "type": "string",
+                            "format": "integer"
+                        },
+                        "nb_natural_other_species_nests": {
+                            "type": "string",
+                            "format": "integer"
+                        }
+                    },
+                    "title": "ColonyExtended"
+                },
+                "direction": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "degree": {
+                            "type": "string",
+                            "format": "integer"
+                        }
+                    }
+                },
+                "gypaetus_barbatus": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "@id": {
+                                "type": "string",
+                                "format": "integer"
+                            },
+                            "age": {
+                                "$ref": "#/definitions/_age"
+                            },
+                            "altitude_max": {
+                                "type": "string",
+                                "format": "integer"
+                            },
+                            "altitude_min": {
+                                "type": "string",
+                                "format": "integer"
+                            },
+                            "behaviour": {
+                                "OneOf": [
+                                    {
+                                        "$ref": "#/definitions/_gypaetus_barbatus_behaviour"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "properties": {
+                                            "@id": {
+                                                "$ref": "#/definitions/_gypaetus_barbatus_behaviour"
+                                            },
+                                            "#text": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                ]
+                            },
+                            "bird_interaction": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "additionalProperties": true,
+                                    "properties": {
+                                        "@id": {
+                                            "type": "string",
+                                            "format": "integer"
+                                        }
+                                    }
+                                }
+                            },
+                            "distance_min": {
+                                "type": "string",
+                                "format": "integer"
+                            },
+                            "flight_direction": {
+                                "$ref": "#/definitions/_direction"
+                            },
+                            "gypaetus_barbatus_birds": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "additionalProperties": true,
+                                    "properties": {
+                                        "@id": {
+                                            "type": "string",
+                                            "format": "integer"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            },
+                            "interaction": {
+                                "OneOf": [
+                                    {
+                                        "$ref": "#/definitions/_interaction_id"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "properties": {
+                                            "@id": {
+                                                "$ref": "#/definitions/_interaction_id"
+                                            },
+                                            "#text": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                ]
+                            },
+                            "interaction_benefit": {
+                                "OneOf": [
+                                    {
+                                        "$ref": "#/definitions/_interaction_benefit_id"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "properties": {
+                                            "@id": {
+                                                "$ref": "#/definitions/_interaction_benefit_id"
+                                            },
+                                            "#text": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                ]
+                            },
+                            "signs": {
+                                "type": "string"
+                            },
+                            "time_start": {
+                                "type": "string",
+                                "format": "time"
+                            },
+                            "time_stop": {
+                                "type": "string",
+                                "format": "time"
+                            },
+                            "time_unknown": {
+                                "type": "string",
+                                "format": "integer"
+                            },
+                            "weather": {
+                                "$ref": "#/definitions/_weather"
+                            }
+                        }
+                    }
+                },
                 "mortality": {
                     "type": "object",
                     "additionalProperties": false,
@@ -1180,219 +1408,6 @@
                     },
                     "title": "_extended_info",
                     "description": ""
-                },
-                "gypaetus_barbatus": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "additionalProperties": false,
-                        "properties": {
-                            "@id": {
-                                "type": "string",
-                                "format": "integer"
-                            },
-                            "age": {
-                                "$ref": "#/definitions/_age"
-                            },
-                            "altitude_max": {
-                                "type": "string",
-                                "format": "integer"
-                            },
-                            "altitude_min": {
-                                "type": "string",
-                                "format": "integer"
-                            },
-                            "behaviour": {
-                                "OneOf": [
-                                    {
-                                        "$ref": "#/definitions/_gypaetus_barbatus_behaviour"
-                                    },
-                                    {
-                                        "type": "object",
-                                        "additionalProperties": false,
-                                        "properties": {
-                                            "@id": {
-                                                "$ref": "#/definitions/_gypaetus_barbatus_behaviour"
-                                            },
-                                            "#text": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    }
-                                ]
-                            },
-                            "bird_interaction": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "additionalProperties": true,
-                                    "properties": {
-                                        "@id": {
-                                            "type": "string",
-                                            "format": "integer"
-                                        }
-                                    }
-                                }
-                            },
-                            "distance_min": {
-                                "type": "string",
-                                "format": "integer"
-                            },
-                            "flight_direction": {
-                                "$ref": "#/definitions/_direction"
-                            },
-                            "gypaetus_barbatus_birds": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "additionalProperties": true,
-                                    "properties": {
-                                        "@id": {
-                                            "type": "string",
-                                            "format": "integer"
-                                        },
-                                        "name": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            },
-                            "interaction": {
-                                "OneOf": [
-                                    {
-                                        "$ref": "#/definitions/_interaction_id"
-                                    },
-                                    {
-                                        "type": "object",
-                                        "additionalProperties": false,
-                                        "properties": {
-                                            "@id": {
-                                                "$ref": "#/definitions/_interaction_id"
-                                            },
-                                            "#text": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    }
-                                ]
-                            },
-                            "interaction_benefit": {
-                                "OneOf": [
-                                    {
-                                        "$ref": "#/definitions/_interaction_benefit_id"
-                                    },
-                                    {
-                                        "type": "object",
-                                        "additionalProperties": false,
-                                        "properties": {
-                                            "@id": {
-                                                "$ref": "#/definitions/_interaction_benefit_id"
-                                            },
-                                            "#text": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    }
-                                ]
-                            },
-                            "signs": {
-                                "type": "string"
-                            },
-                            "time_start": {
-                                "type": "string",
-                                "format": "time"
-                            },
-                            "time_stop": {
-                                "type": "string",
-                                "format": "time"
-                            },
-                            "time_unknown": {
-                                "type": "string",
-                                "format": "integer"
-                            },
-                            "weather": {
-                                "$ref": "#/definitions/_weather"
-                            }
-                        }
-                    }
-                },
-                "colony": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "nests": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "nests_is_min": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "couples": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "occupied_nests": {
-                            "type": "string",
-                            "format": "integer"
-                        }
-                    },
-                    "title": "Colony"
-                },
-                "colony_extended": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "couples": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "nb_artificial_destructed_nests": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "nb_artificial_nests": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "nb_artificial_nests_is_min": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "nb_artificial_occup_nests": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "nb_artificial_other_species_nests": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "nb_construction_nests": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "nb_natural_destructed_nests": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "nb_natural_nests": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "nb_natural_nests_is_min": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "nb_natural_occup_nests": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "nb_natural_other_species_nests": {
-                            "type": "string",
-                            "format": "integer"
-                        }
-                    },
-                    "title": "ColonyExtended"
                 }
             },
             "title": "ExtendedInfo"
@@ -1448,6 +1463,7 @@
                         "134_21",
                         "134_22",
                         "134_23",
+                        "134_24",
                         "UNKNOWN"
                     ],
                     "title": "BehaviourId"
@@ -1455,18 +1471,23 @@
                 "name": {
                     "type": "string",
                     "enum": [
+                        "BREATH",
                         "CHASED",
                         "COUPLING",
                         "EMERGENCE",
                         "FOOD",
+                        "GROUND_REST",
+                        "JUMP",
                         "LAY_EGGS",
                         "MIGRATION",
                         "MIGRATION_ACTIV",
                         "MOVE",
                         "PLAQUE",
+                        "PROBE",
                         "RUT",
                         "SLEEP",
                         "SUNBATH",
+                        "SURFACE_REST",
                         "TANDEM",
                         "TERRITORY",
                         "TERRITORY_MARK"
