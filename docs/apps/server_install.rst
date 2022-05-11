@@ -51,7 +51,8 @@ de la manière suivante.
 
 .. code:: bash
 
-    sudo apt -y install postgresql postgresql-contrib postgis
+    sudo apt -y install postgresql postgresql-contrib
+    sudo apt -y install postgis postgresql-13-postgis-3
     sudo nano /etc/postgresql/13/main/postgresql.conf
 
 => changer :
