@@ -2,7 +2,7 @@
 Guide d'installation d'un serveur debian
 ========================================
 
-Procédure d'installation sur Linux Debian 10.
+Procédure d'installation sur Linux Debian 11 ou Ubuntu 21.10.
 
 Notes :
 
@@ -41,7 +41,6 @@ les paquets utiles.
 
     sudo apt -y update
     sudo apt -y dist-upgrade
-    sudo apt -y install openntpd git
 
 2. Installer postgresql
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -79,6 +78,7 @@ de la manière suivante.
     CREATE EXTENSION adminpack;
     CREATE EXTENSION postgis;
     CREATE EXTENSION postgis_topology;
+    ALTER ROLE postgres PASSWORD '*whateveryouwant*';
     CREATE ROLE xfer38 LOGIN PASSWORD '*whateveryouwant*' SUPERUSER CREATEDB CREATEROLE;
 
 3. Sécurisation du système
@@ -114,7 +114,7 @@ par défaut et installant un firewall:
 
     sudo nano /etc/passwd
 
-    => remplacer `/bin/bash` par `/usr/sbin/nologin` pour les comptes debian et postgres
+    => remplacer `/bin/bash` par `/usr/sbin/nologin` pour les comptes debian ou ubuntu et postgres
 
     sudo apt -y install ufw
     sudo ufw allow ssh
