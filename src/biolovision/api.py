@@ -225,7 +225,14 @@ class BiolovisionAPI:
 
             # Prepare call to API
             payload = parse.urlencode(params, quote_via=parse.quote)
-            logger.debug(_("Params: %s"), payload)
+            logger.debug(
+                _("Params: %s"),
+                re.sub(
+                    r"user_pw=.*?(&|$)(.*)",
+                    r"user_pw=***\1\2",
+                    re.sub(r"user_email=.*?(&|$)(.*)", r"user_email=***\1\2", payload),
+                ),
+            )
             headers = {"Content-Type": "application/json;charset=UTF-8"}
             if optional_headers is not None:
                 headers.update(optional_headers)
