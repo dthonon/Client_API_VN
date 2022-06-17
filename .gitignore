@@ -141,6 +141,7 @@ dmypy.json
 
 # Project files
 .vscode/*
+*.code-workspace
 .project
 .pydevproject
 .settings
