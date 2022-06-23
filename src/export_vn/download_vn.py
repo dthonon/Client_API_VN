@@ -999,45 +999,30 @@ class Places(DownloadVn):
         # Process updates
         if len(updated) > 0:
             logger.debug(_("Creating or updating %d places"), len(updated))
-            # # Update backend store, in chunks
-            # for i in range(
-            #     (len(updated) + self._config.tuning_max_list_length - 1)
-            #     // self._config.tuning_max_list_length
-            # ):
-            #     s_list = ",".join(
-            #         updated[
-            #             i
-            #             * self._config.tuning_max_list_length : (i + 1)
-            #             * self._config.tuning_max_list_length
-            #         ]
-            #     )
-            #     logger.debug(_("Updating slice %s"), s_list)
-            #     timing = perf_counter_ns()
-            #     items_dict = self._api_instance.api_list(
-            #         taxo,
-            #         id_sightings_list=s_list,
-            #         short_version=short_version,
-            #     )
-            #     timing = (perf_counter_ns() - timing) / 1000
+            # Update backend store, in chunks
+            for i in range(len(updated)):
+                logger.debug(_("Updating place %s"), updated[i])
+                timing = perf_counter_ns()
+                items_dict = self._api_instance.api_get(updated[i])
+                timing = (perf_counter_ns() - timing) / 1000
 
-            #     # Call backend to store results
-            #     self._backend.store(
-            #         self._api_instance.controler,
-            #         str(id_taxo_group) + "_upd_" + str(i),
-            #         items_dict,
-            #     )
+                # Call backend to store results
+                self._backend.store(
+                    self._api_instance.controler,
+                    "upd_" + str(i),
+                    items_dict,
+                )
 
-            #     # Call backend to store log
-            #     self._backend.log(
-            #         self._config.site,
-            #         self._api_instance.controler,
-            #         self._api_instance.transfer_errors,
-            #         self._api_instance.http_status,
-            #         _("Creating or updating %d observations")
-            #         % (s_list.count(",") + 1),
-            #         total_size(items_dict),
-            #         timing,
-            #     )
+                # Call backend to store log
+                self._backend.log(
+                    self._config.site,
+                    self._api_instance.controler,
+                    self._api_instance.transfer_errors,
+                    self._api_instance.http_status,
+                    _("Creating or updating 1 place"),
+                    total_size(items_dict),
+                    timing,
+                )
 
         # Process deletes
         if len(deleted) > 0:

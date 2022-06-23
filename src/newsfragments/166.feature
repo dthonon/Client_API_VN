@@ -1,0 +1,1 @@
+Places are downloaded by increment when using `--update`.
