@@ -1009,6 +1009,7 @@ class Places(DownloadVn):
                 # Call backend to store results
                 self._backend.store(
                     self._api_instance.controler,
+                    "upd_" + str(i),
                     items_dict,
                 )
 
