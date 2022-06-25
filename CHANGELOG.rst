@@ -16,7 +16,7 @@ Bugfixes
 Misc
 ----
 
-- `#143 <https://framagit.org/lpo/Client_API_VN/issues/143>`_
+- Upgraded code for URL() deprecation. `#143 <https://framagit.org/lpo/Client_API_VN/issues/143>`_
 
 
 Client-API-VN v2.10.0 (2022-04-17)
