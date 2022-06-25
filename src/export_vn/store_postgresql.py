@@ -397,7 +397,7 @@ class PostgresqlUtils:
                 "port": self._config.db_port,
                 "database": "postgres",
             }
-            db = create_engine(URL(**db_url), echo=False)
+            db = create_engine(URL.create(**db_url), echo=False)
             conn = db.connect()
             conn.connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
 
@@ -459,7 +459,7 @@ class PostgresqlUtils:
                 "port": self._config.db_port,
                 "database": "postgres",
             }
-            db = create_engine(URL(**db_url), echo=False)
+            db = create_engine(URL.create(**db_url), echo=False)
             conn = db.connect()
             conn.connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
 
@@ -511,7 +511,7 @@ class PostgresqlUtils:
                 _("Connecting to %s database, to finalize creation"),
                 self._config.db_name,
             )
-            self._db = create_engine(URL(**db_url), echo=False)
+            self._db = create_engine(URL.create(**db_url), echo=False)
             conn = self._db.connect()
 
             # Add extensions
@@ -598,7 +598,7 @@ class PostgresqlUtils:
 
             # Connect and set path to include VN import schema
             logger.info(_("Connecting to database %s"), self._config.db_name)
-            self._db = create_engine(URL(**db_url), echo=False)
+            self._db = create_engine(URL.create(**db_url), echo=False)
             conn = self._db.connect()
             dbschema = self._config.db_schema_import
             self._metadata = MetaData(schema=dbschema)
@@ -639,7 +639,7 @@ class PostgresqlUtils:
 
             # Connect and set path to include VN import schema
             logger.info(_("Connecting to database %s"), self._config.db_name)
-            self._db = create_engine(URL(**db_url), echo=False)
+            self._db = create_engine(URL.create(**db_url), echo=False)
             conn = self._db.connect()
             dbschema = self._config.db_schema_vn
             self._metadata = MetaData(schema=dbschema)
@@ -682,7 +682,7 @@ class Postgresql:
             logger.info(_("Connecting to database %s"), self._config.db_name)
 
             # Connect and set path to include VN import schema
-            self._db = create_engine(URL(**db_url), echo=False)
+            self._db = create_engine(URL.create(**db_url), echo=False)
             self._conn = self._db.connect()
 
             # Get dbtable definition

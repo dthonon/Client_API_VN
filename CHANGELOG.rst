@@ -1,3 +1,24 @@
+Client-API-VN vX.Y.Z (2022-06-26)
+=================================
+
+Features
+--------
+
+- Places are downloaded by increment when using `--update`. (`#166 <https://framagit.org/lpo/Client_API_VN/issues/166>`_)
+
+
+Bugfixes
+--------
+
+- Username and password are now replaced by "***" in log file. (`#267 <https://framagit.org/lpo/Client_API_VN/issues/267>`_)
+
+
+Misc
+----
+
+- Upgraded code for URL() deprecation. `#143 <https://framagit.org/lpo/Client_API_VN/issues/143>`_
+
+
 Client-API-VN v2.10.0 (2022-04-17)
 ==================================
 
