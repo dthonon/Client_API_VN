@@ -1248,6 +1248,15 @@ class StorePostgresql(Postgresql):
 
         return nb_delete
 
+    def post_update(self) -> None:
+        """Perform post update cleanup.
+
+        Parameters
+        ----------
+        """
+        logger.info(_("Performing post update cleanup"))
+        return None
+
     def log(
         self,
         site,

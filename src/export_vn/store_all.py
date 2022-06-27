@@ -114,6 +114,20 @@ class StoreAll:
             nb_delete = self._db_backend.delete_place(place_list)
         return nb_delete
 
+    def post_update(self) -> None:
+        """Perform post update cleanup.
+
+        Parameters
+        ----------
+        """
+        # Call backends if needed
+        if self._config.file_enabled:
+            self._file_backend.post_update()
+        if self._config.db_enabled:
+            self._db_backend.post_update()
+
+        return None
+
     def log(
         self,
         site,

@@ -126,6 +126,15 @@ class StoreFile:
         # Not implemented
         return None
 
+    def post_update(self) -> None:
+        """Perform post update cleanup.
+
+        Parameters
+        ----------
+        """
+        # Not implemented
+        return None
+
     def log(self, site, controler, *args, **kwargs):
         """Write download log entries to database.
 

@@ -556,6 +556,10 @@ def increment_download_1(ctrl, cfg_crtl_list, cfg):
                 )
             else:
                 downloader.store()
+
+            # Perform post update cleanup
+            store_all.post_update()
+            
             logger.info(
                 _("%s => Ending download using controler %s"), cfg.site, downloader.name
             )
