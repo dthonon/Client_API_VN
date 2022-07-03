@@ -64,9 +64,10 @@ de la manière suivante.
 
     sudo nano /etc/postgresql/14/main/pg_hba.conf
 
-=> ajouter la ligne suivante pour autoriser l'accès exterieur à postgresql.
-`host all all 0.0.0.0/0 md5`
-`host all all ::0/0 md5`
+    => ajouter la ligne suivante pour autoriser l'accès exterieur à postgresql.
+
+    `host all all 0.0.0.0/0 md5`
+    `host all all ::0/0 md5`
 
 .. code:: bash
 
