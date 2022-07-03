@@ -22,8 +22,8 @@ Add newer python versions, using pyenv::
 Create a python virtual environment, activate it and install or
 update basic tools::
 
-    python3 -m venv VN_env
-    source VN_env/bin/activate
+    python3 -m venv env_VN
+    source env_VN/bin/activate
     python -m pip install --upgrade pip
     pip install --upgrade setuptools wheel twine babel tox coverage
 
