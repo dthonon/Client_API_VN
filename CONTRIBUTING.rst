@@ -41,7 +41,7 @@ Downloading source
 
 Clone framagit repository::
 
-    git clone https://framagit.org/lpo/Client_API_VN.git
+    git clone https://github.com/dthonon/Client_API_VN.git
     cd Client_API_VN
     git checkout develop
 
