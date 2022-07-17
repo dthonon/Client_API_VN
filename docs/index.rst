@@ -27,6 +27,7 @@ Applications documentation
    apps/transfer_vn
    apps/update_vn
    apps/validate
+   apps/examples.rst
    apps/server_install
 
 :doc:`apps/transfer_vn`
