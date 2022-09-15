@@ -85,6 +85,13 @@ def init(config: str):
     logger.info(_("Please edit %s before running the script"), yaml_dst)
 
 
+def _count_generator(reader):
+    b = reader(1024 * 1024)
+    while b:
+        yield b
+        b = reader(1024 * 1024)
+
+
 def update(cfg_ctrl, input: str, output: str):
     """Update Biolovision database."""
     logger = logging.getLogger(APP_NAME + ".update")
@@ -98,13 +105,21 @@ def update(cfg_ctrl, input: str, output: str):
         logger.debug(_("Preparing update for site %s"), site)
         obs_api[site] = ObservationsAPI(cfg)
 
+    done = 0
+    with open(output, "rb") as fp:
+        c_generator = _count_generator(fp.raw.read)
+        # count each \n
+        done = sum(buffer.count(b"\n") for buffer in c_generator)
+
     # Read a chunk of the input files
+    nb_uuid = 3
+    logger.debug(_("Loading UUID from %d to %d"), done, done + nb_uuid)
     to_update = np.loadtxt(
         input,
         delimiter="\t",
-        usecols = (2,3),
-        skiprows = 1,
-        max_rows=3,
+        usecols=(2, 3),
+        skiprows=done + 1,  # Skipping header + already done
+        max_rows=nb_uuid,
         dtype={"names": ("id_universal", "uuid"), "formats": ("U12", "U36")},
     )
 
@@ -205,10 +220,11 @@ def main(args):
     if not Path(args.input).is_file():
         logger.critical(_("Input file %s does not exist"), str(Path(args.input)))
         raise FileNotFoundError
-    if Path(args.input).is_file():
-        logger.info(_("Output file %s is extended"), str(Path(args.input)))
+    if Path(args.output).is_file():
+        logger.info(_("Output file %s is extended"), str(Path(args.output)))
     else:
-        logger.info(_("Output file %s is created"), str(Path(args.input)))
+        logger.info(_("Output file %s is created"), str(Path(args.output)))
+        Path(args.output).touch()
     update(cfg_ctrl, args.input, args.output)
 
     return None
