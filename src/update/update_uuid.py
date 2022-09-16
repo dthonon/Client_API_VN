@@ -109,50 +109,55 @@ def update(cfg_ctrl, input: str, output: str):
     with open(output, "rb") as fp:
         c_generator = _count_generator(fp.raw.read)
         # count each \n
-        done = sum(buffer.count(b"\n") for buffer in c_generator)
+        done = sum(buffer.count(b"\n") for buffer in c_generator) + 1
 
-    # Read a chunk of the input files
-    nb_uuid = 3
-    logger.debug(_("Loading UUID from %d to %d"), done, done + nb_uuid)
-    to_update = np.loadtxt(
-        input,
-        delimiter="\t",
-        usecols=(2, 3),
-        skiprows=done + 1,  # Skipping header + already done
-        max_rows=nb_uuid,
-        dtype={"names": ("id_universal", "uuid"), "formats": ("U12", "U36")},
-    )
-
-    for row in to_update:
-        logger.info(
-            _("Updating sighting %s, uuid %s"),
-            row[0].strip(),
-            row[1].strip(),
+    with open(output, "a") as fout:
+        # Read a chunk of the input files
+        nb_uuid = 10
+        logger.info(_("Loading UUID from %d to %d"), done, done + nb_uuid)
+        to_update = np.loadtxt(
+            input,
+            delimiter="\t",
+            usecols=(2, 3),
+            skiprows=done,  # Skipping header + already done
+            max_rows=nb_uuid,
+            dtype={"names": ("id_universal", "uuid"), "formats": ("U12", "U36")},
         )
 
-        # Get current observation
-        sighting = obs_api[update_site].api_search(
-            {"id_sighting_universal": row[0].strip()}, short_version="1"
-        )
-        if "forms" in sighting["data"]:
-            # Received a form, changing to single sighting
-            sighting["data"] = sighting["data"]["forms"][0]
-        logger.debug(
-            _("Before: %s"),
-            sighting["data"],
-        )
-        # JSON path relative to "sighting"
-        repl = "sighting['data']['sightings'][0]['observers'][0]['uuid']"
-        # Get current value, if exists
-        try:
-            old_attr = eval(repl)
-        except KeyError:
-            old_attr = None
-        exec("{} = {}".format(repl, "row[1].strip()"))
+        for row in to_update:
+            logger.info(
+                _("Update # %s, sighting %s, uuid %s"),
+                done,
+                row[0].strip(),
+                row[1].strip(),
+            )
 
-        logger.debug(_("After: %s"), sighting["data"])
-    #                 # Update to remote site
-    #                 obs_api[update_site].api_update(row[1].strip(), sighting)
+            # Get current observation
+            sighting = obs_api[update_site].api_search(
+                {"id_sighting_universal": row[0].strip()}, short_version="1"
+            )
+            if "forms" in sighting["data"]:
+                # Received a form, changing to single sighting
+                sighting["data"] = sighting["data"]["forms"][0]
+            logger.debug(
+                _("Before: %s"),
+                sighting["data"],
+            )
+            # JSON path relative to "sighting"
+            repl = "sighting['data']['sightings'][0]['observers'][0]['uuid']"
+            # Get current value, if exists
+            try:
+                old_attr = eval(repl)
+            except KeyError:
+                old_attr = None
+            exec("{} = {}".format(repl, "row[1].strip()"))
+
+            logger.debug(_("After: %s"), sighting["data"])
+        #                 # Update to remote site
+        #                 obs_api[update_site].api_update(row[1].strip(), sighting)
+            # Append previous UUID to output
+            fout.write(f"{row[0].strip()}\t{old_attr}\n")
+            done += 1
 
 
 def main(args):
