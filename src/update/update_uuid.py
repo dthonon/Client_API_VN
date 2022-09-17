@@ -32,7 +32,7 @@ from export_vn.evnconf import EvnConf
 
 from . import _, __version__
 
-APP_NAME = "update_vn"
+APP_NAME = "update_uuid"
 
 logger = logging.getLogger(APP_NAME)
 
@@ -111,53 +111,59 @@ def update(cfg_ctrl, input: str, output: str):
         # count each \n
         done = sum(buffer.count(b"\n") for buffer in c_generator) + 1
 
+    uuid_chunk = 100
     with open(output, "a") as fout:
-        # Read a chunk of the input files
-        nb_uuid = 10
-        logger.info(_("Loading UUID from %d to %d"), done, done + nb_uuid)
-        to_update = np.loadtxt(
-            input,
-            delimiter="\t",
-            usecols=(2, 3),
-            skiprows=done,  # Skipping header + already done
-            max_rows=nb_uuid,
-            dtype={"names": ("id_universal", "uuid"), "formats": ("U12", "U36")},
-        )
-
-        for row in to_update:
-            logger.info(
-                _("Update # %s, sighting %s, uuid %s"),
-                done,
-                row[0].strip(),
-                row[1].strip(),
+        while (done < 700):
+            # Read a chunk of the input files
+            logger.info(_("Loading UUID from %d to %d"), done, done + uuid_chunk - 1)
+            to_update = np.loadtxt(
+                input,
+                delimiter="\t",
+                usecols=(2, 3),
+                skiprows=done,  # Skipping header + already done
+                max_rows=uuid_chunk,
+                dtype={"names": ("id_universal", "uuid"), "formats": ("U12", "U36")},
             )
 
-            # Get current observation
-            sighting = obs_api[update_site].api_search(
-                {"id_sighting_universal": row[0].strip()}, short_version="1"
-            )
-            if "forms" in sighting["data"]:
-                # Received a form, changing to single sighting
-                sighting["data"] = sighting["data"]["forms"][0]
-            logger.debug(
-                _("Before: %s"),
-                sighting["data"],
-            )
-            # JSON path relative to "sighting"
-            repl = "sighting['data']['sightings'][0]['observers'][0]['uuid']"
-            # Get current value, if exists
-            try:
-                old_attr = eval(repl)
-            except KeyError:
-                old_attr = None
-            exec("{} = {}".format(repl, "row[1].strip()"))
+            for row in to_update:
+                id_universal = row[0].strip()
+                new_uuid = row[1].strip()
+                logger.info(
+                    _("Update # %s, sighting %s, uuid %s"),
+                    done,
+                    id_universal,
+                    new_uuid,
+                )
 
-            logger.debug(_("After: %s"), sighting["data"])
-        #                 # Update to remote site
-        #                 obs_api[update_site].api_update(row[1].strip(), sighting)
-            # Append previous UUID to output
-            fout.write(f"{row[0].strip()}\t{old_attr}\n")
-            done += 1
+                # Get current observation
+                sighting = obs_api[update_site].api_search(
+                    {"id_sighting_universal": id_universal}, short_version="1"
+                )
+                if "forms" in sighting["data"]:
+                    # Received a form, changing to single sighting
+                    sighting["data"] = sighting["data"]["forms"][0]
+                logger.debug(
+                    _("Before: %s"),
+                    sighting["data"],
+                )
+
+                # Get current UUID, if exists
+                repl = "sighting['data']['sightings'][0]['observers'][0]['uuid']"
+                try:
+                    old_attr = eval(repl)
+                except KeyError:
+                    old_attr = None
+                exec("{} = {}".format(repl, "new_uuid"))
+
+                # Get sighting id
+                s_id = eval("sighting['data']['sightings'][0]['observers'][0]['id_sighting']")
+
+                logger.debug(_("After: %s"), sighting["data"])
+                # Update to remote site
+                obs_api[update_site].api_update(s_id, sighting)
+                # Append previous UUID to output
+                fout.write(f"{id_universal}\t{old_attr}\n")
+                done += 1
 
 
 def main(args):
