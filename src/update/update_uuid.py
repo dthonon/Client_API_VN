@@ -71,7 +71,18 @@ def arguments(args):
         "input", help=_("To be updated sightings file name, in TSV format")
     )
     parser.add_argument("output", help=_("Updated sightings file name, in TSV format"))
-
+    parser.add_argument(
+        "--chunk",
+        type=int,
+        help=_("Number of input file to read in each chunk"),
+        default="100",
+    )
+    parser.add_argument(
+        "--max_done",
+        type=int,
+        help=_("Total, across all script runs, of sightings to process"),
+        default="1000",
+    )
     return parser.parse_args(args)
 
 
@@ -92,7 +103,7 @@ def _count_generator(reader):
         b = reader(1024 * 1024)
 
 
-def update(cfg_ctrl, input: str, output: str):
+def update(cfg_ctrl, input: str, output: str, max_done: int, chunk: int):
     """Update Biolovision database."""
     logger = logging.getLogger(APP_NAME + ".update")
     cfg_site_list = cfg_ctrl.site_list
@@ -102,8 +113,14 @@ def update(cfg_ctrl, input: str, output: str):
     for site, cfg in cfg_site_list.items():
         # There should be only 1 site in params file
         update_site = site
-        logger.debug(_("Preparing update for site %s"), site)
         obs_api[site] = ObservationsAPI(cfg)
+
+    logger.info(
+        _("Preparing update for site %s, max_done = %d, chunk = %d"),
+        update_site,
+        max_done,
+        chunk,
+    )
 
     done = 0
     with open(output, "rb") as fp:
@@ -111,17 +128,16 @@ def update(cfg_ctrl, input: str, output: str):
         # count each \n
         done = sum(buffer.count(b"\n") for buffer in c_generator) + 1
 
-    uuid_chunk = 100
     with open(output, "a") as fout:
-        while (done < 700):
+        while done < max_done:
             # Read a chunk of the input files
-            logger.info(_("Loading UUID from %d to %d"), done, done + uuid_chunk - 1)
+            logger.info(_("Loading UUID from %d to %d"), done, done + chunk - 1)
             to_update = np.loadtxt(
                 input,
                 delimiter="\t",
                 usecols=(2, 3),
                 skiprows=done,  # Skipping header + already done
-                max_rows=uuid_chunk,
+                max_rows=chunk,
                 dtype={"names": ("id_universal", "uuid"), "formats": ("U12", "U36")},
             )
 
@@ -137,7 +153,8 @@ def update(cfg_ctrl, input: str, output: str):
 
                 # Get current observation
                 sighting = obs_api[update_site].api_search(
-                    {"id_sighting_universal": id_universal}, short_version="1"
+                    {"id_sighting_universal": id_universal},
+                    short_version="1",
                 )
                 if "forms" in sighting["data"]:
                     # Received a form, changing to single sighting
@@ -156,7 +173,9 @@ def update(cfg_ctrl, input: str, output: str):
                 exec("{} = {}".format(repl, "new_uuid"))
 
                 # Get sighting id
-                s_id = eval("sighting['data']['sightings'][0]['observers'][0]['id_sighting']")
+                s_id = eval(
+                    "sighting['data']['sightings'][0]['observers'][0]['id_sighting']"
+                )
 
                 logger.debug(_("After: %s"), sighting["data"])
                 # Update to remote site
@@ -236,7 +255,7 @@ def main(args):
     else:
         logger.info(_("Output file %s is created"), str(Path(args.output)))
         Path(args.output).touch()
-    update(cfg_ctrl, args.input, args.output)
+    update(cfg_ctrl, args.input, args.output, args.max_done, args.chunk)
 
     return None
 
