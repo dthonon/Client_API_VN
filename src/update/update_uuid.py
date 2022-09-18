@@ -156,32 +156,37 @@ def update(cfg_ctrl, input: str, output: str, max_done: int, chunk: int):
                     {"id_sighting_universal": id_universal},
                     short_version="1",
                 )
-                if "forms" in sighting["data"]:
-                    # Received a form, changing to single sighting
-                    sighting["data"] = sighting["data"]["forms"][0]
-                logger.debug(
-                    _("Before: %s"),
-                    sighting["data"],
-                )
+                if sighting == []:
+                    # No sighting found, probably deleted
+                    fout.write(f"{id_universal}\tUnfound\n")
+                else:
+                    # Sighting found : update UUID
+                    if "forms" in sighting["data"]:
+                        # Received a form, changing to single sighting
+                        sighting["data"] = sighting["data"]["forms"][0]
+                    logger.debug(
+                        _("Before: %s"),
+                        sighting["data"],
+                    )
 
-                # Get current UUID, if exists
-                repl = "sighting['data']['sightings'][0]['observers'][0]['uuid']"
-                try:
-                    old_attr = eval(repl)
-                except KeyError:
-                    old_attr = None
-                exec("{} = {}".format(repl, "new_uuid"))
+                    # Get current UUID, if exists
+                    repl = "sighting['data']['sightings'][0]['observers'][0]['uuid']"
+                    try:
+                        old_attr = eval(repl)
+                    except KeyError:
+                        old_attr = None
+                    exec("{} = {}".format(repl, "new_uuid"))
 
-                # Get sighting id
-                s_id = eval(
-                    "sighting['data']['sightings'][0]['observers'][0]['id_sighting']"
-                )
+                    # Get sighting id
+                    s_id = eval(
+                        "sighting['data']['sightings'][0]['observers'][0]['id_sighting']"
+                    )
 
-                logger.debug(_("After: %s"), sighting["data"])
-                # Update to remote site
-                obs_api[update_site].api_update(s_id, sighting)
-                # Append previous UUID to output
-                fout.write(f"{id_universal}\t{old_attr}\n")
+                    logger.debug(_("After: %s"), sighting["data"])
+                    # Update to remote site
+                    obs_api[update_site].api_update(s_id, sighting)
+                    # Append previous UUID to output
+                    fout.write(f"{id_universal}\t{old_attr}\n")
                 done += 1
 
 
