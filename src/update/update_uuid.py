@@ -27,7 +27,7 @@ import numpy as np
 import pkg_resources
 from strictyaml import YAMLValidationError
 
-from biolovision.api import ObservationsAPI
+from biolovision.api import ObservationsAPI, HTTPError
 from export_vn.evnconf import EvnConf
 
 from . import _, __version__
@@ -129,6 +129,7 @@ def update(cfg_ctrl, input: str, output: str, max_done: int, chunk: int):
         done = sum(buffer.count(b"\n") for buffer in c_generator) + 1
 
     with open(output, "a") as fout:
+        nb_error = 0
         while done < max_done:
             # Read a chunk of the input files
             logger.info(_("Loading UUID from %d to %d"), done, done + chunk - 1)
@@ -138,7 +139,7 @@ def update(cfg_ctrl, input: str, output: str, max_done: int, chunk: int):
                 usecols=(2, 3),
                 skiprows=done,  # Skipping header + already done
                 max_rows=chunk,
-                dtype={"names": ("id_universal", "uuid"), "formats": ("U12", "U36")},
+                dtype={"names": ("id_universal", "uuid"), "formats": ("U13", "U36")},
             )
 
             for row in to_update:
@@ -152,14 +153,23 @@ def update(cfg_ctrl, input: str, output: str, max_done: int, chunk: int):
                 )
 
                 # Get current observation
-                sighting = obs_api[update_site].api_search(
-                    {"id_sighting_universal": id_universal},
-                    short_version="1",
-                )
+                try:
+                    sighting = obs_api[update_site].api_search(
+                        {"id_sighting_universal": id_universal},
+                        short_version="1",
+                    )
+                except HTTPError:
+                    sighting = []
+                    # Avoid looping on permanent error
+                    nb_error += 1
+                    if nb_error > 100:
+                        raise HTTPError
                 if sighting == []:
                     # No sighting found, probably deleted
                     fout.write(f"{id_universal}\tUnfound\n")
                 else:
+                    # Found a sighting implies transient error
+                    nb_error = 0
                     # Sighting found : update UUID
                     if "forms" in sighting["data"]:
                         # Received a form, changing to single sighting
