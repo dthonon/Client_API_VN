@@ -7,8 +7,8 @@ TSV file must contain:
 
     source: le site source de la donnée
     id_local: l'id local dans le site source
-    id_universal: l'id_universal visionature de la donnée
     uuid: le nouvel UUID à attribuer aux données en remplacement de l'UUID FF actuel.
+    id_universal: l'id_universal visionature de la donnée
 
 Modification are tracked in hidden_comment.
 
@@ -139,12 +139,12 @@ def update(cfg_ctrl, input: str, output: str, max_done: int, chunk: int):
                 usecols=(2, 3),
                 skiprows=done,  # Skipping header + already done
                 max_rows=chunk,
-                dtype={"names": ("id_universal", "uuid"), "formats": ("U13", "U36")},
+                dtype={"names": ("id_universal", "uuid"), "formats": ("U36", "U13")},
             )
 
             for row in to_update:
-                id_universal = row[0].strip()
-                new_uuid = row[1].strip()
+                id_universal = row[1].strip()
+                new_uuid = row[0].strip()
                 logger.info(
                     _("Update # %s, sighting %s, uuid %s"),
                     done,
