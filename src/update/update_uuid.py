@@ -194,9 +194,13 @@ def update(cfg_ctrl, input: str, output: str, max_done: int, chunk: int):
 
                     logger.debug(_("After: %s"), sighting["data"])
                     # Update to remote site
-                    obs_api[update_site].api_update(s_id, sighting)
-                    # Append previous UUID to output
-                    fout.write(f"{id_universal}\t{old_attr}\n")
+                    try:
+                        obs_api[update_site].api_update(s_id, sighting)
+                        # Append previous UUID to output
+                        fout.write(f"{id_universal}\t{old_attr}\n")
+                    except HTTPError:
+                        # Append error
+                        fout.write(f"{id_universal}\tUnprocessed\n")
                 done += 1
 
 
