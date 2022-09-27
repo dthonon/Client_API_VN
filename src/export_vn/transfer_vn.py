@@ -397,6 +397,8 @@ def migrate(cfg, sql_quiet, client_min_message):
             + cfg.db_pw
             + "@"
             + cfg.db_host
+            + ":"
+            + cfg.db_port
             + "/"
             + cfg.db_name
             + "--config src/alembic.ini upgrade head",
