@@ -164,7 +164,7 @@ def update(cfg_ctrl, input: str):
                         )
                         if row[3].strip() == "replace":
                             exec("{} = {}".format(repl, "row[4].strip()"))
-                        else:
+                        else:  # delete_attribute
                             try:
                                 exec("del {}".format(repl))
                             except KeyError:  # pragma: no cover
