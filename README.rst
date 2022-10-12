@@ -43,13 +43,14 @@ Installation - Python
 These instructions present the steps required to install the
 Python applications.
 
-Windows::
+Windows:
 
     Install Python from Microsoft store
+    
     Add python script directory to Path, as described in
     `How to add Python to Windows PATH <https://datatofish.com/add-python-to-windows-path/>`_.
 
-Linux : add the following debian packages::
+Linux: add the following debian packages::
 
     sudo apt -y install build-essential python3-dev python3-venv
 
