@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: export_vn 2.0.0b3.dev8+g77a983a.d20190320\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-06-26 00:16+0200\n"
+"POT-Creation-Date: 2022-12-05 15:23+0100\n"
 "PO-Revision-Date: 2019-03-21 00:01+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -16,7 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.10.1\n"
+"Generated-By: Babel 2.11.0\n"
 
 #: src/biolovision/api.py:229
 #, python-format
@@ -324,7 +324,7 @@ msgstr "file:file_store doit être défini"
 msgid "Error creating %s configuration"
 msgstr "Erreur lors de création de la configuration %s"
 
-#: src/export_vn/evnconf.py:746 src/export_vn/transfer_vn.py:780
+#: src/export_vn/evnconf.py:746 src/export_vn/transfer_vn.py:784
 #: src/schemas/validate.py:225
 #, python-format
 msgid "File %s does not exist"
@@ -335,9 +335,9 @@ msgstr "Le fichier %s n'existe pas"
 msgid "Loading YAML configuration %s"
 msgstr "Chargement de la configuration YAML %s"
 
-#: src/export_vn/evnconf.py:754 src/export_vn/transfer_vn.py:786
+#: src/export_vn/evnconf.py:754 src/export_vn/transfer_vn.py:790
 #: src/schemas/validate.py:231 src/template/sample_app.py:123
-#: src/update/update_vn.py:240
+#: src/update/update_uuid.py:265 src/update/update_vn.py:240
 #, python-format
 msgid "Incorrect content in YAML configuration %s"
 msgstr "Contenu incorrect de la configuration YAML %s"
@@ -598,30 +598,33 @@ msgid "Job %s, scheduled: %s"
 msgstr "Job %s, planifié: %s"
 
 #: src/export_vn/transfer_vn.py:271 src/schemas/validate.py:46
-#: src/template/sample_app.py:37 src/update/update_vn.py:55
+#: src/template/sample_app.py:37 src/update/update_uuid.py:55
+#: src/update/update_vn.py:55
 msgid "Print version number"
 msgstr "Imprime la version"
 
 #: src/export_vn/transfer_vn.py:277 src/schemas/validate.py:52
-#: src/template/sample_app.py:43 src/update/update_vn.py:61
+#: src/template/sample_app.py:43 src/update/update_uuid.py:61
+#: src/update/update_vn.py:61
 msgid "Increase output verbosity"
 msgstr "Plus verbeux"
 
 #: src/export_vn/transfer_vn.py:280 src/schemas/validate.py:55
-#: src/template/sample_app.py:46 src/update/update_vn.py:64
+#: src/template/sample_app.py:46 src/update/update_uuid.py:64
+#: src/update/update_vn.py:64
 msgid "Reduce output verbosity"
 msgstr "Moins verbeux"
 
 #: src/export_vn/transfer_vn.py:283 src/template/sample_app.py:49
-#: src/update/update_vn.py:67
+#: src/update/update_uuid.py:67 src/update/update_vn.py:67
 msgid "Initialize the YAML configuration file"
 msgstr "Initialisation du fichier de configuration YAML"
 
-#: src/export_vn/transfer_vn.py:286 src/export_vn/transfer_vn.py:799
+#: src/export_vn/transfer_vn.py:286 src/export_vn/transfer_vn.py:803
 msgid "Delete if exists database and roles"
 msgstr "Détruit la base de données et les rôles"
 
-#: src/export_vn/transfer_vn.py:289 src/export_vn/transfer_vn.py:803
+#: src/export_vn/transfer_vn.py:289 src/export_vn/transfer_vn.py:807
 msgid "Create database and roles"
 msgstr "Crée la base de données et les rôle"
 
@@ -662,18 +665,19 @@ msgid "Gather and print profiling times"
 msgstr "Collecte et impression des durées de profilage"
 
 #: src/export_vn/transfer_vn.py:331 src/schemas/validate.py:82
-#: src/template/sample_app.py:51 src/update/update_vn.py:69
+#: src/template/sample_app.py:51 src/update/update_uuid.py:69
+#: src/update/update_vn.py:69
 msgid "Configuration file name"
 msgstr "Nom du fichier de configuration"
 
 #: src/export_vn/transfer_vn.py:340 src/template/sample_app.py:60
-#: src/update/update_vn.py:80
+#: src/update/update_uuid.py:94 src/update/update_vn.py:80
 #, python-format
 msgid "Creating YAML configuration file %s, from %s"
 msgstr "Création du fichier de configuration YAML %s, à partir de %s"
 
 #: src/export_vn/transfer_vn.py:342 src/template/sample_app.py:62
-#: src/update/update_vn.py:82
+#: src/update/update_uuid.py:96 src/update/update_vn.py:82
 #, python-format
 msgid "Please edit %s before running the script"
 msgstr "Merci d'éditer %s avant d'exécuter le script"
@@ -682,172 +686,175 @@ msgstr "Merci d'éditer %s avant d'exécuter le script"
 msgid "Creating SQL file from template"
 msgstr "Création du fichier SQL depuis le modèle"
 
-#: src/export_vn/transfer_vn.py:385 src/export_vn/transfer_vn.py:807
+#: src/export_vn/transfer_vn.py:385 src/export_vn/transfer_vn.py:811
 msgid "Migrating database to current version"
 msgstr "Migration de la base vers la dernière version"
 
-#: src/export_vn/transfer_vn.py:412
+#: src/export_vn/transfer_vn.py:416
 #, python-format
 msgid "Enter full_download_1: %s"
 msgstr "Entrée dans full_download_1: %s"
 
-#: src/export_vn/transfer_vn.py:418
+#: src/export_vn/transfer_vn.py:422
 #, python-format
 msgid "%s => Starting download using controler %s"
 msgstr "%s => Début du téléchargement du controleur %s"
 
-#: src/export_vn/transfer_vn.py:424 src/export_vn/transfer_vn.py:536
+#: src/export_vn/transfer_vn.py:428 src/export_vn/transfer_vn.py:540
 #, python-format
 msgid "%s => Excluded taxo_groups: %s"
 msgstr "%s => taxo_groups exclus : %s"
 
-#: src/export_vn/transfer_vn.py:438 src/export_vn/transfer_vn.py:541
-#: src/export_vn/transfer_vn.py:550
+#: src/export_vn/transfer_vn.py:442 src/export_vn/transfer_vn.py:545
+#: src/export_vn/transfer_vn.py:554
 #, python-format
 msgid "%s => Included territorial_unit_ids: %s"
 msgstr "%s => Comprenant territorial_unit_ids: %s"
 
-#: src/export_vn/transfer_vn.py:448 src/export_vn/transfer_vn.py:560
+#: src/export_vn/transfer_vn.py:452 src/export_vn/transfer_vn.py:564
 #, python-format
 msgid "%s => Ending download using controler %s"
 msgstr "%s => Fin du téléchargement du controleur %s"
 
-#: src/export_vn/transfer_vn.py:459
+#: src/export_vn/transfer_vn.py:463
 msgid "Defining full download jobs"
 msgstr "Définition des jobs de téléchargement complet"
 
-#: src/export_vn/transfer_vn.py:479
+#: src/export_vn/transfer_vn.py:483
 #, python-format
 msgid "Scheduling work for site %s"
 msgstr "Planification du travail pour le site %s"
 
-#: src/export_vn/transfer_vn.py:511 src/export_vn/transfer_vn.py:631
+#: src/export_vn/transfer_vn.py:515 src/export_vn/transfer_vn.py:635
 #, python-format
 msgid "Skipping site %s"
 msgstr "Site %s ignoré"
 
-#: src/export_vn/transfer_vn.py:524
+#: src/export_vn/transfer_vn.py:528
 #, python-format
 msgid "Enter increment_download_1: %s"
 msgstr "Entrée dans increment_download_1 : %s"
 
-#: src/export_vn/transfer_vn.py:530
+#: src/export_vn/transfer_vn.py:534
 #, python-format
 msgid "%s => Starting incremental download using controler %s"
 msgstr "%s => Début du téléchargement incrémental du controleur %s"
 
-#: src/export_vn/transfer_vn.py:570
+#: src/export_vn/transfer_vn.py:574
 msgid "Starting incremental download jobs"
 msgstr "Lancement des jobs de téléchargement incrémental"
 
-#: src/export_vn/transfer_vn.py:599
+#: src/export_vn/transfer_vn.py:603
 msgid "Defining incremental download jobs"
 msgstr "Définition des jobs de téléchargement incrémental"
 
-#: src/export_vn/transfer_vn.py:612
+#: src/export_vn/transfer_vn.py:616
 #, python-format
 msgid "Scheduling increments on site %s"
 msgstr "Planification des incréments du site %s"
 
-#: src/export_vn/transfer_vn.py:616
+#: src/export_vn/transfer_vn.py:620
 #, python-format
 msgid "%s => Adding schedule for controler %s"
 msgstr "%s => Ajout de la planification du controleur %s"
 
-#: src/export_vn/transfer_vn.py:647
+#: src/export_vn/transfer_vn.py:651
 msgid "Download jobs status"
 msgstr "Status des jobs de téléchargement"
 
-#: src/export_vn/transfer_vn.py:674
+#: src/export_vn/transfer_vn.py:678
 #, python-format
 msgid "Getting counts from %s"
 msgstr "Récupérations de statistiques depuis %s"
 
-#: src/export_vn/transfer_vn.py:709
+#: src/export_vn/transfer_vn.py:713
 msgid "Site"
 msgstr "Site"
 
-#: src/export_vn/transfer_vn.py:710
+#: src/export_vn/transfer_vn.py:714
 msgid "TaxoName"
 msgstr "Taxon"
 
-#: src/export_vn/transfer_vn.py:711
+#: src/export_vn/transfer_vn.py:715
 msgid "Remote count"
 msgstr "Total distant"
 
-#: src/export_vn/transfer_vn.py:712
+#: src/export_vn/transfer_vn.py:716
 msgid "Local count"
 msgstr "Total local"
 
-#: src/export_vn/transfer_vn.py:718
+#: src/export_vn/transfer_vn.py:722
 #, python-format
 msgid "Can not retrieve informations from %s"
 msgstr "Impossible de récupérer les informations depuis %s"
 
-#: src/export_vn/transfer_vn.py:757
+#: src/export_vn/transfer_vn.py:761
 msgid "Started yappi"
 msgstr "Démarrage de yappi"
 
-#: src/export_vn/transfer_vn.py:769 src/schemas/validate.py:220
-#: src/template/sample_app.py:104 src/update/update_vn.py:221
+#: src/export_vn/transfer_vn.py:773 src/schemas/validate.py:220
+#: src/template/sample_app.py:104 src/update/update_uuid.py:246
+#: src/update/update_vn.py:221
 #, python-format
 msgid "%s, version %s"
 msgstr "%s, version %s"
 
-#: src/export_vn/transfer_vn.py:770 src/schemas/validate.py:221
-#: src/template/sample_app.py:105 src/update/update_vn.py:222
+#: src/export_vn/transfer_vn.py:774 src/schemas/validate.py:221
+#: src/template/sample_app.py:105 src/update/update_uuid.py:247
+#: src/update/update_vn.py:222
 #, python-format
 msgid "Arguments: %s"
 msgstr "Arguments : %s"
 
-#: src/export_vn/transfer_vn.py:774 src/template/sample_app.py:109
-#: src/update/update_vn.py:226
+#: src/export_vn/transfer_vn.py:778 src/template/sample_app.py:109
+#: src/update/update_uuid.py:251 src/update/update_vn.py:226
 msgid "Creating YAML configuration file"
 msgstr "Création du fichier de configuration YAML"
 
-#: src/export_vn/transfer_vn.py:782 src/schemas/validate.py:227
-#: src/template/sample_app.py:119 src/update/update_vn.py:236
+#: src/export_vn/transfer_vn.py:786 src/schemas/validate.py:227
+#: src/template/sample_app.py:119 src/update/update_uuid.py:261
+#: src/update/update_vn.py:236
 #, python-format
 msgid "Getting configuration data from %s"
 msgstr "Configuration à partir de %s"
 
-#: src/export_vn/transfer_vn.py:792
+#: src/export_vn/transfer_vn.py:796
 msgid "Storing to Postgresql cannot use long json_format."
 msgstr "Le stockage dans Postgresql ne peut pas utiliser le json_format long"
 
-#: src/export_vn/transfer_vn.py:793
+#: src/export_vn/transfer_vn.py:797
 msgid "Please modify YAML configuration and restart."
 msgstr "Merci de modifier la configuration YAML et de relancer"
 
-#: src/export_vn/transfer_vn.py:811
+#: src/export_vn/transfer_vn.py:815
 msgid "Create, if not exists, json tables"
 msgstr "Création, si elles n'existent pas, des tables json"
 
-#: src/export_vn/transfer_vn.py:815
+#: src/export_vn/transfer_vn.py:819
 msgid "Creating or recreating vn columns based tables"
 msgstr "Creation ou recréation des tables vn basées sur des colonnes"
 
-#: src/export_vn/transfer_vn.py:819
+#: src/export_vn/transfer_vn.py:823
 msgid "Performing a full download"
 msgstr "Lancement du téléchargement complèt"
 
-#: src/export_vn/transfer_vn.py:823
+#: src/export_vn/transfer_vn.py:827
 msgid "Creating or modifying incremental download schedule"
 msgstr "Création ou modification de la planification du téléchargement incrémental"
 
-#: src/export_vn/transfer_vn.py:827
+#: src/export_vn/transfer_vn.py:831
 msgid "Performing an incremental download"
 msgstr "Réalisation d'un téléchargement incrémental"
 
-#: src/export_vn/transfer_vn.py:831
+#: src/export_vn/transfer_vn.py:835
 msgid "Printing download status"
 msgstr "Impression du statut de téléchargement"
 
-#: src/export_vn/transfer_vn.py:835
+#: src/export_vn/transfer_vn.py:839
 msgid "Counting observations"
 msgstr "Statistiques des observations"
 
-#: src/export_vn/transfer_vn.py:840
+#: src/export_vn/transfer_vn.py:844
 msgid "Printing yappi results"
 msgstr "Impression des résultats yappi"
 
@@ -910,10 +917,67 @@ msgstr "Restauration des noms de fichier"
 msgid "Reporting on schemas"
 msgstr "Rapport sur les schémas"
 
-#: src/template/sample_app.py:116 src/update/update_vn.py:233
+#: src/template/sample_app.py:116 src/update/update_uuid.py:258
+#: src/update/update_vn.py:233
 #, python-format
 msgid "Configuration file %s does not exist"
 msgstr "Le fichier de configuration %s n'existe pas"
+
+#: src/update/update_uuid.py:71
+msgid "To be updated sightings file name, in TSV format"
+msgstr "Nom du fichier d'observations à mettre à jour, en format TSV"
+
+#: src/update/update_uuid.py:73
+msgid "Updated sightings file name, in TSV format"
+msgstr "Nom du fichier des observations mises à jour, en format TSV"
+
+#: src/update/update_uuid.py:77
+msgid "Number of input file to read in each chunk"
+msgstr "Nombre d'entrées à lire dans chaque bloc"
+
+#: src/update/update_uuid.py:83
+msgid "Total, across all script runs, of sightings to process"
+msgstr "Total, pour tous les scripts, des observations à traiter"
+
+#: src/update/update_uuid.py:119
+#, python-format
+msgid "Preparing update for site %s, max_done = %d, chunk = %d"
+msgstr "Préparation de la mise à jour du site %s, max_done = %d, chunk = %d"
+
+#: src/update/update_uuid.py:135
+#, python-format
+msgid "Loading UUID from %d to %d"
+msgstr "Chargement des UUID de %d à %d"
+
+#: src/update/update_uuid.py:149
+#, python-format
+msgid "Update # %s, sighting %s, uuid %s"
+msgstr "Mise à jour # %s, sighting %s, uuid %s"
+
+#: src/update/update_uuid.py:178 src/update/update_vn.py:136
+#, python-format
+msgid "Before: %s"
+msgstr "Avant : %s"
+
+#: src/update/update_uuid.py:195 src/update/update_vn.py:177
+#, python-format
+msgid "After: %s"
+msgstr "Après : %s"
+
+#: src/update/update_uuid.py:270 src/update/update_vn.py:245
+#, python-format
+msgid "Input file %s does not exist"
+msgstr "Le fichier d'entrée %s n'existe pas"
+
+#: src/update/update_uuid.py:273
+#, python-format
+msgid "Output file %s is extended"
+msgstr "Le ficher de sortie %s est étendue"
+
+#: src/update/update_uuid.py:275
+#, python-format
+msgid "Output file %s is created"
+msgstr "Le ficher de sortie %s est créé"
 
 #: src/update/update_vn.py:70
 msgid "Update list file name, in CSV format"
@@ -933,19 +997,4 @@ msgstr "Site %s : mise à jour de l'observation %s, opération %s"
 #, python-format
 msgid "Unknown operation in row, ignored %s"
 msgstr "Opération inconnue ignorée au rang %s"
-
-#: src/update/update_vn.py:136
-#, python-format
-msgid "Before: %s"
-msgstr "Avant : %s"
-
-#: src/update/update_vn.py:177
-#, python-format
-msgid "After: %s"
-msgstr "Après : %s"
-
-#: src/update/update_vn.py:245
-#, python-format
-msgid "Input file %s does not exist"
-msgstr "Le fichier d'entrée %s n'existe pas"
 
