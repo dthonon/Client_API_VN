@@ -1,2 +1,0 @@
-Update_vn would fail if EOL character is in private_comment.
-This should be solved by removing EOL from the comment.

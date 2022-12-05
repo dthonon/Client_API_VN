@@ -1,3 +1,27 @@
+Client-API-VN v2.11.1 (2022-12-05)
+==================================
+
+Bugfixes
+--------
+
+- Update_vn would fail if EOL character is in private_comment.
+  This should be solved by removing EOL from the comment. (`#300 <https://framagit.org/lpo/Client_API_VN/issues/300>`_)
+
+
+Improved Documentation
+----------------------
+
+- Added an example of database usage. (`#279 <https://framagit.org/lpo/Client_API_VN/issues/279>`_)
+- Installation on Windows is now documented.
+  Tested for update_vn script only. (`#284 <https://framagit.org/lpo/Client_API_VN/issues/284>`_)
+
+
+Misc
+----
+
+- `#290 <https://framagit.org/lpo/Client_API_VN/issues/290>`_
+
+
 Client-API-VN v2.11.0 (2022-06-26)
 =================================
 
