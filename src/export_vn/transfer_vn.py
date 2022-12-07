@@ -391,7 +391,7 @@ def migrate(cfg, sql_quiet, client_min_message):
         subprocess.run(
             "alembic -x db_schema_import="
             + cfg.db_schema_import
-            +" -x db_url=postgresql://"
+            + " -x db_url=postgresql://"
             + cfg.db_user
             + ":"
             + cfg.db_pw
