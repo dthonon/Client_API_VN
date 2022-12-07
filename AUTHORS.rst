@@ -2,10 +2,10 @@
 Contributors
 ============
 
-* Daniel Thonon - *Initial work* - https://framagit.org/dthonon
-* Frédéric Cloitre - *Testing and bug fixing* - https://framagit.org/fred.perso
+* Daniel Thonon - *Initial work* - https://github.com/dthonon
+* Frédéric Cloitre - *Testing and bug fixing* - https://github.com/lpofredc
 
-See also the list of contributors at https://framagit.org/lpo/Client_API_VN/.
+See also the list of contributors at https://github.com/dthonon/Client_API_VN/graphs/contributors.
 
 Acknowledgments
 ---------------

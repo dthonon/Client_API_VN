@@ -147,7 +147,7 @@ def update(cfg_ctrl, input: str):
                         try:
                             msg = sighting["data"]["sightings"][0]["observers"][0][
                                 "hidden_comment"
-                            ]
+                            ].replace("\n", "").replace("\r", "")
                         except KeyError:  # pragma: no cover
                             msg = ""
                         # Prepare logging message to be appended to hidden_comment
@@ -164,7 +164,7 @@ def update(cfg_ctrl, input: str):
                         )
                         if row[3].strip() == "replace":
                             exec("{} = {}".format(repl, "row[4].strip()"))
-                        else:
+                        else:  # delete_attribute
                             try:
                                 exec("del {}".format(repl))
                             except KeyError:  # pragma: no cover

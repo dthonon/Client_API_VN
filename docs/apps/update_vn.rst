@@ -82,11 +82,10 @@ where::
 --init                 Initialize the YAML configuration file
 
 
-
 Operations Templates
 ====================
 
-The following examples can be used as templates::
+The following examples can be used as templates:
 
 Modification du code projet
 ---------------------------

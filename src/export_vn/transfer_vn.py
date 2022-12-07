@@ -389,12 +389,16 @@ def migrate(cfg, sql_quiet, client_min_message):
     )
     try:
         subprocess.run(
-            "alembic -x db_schema_import=import -x db_url=postgresql://"
+            "alembic -x db_schema_import="
+            + cfg.db_schema_import
+            + " -x db_url=postgresql://"
             + cfg.db_user
             + ":"
             + cfg.db_pw
             + "@"
             + cfg.db_host
+            + ":"
+            + cfg.db_port
             + "/"
             + cfg.db_name
             + "--config src/alembic.ini upgrade head",

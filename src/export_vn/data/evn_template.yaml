@@ -133,6 +133,7 @@ filter:
         #- TAXO_GROUP_BRANCHIOPODA
         - TAXO_GROUP_ALIEN_PLANTS
     # List of territorial_unit_ids to download
+    # Note : use the territory short_name, not the territory id
     # Comment out to download all territorial_units
     # territorial_unit_ids:
         #- 7
