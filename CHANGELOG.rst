@@ -23,7 +23,7 @@ Misc
 
 
 Client-API-VN v2.11.0 (2022-06-26)
-=================================
+==================================
 
 Features
 --------
@@ -34,7 +34,7 @@ Features
 Bugfixes
 --------
 
-- Username and password are now replaced by "***" in log file. (`#267 <https://framagit.org/lpo/Client_API_VN/issues/267>`_)
+- Username and password are now replaced by `***` in log file. (`#267 <https://framagit.org/lpo/Client_API_VN/issues/267>`_)
 
 
 Misc
@@ -57,9 +57,9 @@ Features
   Please run `transfer_vn --migrate` to update your database to
   revision ID: 1929ad3f463c. (`#185 <https://framagit.org/lpo/Client_API_VN/issues/185>`_)
 - wkt field, containing transects, is available in places table.
-  Please run ``transfer_vn --col-table-create`` to update the database. (`#191 <https://framagit.org/lpo/Client_API_VN/issues/191>`_)
+  Please run `transfer_vn --col-table-create` to update the database. (`#191 <https://framagit.org/lpo/Client_API_VN/issues/191>`_)
 - Column source has been added to observations table.
-  Please run ``transfer_vn --col-table-create`` to update the database. (`#192 <https://framagit.org/lpo/Client_API_VN/issues/192>`_)
+  Please run `transfer_vn --col-table-create` to update the database. (`#192 <https://framagit.org/lpo/Client_API_VN/issues/192>`_)
 
 
 Bugfixes
@@ -74,8 +74,8 @@ Improved Documentation
 ----------------------
 
 - Documentation is available for transfer_vn and update_vn, see 
-  `Documentation <https://client-api-vn1.readthedocs.io/en/latest/apps/transfer_vn.html>`_ and
-  `Documentation <https://client-api-vn1.readthedocs.io/en/latest/apps/update_vn.html>`_ (`#180 <https://framagit.org/lpo/Client_API_VN/issues/180>`_)
+  `transfer_vn Documentation <https://client-api-vn1.readthedocs.io/en/latest/apps/transfer_vn.html>`_ and
+  `update_vn Documentation <https://client-api-vn1.readthedocs.io/en/latest/apps/update_vn.html>`_ (`#180 <https://framagit.org/lpo/Client_API_VN/issues/180>`_)
 - JSON schemas are updated to reflect latest API downloads. (`#193 <https://framagit.org/lpo/Client_API_VN/issues/193>`_)
 
 
