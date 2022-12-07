@@ -34,7 +34,7 @@ Features
 Bugfixes
 --------
 
-- Username and password are now replaced by `***` in log file. (`#267 <https://github.com/dthonon/Client_API_VN/issues/267>`_)
+- Username and password are now replaced by `***` in log file. (`#267 <https://framagit.org/lpo/Client_API_VN/issues/267>`_)
 
 
 Misc
@@ -49,9 +49,9 @@ Client-API-VN v2.10.0 (2022-04-17)
 Features
 --------
 
-- A new action is available: ``transfer_vn --migrate``.
+- A new action is available: `transfer_vn --migrate`.
   This action updates the JSON schema to the latest version.
-  Running this action is requsted in the CHANGELOG, if needed. (`#184 <https://github.com/dthonon/Client_API_VN/issues/184>`_)
+  Running this action is requested in the CHANGELOG, if needed. (`#184 <https://github.com/dthonon/Client_API_VN/issues/184>`_)
 - New missing index on observations_json.id_form_universal field.
 
   Please run `transfer_vn --migrate` to update your database to

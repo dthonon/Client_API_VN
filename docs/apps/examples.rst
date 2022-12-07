@@ -8,7 +8,7 @@ Nature-isere export
 The following SQL code creates view on the database for Nature-isere.
 It can be used as a base for defining views on the database, for export.
 
-.. code:: sql
+.. code:: psql
 
     --
     -- Initialisation de la base pour export vers nature_isere
