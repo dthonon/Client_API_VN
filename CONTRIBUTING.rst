@@ -39,9 +39,9 @@ Add the following lines to .bashrc, to enable pyenv and venv::
 Downloading source
 ------------------
 
-Clone framagit repository::
+Clone github repository::
 
-    git clone https://framagit.org/lpo/Client_API_VN.git
+    git clone https://github.com/dthonon/Client_API_VN.git
     cd Client_API_VN
     git checkout develop
 
@@ -57,19 +57,19 @@ Run::
 Code changes
 ------------
 
-Code changes must be related to an framagit issue. Any development, except
+Code changes must be related to an github issue. Any development, except
 urgent patches, must be done on the develop branch.
 
 The prefered editor is MS Visual Studio Code, with `blake` formating.
 
-Each commit must include a reference to the framagit issue and must be
+Each commit must include a reference to the github issue and must be
 documented.
 Changes are documented using towncrier (https://pypi.org/project/towncrier/).
 To document a change :
 
 1. Create a file in newsfragment, named `issue.type`, where:
 
-    - `issue` is the framagit issue number
+    - `issue` is the github issue number
     - `type` describes the type of change:
 
         - `feature`: Signifying a new feature.

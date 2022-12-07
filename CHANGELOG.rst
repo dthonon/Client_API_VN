@@ -5,21 +5,21 @@ Bugfixes
 --------
 
 - Update_vn would fail if EOL character is in private_comment.
-  This should be solved by removing EOL from the comment. (`#300 <https://framagit.org/lpo/Client_API_VN/issues/300>`_)
+  This should be solved by removing EOL from the comment. (`#300 <https://github.com/dthonon/Client_API_VN/issues/300>`_)
 
 
 Improved Documentation
 ----------------------
 
-- Added an example of database usage. (`#279 <https://framagit.org/lpo/Client_API_VN/issues/279>`_)
+- Added an example of database usage. (`#279 <https://github.com/dthonon/Client_API_VN/issues/279>`_)
 - Installation on Windows is now documented.
-  Tested for update_vn script only. (`#284 <https://framagit.org/lpo/Client_API_VN/issues/284>`_)
+  Tested for update_vn script only. (`#284 <https://github.com/dthonon/Client_API_VN/issues/284>`_)
 
 
 Misc
 ----
 
-- `#290 <https://framagit.org/lpo/Client_API_VN/issues/290>`_
+- `#290 <https://github.com/dthonon/Client_API_VN/issues/290>`_
 
 
 Client-API-VN v2.11.0 (2022-06-26)
@@ -28,7 +28,7 @@ Client-API-VN v2.11.0 (2022-06-26)
 Features
 --------
 
-- Places are downloaded by increment when using `--update`. (`#166 <https://framagit.org/lpo/Client_API_VN/issues/166>`_)
+- Places are downloaded by increment when using `--update`. (`#166 <https://github.com/dthonon/Client_API_VN/issues/166>`_)
 
 
 Bugfixes
@@ -40,7 +40,7 @@ Bugfixes
 Misc
 ----
 
-- Upgraded code for URL() deprecation. `#143 <https://framagit.org/lpo/Client_API_VN/issues/143>`_
+- Upgraded code for URL() deprecation. `#143 <https://github.com/dthonon/Client_API_VN/issues/143>`_
 
 
 Client-API-VN v2.10.0 (2022-04-17)
@@ -51,38 +51,38 @@ Features
 
 - A new action is available: `transfer_vn --migrate`.
   This action updates the JSON schema to the latest version.
-  Running this action is requested in the CHANGELOG, if needed. (`#184 <https://framagit.org/lpo/Client_API_VN/issues/184>`_)
+  Running this action is requested in the CHANGELOG, if needed. (`#184 <https://github.com/dthonon/Client_API_VN/issues/184>`_)
 - New missing index on observations_json.id_form_universal field.
 
   Please run `transfer_vn --migrate` to update your database to
-  revision ID: 1929ad3f463c. (`#185 <https://framagit.org/lpo/Client_API_VN/issues/185>`_)
+  revision ID: 1929ad3f463c. (`#185 <https://github.com/dthonon/Client_API_VN/issues/185>`_)
 - wkt field, containing transects, is available in places table.
-  Please run `transfer_vn --col-table-create` to update the database. (`#191 <https://framagit.org/lpo/Client_API_VN/issues/191>`_)
+  Please run `transfer_vn --col-table-create` to update the database. (`#191 <https://github.com/dthonon/Client_API_VN/issues/191>`_)
 - Column source has been added to observations table.
-  Please run `transfer_vn --col-table-create` to update the database. (`#192 <https://framagit.org/lpo/Client_API_VN/issues/192>`_)
+  Please run `transfer_vn --col-table-create` to update the database. (`#192 <https://github.com/dthonon/Client_API_VN/issues/192>`_)
 
 
 Bugfixes
 --------
 
-- Storing to files works. (`#175 <https://framagit.org/lpo/Client_API_VN/issues/175>`_)
-- Storing to files in JSON long format works. (`#183 <https://framagit.org/lpo/Client_API_VN/issues/183>`_)
-- Transfers ending with HTTPerror are now logged in download_log table. (`#189 <https://framagit.org/lpo/Client_API_VN/issues/189>`_)
+- Storing to files works. (`#175 <https://github.com/dthonon/Client_API_VN/issues/175>`_)
+- Storing to files in JSON long format works. (`#183 <https://github.com/dthonon/Client_API_VN/issues/183>`_)
+- Transfers ending with HTTPerror are now logged in download_log table. (`#189 <https://github.com/dthonon/Client_API_VN/issues/189>`_)
 
 
 Improved Documentation
 ----------------------
 
 - Documentation is available for transfer_vn and update_vn, see 
-  `transfer_vn Documentation <https://client-api-vn1.readthedocs.io/en/latest/apps/transfer_vn.html>`_ and
-  `update_vn Documentation <https://client-api-vn1.readthedocs.io/en/latest/apps/update_vn.html>`_ (`#180 <https://framagit.org/lpo/Client_API_VN/issues/180>`_)
-- JSON schemas are updated to reflect latest API downloads. (`#193 <https://framagit.org/lpo/Client_API_VN/issues/193>`_)
+  `transfer_vn Documentation <https://client-api-readthedocs.io/en/latest/apps/transfer_vn.html>`_ and
+  `update_vn Documentation <https://client-api-readthedocs.io/en/latest/apps/update_vn.html>`_ (`#180 <https://github.com/dthonon/Client_API_VN/issues/180>`_)
+- JSON schemas are updated to reflect latest API downloads. (`#193 <https://github.com/dthonon/Client_API_VN/issues/193>`_)
 
 
 Misc
 ----
 
-- `#188 <https://framagit.org/lpo/Client_API_VN/issues/188>`_
+- `#188 <https://github.com/dthonon/Client_API_VN/issues/188>`_
 
 
 Client-API-VN v2.9.3 (2021-11-08)
@@ -93,10 +93,10 @@ Bugfixes
 
 - Observations were not deleted from PG database if deleted in Biolovision site.
   This is fixed and deletion are now synchronized.
-  A full download is required to delete previous observations. (`#171 <https://framagit.org/lpo/Client_API_VN/issues/171>`_)
+  A full download is required to delete previous observations. (`#171 <https://github.com/dthonon/Client_API_VN/issues/171>`_)
 - Parameter max_chunks has been raised, by default to 1000, 
   to allow for much larger transfers.
-  Please consider modifying your existing YAML configuration files. (`#178 <https://framagit.org/lpo/Client_API_VN/issues/178>`_)
+  Please consider modifying your existing YAML configuration files. (`#178 <https://github.com/dthonon/Client_API_VN/issues/178>`_)
 
 
 Client-API-VN v2.9.2 (2021-11-03)
@@ -105,18 +105,18 @@ Client-API-VN v2.9.2 (2021-11-03)
 Bugfixes
 --------
 
-- In download_log table, the number of observations updated is now correct. (`#157 <https://framagit.org/lpo/Client_API_VN/issues/157>`_)
+- In download_log table, the number of observations updated is now correct. (`#157 <https://github.com/dthonon/Client_API_VN/issues/157>`_)
 - Downloading a taxo_group with limited access will raise HTTP 401 error,
   it the account does not have access right. In that case, 
-  it must be excluded in YAML file. (`#165 <https://framagit.org/lpo/Client_API_VN/issues/165>`_)
+  it must be excluded in YAML file. (`#165 <https://github.com/dthonon/Client_API_VN/issues/165>`_)
 
 
 Improved Documentation
 ----------------------
 
 - Minimal versions of supported OS has been updated.
-  They are tested under Linux Ubuntu >20 or Debian 10. (`#163 <https://framagit.org/lpo/Client_API_VN/issues/163>`_)
-- Minimal documentation of transfer_vn is available. (`#164 <https://framagit.org/lpo/Client_API_VN/issues/164>`_)
+  They are tested under Linux Ubuntu >20 or Debian 10. (`#163 <https://github.com/dthonon/Client_API_VN/issues/163>`_)
+- Minimal documentation of transfer_vn is available. (`#164 <https://github.com/dthonon/Client_API_VN/issues/164>`_)
 
 
 Client-API-VN v2.9.1 (2021-10-31)
@@ -126,9 +126,9 @@ Bugfixes
 --------
 
 - Several transient errors could stop transfer_vn after max_retry errors.
-  This is fixed: a succesful transfer resets the error counter. (`#155 <https://framagit.org/lpo/Client_API_VN/issues/155>`_)
-- Places are now downloaded and stored correctly. (`#168 <https://framagit.org/lpo/Client_API_VN/issues/168>`_)
-- Very long transfer duration are now handled without error. (`#176 <https://framagit.org/lpo/Client_API_VN/issues/176>`_)
+  This is fixed: a succesful transfer resets the error counter. (`#155 <https://github.com/dthonon/Client_API_VN/issues/155>`_)
+- Places are now downloaded and stored correctly. (`#168 <https://github.com/dthonon/Client_API_VN/issues/168>`_)
+- Very long transfer duration are now handled without error. (`#176 <https://github.com/dthonon/Client_API_VN/issues/176>`_)
 
 
 Client-API-VN v2.9.0 (2021-10-11)
@@ -138,32 +138,32 @@ Features
 --------
 
 - In case of HTTP error, the error message in the text included
-  in the response is printed. (`#156 <https://framagit.org/lpo/Client_API_VN/issues/156>`_)
+  in the response is printed. (`#156 <https://github.com/dthonon/Client_API_VN/issues/156>`_)
 - Supported python versions are 3.7 to 3.9.
-  Previous versions are not supported and will not work. (`#172 <https://framagit.org/lpo/Client_API_VN/issues/172>`_)
+  Previous versions are not supported and will not work. (`#172 <https://github.com/dthonon/Client_API_VN/issues/172>`_)
 - observations/delete_list is available in biolovision/apy.
   Note that id_form or id_form_universal to delete must be
-  included in data dict. (`#173 <https://framagit.org/lpo/Client_API_VN/issues/173>`_)
+  included in data dict. (`#173 <https://github.com/dthonon/Client_API_VN/issues/173>`_)
 
 
 Bugfixes
 --------
 
 - update_vn now accepts single quote "'" in value parameter.
-  It must be quoted with double-quote, i.e. "aujourd'hui". (`#154 <https://framagit.org/lpo/Client_API_VN/issues/154>`_)
+  It must be quoted with double-quote, i.e. "aujourd'hui". (`#154 <https://github.com/dthonon/Client_API_VN/issues/154>`_)
 
 
 Improved Documentation
 ----------------------
 
-- Link to documentation now refer to readthedocs/stable. (`#160 <https://framagit.org/lpo/Client_API_VN/issues/160>`_)
-- Running transfer_vn from cron is now documented in README (`#174 <https://framagit.org/lpo/Client_API_VN/issues/174>`_)
+- Link to documentation now refer to readthedocs/stable. (`#160 <https://github.com/dthonon/Client_API_VN/issues/160>`_)
+- Running transfer_vn from cron is now documented in README (`#174 <https://github.com/dthonon/Client_API_VN/issues/174>`_)
 
 
 Misc
 ----
 
-- `#68 <https://framagit.org/lpo/Client_API_VN/issues/68>`_
+- `#68 <https://github.com/dthonon/Client_API_VN/issues/68>`_
 
 
 Client-API-VN v2.8.1 (2021-06-02)
@@ -179,21 +179,21 @@ Features
       ALTER TABLE import.download_log ADD COLUMN duration integer;
       CREATE INDEX ix_import_download_log_duration ON import.download_log USING btree(duration);
       CREATE INDEX ix_import_download_log_length ON import.download_log USING btree(length); 
-- confirmed_by is now available in observations table. (`#151 <https://framagit.org/lpo/Client_API_VN/issues/151>`_)
+- confirmed_by is now available in observations table. (`#151 <https://github.com/dthonon/Client_API_VN/issues/151>`_)
 
 
 Bugfixes
 --------
 
-- When dropping database (--db_drop), transfer_vn just logs a warning if the role is still used and cannot be dropped. (`#148 <https://framagit.org/lpo/Client_API_VN/issues/148>`_)
+- When dropping database (--db_drop), transfer_vn just logs a warning if the role is still used and cannot be dropped. (`#148 <https://github.com/dthonon/Client_API_VN/issues/148>`_)
 - When no territorial_unit_ids parameter is defined in YAML configuration file,
-  all territorial_units are downloaded. (`#150 <https://framagit.org/lpo/Client_API_VN/issues/150>`_)
+  all territorial_units are downloaded. (`#150 <https://github.com/dthonon/Client_API_VN/issues/150>`_)
 
 
 Improved Documentation
 ----------------------
 
-- JSON schemas are updated. (`#149 <https://framagit.org/lpo/Client_API_VN/issues/149>`_)
+- JSON schemas are updated. (`#149 <https://github.com/dthonon/Client_API_VN/issues/149>`_)
 
 
 Client-API-VN v2.8.0 (2021-04-10)
@@ -210,38 +210,38 @@ Features
           - 01
           - 03
 
-  (`#134 <https://framagit.org/lpo/Client_API_VN/issues/134>`_)
-- In observations table, project_code is indexed. (`#142 <https://framagit.org/lpo/Client_API_VN/issues/142>`_)
+  (`#134 <https://github.com/dthonon/Client_API_VN/issues/134>`_)
+- In observations table, project_code is indexed. (`#142 <https://github.com/dthonon/Client_API_VN/issues/142>`_)
 - UUID, from JSON dowloaded, is now stored in observations table.
-  `import.uuid_xref` is removed. (`#146 <https://framagit.org/lpo/Client_API_VN/issues/146>`_)
+  `import.uuid_xref` is removed. (`#146 <https://github.com/dthonon/Client_API_VN/issues/146>`_)
 
 
 Bugfixes
 --------
 
-- update_vn gracefuly ignores empty line in CSV file. (`#130 <https://framagit.org/lpo/Client_API_VN/issues/130>`_)
-- evn_conf raises an exception if configuration file does not exist. (`#132 <https://framagit.org/lpo/Client_API_VN/issues/132>`_)
-- Number of downloaded sightings is now displayed for each territorial_unit. (`#137 <https://framagit.org/lpo/Client_API_VN/issues/137>`_)
-- Both schemas are now created with `db_group` owner. (`#140 <https://framagit.org/lpo/Client_API_VN/issues/140>`_)
+- update_vn gracefuly ignores empty line in CSV file. (`#130 <https://github.com/dthonon/Client_API_VN/issues/130>`_)
+- evn_conf raises an exception if configuration file does not exist. (`#132 <https://github.com/dthonon/Client_API_VN/issues/132>`_)
+- Number of downloaded sightings is now displayed for each territorial_unit. (`#137 <https://github.com/dthonon/Client_API_VN/issues/137>`_)
+- Both schemas are now created with `db_group` owner. (`#140 <https://github.com/dthonon/Client_API_VN/issues/140>`_)
 - Updating sightings within forms is now possible.
   Changing data of a sighting inside a forms should use the simple path::
 
     Isère;3079911;$['data']['sightings'][0]['observers'][0]['project'];replace;26
 
-  and not include `['forms'][0]`. (`#141 <https://framagit.org/lpo/Client_API_VN/issues/141>`_)
+  and not include `['forms'][0]`. (`#141 <https://github.com/dthonon/Client_API_VN/issues/141>`_)
 
 
 Improved Documentation
 ----------------------
 
-- Documentation improvement for API and installation. (`#129 <https://framagit.org/lpo/Client_API_VN/issues/129>`_)
+- Documentation improvement for API and installation. (`#129 <https://github.com/dthonon/Client_API_VN/issues/129>`_)
 
 
 Deprecations and Removals
 -------------------------
 
 - Support for list download is deprecated and will be removed in a future version.
-  Download should only be performed using search method. (`#135 <https://framagit.org/lpo/Client_API_VN/issues/135>`_)
+  Download should only be performed using search method. (`#135 <https://github.com/dthonon/Client_API_VN/issues/135>`_)
 
 
 Client-API-VN v2.7.1 (2021-02-07)
@@ -250,7 +250,7 @@ Client-API-VN v2.7.1 (2021-02-07)
 Bugfixes
 --------
 
-- In column based tables, all text is now stored as TEXT instead of VACHAR(n) (`#138 <https://framagit.org/lpo/Client_API_VN/issues/138>`_)
+- In column based tables, all text is now stored as TEXT instead of VACHAR(n) (`#138 <https://github.com/dthonon/Client_API_VN/issues/138>`_)
 
 
 Client-API-VN v2.7.0 (2020-07-06)
@@ -268,11 +268,11 @@ Features
 
       database:
           # Enable storing to database
-          enabled: true (`#63 <https://framagit.org/lpo/Client_API_VN/issues/63>`_)
+          enabled: true (`#63 <https://github.com/dthonon/Client_API_VN/issues/63>`_)
 - Validation controler is available in biolovision.api.
-   (`#74 <https://framagit.org/lpo/Client_API_VN/issues/74>`_)
+   (`#74 <https://github.com/dthonon/Client_API_VN/issues/74>`_)
 - In case of service unavailable error (HTTP 503), wait for longer delay
-  before retry. Delay can be changed by YAML parameter unavailable_delay. (`#94 <https://framagit.org/lpo/Client_API_VN/issues/94>`_)
+  before retry. Delay can be changed by YAML parameter unavailable_delay. (`#94 <https://github.com/dthonon/Client_API_VN/issues/94>`_)
 - Added field information from JSON download.
 
   In field_group table :
@@ -280,34 +280,34 @@ Features
   - group_v, from 'group' attributé
 
   in field_details table :
-  - text_v, from 'text' attribute (`#107 <https://framagit.org/lpo/Client_API_VN/issues/107>`_)
+  - text_v, from 'text' attribute (`#107 <https://github.com/dthonon/Client_API_VN/issues/107>`_)
 - New commands added to update_vn.
   - delete_attribute, to keep the observation and remove the attribute with the given path
-  - delete_observation, to remove completely the observation (`#113 <https://framagit.org/lpo/Client_API_VN/issues/113>`_)
-- Python version 3.8 is now supported. (`#116 <https://framagit.org/lpo/Client_API_VN/issues/116>`_)
-- Added families controler in api and download_vn. (`#120 <https://framagit.org/lpo/Client_API_VN/issues/120>`_)
+  - delete_observation, to remove completely the observation (`#113 <https://github.com/dthonon/Client_API_VN/issues/113>`_)
+- Python version 3.8 is now supported. (`#116 <https://github.com/dthonon/Client_API_VN/issues/116>`_)
+- Added families controler in api and download_vn. (`#120 <https://github.com/dthonon/Client_API_VN/issues/120>`_)
 - A new application, validate, checks downloaded JSON files against its schema.
-  JSON schemas are used to document the dowloaded files. (`#123 <https://framagit.org/lpo/Client_API_VN/issues/123>`_)
-- update_vn adds "updated" date in the hidden_comment (`#127 <https://framagit.org/lpo/Client_API_VN/issues/127>`_)
+  JSON schemas are used to document the dowloaded files. (`#123 <https://github.com/dthonon/Client_API_VN/issues/123>`_)
+- update_vn adds "updated" date in the hidden_comment (`#127 <https://github.com/dthonon/Client_API_VN/issues/127>`_)
 
 
 Bugfixes
 --------
 
 - Scheduled jobs are now terminated by Ctrl-C. 
-  There is still an OSError raised during shutdown. (`#96 <https://framagit.org/lpo/Client_API_VN/issues/96>`_)
-- Option --status does not start pending tasks. (`#112 <https://framagit.org/lpo/Client_API_VN/issues/112>`_)
-- update_vn accepts files with leading or trailing blanks in the values. (`#118 <https://framagit.org/lpo/Client_API_VN/issues/118>`_)
+  There is still an OSError raised during shutdown. (`#96 <https://github.com/dthonon/Client_API_VN/issues/96>`_)
+- Option --status does not start pending tasks. (`#112 <https://github.com/dthonon/Client_API_VN/issues/112>`_)
+- update_vn accepts files with leading or trailing blanks in the values. (`#118 <https://github.com/dthonon/Client_API_VN/issues/118>`_)
 - Long json_format was not enforced by transfer_vn. 
   When json_format: long is defined in YAML file and file storage is enablesd,
   files are now correctly containing long JSON data.
-  Note: long json_format is not compatible with PostgreSQL storage. (`#122 <https://framagit.org/lpo/Client_API_VN/issues/122>`_)
+  Note: long json_format is not compatible with PostgreSQL storage. (`#122 <https://github.com/dthonon/Client_API_VN/issues/122>`_)
 
 
 Misc
 ----
 
-- `#75 <https://framagit.org/lpo/Client_API_VN/issues/75>`_, `#104 <https://framagit.org/lpo/Client_API_VN/issues/104>`_, `#111 <https://framagit.org/lpo/Client_API_VN/issues/111>`_, `#114 <https://framagit.org/lpo/Client_API_VN/issues/114>`_, `#115 <https://framagit.org/lpo/Client_API_VN/issues/115>`_
+- `#75 <https://github.com/dthonon/Client_API_VN/issues/75>`_, `#104 <https://github.com/dthonon/Client_API_VN/issues/104>`_, `#111 <https://github.com/dthonon/Client_API_VN/issues/111>`_, `#114 <https://github.com/dthonon/Client_API_VN/issues/114>`_, `#115 <https://github.com/dthonon/Client_API_VN/issues/115>`_
 
 
 Client-API-VN v2.6.4 (2020-04-01)
@@ -316,19 +316,19 @@ Client-API-VN v2.6.4 (2020-04-01)
 Features
 --------
 
-- In biolovision.api, api_create and api_delete are implemented. (`#98 <https://framagit.org/lpo/Client_API_VN/issues/98>`_)
+- In biolovision.api, api_create and api_delete are implemented. (`#98 <https://github.com/dthonon/Client_API_VN/issues/98>`_)
 
 
 Bugfixes
 --------
 
-- In biolovision.api, api_search works again (corrected regression). (`#102 <https://framagit.org/lpo/Client_API_VN/issues/102>`_)
+- In biolovision.api, api_search works again (corrected regression). (`#102 <https://github.com/dthonon/Client_API_VN/issues/102>`_)
 - end_date and start_date are now correctly used, ie:
   interval starts with start_date and ends with end_date.
   Exception is raised if not in correct order.
-  NOTE : if used in YAML, please check the correct order. (`#105 <https://framagit.org/lpo/Client_API_VN/issues/105>`_)
+  NOTE : if used in YAML, please check the correct order. (`#105 <https://github.com/dthonon/Client_API_VN/issues/105>`_)
 - When using --update, the list of new observations could get too long and return HTTP error 414.
-  Update list are now chunked, and chunk size is controled by YAML parameter max_list_length. (`#109 <https://framagit.org/lpo/Client_API_VN/issues/109>`_)
+  Update list are now chunked, and chunk size is controled by YAML parameter max_list_length. (`#109 <https://github.com/dthonon/Client_API_VN/issues/109>`_)
 
 
 Client-API-VN v2.6.3 (2020-03-14)
@@ -338,7 +338,7 @@ Bugfixes
 --------
 
 - api_search, used in full download, was returning an empty dict.
-  It is now working correctly. (`#108 <https://framagit.org/lpo/Client_API_VN/issues/108>`_)
+  It is now working correctly. (`#108 <https://github.com/dthonon/Client_API_VN/issues/108>`_)
 
 
 Client-API-VN v2.6.0 (2019-10-17)
@@ -348,9 +348,9 @@ Features
 --------
 
 - A sample application is available in src/template. Copy sample_app.py
-  and __init__.py to a new directory to start creating a new application. (`#100 <https://framagit.org/lpo/Client_API_VN/issues/100>`_)
+  and __init__.py to a new directory to start creating a new application. (`#100 <https://github.com/dthonon/Client_API_VN/issues/100>`_)
 - update_vn application is available for field test.
-  See README for details on how to use it. (`#101 <https://framagit.org/lpo/Client_API_VN/issues/101>`_)
+  See README for details on how to use it. (`#101 <https://github.com/dthonon/Client_API_VN/issues/101>`_)
 
 
 Client-API-VN v2.5.2 (2019-10-06)
@@ -360,7 +360,7 @@ Features
 --------
 
 - Application is now available as docker container.
-  See README for installation instructions. (`#95 <https://framagit.org/lpo/Client_API_VN/issues/95>`_)
+  See README for installation instructions. (`#95 <https://github.com/dthonon/Client_API_VN/issues/95>`_)
 
 
 Client-API-VN v2.5.0 (2019-10-01)
@@ -451,15 +451,15 @@ Features
                   day_of_week: 3
                   hour: 23
 
-  (`#24 <https://framagit.org/lpo/Client_API_VN/issues/24>`_)
+  (`#24 <https://github.com/dthonon/Client_API_VN/issues/24>`_)
 
 - When using --update option, observations create or update are
   grouped in a single API call. This should improve performances.
-  download_log table now contains one row for each group of updates. (`#76 <https://framagit.org/lpo/Client_API_VN/issues/76>`_)
+  download_log table now contains one row for each group of updates. (`#76 <https://github.com/dthonon/Client_API_VN/issues/76>`_)
 - For developers: biolovision_api.py moved to an independant module.
-  Replace ``from export_vn.biolovision_api import ...`` by ``from biolovision.api import ...`` (`#88 <https://framagit.org/lpo/Client_API_VN/issues/88>`_)
+  Replace ``from export_vn.biolovision_api import ...`` by ``from biolovision.api import ...`` (`#88 <https://github.com/dthonon/Client_API_VN/issues/88>`_)
 - In case of parsing error in YAML configuration file,
-  the error message is printed without traceback. (`#89 <https://framagit.org/lpo/Client_API_VN/issues/89>`_)
+  the error message is printed without traceback. (`#89 <https://github.com/dthonon/Client_API_VN/issues/89>`_)
 - A new ``filter:`` section is added to YAML configuration file.
   ``taxo_exclude:`` list needs to be moved to this new section.
 
@@ -519,13 +519,13 @@ Features
           # start_date: 2019-09-01
           # end_date: 2019-08-01
 
-  (`#93 <https://framagit.org/lpo/Client_API_VN/issues/93>`_)
+  (`#93 <https://github.com/dthonon/Client_API_VN/issues/93>`_)
 
 
 Misc
 ----
 
-- `#36 <https://framagit.org/lpo/Client_API_VN/issues/36>`_, `#84 <https://framagit.org/lpo/Client_API_VN/issues/84>`_
+- `#36 <https://github.com/dthonon/Client_API_VN/issues/36>`_, `#84 <https://github.com/dthonon/Client_API_VN/issues/84>`_
 
 
 Client-API-VN v2.4.4 (2019-08-22)
@@ -540,7 +540,7 @@ Features
       date_start          DATE
       date_stop           DATE
 
-(`#86 <https://framagit.org/lpo/Client_API_VN/issues/86>`_)
+(`#86 <https://github.com/dthonon/Client_API_VN/issues/86>`_)
 
 
 Client-API-VN v2.4.3 (2019-08-22)
@@ -549,19 +549,19 @@ Client-API-VN v2.4.3 (2019-08-22)
 Features
 --------
 
-- Added protocol_name column in forms table. (`#85 <https://framagit.org/lpo/Client_API_VN/issues/85>`_)
+- Added protocol_name column in forms table. (`#85 <https://github.com/dthonon/Client_API_VN/issues/85>`_)
 
 
 Bugfixes
 --------
 
 - VACUUM is only performed on json and column-based tables created by transfer_vn.
-  This avoids a lengthy VACUUM on the full database. (`#70 <https://framagit.org/lpo/Client_API_VN/issues/70>`_)
-- Corrected loggin message "Updating observation {}" (`#79 <https://framagit.org/lpo/Client_API_VN/issues/79>`_)
-- UUID are now correctly created for all observations. (`#80 <https://framagit.org/lpo/Client_API_VN/issues/80>`_)
-- In observations, date and date_year are correctly extracted from JSON. (`#82 <https://framagit.org/lpo/Client_API_VN/issues/82>`_)
+  This avoids a lengthy VACUUM on the full database. (`#70 <https://github.com/dthonon/Client_API_VN/issues/70>`_)
+- Corrected loggin message "Updating observation {}" (`#79 <https://github.com/dthonon/Client_API_VN/issues/79>`_)
+- UUID are now correctly created for all observations. (`#80 <https://github.com/dthonon/Client_API_VN/issues/80>`_)
+- In observations, date and date_year are correctly extracted from JSON. (`#82 <https://github.com/dthonon/Client_API_VN/issues/82>`_)
 - Protocol data is stored in JSONB column, in forms table.
-  See `example query <https://framagit.org/lpo/partage-de-codes/snippets/3741>`_
+  See `example query <https://github.com/dthonon/partage-de-codes/snippets/3741>`_
   for how to use it to get STOC data.
 
   Note: For survey datas, as G. Delaloye pointed out, protocols rights accesses
@@ -600,7 +600,7 @@ Client-API-VN v2.4.2 (2019-08-20)
 Features
 --------
 
-- When using ``--full`` option, observations and forms are processed after all other controlers. (`#77 <https://framagit.org/lpo/Client_API_VN/issues/77>`_)
+- When using ``--full`` option, observations and forms are processed after all other controlers. (`#77 <https://github.com/dthonon/Client_API_VN/issues/77>`_)
 
 
 Bugfixes
@@ -609,7 +609,7 @@ Bugfixes
 - Some options are exclusives::
 
       [--verbose | --quiet]
-      [--full | --update] (`#78 <https://framagit.org/lpo/Client_API_VN/issues/78>`_)
+      [--full | --update] (`#78 <https://github.com/dthonon/Client_API_VN/issues/78>`_)
 
 
 Client-API-VN v2.4.1 (2019-08-19)
@@ -621,13 +621,13 @@ Features
 - First pass of database tuning:
 
   - Added indexes on main id columns
-  - Added id indexes on JSON tables (`#65 <https://framagit.org/lpo/Client_API_VN/issues/65>`_)
+  - Added id indexes on JSON tables (`#65 <https://github.com/dthonon/Client_API_VN/issues/65>`_)
 - The number of concurrent database insertion threads was 4, which
   is too much for the work required. At most 1 or 2 are used.
   The default is now 2 workers.
 
   NOTE: if your YAML configuration file contains a ``[tuning]`` section,
-  please modify ``db_worker_threads: 2``. (`#71 <https://framagit.org/lpo/Client_API_VN/issues/71>`_)
+  please modify ``db_worker_threads: 2``. (`#71 <https://github.com/dthonon/Client_API_VN/issues/71>`_)
 - For sites with a large number of observations per day, the minimum was too
   large, leading to chunks exceeding 10 000 observations. Large chunk size
   reduce parallel processing between client and server.
@@ -635,14 +635,14 @@ Features
 
   NOTE: if your YAML configuration file contains a ``[tuning]`` section,
   please modify ``pid_limit_min: 5``. If your chunk size are still larger
-  than 10 000 observations, you can reduce it further. (`#72 <https://framagit.org/lpo/Client_API_VN/issues/72>`_)
+  than 10 000 observations, you can reduce it further. (`#72 <https://github.com/dthonon/Client_API_VN/issues/72>`_)
 
 
 Bugfixes
 --------
 
-- Forms should now be correctly updated if changed on the site. (`#66 <https://framagit.org/lpo/Client_API_VN/issues/66>`_)
-- ``id_form_universal`` added to observations table, to refer to enclosing form. (`#73 <https://framagit.org/lpo/Client_API_VN/issues/73>`_)
+- Forms should now be correctly updated if changed on the site. (`#66 <https://github.com/dthonon/Client_API_VN/issues/66>`_)
+- ``id_form_universal`` added to observations table, to refer to enclosing form. (`#73 <https://github.com/dthonon/Client_API_VN/issues/73>`_)
 
 
 Client-API-VN v2.4.0 (2019-08-07)
@@ -651,10 +651,10 @@ Client-API-VN v2.4.0 (2019-08-07)
 Features
 --------
 
-- Storage and processing of JSON data has been improved, reducing processing time. (`#56 <https://framagit.org/lpo/Client_API_VN/issues/56>`_)
+- Storage and processing of JSON data has been improved, reducing processing time. (`#56 <https://github.com/dthonon/Client_API_VN/issues/56>`_)
 - Field groups details use the text index provided by the API.
-  For example, field_details.id '5_1' is value '1' of group '5', meaning 'COLL_TRANS'. (`#62 <https://framagit.org/lpo/Client_API_VN/issues/62>`_)
-- In observers_json, id_universal is stored in a separate column. (`#64 <https://framagit.org/lpo/Client_API_VN/issues/64>`_)
+  For example, field_details.id '5_1' is value '1' of group '5', meaning 'COLL_TRANS'. (`#62 <https://github.com/dthonon/Client_API_VN/issues/62>`_)
+- In observers_json, id_universal is stored in a separate column. (`#64 <https://github.com/dthonon/Client_API_VN/issues/64>`_)
 
 
 Client-API-VN v2.3.3 (2019-08-04)
@@ -668,16 +668,16 @@ Features
   - projection to local coordinates is much faster, reducing processing
     time by at least a factor of 6
 
-  - forms are only processed once, at the first observation of the form. (`#56 <https://framagit.org/lpo/Client_API_VN/issues/56>`_)
+  - forms are only processed once, at the first observation of the form. (`#56 <https://github.com/dthonon/Client_API_VN/issues/56>`_)
 
 
 Bugfixes
 --------
 
 - SQL file should be correct, when installed from PyPI.
-  To be tested from PyPI and from framagit clone. (`#57 <https://framagit.org/lpo/Client_API_VN/issues/57>`_)
-- In table observations, update_date is correctly filled. (`#59 <https://framagit.org/lpo/Client_API_VN/issues/59>`_)
-- Increments are correctly tracked. When using --update, only new or changed observations are downloaded. (`#60 <https://framagit.org/lpo/Client_API_VN/issues/60>`_)
+  To be tested from PyPI and from github clone. (`#57 <https://github.com/dthonon/Client_API_VN/issues/57>`_)
+- In table observations, update_date is correctly filled. (`#59 <https://github.com/dthonon/Client_API_VN/issues/59>`_)
+- Increments are correctly tracked. When using --update, only new or changed observations are downloaded. (`#60 <https://github.com/dthonon/Client_API_VN/issues/60>`_)
 - Fields are now dowloaded in 2 tables :
 
   - field_groups, which lists all groups of fields
@@ -685,7 +685,7 @@ Bugfixes
   - field_details, which lists all values for each group
 
   Column observations.behaviours is now a Postgresql ARRAY,
-  listing behaviours link_id code. (`#61 <https://framagit.org/lpo/Client_API_VN/issues/61>`_)
+  listing behaviours link_id code. (`#61 <https://github.com/dthonon/Client_API_VN/issues/61>`_)
 
 
 Improved Documentation
@@ -693,7 +693,7 @@ Improved Documentation
 
 - README.rst updated to document --init option.
   CONTRIBUTING.rst improved.
-  Updated french translations. (`#58 <https://framagit.org/lpo/Client_API_VN/issues/58>`_)
+  Updated french translations. (`#58 <https://github.com/dthonon/Client_API_VN/issues/58>`_)
 
 
 Client-API-VN v2.3.2 (2019-07-27)
@@ -703,8 +703,8 @@ Features
 --------
 
 - Added --init option, that creates a draft YAML configuration file.
-  This file then needs to be edited before use. (`#37 <https://framagit.org/lpo/Client_API_VN/issues/37>`_)
-- The comment in download_log table is improved, displaying more information about observations download progress. (`#53 <https://framagit.org/lpo/Client_API_VN/issues/53>`_)
+  This file then needs to be edited before use. (`#37 <https://github.com/dthonon/Client_API_VN/issues/37>`_)
+- The comment in download_log table is improved, displaying more information about observations download progress. (`#53 <https://github.com/dthonon/Client_API_VN/issues/53>`_)
 - Number of concurrent database insert/update and queue size are parameters
   in YAML file, ``[tuning]`` section:
 
@@ -714,13 +714,13 @@ Features
       db_worker_threads: 4
       db_worker_queue: 100000
 
-(`#54 <https://framagit.org/lpo/Client_API_VN/issues/54>`_)
+(`#54 <https://github.com/dthonon/Client_API_VN/issues/54>`_)
 
 Bugfixes
 --------
 
 - Tentative correction of duplicate key exception. As this is not reproductible, bug fix is not certain.
-  Insert or update of records in Postgresql DB is now atomic (insert + on conflict). (`#55 <https://framagit.org/lpo/Client_API_VN/issues/55>`_)
+  Insert or update of records in Postgresql DB is now atomic (insert + on conflict). (`#55 <https://github.com/dthonon/Client_API_VN/issues/55>`_)
 
 
 Client-API-VN v2.3.1 (2019-07-23)
@@ -729,16 +729,16 @@ Client-API-VN v2.3.1 (2019-07-23)
 Features
 --------
 
-- HMAC encoding key is defined by YAML parameter db_secret_key (`#50 <https://framagit.org/lpo/Client_API_VN/issues/50>`_)
+- HMAC encoding key is defined by YAML parameter db_secret_key (`#50 <https://github.com/dthonon/Client_API_VN/issues/50>`_)
 - A new field is added to src_vn.observers to anonymize observers:
    pseudo_observer_uid. It should be used for data exchance to respect
-   user privacy. It is encoded by HMAC, using db_secret_key token. (`#51 <https://framagit.org/lpo/Client_API_VN/issues/51>`_)
+   user privacy. It is encoded by HMAC, using db_secret_key token. (`#51 <https://github.com/dthonon/Client_API_VN/issues/51>`_)
 
 
 Misc
 ----
 
-- `#52 <https://framagit.org/lpo/Client_API_VN/issues/52>`_
+- `#52 <https://github.com/dthonon/Client_API_VN/issues/52>`_
 
 
 Client-API-VN v2.3.0 (2019-06-30)
@@ -752,7 +752,7 @@ Features
   EPGS system for coordinate transformation. It defaults to 2154 (Lambert 93).
   Local coordinates are available in columns coord_x_local and coord_y_local.
 
-  (`#22 <https://framagit.org/lpo/Client_API_VN/issues/22>`_)
+  (`#22 <https://github.com/dthonon/Client_API_VN/issues/22>`_)
 
 - Forms are now available in the forms_json and forms tables.
   Forms contain the following columns:
@@ -787,7 +787,7 @@ Features
   | protocol          | VARCHAR(100000) |
   +-------------------+-----------------+
 
-  (`#28 <https://framagit.org/lpo/Client_API_VN/issues/28>`_)
+  (`#28 <https://github.com/dthonon/Client_API_VN/issues/28>`_)
 
 - Added parameters to YAML configuration file.
   See also Issue #43 and #44 for new or changed parameters.
@@ -826,7 +826,7 @@ Features
   Deprecated ``local:`` section and parameters must be removed.
   An error is raised if not.
 
-  (`#33 <https://framagit.org/lpo/Client_API_VN/issues/33>`_)
+  (`#33 <https://github.com/dthonon/Client_API_VN/issues/33>`_)
 
 - UUID are not (re)created during columns tables creation.
   For observations, they are in a separate uui_xref table. They can be
@@ -851,7 +851,7 @@ Features
   | update_ts    | DateTime |
   +--------------+----------+
 
-  (`#38 <https://framagit.org/lpo/Client_API_VN/issues/38>`_)
+  (`#38 <https://github.com/dthonon/Client_API_VN/issues/38>`_)
 
 - Application is now tested with
 
@@ -859,7 +859,7 @@ Features
   * Debian 9, Ubuntu 18.10
   * Postgresql 10, 11
 
-  (`#40 <https://framagit.org/lpo/Client_API_VN/issues/40>`_)
+  (`#40 <https://github.com/dthonon/Client_API_VN/issues/40>`_)
 
 - Implemented fields controler.
   Fields data is dowloaded and stored in fields table:
@@ -880,7 +880,7 @@ Features
   | name         | VARCHAR(1000) |
   +--------------+---------------+
 
-  (`#43 <https://framagit.org/lpo/Client_API_VN/issues/43>`_)
+  (`#43 <https://github.com/dthonon/Client_API_VN/issues/43>`_)
 
 - The following columns are added:
 
@@ -899,7 +899,7 @@ Features
       * places.visible
       * species.is_used
 
-      (`#46 <https://framagit.org/lpo/Client_API_VN/issues/46>`_)
+      (`#46 <https://github.com/dthonon/Client_API_VN/issues/46>`_)
 
 
 Bugfixes
@@ -913,7 +913,7 @@ Bugfixes
       # Postgresql user password
       db_pw: *password*
 
-  (`#39 <https://framagit.org/lpo/Client_API_VN/issues/39>`_)
+  (`#39 <https://github.com/dthonon/Client_API_VN/issues/39>`_)
 
 - Some columns were not filled correctly. This is corrected as described below:
 
@@ -932,18 +932,18 @@ Bugfixes
   The following parameters are not available in observations table and
   need to be fetched from observers table.
 
-  (`#41 <https://framagit.org/lpo/Client_API_VN/issues/41>`_)
+  (`#41 <https://github.com/dthonon/Client_API_VN/issues/41>`_)
 
 - Incorrect parameters name in YAML configuration file.
   Replace:
   - taxo_group by taxo_groups
   - territorial_unit by territorial_units
 
-  (`#44 <https://framagit.org/lpo/Client_API_VN/issues/44>`_)
+  (`#44 <https://github.com/dthonon/Client_API_VN/issues/44>`_)
 
 - update_date is extracted correctly and does raise an exception.
 
-  (`#49 <https://framagit.org/lpo/Client_API_VN/issues/49>`_)
+  (`#49 <https://github.com/dthonon/Client_API_VN/issues/49>`_)
 
 
 Client-API-VN v2.2.2 (2019-05-13)
@@ -953,21 +953,21 @@ Features
 --------
 
 - Added VACUUM FULL ANALYZE after columns table (re)creation (option --col_tables_create)
-  to reclaim space left after mass UPDATE. (`#31 <https://framagit.org/lpo/Client_API_VN/issues/31>`_)
-- YAML configuration is now checked for validity when loaded. This should improve error finding when typing configuration file. (`#35 <https://framagit.org/lpo/Client_API_VN/issues/35>`_)
+  to reclaim space left after mass UPDATE. (`#31 <https://github.com/dthonon/Client_API_VN/issues/31>`_)
+- YAML configuration is now checked for validity when loaded. This should improve error finding when typing configuration file. (`#35 <https://github.com/dthonon/Client_API_VN/issues/35>`_)
 
 
 Bugfixes
 --------
 
-- Version is now correctly displayed in application installed from PyPI. (`#32 <https://framagit.org/lpo/Client_API_VN/issues/32>`_)
+- Version is now correctly displayed in application installed from PyPI. (`#32 <https://github.com/dthonon/Client_API_VN/issues/32>`_)
 
 
 Improved Documentation
 ----------------------
 
 - Now using towncrier (https://github.com/hawkowl/towncrier) to update CHANGELOG.
-  Improved and corrected README.rst and CONTRIBUTING.rst (`#34 <https://framagit.org/lpo/Client_API_VN/issues/34>`_)
+  Improved and corrected README.rst and CONTRIBUTING.rst (`#34 <https://github.com/dthonon/Client_API_VN/issues/34>`_)
 
 
 Client-API-VN 2.2.1 (2019-05-09)
@@ -980,4 +980,4 @@ Features
   in PyPI.
   See https://pypi.org/project/Client-API-VN/ for more information.
 
-  transfer_vn is now available as a shell script. (`#29 <https://framagit.org/lpo/Client_API_VN/issues/29>`_)
+  transfer_vn is now available as a shell script. (`#29 <https://github.com/dthonon/Client_API_VN/issues/29>`_)
