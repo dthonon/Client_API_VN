@@ -141,7 +141,7 @@ def test_update(sighting_for_test):
                 "2",
             ]
         )
-    with patch("sys.argv", ["py.test", name_yaml, "../" + name_input]):
+    with patch("sys.argv", ["py.test", name_yaml, file_input]):
         update_vn.run()
 
     # Check handling of empty line
@@ -158,7 +158,7 @@ def test_update(sighting_for_test):
                 "2",
             ]
         )
-    with patch("sys.argv", ["py.test", name_yaml, "../" + name_input]):
+    with patch("sys.argv", ["py.test", name_yaml, file_input]):
         update_vn.run()
 
     # Update atlas_code
@@ -174,7 +174,7 @@ def test_update(sighting_for_test):
                 "2",
             ]
         )
-    with patch("sys.argv", ["py.test", name_yaml, "../" + name_input]):
+    with patch("sys.argv", ["py.test", name_yaml, file_input]):
         update_vn.run()
     sighting = OBSERVATIONS_API.api_get(str(obs_1))
     assert (
@@ -194,7 +194,7 @@ def test_update(sighting_for_test):
                 "4",
             ]
         )
-    with patch("sys.argv", ["py.test", name_yaml, "../" + name_input]):
+    with patch("sys.argv", ["py.test", name_yaml, file_input]):
         update_vn.run()
     sighting = OBSERVATIONS_API.api_get(str(obs_1))
     assert (
@@ -214,7 +214,7 @@ def test_update(sighting_for_test):
                 "",
             ]
         )
-    with patch("sys.argv", ["py.test", name_yaml, "../" + name_input]):
+    with patch("sys.argv", ["py.test", name_yaml, file_input]):
         update_vn.run()
     sighting = OBSERVATIONS_API.api_get(str(obs_1))
     assert "atlas_code" not in sighting["data"]["sightings"][0]["observers"][0]
@@ -232,7 +232,7 @@ def test_update(sighting_for_test):
                 "'API update test'",
             ]
         )
-    with patch("sys.argv", ["py.test", name_yaml, "../" + name_input]):
+    with patch("sys.argv", ["py.test", name_yaml, file_input]):
         update_vn.run()
     sighting = OBSERVATIONS_API.api_get(str(obs_1))
     assert (
@@ -244,5 +244,5 @@ def test_update(sighting_for_test):
         inwriter = csv.writer(csvfile, delimiter=";", quoting=csv.QUOTE_MINIMAL)
         inwriter.writerow(["site", "id_universal", "path", "operation", "value"])
         inwriter.writerow(["vn38", str(obs_1), "", "delete_observation", ""])
-    with patch("sys.argv", ["py.test", name_yaml, "../" + name_input]):
+    with patch("sys.argv", ["py.test", name_yaml, file_input]):
         update_vn.run()
