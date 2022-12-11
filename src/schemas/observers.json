@@ -134,6 +134,10 @@
                     "number": {
                         "type": "string"
                     },
+                    "obsuid": {
+                        "type": "string",
+                        "format": "integer"
+                    }, 
                     "photo": {
                         "type": "string"
                     },
