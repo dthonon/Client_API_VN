@@ -65,6 +65,9 @@
                     "type": "string",
                     "description": "Longitude of place nearest to sightings (mobile) or selected by user (web)"
                 },
+                "place_type": {
+                    "type": "string"
+                },
                 "protocol": {
                     "$ref": "#/definitions/_protocol",
                     "title": "PROTOCOL",
@@ -87,6 +90,12 @@
                     "format": "time",
                     "title": "TIME_STOP",
                     "description": "Finish time of the form"
+                },
+                "trace": {
+                    "type": "string"
+                },
+                "trace_length": {
+                    "type": "string"
                 },
                 "version": {
                     "type": "string",
@@ -209,7 +218,25 @@
                     ],
                     "title": "category"
                 },
-                "dir_habitat": {
+                "id_fnat": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "#text": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "_display_stoc_analysis": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "#text": {
+                            "type": "string"
+                        }
+                    }
+                },
+               "dir_habitat": {
                     "type": "object",
                     "additionalProperties": false,
                     "properties": {
@@ -246,7 +273,31 @@
                         }
                     }
                 },
-                "uicn": {
+                "lr_uicn_eu": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "@id": {
+                            "$ref": "#/definitions/_uicn_id"
+                        },
+                        "#text": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "lr_uicn_f": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "@id": {
+                            "$ref": "#/definitions/_uicn_id"
+                        },
+                        "#text": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "lr_uicn_wr": {
                     "type": "object",
                     "additionalProperties": false,
                     "properties": {
