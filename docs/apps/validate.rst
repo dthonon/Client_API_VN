@@ -6,6 +6,10 @@ User Guide
 ==========
 
 This application validates downloaded JSON files against JSON schemas.
+JSON files must fist be downloaded by `transfer_vn`.
+If the JSON schema does not match with a downloaded file, an error message
+is printed, describing the difference. The JSON schema should be modified
+to comply with the newly downloaded files.
 
 Running the application
 -----------------------
