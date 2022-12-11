@@ -117,7 +117,7 @@ def sighting_for_test():
 @pytest.mark.slow
 def test_update(sighting_for_test):
     """Check Biolovision updating."""
-    name_yaml = ".evn_aura.yaml"
+    name_yaml = ".evn_test.yaml"
     file_yaml = str(Path.home()) + "/" + name_yaml
     assert Path(file_yaml).is_file()
     name_input = ".evn_pytest.csv"
@@ -134,7 +134,7 @@ def test_update(sighting_for_test):
         inwriter.writerow([" site", "id_universal ", "path", "operation", " value "])
         inwriter.writerow(
             [
-                "vn38",
+                "t38",
                 str(obs_1),
                 "$['data']['sightings'][0]['observers'][0]['atlas_code']",
                 "unknown",
@@ -151,7 +151,7 @@ def test_update(sighting_for_test):
         inwriter.writerow([])
         inwriter.writerow(
             [
-                "vn38",
+                "t38",
                 str(obs_1),
                 "$['data']['sightings'][0]['observers'][0]['atlas_code']",
                 "unknown",
@@ -167,7 +167,7 @@ def test_update(sighting_for_test):
         inwriter.writerow(["site", "id_universal", "path", "operation", "value"])
         inwriter.writerow(
             [
-                "vn38",
+                "t38",
                 str(obs_1),
                 "$['data']['sightings'][0]['observers'][0]['atlas_code']",
                 "replace",
@@ -187,7 +187,7 @@ def test_update(sighting_for_test):
         inwriter.writerow(["site", "id_universal", "path", "operation", "value"])
         inwriter.writerow(
             [
-                "vn38",
+                "t38",
                 str(obs_1),
                 "$['data']['sightings'][0]['observers'][0]['atlas_code']",
                 "replace",
@@ -207,7 +207,7 @@ def test_update(sighting_for_test):
         inwriter.writerow(["site", "id_universal", "path", "operation", "value"])
         inwriter.writerow(
             [
-                "vn38",
+                "t38",
                 str(obs_1),
                 "$['data']['sightings'][0]['observers'][0]['atlas_code']",
                 "delete_attribute",
@@ -225,7 +225,7 @@ def test_update(sighting_for_test):
         inwriter.writerow(["site", "id_universal", "path", "operation", "value"])
         inwriter.writerow(
             [
-                "vn38",
+                "t38",
                 str(obs_1),
                 "$['data']['sightings'][0]['observers'][0]['comment']",
                 "replace",
@@ -236,13 +236,13 @@ def test_update(sighting_for_test):
         update_vn.run()
     sighting = OBSERVATIONS_API.api_get(str(obs_1))
     assert (
-        sighting["data"]["sightings"][0]["observers"][0]["comment"] == "API update test"
+        sighting["data"]["sightings"][0]["observers"][0]["comment"] == "'API update test'"
     )
 
     # Remove observation
     with open(file_input, "w", newline="") as csvfile:
         inwriter = csv.writer(csvfile, delimiter=";", quoting=csv.QUOTE_MINIMAL)
         inwriter.writerow(["site", "id_universal", "path", "operation", "value"])
-        inwriter.writerow(["vn38", str(obs_1), "", "delete_observation", ""])
+        inwriter.writerow(["t38", str(obs_1), "", "delete_observation", ""])
     with patch("sys.argv", ["py.test", name_yaml, file_input]):
         update_vn.run()

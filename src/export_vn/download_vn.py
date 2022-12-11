@@ -364,12 +364,6 @@ class Observations(DownloadVn):
             max_chunks,
         )
         self._t_units = None
-        if self._config.db_enabled:
-            # Try to read from local database
-            self._t_units = ReadPostgresql(self._config).read("territorial_units")
-        if (self._t_units is None) or (len(self._t_units) == 0):
-            # No territorial_units available, read from API
-            self._t_units = [TerritorialUnitsAPI(self._config).api_list()["data"]]
         return None
 
     def _store_list(self, id_taxo_group, by_specie, short_version="1"):
@@ -390,6 +384,15 @@ class Observations(DownloadVn):
         short_version : str
             '0' for long JSON and '1' for short_version.
         """
+        # Download territorial_units if needed
+        if self._t_units == None:
+            if self._config.db_enabled:
+                # Try to read from local database
+                self._t_units = ReadPostgresql(self._config).read("territorial_units")
+            if (self._t_units is None) or (len(self._t_units) == 0):
+                # No territorial_units available, read from API
+                self._t_units = [TerritorialUnitsAPI(self._config).api_list()["data"]]
+
         # GET from API
         logger.debug(
             _("Getting observations from controler %s, using API list"),
@@ -505,6 +508,15 @@ class Observations(DownloadVn):
         short_version : str
             '0' for long JSON and '1' for short_version.
         """
+        # Download territorial_units if needed
+        if self._t_units == None:
+            if self._config.db_enabled:
+                # Try to read from local database
+                self._t_units = ReadPostgresql(self._config).read("territorial_units")
+            if (self._t_units is None) or (len(self._t_units) == 0):
+                # No territorial_units available, read from API
+                self._t_units = [TerritorialUnitsAPI(self._config).api_list()["data"]]
+
         # GET from API
         logger.debug(
             _("Getting observations from controler %s, using API search"),
@@ -899,13 +911,6 @@ class Places(DownloadVn):
             -1
         )  # Integer index, to comply with taxo_groups, for increment log
         self._l_a_units = None
-        if self._config.db_enabled:
-            # Try to read from local database
-            self._l_a_units = ReadPostgresql(self._config).read("local_admin_units")
-        if (self._l_a_units is None) or (len(self._l_a_units) == 0):
-            # No local_admin_units available, read from API
-            self._l_a_units = [LocalAdminUnitsAPI(self._config).api_list()["data"]]
-
         return None
 
     def store(
@@ -921,6 +926,15 @@ class Places(DownloadVn):
         territorial_unit_ids : list
             List of territorial_units to include in storage.
         """
+        # Get local_admin_units if needed
+        if self._l_a_units == None:
+            if self._config.db_enabled:
+                # Try to read from local database
+                self._l_a_units = ReadPostgresql(self._config).read("local_admin_units")
+            if (self._l_a_units is None) or (len(self._l_a_units) == 0):
+                # No local_admin_units available, read from API
+                self._l_a_units = [LocalAdminUnitsAPI(self._config).api_list()["data"]]
+
         self._backend.increment_log(self._config.site, self._place_id, datetime.now())
         if territorial_unit_ids is not None and len(territorial_unit_ids) > 0:
             # Get local_admin_units
