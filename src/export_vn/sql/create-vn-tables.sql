@@ -1074,6 +1074,7 @@ CREATE TABLE {{ cfg.db_schema_vn }}.species(
     rarity              TEXT,
     category_1          TEXT,
     sys_order           INTEGER,
+    sempach_id_family   INTEGER,
     atlas_start         INTEGER,
     atlas_end           INTEGER,
     PRIMARY KEY (site, id)
@@ -1110,13 +1111,14 @@ CREATE OR REPLACE FUNCTION update_species() RETURNS TRIGGER AS $$
             rarity        = NEW.item->>'rarity',
             category_1    = NEW.item->>'category_1',
             sys_order     = CAST(NEW.item->>'sys_order' AS INTEGER),
+            sempach_id_family = CAST(NEW.item->>'sempach_id_family' AS INTEGER),
             atlas_start   = CAST(NEW.item->>'atlas_start' AS INTEGER),
             atlas_end     = CAST(NEW.item->>'atlas_end' AS INTEGER)
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
             INSERT INTO {{ cfg.db_schema_vn }}.species(site, id, id_taxo_group, is_used, french_name, latin_name, rarity,
-                                                         category_1, sys_order, atlas_start, atlas_end)
+                                                         category_1, sys_order, sempach_id_family, atlas_start, atlas_end)
             VALUES (
                 NEW.site,
                 NEW.id,
@@ -1127,6 +1129,7 @@ CREATE OR REPLACE FUNCTION update_species() RETURNS TRIGGER AS $$
                 NEW.item->>'rarity',
                 NEW.item->>'category_1',
                 CAST(NEW.item->>'sys_order' AS INTEGER),
+                CAST(NEW.item->>'sempach_id_family' AS INTEGER),
                 CAST(NEW.item->>'atlas_start' AS INTEGER),
                 CAST(NEW.item->>'atlas_end' AS INTEGER)
             );
@@ -1136,7 +1139,7 @@ CREATE OR REPLACE FUNCTION update_species() RETURNS TRIGGER AS $$
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting data on src_vn.observations when raw data is inserted
         INSERT INTO {{ cfg.db_schema_vn }}.species(site, id, id_taxo_group, is_used, french_name, latin_name, rarity,
-                                                category_1, sys_order, atlas_start, atlas_end)
+                                                category_1, sys_order, sempach_id_family, atlas_start, atlas_end)
         VALUES (
             NEW.site,
             NEW.id,
@@ -1147,6 +1150,7 @@ CREATE OR REPLACE FUNCTION update_species() RETURNS TRIGGER AS $$
             NEW.item->>'rarity',
             NEW.item->>'category_1',
             CAST(NEW.item->>'sys_order' AS INTEGER),
+            CAST(NEW.item->>'sempach_id_family' AS INTEGER),
             CAST(NEW.item->>'atlas_start' AS INTEGER),
             CAST(NEW.item->>'atlas_end' AS INTEGER)
         );
