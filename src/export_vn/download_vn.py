@@ -385,7 +385,7 @@ class Observations(DownloadVn):
             '0' for long JSON and '1' for short_version.
         """
         # Download territorial_units if needed
-        if self._t_units == None:
+        if self._t_units is None:
             if self._config.db_enabled:
                 # Try to read from local database
                 self._t_units = ReadPostgresql(self._config).read("territorial_units")
@@ -509,13 +509,15 @@ class Observations(DownloadVn):
             '0' for long JSON and '1' for short_version.
         """
         # Download territorial_units if needed
-        if self._t_units == None:
+        if self._t_units is None:
             if self._config.db_enabled:
                 # Try to read from local database
                 self._t_units = ReadPostgresql(self._config).read("territorial_units")
             if (self._t_units is None) or (len(self._t_units) == 0):
                 # No territorial_units available, read from API
-                self._t_units = [TerritorialUnitsAPI(self._config).api_list()["data"]]
+                self._t_units = [
+                    [tu] for tu in TerritorialUnitsAPI(self._config).api_list()["data"]
+                ]
 
         # GET from API
         logger.debug(
@@ -927,7 +929,7 @@ class Places(DownloadVn):
             List of territorial_units to include in storage.
         """
         # Get local_admin_units if needed
-        if self._l_a_units == None:
+        if self._l_a_units is None:
             if self._config.db_enabled:
                 # Try to read from local database
                 self._l_a_units = ReadPostgresql(self._config).read("local_admin_units")
