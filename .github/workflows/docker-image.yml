@@ -32,4 +32,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/client-api-vn:latest
+          tags: ${{ secrets.DOCKER_HUB_ORGANIZATION }}/client-api-vn:latest

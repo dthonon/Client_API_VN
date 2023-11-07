@@ -27,6 +27,9 @@ update basic tools::
     python -m pip install --upgrade pip
     pip install --upgrade setuptools wheel twine babel tox coverage
 
+Note : with newer versions of Ubuntu, you need to install these packages
+with apt instead of pip. Some are prefixed with python3.
+
 Add the following lines to .bashrc, to enable pyenv and venv::
 
     # Activate venv
@@ -101,12 +104,7 @@ Create the test database::
 
     transfer_vn --db_create .evn_test.yaml
 
-Run tests (try one or the other, as I haven't found which one is best)::
-
-    ./setup.py tests
-    pytest
-
-When tests are OK, run full test suite::
+Run tests ::
 
     tox
 
