@@ -615,7 +615,12 @@ class Observations(DownloadVn):
                             # Call backend to store results
                             nb_o = self._backend.store(
                                 self._api_instance.controler,
-                                str(id_taxo_group) + "_" + str(seq),
+                                str(id_taxo_group)
+                                + "_"
+                                + t_u[0]["id_country"]
+                                + t_u[0]["short_name"]
+                                + "_"
+                                + str(seq),
                                 items_dict,
                             )
                             # Throttle on max size downloaded during each interval
@@ -627,7 +632,7 @@ class Observations(DownloadVn):
                                 seq,
                                 nb_o,
                                 id_taxo_group,
-                                t_u[0]["short_name"],
+                                t_u[0]["id_country"] + t_u[0]["short_name"],
                                 start_date.strftime("%d/%m/%Y"),
                                 str(delta_days),
                             )
