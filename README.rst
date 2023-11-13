@@ -77,6 +77,9 @@ Docker applications::
                --tty --interactive \
                dthonon/client-api-vn bash
 
+This docker only contains the application and requires an external 
+Postgresql database.
+
 The following steps are the common to both Python and Docker installation.
 
 Getting Started - transfer_vn
