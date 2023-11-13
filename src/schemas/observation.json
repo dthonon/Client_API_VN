@@ -1,2458 +1,2423 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "http://daniel-thonon.net/schemas/faune-france.json",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "$ref": "#/_data"
+    }
+  },
+  "required": ["data"],
+  "title": "_observation",
+  "description": "Root of observation schema.",
+  "_data": {
     "type": "object",
     "additionalProperties": false,
     "properties": {
-        "data": {
-            "$ref": "#/definitions/_data"
+      "sightings": {
+        "type": "array",
+        "items": {
+          "$ref": "#/_sighting"
         }
+      },
+      "forms": {
+        "type": "array",
+        "items": {
+          "$ref": "#/_form"
+        }
+      }
     },
-    "required": [
-        "data"
-    ],
-    "title": "_observation",
-    "description": "Root of observation schema.",
-    "definitions": {
-        "_data": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "sightings": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/_sighting"
-                    }
-                },
-                "forms": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/_form"
-                    }
-                }
-            },
-            "title": "_data",
-            "description": "Top level element of observation/sighting data."
-        },
-        "_form": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "@id": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "comment": {
-                    "type": "string",
-                    "title": "DAILY_TEXT_COMMENT_REM",
-                    "description": "Form comment"
-                },
-                "full_form": {
-                    "$ref": "#/definitions/_zero_one",
-                    "title": "FULL_FORM",
-                    "description": "Is the form complete?"
-                },
-                "id_form_mobile": {
-                    "type": "string"
-                },
-                "id_form_universal": {
-                    "type": "string"
-                },
-                "lat": {
-                    "type": "string",
-                    "description": "Latitude of place nearest to sightings (mobile) or selected by user (web)"
-                },
-                "lon": {
-                    "type": "string",
-                    "description": "Longitude of place nearest to sightings (mobile) or selected by user (web)"
-                },
-                "place_type": {
-                    "type": "string"
-                },
-                "protocol": {
-                    "$ref": "#/definitions/_protocol",
-                    "title": "PROTOCOL",
-                    "description": "Protocol for this form"
-                },
-                "sightings": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/_sighting"
-                    }
-                },
-                "time_start": {
-                    "type": "string",
-                    "format": "time",
-                    "title": "TIME_START",
-                    "description": "Start time of the form"
-                },
-                "time_stop": {
-                    "type": "string",
-                    "format": "time",
-                    "title": "TIME_STOP",
-                    "description": "Finish time of the form"
-                },
-                "trace": {
-                    "type": "string"
-                },
-                "trace_length": {
-                    "type": "string"
-                },
-                "version": {
-                    "type": "string",
-                    "format": "integer"
-                }
-            },
-            "title": "_form"
-        },
-        "_sighting": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "date": {
-                    "$ref": "#/definitions/_date",
-                    "title": "DATE",
-                    "description": "Observation date and time"
-                },
-                "species": {
-                    "$ref": "#/definitions/_species"
-                },
-                "place": {
-                    "$ref": "#/definitions/_place"
-                },
-                "observers": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/_observer"
-                    }
-                }
-            },
-            "title": "_sighting"
-        },
-        "_date": {
-            "oneOf": [
-                {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "@timestamp": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "@notime": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "@offset": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "@ISO8601": {
-                            "type": "string",
-                            "format": "date-time"
-                        },
-                        "#text": {
-                            "type": "string"
-                        }
-                    }
-                },
-                {
-                    "type": "string",
-                    "format": "integer"
-                }
-            ],
-            "title": "_date"
-        },
-        "_species": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "@id": {
-                    "type": "string",
-                    "format": "integer",
-                    "title": "ID_SPECIES",
-                    "description": "Biolovision species identifier"
-                },
-                "sys_order": {
-                    "type": "string",
-                    "format": "integer",
-                    "title": "SYS_ORDER",
-                    "description": "Biolovision species specific order"
-                },
-                "taxonomy": {
-                    "type": "string",
-                    "format": "integer",
-                    "title": "TAXONOMY_NAME",
-                    "description": "Biolovision taxonomic group"
-                },
-                "rarity": {
-                    "type": "string",
-                    "enum": [
-                        "verycommon",
-                        "common",
-                        "unusual",
-                        "rare",
-                        "escaped",
-                        "veryrare",
-                        "never"
-                    ],
-                    "title": "rarity"
-                },
-                "name": {
-                    "type": "string",
-                    "title": "NAME_SPECIES",
-                    "description": "Biolovision species common name"
-                },
-                "latin_name": {
-                    "type": "string",
-                    "title": "LATIN_SPECIES",
-                    "description": "Biolovision species scientific name"
-                },
-                "category": {
-                    "type": "string",
-                    "enum": [
-                        "C",
-                        "H",
-                        "A",
-                        "B",
-                        "BH"
-                    ],
-                    "title": "category"
-                },
-                "id_fnat": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "#text": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "_display_stoc_analysis": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "#text": {
-                            "type": "string"
-                        }
-                    }
-                },
-               "dir_habitat": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "#text": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "dir_oiseaux": {
-                    "OneOf": [
-                        {
-                            "$ref": "#/definitions/_dir_oiseaux_id"
-                        },
-                        {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                                "@id": {
-                                    "$ref": "#/definitions/_dir_oiseaux_id"
-                                },
-                                "#text": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    ]
-                },
-                "protection_nat": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "#text": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "lr_uicn_eu": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "@id": {
-                            "$ref": "#/definitions/_uicn_id"
-                        },
-                        "#text": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "lr_uicn_f": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "@id": {
-                            "$ref": "#/definitions/_uicn_id"
-                        },
-                        "#text": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "lr_uicn_wr": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "@id": {
-                            "$ref": "#/definitions/_uicn_id"
-                        },
-                        "#text": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "lr_reg": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "@id": {
-                            "$ref": "#/definitions/_lr_nat_id"
-                        },
-                        "#text": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "lr_nat": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "@id": {
-                            "$ref": "#/definitions/_lr_nat_id"
-                        },
-                        "#text": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "znieff": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "#text": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
-            "title": "_species"
-        },
-        "_place": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "@id": {
-                    "type": "string",
-                    "format": "integer",
-                    "title": "ID_PLACE",
-                    "description": "Biolovision site identifier within local database"
-                },
-                "altitude": {
-                    "type": "string",
-                    "format": "integer",
-                    "description": "Altitude of the site"
-                },
-                "coord_lat": {
-                    "type": "string",
-                    "description": "Site latitude, in WGS84 coordinate system"
-                },
-                "coord_lon": {
-                    "type": "string",
-                    "description": "Site longitude, in WGS84 coordinate system"
-                },
-                "county": {
-                    "type": "string",
-                    "format": "integer",
-                    "title": "COUNTY",
-                    "description": "County name of the site"
-                },
-                "country": {
-                    "type": "string",
-                    "title": "COUNTRY",
-                    "description": "Country name of the site"
-                },
-                "id_universal": {
-                    "type": "string",
-                    "description": "Biolovision universal site identifier"
-                },
-                "insee": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "lat": {
-                    "type": "string"
-                },
-                "loc_precision": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "lon": {
-                    "type": "string"
-                },
-                "municipality": {
-                    "type": "string",
-                    "title": "MUNICIPALITY",
-                    "description": "Municipality name of the site"
-                },
-                "name": {
-                    "type": "string",
-                    "title": "PLACE",
-                    "description": "Site name"
-                },
-                "place_type": {
-                    "$ref": "#/definitions/_place_type_id",
-                    "description": "Type of site"
-                }
-            },
-            "title": "_place"
-        },
-        "_observer": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "@id": {
-                    "type": "string",
-                    "format": "integer",
-                    "title": "ID_OBSERVER",
-                    "description": "Observer identifier within the site"
-                },
-                "@uid": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "admin_hidden": {
-                    "$ref": "#/definitions/_zero_one",
-                    "title": "ADMIN_HIDDEN",
-                    "description": "Is the observation being verified?"
-                },
-                "admin_hidden_type": {
-                    "type": "string",
-                    "enum": [
-                        "incomplete",
-                        "question",
-                        "refused"
-                    ],
-                    "title": "admin_hidden_type",
-                    "description": "Status of observation status"
-                },
-                "altitude": {
-                    "type": "string",
-                    "format": "integer",
-                    "title": "ALTITUDE",
-                    "description": "Altitude of the observation"
-                },
-                "anonymous": {
-                    "$ref": "#/definitions/_zero_one",
-                    "title": "ANONYMOUS",
-                    "description": "Is the observer name hidden?"
-                },
-                "atlas_code": {
-                    "oneOf": [
-                        {
-                            "type": "string",
-                            "enum": [
-                                "1",
-                                "2",
-                                "3",
-                                "4",
-                                "5",
-                                "6",
-                                "7",
-                                "8",
-                                "9",
-                                "10",
-                                "11",
-                                "12",
-                                "13",
-                                "14",
-                                "15",
-                                "16",
-                                "17",
-                                "18",
-                                "19",
-                                "20",
-                                "30",
-                                "40",
-                                "50",
-                                "99"
-                            ]
-                        },
-                        {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                                "@id": {
-                                    "type": "string",
-                                    "enum": [
-                                        "3_2",
-                                        "3_3",
-                                        "3_4",
-                                        "3_5",
-                                        "3_6",
-                                        "3_7",
-                                        "3_8",
-                                        "3_9",
-                                        "3_10",
-                                        "3_11",
-                                        "3_12",
-                                        "3_13",
-                                        "3_14",
-                                        "3_15",
-                                        "3_16",
-                                        "3_17",
-                                        "3_18",
-                                        "3_19",
-                                        "3_20",
-                                        "3_30",
-                                        "3_40",
-                                        "3_50",
-                                        "3_99"
-                                    ]
-                                },
-                                "#text": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    ],
-                    "title": "ATLAS_CODE",
-                    "description": "Atlas code, coded according to site preference"
-                },
-                "atlas_grid_name": {
-                    "type": "string",
-                    "title": "GRID_NAME",
-                    "description": "Atlas grid name of the observation"
-                },
-                "behaviours": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/_behaviour",
-                        "title": "BEHAVIOUR",
-                        "description": "Behaviours, exported as string"
-                    }
-                },
-                "chiro_identify": {
-                    "OneOf": [
-                        {
-                            "$ref": "#/definitions/_chiro_identify_id"
-                        },
-                        {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                                "@id": {
-                                    "$ref": "#/definitions/_chiro_identify_id"
-                                },
-                                "#text": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    ]
-                },
-                "code": {
-                    "type": "string",
-                    "title": "CODE",
-                    "description": "Code"
-                },
-                "comment": {
-                    "type": "string",
-                    "title": "COMMENT",
-                    "description": "Comment"
-                },
-                "confirmed_by": {
-                    "type": "string",
-                    "title": "CONFIRMED_BY",
-                    "description": "Confirmation of sighthing, as a string of idenfiers"
-                },
-                "committees_validation": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "cha": {
-                            "$ref": "#/definitions/_committee_validation"
-                        },
-                        "chd": {
-                            "$ref": "#/definitions/_committee_validation"
-                        },
-                        "chn": {
-                            "$ref": "#/definitions/_committee_validation"
-                        },
-                        "chr": {
-                            "$ref": "#/definitions/_committee_validation"
-                        }
-                    }
-                },
-                "coord_lat": {
-                    "type": "string",
-                    "title": "COORD_LAT",
-                    "description": "Latitude (WGS84) of the observation"
-                },
-                "coord_lon": {
-                    "type": "string",
-                    "title": "COORD_LON",
-                    "description": "Longitude (WGS84) of the observation"
-                },
-                "count": {
-                    "type": "string",
-                    "format": "integer",
-                    "title": "TOTAL_COUNT",
-                    "description": "Counted number"
-                },
-                "count_string": {
-                    "type": "string"
-                },
-                "details": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/_details"
-                    },
-                    "title": "DETAIL",
-                    "description": "Details about the observation, exported as string"
-                },
-                "entity": {
-                    "type": "string",
-                    "title": "SEARCH_EXPORT_ENTITY_SHORT_NAME",
-                    "description": "Observer entity code"
-                },
-                "entity_fullname": {
-                    "type": "string",
-                    "title": "SEARCH_EXPORT_ENTITY_FULL_NAME",
-                    "description": "Observer entity name"
-                },
-                "estimation_code": {
-                    "type": "string",
-                    "enum": [
-                        "EXACT_VALUE",
-                        "MINIMUM",
-                        "ESTIMATION",
-                        "NO_VALUE"
-                    ],
-                    "title": "ESTIMATION_CODE",
-                    "description": "Type of count estimation"
-                },
-                "export_date": {
-                    "$ref": "#/definitions/_date"
-                },
-                "extended_info": {
-                    "$ref": "#/definitions/_extended_info"
-                },
-                "flight_number": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "has_colony": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "has_colony_extended": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "has_death": {
-                    "type": "string",
-                    "enum": [
-                        "0",
-                        "1",
-                        "2"
-                    ],
-                    "title": "HAS_DEATH_INFO",
-                    "description": "Does this observation contain information about death cause (0: non death, 1: death without information, 2: death with information)?"
-                },
-                "has_gypaete": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "hidden": {
-                    "$ref": "#/definitions/_zero_one",
-                    "title": "HIDDEN",
-                    "description": "Is the observation hidden by admin or user?"
-                },
-                "hidden_comment": {
-                    "type": "string",
-                    "title": "PRIVATE_COMMENT",
-                    "description": "Private comment"
-                },
-                "id_form": {
-                    "type": "string",
-                    "format": "integer",
-                    "title": "ID_FORM",
-                    "description": "Reference to enclosing form"
-                },
-                "id_form_universal": {
-                    "type": "string"
-                },
-                "id_sighting": {
-                    "type": "string",
-                    "format": "integer",
-                    "title": "ID_SIGHTING",
-                    "description": "Sighting reference within the Biolivision site"
-                },
-                "id_universal": {
-                    "type": "string",
-                    "title": "UNIVERSAL_ID_OBSERVER",
-                    "description": "Observer identifier, unique across site"
-                },
-                "insert_date": {
-                    "$ref": "#/definitions/_date",
-                    "title": "INSERT_DATE",
-                    "description": "Date observation was created"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "medias": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/_media"
-                    },
-                    "title": "MEDIA_HAS_MEDIA",
-                    "description": "Observation contains media (photo or sound), if array length > 0"
-                },
-                "precision": {
-                    "$ref": "#/definitions/_place_type_id",
-                    "title": "PRECISION",
-                    "description": "Type of site"
-                },
-                "project": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "project_code": {
-                    "type": "string",
-                    "title": "PROJECT_CODE",
-                    "description": "Project code"
-                },
-                "project_name": {
-                    "type": "string",
-                    "title": "project_name"
-                },
-                "protocol": {
-                    "$ref": "#/definitions/_protocol",
-                    "title": "PROTOCOL",
-                    "description": "Protocol for this form"
-                },
-                "second_hand": {
-                    "$ref": "#/definitions/_zero_one",
-                    "title": "SECOND_HAND",
-                    "description": "Is the observation from another observer?"
-                },
-                "source": {
-                    "type": "string",
-                    "enum": [
-                        "WEB",
-                        "MOBILE_DELAYED",
-                        "MOBILE_LIVE",
-                        "MOBILE_FORM_LIVE",
-                        "MOBILE_FORM_DELAYED",
-                        "MOBILE_LIVE_IOS",
-                        "MOBILE_DELAYED_IOS",
-                        "MOBILE_FORM_LIVE_IOS",
-                        "MOBILE_FORM_DELAYED_IOS"
-                    ],
-                    "title": "source"
-                },
-                "timing": {
-                    "$ref": "#/definitions/_date",
-                    "title": "TIMING",
-                    "description": "Observation time"
-                },
-                "traid": {
-                    "type": "string",
-                    "format": "uuid",
-                    "description": "Transmitter idenfier"
-                },
-                "update_date": {
-                    "$ref": "#/definitions/_date",
-                    "title": "UPDATE_DATE",
-                    "description": "Date observation was updated"
-                },
-                "uuid": {
-                    "type": "string",
-                    "format": "integer",
-                    "description": "Observation UUID"
-                },
-                "version": {
-                    "type": "string",
-                    "format": "integer"
-                }
-            },
-            "title": "_observer"
-        },
-        "_chiro_identify_id": {
-            "type": "string",
-            "enum": [
-                "242_1",
-                "242_2"
-            ]
-        },
-        "_dir_oiseaux_id": {
-            "type": "string",
-            "enum": [
-                "1"
-            ]
-        },
-        "_uicn_id": {
-            "type": "string",
-            "enum": [
-                "EX",
-                "EW",
-                "CR",
-                "EN",
-                "VU",
-                "NT",
-                "LC",
-                "DD",
-                "NE"
-            ]
-        },
-        "_lr_nat_id": {
-            "type": "string",
-            "enum": [
-                "CR",
-                "EN",
-                "R",
-                "VN",
-                "VU"
-            ]
-        },
-        "_committee_validation": {
-            "type": "string",
-            "enum": [
-                "ACCEPTED",
-                "REQUESTED"
-            ]
-        },
-        "_details": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "count": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "sex": {
-                    "$ref": "#/definitions/_sex"
-                },
-                "age": {
-                    "$ref": "#/definitions/_age"
-                },
-                "condition": {
-                    "OneOf": [
-                        {
-                            "$ref": "#/definitions/_condition_id"
-                        },
-                        {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                                "@id": {
-                                    "$ref": "#/definitions/_condition_id"
-                                },
-                                "#text": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    ]
-                },
-                "distance": {
-                    "OneOf": [
-                        {
-                            "$ref": "#/definitions/_distance_id"
-                        },
-                        {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                                "@id": {
-                                    "$ref": "#/definitions/_distance_id"
-                                },
-                                "#text": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    ]
-                },
-                "section": {
-                    "$ref": "#/definitions/_section"
-                }
-            },
-            "title": "_details"
-        },
-        "_media": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "@id": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "insert_date": {
-                    "$ref": "#/definitions/_date"
-                },
-                "filename": {
-                    "type": "string"
-                },
-                "media_is_hidden": {
-                    "$ref": "#/definitions/_zero_one"
-                },
-                "metadata": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string",
-                    "format": "uri",
-                    "qt-uri-protocols": [
-                        "https"
-                    ]
-                },
-                "type": {
-                    "type": "string",
-                    "enum": [
-                        "PHOTO",
-                        "SOUND"
-                    ],
-                    "title": "Type"
-                }
-            },
-            "title": "_media"
-        },
-        "_extended_info": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "colony": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "nests": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "nests_is_min": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "couples": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "occupied_nests": {
-                            "type": "string",
-                            "format": "integer"
-                        }
-                    },
-                    "title": "Colony"
-                },
-                "colony_extended": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "couples": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "nb_artificial_destructed_nests": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "nb_artificial_nests": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "nb_artificial_nests_is_min": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "nb_artificial_occup_nests": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "nb_artificial_other_species_nests": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "nb_construction_nests": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "nb_natural_destructed_nests": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "nb_natural_nests": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "nb_natural_nests_is_min": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "nb_natural_occup_nests": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "nb_natural_other_species_nests": {
-                            "type": "string",
-                            "format": "integer"
-                        }
-                    },
-                    "title": "ColonyExtended"
-                },
-                "direction": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "degree": {
-                            "type": "string",
-                            "format": "integer"
-                        }
-                    }
-                },
-                "gypaetus_barbatus": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "additionalProperties": false,
-                        "properties": {
-                            "@id": {
-                                "type": "string",
-                                "format": "integer"
-                            },
-                            "age": {
-                                "$ref": "#/definitions/_age"
-                            },
-                            "altitude_max": {
-                                "type": "string",
-                                "format": "integer"
-                            },
-                            "altitude_min": {
-                                "type": "string",
-                                "format": "integer"
-                            },
-                            "behaviour": {
-                                "OneOf": [
-                                    {
-                                        "$ref": "#/definitions/_gypaetus_barbatus_behaviour"
-                                    },
-                                    {
-                                        "type": "object",
-                                        "additionalProperties": false,
-                                        "properties": {
-                                            "@id": {
-                                                "$ref": "#/definitions/_gypaetus_barbatus_behaviour"
-                                            },
-                                            "#text": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    }
-                                ]
-                            },
-                            "bird_interaction": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "additionalProperties": true,
-                                    "properties": {
-                                        "@id": {
-                                            "type": "string",
-                                            "format": "integer"
-                                        }
-                                    }
-                                }
-                            },
-                            "distance_min": {
-                                "type": "string",
-                                "format": "integer"
-                            },
-                            "flight_direction": {
-                                "$ref": "#/definitions/_direction"
-                            },
-                            "gypaetus_barbatus_birds": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "additionalProperties": true,
-                                    "properties": {
-                                        "@id": {
-                                            "type": "string",
-                                            "format": "integer"
-                                        },
-                                        "name": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            },
-                            "interaction": {
-                                "OneOf": [
-                                    {
-                                        "$ref": "#/definitions/_interaction_id"
-                                    },
-                                    {
-                                        "type": "object",
-                                        "additionalProperties": false,
-                                        "properties": {
-                                            "@id": {
-                                                "$ref": "#/definitions/_interaction_id"
-                                            },
-                                            "#text": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    }
-                                ]
-                            },
-                            "interaction_benefit": {
-                                "OneOf": [
-                                    {
-                                        "$ref": "#/definitions/_interaction_benefit_id"
-                                    },
-                                    {
-                                        "type": "object",
-                                        "additionalProperties": false,
-                                        "properties": {
-                                            "@id": {
-                                                "$ref": "#/definitions/_interaction_benefit_id"
-                                            },
-                                            "#text": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    }
-                                ]
-                            },
-                            "signs": {
-                                "type": "string"
-                            },
-                            "time_start": {
-                                "type": "string",
-                                "format": "time"
-                            },
-                            "time_stop": {
-                                "type": "string",
-                                "format": "time"
-                            },
-                            "time_unknown": {
-                                "type": "string",
-                                "format": "integer"
-                            },
-                            "weather": {
-                                "$ref": "#/definitions/_weather"
-                            }
-                        }
-                    }
-                },
-                "mortality": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "collected": {
-                            "$ref": "#/definitions/_yes_no",
-                            "title": "collected",
-                            "description": ""
-                        },
-                        "collision_km_point": {
-                            "type": "string",
-                            "format": "integer",
-                            "title": "collision_km_point",
-                            "description": ""
-                        },
-                        "comment": {
-                            "type": "string",
-                            "title": "comment",
-                            "description": ""
-                        },
-                        "crash_object": {
-                            "type": "string",
-                            "enum": [
-                                "BUILDING",
-                                "OTHER",
-                                "UNKNOWN",
-                                "WINDOW",
-                                "WIRE_FENCE"
-                            ],
-                            "title": "crash_object",
-                            "description": ""
-                        },
-                        "death_cause2": {
-                            "type": "string",
-                            "enum": [
-                                "AGRICULTURAL_NET",
-                                "AIRCRAFT",
-                                "BOAT",
-                                "CRASH",
-                                "DESTRUCTION",
-                                "DISEASE_PARASITE",
-                                "DROWNING",
-                                "ELECTRIC",
-                                "EOLIEN",
-                                "EXHAUSTION",
-                                "FALL",
-                                "FISHING",
-                                "HUNTING",
-                                "NATURAL_DISASTER",
-                                "NEST_FALL",
-                                "PREDATION",
-                                "OTHER",
-                                "OTHER_INDIRECT",
-                                "OTHER_INTENT",
-                                "OTHER_NATURAL",
-                                "OTHER_TRANSPORT",
-                                "POISONING",
-                                "POLLUTION",
-                                "ROAD_VEHICLE",
-                                "TRAIN",
-                                "TRAP",
-                                "UNKNOWN",
-                                "UNKNOWN_INDIRECT",
-                                "UNKNOWN_INTENT",
-                                "UNKNOWN_NATURAL",
-                                "UNKNOWN_TRANSPORT",
-                                "WEATHER",
-                                "WORK",
-                                "WORK_VEGETAL"
-                            ],
-                            "title": "death_cause2",
-                            "description": ""
-                        },
-                        "drowning": {
-                            "type": "string",
-                            "enum": [
-                                "BASIN",
-                                "FLOOD",
-                                "NATURAL_WATER",
-                                "OTHER",
-                                "POOL",
-                                "TROUGH",
-                                "UNKNOWN"
-                            ],
-                            "title": "drowning",
-                            "description": ""
-                        },
-                        "destruction_capture": {
-                            "type": "string",
-                            "enum": [
-                                "BROOD_DESTRUCTION",
-                                "CAPTURE_ACCIDENT",
-                                "OTHER",
-                                "SCIENTIFIC_SAMPLE",
-                                "UNKNOWN"
-                            ],
-                            "title": "destruction_capture",
-                            "description": ""
-                        },
-                        "electric_cause": {
-                            "type": "string",
-                            "enum": [
-                                "COLLISION",
-                                "ELECTROCUTION",
-                                "UNKNOWN"
-                            ],
-                            "title": "electric_cause",
-                            "description": ""
-                        },
-                        "electric_hta_pylon_id": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "electric_object": {
-                            "type": "string",
-                            "enum": [
-                                "PYLON",
-                                "LINE",
-                                "OTHER",
-                                "UNKNOWN"
-                            ],
-                            "title": "electric_object",
-                            "description": ""
-                        },
-                        "fall_into_object": {
-                            "type": "string",
-                            "enum": [
-                                "CHIMNEY",
-                                "HOLE",
-                                "OTHER",
-                                "UNKNOWN"
-                            ],
-                            "title": "fall_into_object",
-                            "description": ""
-                        },
-                        "fishing_cause": {
-                            "type": "string",
-                            "enum": [
-                                "BEACHED",
-                                "DROWNED",
-                                "OTHER",
-                                "UNKNOWN"
-                            ],
-                            "title": "fishing_cause",
-                            "description": ""
-                        },
-                        "hunting": {
-                            "type": "string",
-                            "enum": [
-                                "DIGGING_UP",
-                                "HOUNDS_HUNTING",
-                                "SHOOTING",
-                                "UNKNOWN"
-                            ],
-                            "title": "hunting",
-                            "description": ""
-                        },
-                        "natural_disaster": {
-                            "type": "string",
-                            "enum": [
-                                "AVALANCHE",
-                                "OTHER",
-                                "ROCK_FALL",
-                                "UNKNOWN"
-                            ],
-                            "title": "natural_disaster",
-                            "description": ""
-                        },
-                        "predation2": {
-                            "type": "string",
-                            "enum": [
-                                "BIRD",
-                                "CAT",
-                                "DOG",
-                                "HEN",
-                                "MAMMAL",
-                                "OTHER",
-                                "OTHER_DOMESTIC",
-                                "UNKNOWN"
-                            ],
-                            "title": "predation2",
-                            "description": ""
-                        },
-                        "pollution2": {
-                            "type": "string",
-                            "enum": [
-                                "CHEMICAL",
-                                "PLASTIC",
-                                "OTHER",
-                                "UNKNOWN"
-                            ],
-                            "title": "predation2",
-                            "description": ""
-                        },
-                        "radio": {
-                            "$ref": "#/definitions/_yes_no",
-                            "title": "radio",
-                            "description": ""
-                        },
-                        "recipient": {
-                            "type": "string",
-                            "enum": [
-                                "HEALTH_CENTER",
-                                "LOCAL_MUSEUM",
-                                "NATIONAL_MUSEUM",
-                                "ONCFS",
-                                "OTHER",
-                                "VETERINAIRE",
-                                "UNKNOWN"
-                            ],
-                            "title": "recipient",
-                            "description": ""
-                        },
-                        "response": {
-                            "type": "string",
-                            "enum": [
-                                "CP",
-                                "DISCUTION",
-                                "LAWSUIT",
-                                "LAWSUIT_X",
-                                "NOTHING",
-                                "POLICE",
-                                "UNKNOWN"
-                            ],
-                            "title": "response",
-                            "description": ""
-                        },
-                        "road_type2": {
-                            "type": "string",
-                            "enum": [
-                                "HIGHWAY",
-                                "OTHER",
-                                "PARKING",
-                                "PRINCIPAL_ROAD",
-                                "SECONDARY_ROAD",
-                                "TRACK",
-                                "UNKNOWN"
-                            ],
-                            "title": "road_type2",
-                            "description": ""
-                        },
-                        "electric_tht_pylon_id": {
-                            "type": "string",
-                            "format": "integer"
-                        },
-                        "track_number": {
-                            "type": "string",
-                            "title": "track_number",
-                            "description": ""
-                        },
-                        "trap2": {
-                            "type": "string",
-                            "enum": [
-                                "CAGE",
-                                "INSECT_TRAP",
-                                "LETAL",
-                                "NASSE",
-                                "OTHER",
-                                "TRAP",
-                                "UNKNOWN"
-                            ],
-                            "title": "trap2",
-                            "description": ""
-                        },
-                        "wind_turbine_cnt": {
-                            "type": "string",
-                            "format": "integer",
-                            "title": "work",
-                            "description": ""
-                        },
-                        "work": {
-                            "type": "string",
-                            "enum": [
-                                "BUILDING",
-                                "OTHER",
-                                "TRANS_INFRA"
-                            ],
-                            "title": "work",
-                            "description": ""
-                        },
-                        "work_vegetal": {
-                            "type": "string",
-                            "enum": [
-                                "MOWING",
-                                "OTHER",
-                                "PRUNING",
-                                "UNKNOWN"
-                            ],
-                            "title": "work_vegetal",
-                            "description": ""
-                        },
-                        "weather": {
-                            "$ref": "#/definitions/_weather",
-                            "title": "weather",
-                            "description": ""
-                        },
-                        "wounded": {
-                            "type": "string",
-                            "format": "integer",
-                            "title": "wounded",
-                            "description": ""
-                        }
-                    },
-                    "title": "_extended_info",
-                    "description": ""
-                }
-            },
-            "title": "ExtendedInfo"
-        },
-        "_gypaetus_barbatus_behaviour": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "@id": {
-                    "type": "string",
-                    "enum": [
-                        "BONE_BREAKING",
-                        "CARRYING_BONES",
-                        "CARRYING_MATERIAL_IN_BEAK",
-                        "CARRYING_MATERIAL_IN_CLAWS",
-                        "CIRCLING",
-                        "FEEDING",
-                        "FLYING_STRAIT",
-                        "SLEEPING",
-                        "SOCIAL_CONTACT",
-                        "UNKNOWN"
-                    ]
-                }
-            }
-        },
-        "_behaviour": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "@id": {
-                    "type": "string",
-                    "enum": [
-                        "134_1",
-                        "134_2",
-                        "134_3",
-                        "134_4",
-                        "134_5",
-                        "134_6",
-                        "134_7",
-                        "134_8",
-                        "134_9",
-                        "134_10",
-                        "134_11",
-                        "134_12",
-                        "134_13",
-                        "134_14",
-                        "134_15",
-                        "134_16",
-                        "134_17",
-                        "134_18",
-                        "134_19",
-                        "134_20",
-                        "134_21",
-                        "134_22",
-                        "134_23",
-                        "134_24",
-                        "UNKNOWN"
-                    ],
-                    "title": "BehaviourId"
-                },
-                "name": {
-                    "type": "string",
-                    "enum": [
-                        "BREATH",
-                        "CHASED",
-                        "COUPLING",
-                        "EMERGENCE",
-                        "FOOD",
-                        "GROUND_REST",
-                        "JUMP",
-                        "LAY_EGGS",
-                        "MIGRATION",
-                        "MIGRATION_ACTIV",
-                        "MOVE",
-                        "PLAQUE",
-                        "PROBE",
-                        "RUT",
-                        "SLEEP",
-                        "SUNBATH",
-                        "SURFACE_REST",
-                        "TANDEM",
-                        "TERRITORY",
-                        "TERRITORY_MARK"
-                    ],
-                    "title": "Name"
-                },
-                "#text": {
-                    "type": "string",
-                    "title": "BehaviourText"
-                }
-            },
-            "title": "_behaviour"
-        },
-        "_sex": {
-            "OneOf": [
-                {
-                    "$ref": "#/definitions/_sex_id"
-                },
-                {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "@id": {
-                            "$ref": "#/definitions/_sex_id"
-                        },
-                        "#text": {
-                            "type": "string"
-                        }
-                    }
-                }
-            ]
-        },
-        "_sex_id": {
-            "type": "string",
-            "enum": [
-                "U",
-                "M",
-                "F",
-                "FT"
-            ],
-            "title": "_sex",
-            "description": ""
-        },
-        "_age": {
-            "OneOf": [
-                {
-                    "$ref": "#/definitions/_age_id"
-                },
-                {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "@id": {
-                            "$ref": "#/definitions/_age_id"
-                        },
-                        "#text": {
-                            "type": "string"
-                        }
-                    }
-                }
-            ]
-        },
-        "_age_id": {
-            "type": "string",
-            "enum": [
-                "AD",
-                "MATURE",
-                "SUBAD",
-                "JUVENILE",
-                "IMM",
-                "IMM3",
-                "EMERGENT",
-                "PULL",
-                "YOUNGDEP",
-                "EXUVIE",
-                "IMAGO",
-                "1Y",
-                "1YP",
-                "2Y",
-                "3Y",
-                "4Y",
-                "5Y",
-                "U"
-            ],
-            "title": "_age",
-            "description": ""
-        },
-        "_condition_id": {
-            "type": "string",
-            "enum": [
-                "VIEW",
-                "FLY",
-                "LAID",
-                "HAND",
-                "OBSIND",
-                "MAGNIFYING",
-                "AUDIO",
-                "U"
-            ],
-            "title": "_condition_id",
-            "description": ""
-        },
-        "_distance_id": {
-            "type": "string",
-            "enum": [
-                "LESS25",
-                "LESS100",
-                "LESS200",
-                "MORE200",
-                "TRANSIT",
-                "U"
-            ],
-            "title": "_distance_id",
-            "description": ""
-        },
-        "_section": {
-            "OneOf": [
-                {
-                    "$ref": "#/definitions/_section_id"
-                },
-                {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "@id": {
-                            "$ref": "#/definitions/_section_id"
-                        },
-                        "#text": {
-                            "type": "string"
-                        }
-                    }
-                }
-            ]
-        },
-        "_section_id": {
-            "type": "string",
-            "enum": [
-                "U"
-            ],
-            "title": "_section",
-            "description": ""
-        },
-        "_habitat_id": {
-            "type": "string",
-            "enum": [
-                "A0_A",
-                "A1_1",
-                "A1_2",
-                "A1_3",
-                "A2_1",
-                "A2_2",
-                "A2_3",
-                "A2_4",
-                "A2_5",
-                "A2_6",
-                "A2_7",
-                "A2_8",
-                "A2_9",
-                "A3_1",
-                "A3_2",
-                "A3_3",
-                "A3_4",
-                "A3_5",
-                "A3_6",
-                "A3_7",
-                "A3_8",
-                "A3_9",
-                "A3_10",
-                "B0_B",
-                "B0_1",
-                "B1_1",
-                "B1_2",
-                "B1_3",
-                "B2_1",
-                "B2_2",
-                "B2_3",
-                "B3_1",
-                "B3_2",
-                "B3_3",
-                "C0_C",
-                "C1_1",
-                "C1_2",
-                "C1_3",
-                "C1_4",
-                "C1_5",
-                "C1_6",
-                "C1_7",
-                "C1_8",
-                "D0_D",
-                "D1_1",
-                "D1_2",
-                "D1_3",
-                "D1_4",
-                "D1_5",
-                "D1_6",
-                "D2_1",
-                "D2_2",
-                "D2_3",
-                "D2_4",
-                "D2_5",
-                "D2_6",
-                "D2_7",
-                "D3_1",
-                "D3_2",
-                "D3_3",
-                "D3_4",
-                "E0_E",
-                "E1_1",
-                "E1_2",
-                "E1_3",
-                "E2_1",
-                "E2_2",
-                "E2_3",
-                "E3_1",
-                "E3_2",
-                "E3_3",
-                "E3_4",
-                "E3_5",
-                "E3_6",
-                "E3_7",
-                "E3_8",
-                "F0_F",
-                "F1_1",
-                "F1_2",
-                "F1_3",
-                "F1_4",
-                "F1_5",
-                "F1_6",
-                "F2_1",
-                "F2_2",
-                "F2_3",
-                "F2_4",
-                "F2_5",
-                "F3_1",
-                "F3_2",
-                "F3_3",
-                "F3_4",
-                "F3_5",
-                "F3_6",
-                "F3_7",
-                "F3_8",
-                "F3_9",
-                "G0_G",
-                "G1_1",
-                "G1_2",
-                "G1_3",
-                "G1_4"
-            ]
-        },
-        "_stoc_transport_id": {
-            "type": "string",
-            "enum": [
-                "WALK"
-            ]
-        },
-        "_stoc_snow_id": {
-            "type": "string",
-            "enum": [
-                "NO_SNOW"
-            ]
-        },
-        "_stoc_rain_id": {
-            "type": "string",
-            "enum": [
-                "NO_RAIN",
-                "STRONG_RAIN"
-            ]
-        },
-        "_stoc_wind_id": {
-            "type": "string",
-            "enum": [
-                "NO_WIND",
-                "WEAK_WIND"
-            ]
-        },
-        "_stoc_visibility_id": {
-            "type": "string",
-            "enum": [
-                "GOOD_VISIBILITY"
-            ]
-        },
-        "_stoc_cloud_id": {
-            "type": "string",
-            "enum": [
-                "ONE_THIRD",
-                "TWO_THIRD",
-                "THREE_THIRD"
-            ],
-            "title": "_stoc_cloud_id"
-        },
-        "_protocol": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "advanced": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "direction": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "habitat": {
-                    "OneOf": [
-                        {
-                            "$ref": "#/definitions/_habitat_id"
-                        },
-                        {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                                "@id": {
-                                    "$ref": "#/definitions/_habitat_id"
-                                },
-                                "#text": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    ]
-                },
-                "list_type": {
-                    "type": "string",
-                    "enum": [
-                        "-",
-                        "basic",
-                        "extended"
-                    ]
-                },
-                "local_site_code": {
-                    "type": "string"
-                },
-                "protocol_name": {
-                    "type": "string",
-                    "enum": [
-                        "GENERIC_BIRD",
-                        "LIMAT",
-                        "SHOC",
-                        "STOC_EPS",
-                        "STOC_MONTAGNE",
-                        "STOC_SITES",
-                        "TERRITORY_MAPPING",
-                        "WATERBIRD"
-                    ],
-                    "title": "protocol_name"
-                },
-                "sequence_number": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "site_code": {
-                    "type": "string"
-                },
-                "stoc_cloud": {
-                    "OneOf": [
-                        {
-                            "$ref": "#/definitions/_stoc_cloud_id"
-                        },
-                        {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                                "@id": {
-                                    "$ref": "#/definitions/_stoc_cloud_id"
-                                },
-                                "#text": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    ]
-                },
-                "stoc_rain": {
-                    "OneOf": [
-                        {
-                            "$ref": "#/definitions/_stoc_rain_id"
-                        },
-                        {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                                "@id": {
-                                    "$ref": "#/definitions/_stoc_rain_id"
-                                },
-                                "#text": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    ]
-                },
-                "stoc_snow": {
-                    "OneOf": [
-                        {
-                            "$ref": "#/definitions/_stoc_snow_id"
-                        },
-                        {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                                "@id": {
-                                    "$ref": "#/definitions/_stoc_snow_id"
-                                },
-                                "#text": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    ]
-                },
-                "stoc_transport": {
-                    "OneOf": [
-                        {
-                            "$ref": "#/definitions/_stoc_transport_id"
-                        },
-                        {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                                "@id": {
-                                    "$ref": "#/definitions/_stoc_transport_id"
-                                },
-                                "#text": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    ]
-                },
-                "stoc_visibility": {
-                    "OneOf": [
-                        {
-                            "$ref": "#/definitions/_stoc_visibility_id"
-                        },
-                        {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                                "@id": {
-                                    "$ref": "#/definitions/_stoc_visibility_id"
-                                },
-                                "#text": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    ]
-                },
-                "stoc_wind": {
-                    "OneOf": [
-                        {
-                            "$ref": "#/definitions/_stoc_wind_id"
-                        },
-                        {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                                "@id": {
-                                    "$ref": "#/definitions/_stoc_wind_id"
-                                },
-                                "#text": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    ]
-                },
-                "visit_number": {
-                    "type": "string",
-                    "format": "integer"
-                },
-                "waterbird_conditions": {
-                    "OneOf": [
-                        {
-                            "$ref": "#/definitions/_waterbird_conditions_id"
-                        },
-                        {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                                "@id": {
-                                    "$ref": "#/definitions/_waterbird_conditions_id"
-                                },
-                                "#text": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    ]
-                },
-                "waterbird_conditions_reason": {
-                    "OneOf": [
-                        {
-                            "$ref": "#/definitions/_waterbird_conditions_reason_id"
-                        },
-                        {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                                "@id": {
-                                    "$ref": "#/definitions/_waterbird_conditions_reason_id"
-                                },
-                                "#text": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    ]
-                },
-                "waterbird_count_payed": {
-                    "$ref": "#/definitions/_yes_no"
-                },
-                "waterbird_countmethod": {
-                    "OneOf": [
-                        {
-                            "$ref": "#/definitions/_waterbird_count_method_id"
-                        },
-                        {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                                "@id": {
-                                    "$ref": "#/definitions/_waterbird_count_method_id"
-                                },
-                                "#text": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    ]
-                },
-                "waterbird_counttype": {
-                    "OneOf": [
-                        {
-                            "$ref": "#/definitions/_waterbird_count_type_id"
-                        },
-                        {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                                "@id": {
-                                    "$ref": "#/definitions/_waterbird_count_type_id"
-                                },
-                                "#text": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    ]
-                },
-                "waterbird_coverage": {
-                    "OneOf": [
-                        {
-                            "$ref": "#/definitions/_waterbird_coverage_id"
-                        },
-                        {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                                "@id": {
-                                    "$ref": "#/definitions/_waterbird_coverage_id"
-                                },
-                                "#text": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    ]
-                },
-                "waterbird_ice": {
-                    "OneOf": [
-                        {
-                            "$ref": "#/definitions/_waterbird_ice_id"
-                        },
-                        {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                                "@id": {
-                                    "$ref": "#/definitions/_waterbird_ice_id"
-                                },
-                                "#text": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    ]
-                },
-                "waterbird_optical": {
-                    "OneOf": [
-                        {
-                            "$ref": "#/definitions/_waterbird_optical_id"
-                        },
-                        {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                                "@id": {
-                                    "$ref": "#/definitions/_waterbird_optical_id"
-                                },
-                                "#text": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    ]
-                },
-                "waterbird_snowcover": {
-                    "OneOf": [
-                        {
-                            "$ref": "#/definitions/_waterbird_snow_cover_id"
-                        },
-                        {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                                "@id": {
-                                    "$ref": "#/definitions/_waterbird_snow_cover_id"
-                                },
-                                "#text": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    ]
-                },
-                "waterbird_visibility": {
-                    "OneOf": [
-                        {
-                            "$ref": "#/definitions/_waterbird_visibility_id"
-                        },
-                        {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                                "@id": {
-                                    "$ref": "#/definitions/_waterbird_visibility_id"
-                                },
-                                "#text": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    ]
-                },
-                "waterbird_waterlevel": {
-                    "OneOf": [
-                        {
-                            "$ref": "#/definitions/_waterbird_water_level_id"
-                        },
-                        {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                                "@id": {
-                                    "$ref": "#/definitions/_waterbird_water_level_id"
-                                },
-                                "#text": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    ]
-                },
-                "waterbird_waves": {
-                    "OneOf": [
-                        {
-                            "$ref": "#/definitions/_waterbird_waves_id"
-                        },
-                        {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                                "@id": {
-                                    "$ref": "#/definitions/_waterbird_waves_id"
-                                },
-                                "#text": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    ]
-                },
-                "wkt": {
-                    "type": "string"
-                }
-            },
-            "title": "_protocol"
-        },
-        "_waterbird_conditions_id": {
-            "type": "string",
-            "enum": [
-                "BAD",
-                "GOOD_NORMAL",
-                "MODERATE"
-            ]
-        },
-        "_waterbird_conditions_reason_id": {
-            "type": "string",
-            "enum": [
-                "FISHING",
-                "FOG",
-                "HUNTING",
-                "MIXED_HUMAN",
-                "MIXED_WEATHER",
-                "OTHERS",
-                "WIND"
-            ]
-        },
-        "_waterbird_count_method_id": {
-            "type": "string",
-            "enum": [
-                "GROUND"
-            ]
-        },
-        "_waterbird_count_type_id": {
-            "type": "string",
-            "enum": [
-                "DAY_COUNT",
-                "ROOST_COUNT"
-            ]
-        },
-        "_waterbird_coverage_id": {
-            "type": "string",
-            "enum": [
-                "COMPLETE",
-                "PARTLY",
-                "UNKNOWN"
-            ]
-        },
-        "_waterbird_ice_id": {
-            "type": "string",
-            "enum": [
-                "0_10",
-                "10_50",
-                "50_90",
-                "NO_ICE",
-                "UNKNOWN"
-            ]
-        },
-        "_waterbird_optical_id": {
-            "type": "string",
-            "enum": [
-                "BINOCULARS",
-                "NONE",
-                "TELESCOPE"
-            ]
-        },
-        "_waterbird_snow_cover_id": {
-            "type": "string",
-            "enum": [
-                "GOOD_NORMAL",
-                "NO_SNOW",
-                "SOME_SNOW"
-            ]
-        },
-        "_waterbird_visibility_id": {
-            "type": "string",
-            "enum": [
-                "0_100",
-                "100_300",
-                "300_1000",
-                "1000",
-                "UNKNOWN"
-            ]
-        },
-        "_waterbird_water_level_id": {
-            "type": "string",
-            "enum": [
-                "DRY_EMPTY",
-                "HIGH",
-                "LOW",
-                "NORMAL",
-                "UNKNOWN"
-            ]
-        },
-        "_waterbird_waves_id": {
-            "type": "string",
-            "enum": [
-                "MODERATE",
-                "NONE",
-                "SMALL",
-                "UNKNOWN"
-            ]
-        },
-        "_direction": {
-            "OneOf": [
-                {
-                    "$ref": "#/definitions/_direction_id"
-                },
-                {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "@id": {
-                            "$ref": "#/definitions/_direction_id"
-                        },
-                        "#text": {
-                            "type": "string"
-                        }
-                    }
-                }
-            ],
-            "title": "_direction"
-        },
-        "_direction_id": {
-            "type": "string",
-            "enum": [
-                "N",
-                "NW",
-                "W",
-                "SW",
-                "S",
-                "SE",
-                "E",
-                "NE"
-            ],
-            "title": "_direction_id"
-        },
-        "_interaction_id": {
-            "type": "string",
-            "enum": [
-                "MOBBING"
-            ],
-            "title": "_interaction_id"
-        },
-        "_interaction_benefit_id": {
-            "type": "string",
-            "enum": [
-                "OTHER"
-            ],
-            "title": "_interaction_benefit_id"
-        },
-        "_weather": {
-            "OneOf": [
-                {
-                    "$ref": "#/definitions/_weather_id"
-                },
-                {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "@id": {
-                            "$ref": "#/definitions/_weather_id"
-                        },
-                        "#text": {
-                            "type": "string"
-                        }
-                    }
-                }
-            ],
-            "title": "_weather"
-        },
-        "_weather_id": {
-            "type": "string",
-            "enum": [
-                "SUNNY"
-            ],
-            "title": "_weather_id"
-        },
-        "_place_type_id": {
-            "type": "string",
-            "enum": [
-                "",
-                "garden",
-                "municipality",
-                "place",
-                "precise",
-                "polygone",
-                "polygone_precise",
-                "square",
-                "subplace",
-                "subplace_precise",
-                "transect",
-                "transect_precise",
-                "water"
-            ],
-            "title": "_place_type_id"
-        },
-        "_yes_no": {
-            "OneOf": [
-                {
-                    "$ref": "#/definitions/_yes_no_id"
-                },
-                {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "@id": {
-                            "$ref": "#/definitions/_yes_no_id"
-                        },
-                        "#text": {
-                            "type": "string"
-                        }
-                    }
-                }
-            ],
-            "title": "_yes_no"
-        },
-        "_yes_no_id": {
-            "type": "string",
-            "enum": [
-                "YES",
-                "NO"
-            ],
-            "title": "_yes_no_id"
-        },
-        "_zero_one": {
-            "type": "string",
-            "enum": [
-                "0",
-                "1"
-            ],
-            "title": "_zero_one"
+    "title": "_data",
+    "description": "Top level element of observation/sighting data."
+  },
+  "_form": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "@id": {
+        "type": "string",
+        "pattern": "^-?[0-9]+$"
+      },
+      "comment": {
+        "type": "string",
+        "title": "DAILY_TEXT_COMMENT_REM",
+        "description": "Form comment"
+      },
+      "full_form": {
+        "$ref": "#/_zero_one",
+        "title": "FULL_FORM",
+        "description": "Is the form complete?"
+      },
+      "id_form_mobile": {
+        "type": "string"
+      },
+      "id_form_universal": {
+        "type": "string"
+      },
+      "lat": {
+        "type": "string",
+        "description": "Latitude of place nearest to sightings (mobile) or selected by user (web)"
+      },
+      "lon": {
+        "type": "string",
+        "description": "Longitude of place nearest to sightings (mobile) or selected by user (web)"
+      },
+      "place_type": {
+        "type": "string"
+      },
+      "protocol": {
+        "$ref": "#/_protocol",
+        "title": "PROTOCOL",
+        "description": "Protocol for this form"
+      },
+      "sightings": {
+        "type": "array",
+        "items": {
+          "$ref": "#/_sighting"
         }
+      },
+      "time_start": {
+        "type": "string",
+        "format": "time",
+        "title": "TIME_START",
+        "description": "Start time of the form"
+      },
+      "time_stop": {
+        "type": "string",
+        "format": "time",
+        "title": "TIME_STOP",
+        "description": "Finish time of the form"
+      },
+      "trace": {
+        "type": "string"
+      },
+      "trace_length": {
+        "type": "string"
+      },
+      "version": {
+        "type": "string",
+        "pattern": "^-?[0-9]+$"
+      }
+    },
+    "title": "_form"
+  },
+  "_sighting": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "date": {
+        "$ref": "#/_date",
+        "title": "DATE",
+        "description": "Observation date and time"
+      },
+      "species": {
+        "$ref": "#/_species"
+      },
+      "place": {
+        "$ref": "#/_place"
+      },
+      "observers": {
+        "type": "array",
+        "items": {
+          "$ref": "#/_observer"
+        }
+      }
+    },
+    "title": "_sighting"
+  },
+  "_date": {
+    "oneOf": [
+      {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "@timestamp": {
+            "type": "string",
+            "pattern": "^-?[0-9]+$"
+          },
+          "@notime": {
+            "type": "string",
+            "pattern": "^-?[0-9]+$"
+          },
+          "@offset": {
+            "type": "string",
+            "pattern": "^-?[0-9]+$"
+          },
+          "@ISO8601": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "#text": {
+            "type": "string"
+          }
+        }
+      },
+      {
+        "type": "string",
+        "pattern": "^-?[0-9]+$"
+      }
+    ],
+    "title": "_date"
+  },
+  "_species": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "@id": {
+        "type": "string",
+        "pattern": "^-?[0-9]+$",
+        "title": "ID_SPECIES",
+        "description": "Biolovision species identifier"
+      },
+      "_display_stoc_analysis": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "#text": {
+            "type": "string"
+          }
+        }
+      },
+      "_display_vigilance": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "#text": {
+            "type": "string"
+          }
+        }
+      },
+      "category": {
+        "type": "string",
+        "enum": ["C", "H", "A", "B", "BH"],
+        "title": "category"
+      },
+      "latin_name": {
+        "type": "string",
+        "title": "LATIN_SPECIES",
+        "description": "Biolovision species scientific name"
+      },
+      "sys_order": {
+        "type": "string",
+        "pattern": "^-?[0-9]+$",
+        "title": "SYS_ORDER",
+        "description": "Biolovision species specific order"
+      },
+      "taxonomy": {
+        "type": "string",
+        "pattern": "^-?[0-9]+$",
+        "title": "TAXONOMY_NAME",
+        "description": "Biolovision taxonomic group"
+      },
+      "rarity": {
+        "type": "string",
+        "enum": [
+          "verycommon",
+          "common",
+          "unusual",
+          "rare",
+          "escaped",
+          "veryrare",
+          "never"
+        ],
+        "title": "rarity"
+      },
+      "name": {
+        "type": "string",
+        "title": "NAME_SPECIES",
+        "description": "Biolovision species common name"
+      },
+      "id_fnat": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "#text": {
+            "type": "string"
+          }
+        }
+      },
+      "dir_habitat": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "@id": {
+            "$ref": "#/_dir_oiseaux_id"
+          },
+          "#text": {
+            "type": "string"
+          }
+        }
+      },
+      "dir_oiseaux": {
+        "OneOf": [
+          {
+            "$ref": "#/_dir_oiseaux_id"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "@id": {
+                "$ref": "#/_dir_oiseaux_id"
+              },
+              "#text": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "protection_nat": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "#text": {
+            "type": "string"
+          }
+        }
+      },
+      "lr_uicn_eu": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "@id": {
+            "$ref": "#/_uicn_id"
+          },
+          "#text": {
+            "type": "string"
+          }
+        }
+      },
+      "lr_uicn_f": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "@id": {
+            "$ref": "#/_uicn_id"
+          },
+          "#text": {
+            "type": "string"
+          }
+        }
+      },
+      "lr_uicn_wr": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "@id": {
+            "$ref": "#/_uicn_id"
+          },
+          "#text": {
+            "type": "string"
+          }
+        }
+      },
+      "lr_reg": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "@id": {
+            "$ref": "#/_lr_nat_id"
+          },
+          "#text": {
+            "type": "string"
+          }
+        }
+      },
+      "lr_nat": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "@id": {
+            "$ref": "#/_lr_nat_id"
+          },
+          "#text": {
+            "type": "string"
+          }
+        }
+      },
+      "use_popup": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "#text": {
+            "type": "string"
+          }
+        }
+      },
+      "znieff": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "#text": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "title": "_species"
+  },
+  "_place": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "@id": {
+        "type": "string",
+        "pattern": "^-?[0-9]+$",
+        "title": "ID_PLACE",
+        "description": "Biolovision site identifier within local database"
+      },
+      "altitude": {
+        "type": "string",
+        "pattern": "^-?[0-9]+$",
+        "description": "Altitude of the site"
+      },
+      "coord_lat": {
+        "type": "string",
+        "description": "Site latitude, in WGS84 coordinate system"
+      },
+      "coord_lon": {
+        "type": "string",
+        "description": "Site longitude, in WGS84 coordinate system"
+      },
+      "county": {
+        "type": "string",
+        "title": "COUNTY",
+        "description": "County name of the site"
+      },
+      "country": {
+        "type": "string",
+        "title": "COUNTRY",
+        "description": "Country name of the site"
+      },
+      "id_universal": {
+        "type": "string",
+        "description": "Biolovision universal site identifier"
+      },
+      "insee": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 5
+      },
+      "lat": {
+        "type": "string"
+      },
+      "loc_precision": {
+        "type": "string",
+        "pattern": "^-?[0-9]+$"
+      },
+      "lon": {
+        "type": "string"
+      },
+      "municipality": {
+        "type": "string",
+        "title": "MUNICIPALITY",
+        "description": "Municipality name of the site"
+      },
+      "name": {
+        "type": "string",
+        "title": "PLACE",
+        "description": "Site name"
+      },
+      "place_type": {
+        "$ref": "#/_place_type_id",
+        "description": "Type of site"
+      }
+    },
+    "title": "_place"
+  },
+  "_observer": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "@id": {
+        "type": "string",
+        "pattern": "^-?[0-9]+$",
+        "title": "ID_OBSERVER",
+        "description": "Observer identifier within the site"
+      },
+      "@uid": {
+        "type": "string",
+        "pattern": "^-?[0-9]+$"
+      },
+      "admin_hidden": {
+        "$ref": "#/_zero_one",
+        "title": "ADMIN_HIDDEN",
+        "description": "Is the observation being verified?"
+      },
+      "admin_hidden_type": {
+        "type": "string",
+        "enum": ["incomplete", "question", "refused"],
+        "title": "admin_hidden_type",
+        "description": "Status of observation status"
+      },
+      "altitude": {
+        "type": "string",
+        "pattern": "^-?[0-9]+$",
+        "title": "ALTITUDE",
+        "description": "Altitude of the observation"
+      },
+      "anonymous": {
+        "$ref": "#/_zero_one",
+        "title": "ANONYMOUS",
+        "description": "Is the observer name hidden?"
+      },
+      "anonymous_in_export": {
+        "type": "string",
+        "enum": ["anonymize", "anonymous"],
+        "description": "Is the observer name hidden in export files?"
+      },
+      "atlas_code": {
+        "oneOf": [
+          {
+            "type": "string",
+            "enum": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20",
+              "30",
+              "40",
+              "50",
+              "99"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "@id": {
+                "type": "string",
+                "enum": [
+                  "3_1",
+                  "3_2",
+                  "3_3",
+                  "3_4",
+                  "3_5",
+                  "3_6",
+                  "3_7",
+                  "3_8",
+                  "3_9",
+                  "3_10",
+                  "3_11",
+                  "3_12",
+                  "3_13",
+                  "3_14",
+                  "3_15",
+                  "3_16",
+                  "3_17",
+                  "3_18",
+                  "3_19",
+                  "3_20",
+                  "3_30",
+                  "3_40",
+                  "3_50",
+                  "3_99"
+                ]
+              },
+              "#text": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "title": "ATLAS_CODE",
+        "description": "Atlas code, coded according to site preference"
+      },
+      "atlas_grid_name": {
+        "type": "string",
+        "title": "GRID_NAME",
+        "description": "Atlas grid name of the observation"
+      },
+      "behaviours": {
+        "type": "array",
+        "items": {
+          "$ref": "#/_behaviour",
+          "title": "BEHAVIOUR",
+          "description": "Behaviours, exported as string"
+        }
+      },
+      "chiro_identify": {
+        "OneOf": [
+          {
+            "$ref": "#/_chiro_identify_id"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "@id": {
+                "$ref": "#/_chiro_identify_id"
+              },
+              "#text": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "code": {
+        "type": "string",
+        "title": "CODE",
+        "description": "Code"
+      },
+      "comment": {
+        "type": "string",
+        "title": "COMMENT",
+        "description": "Comment"
+      },
+      "confirmed_by": {
+        "type": "string",
+        "title": "CONFIRMED_BY",
+        "description": "Confirmation of sighthing, as a string of idenfiers"
+      },
+      "confirmed_by_name": {
+        "type": "string",
+        "title": "COMMENT",
+        "description": "Comment"
+      },
+      "committees_validation": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "cha": {
+            "$ref": "#/_committee_validation"
+          },
+          "chd": {
+            "$ref": "#/_committee_validation"
+          },
+          "chn": {
+            "$ref": "#/_committee_validation"
+          },
+          "chr": {
+            "$ref": "#/_committee_validation"
+          }
+        }
+      },
+      "coord_lat": {
+        "type": "string",
+        "title": "COORD_LAT",
+        "description": "Latitude (WGS84) of the observation"
+      },
+      "coord_lon": {
+        "type": "string",
+        "title": "COORD_LON",
+        "description": "Longitude (WGS84) of the observation"
+      },
+      "count": {
+        "type": "string",
+        "pattern": "^-?[0-9]+$",
+        "title": "TOTAL_COUNT",
+        "description": "Counted number"
+      },
+      "count_string": {
+        "type": "string"
+      },
+      "details": {
+        "type": "array",
+        "items": {
+          "$ref": "#/_details"
+        },
+        "title": "DETAIL",
+        "description": "Details about the observation, exported as string"
+      },
+      "entity": {
+        "type": "string",
+        "title": "SEARCH_EXPORT_ENTITY_SHORT_NAME",
+        "description": "Observer entity code"
+      },
+      "entity_fullname": {
+        "type": "string",
+        "title": "SEARCH_EXPORT_ENTITY_FULL_NAME",
+        "description": "Observer entity name"
+      },
+      "estimation_code": {
+        "type": "string",
+        "enum": ["EXACT_VALUE", "MINIMUM", "ESTIMATION", "NO_VALUE"],
+        "title": "ESTIMATION_CODE",
+        "description": "Type of count estimation"
+      },
+      "export_date": {
+        "$ref": "#/_date"
+      },
+      "extended_info": {
+        "$ref": "#/_extended_info"
+      },
+      "flight_number": {
+        "type": "string",
+        "pattern": "^-?[0-9]+$"
+      },
+      "has_colony": {
+        "type": "string",
+        "pattern": "^-?[0-9]+$"
+      },
+      "has_colony_extended": {
+        "type": "string",
+        "pattern": "^-?[0-9]+$"
+      },
+      "has_death": {
+        "type": "string",
+        "enum": ["0", "1", "2"],
+        "title": "HAS_DEATH_INFO",
+        "description": "Does this observation contain information about death cause (0: non death, 1: death without information, 2: death with information)?"
+      },
+      "has_gypaete": {
+        "type": "string",
+        "pattern": "^-?[0-9]+$"
+      },
+      "has_ring": {
+        "$ref": "#/_zero_one",
+        "title": "",
+        "description": ""
+      },
+      "has_sample": {
+        "type": "string",
+        "pattern": "^-?[0-9]+$"
+      },
+      "hidden": {
+        "$ref": "#/_zero_one",
+        "title": "HIDDEN",
+        "description": "Is the observation hidden by admin or user?"
+      },
+      "hidden_comment": {
+        "type": "string",
+        "title": "PRIVATE_COMMENT",
+        "description": "Private comment"
+      },
+      "id_form": {
+        "type": "string",
+        "pattern": "^-?[0-9]+$",
+        "title": "ID_FORM",
+        "description": "Reference to enclosing form"
+      },
+      "id_form_universal": {
+        "type": "string"
+      },
+      "id_sighting": {
+        "type": "string",
+        "pattern": "^-?[0-9]+$",
+        "title": "ID_SIGHTING",
+        "description": "Sighting reference within the Biolivision site"
+      },
+      "id_universal": {
+        "type": "string",
+        "title": "UNIVERSAL_ID_OBSERVER",
+        "description": "Observer identifier, unique across site"
+      },
+      "insert_date": {
+        "$ref": "#/_date",
+        "title": "INSERT_DATE",
+        "description": "Date observation was created"
+      },
+      "name": {
+        "type": "string"
+      },
+      "medias": {
+        "type": "array",
+        "items": {
+          "$ref": "#/_media"
+        },
+        "title": "MEDIA_HAS_MEDIA",
+        "description": "Observation contains media (photo or sound), if array length > 0"
+      },
+      "precision": {
+        "$ref": "#/_place_type_id",
+        "title": "PRECISION",
+        "description": "Type of site"
+      },
+      "project": {
+        "type": "string",
+        "pattern": "^-?[0-9]+$"
+      },
+      "project_code": {
+        "type": "string",
+        "title": "PROJECT_CODE",
+        "description": "Project code"
+      },
+      "project_name": {
+        "type": "string",
+        "title": "project_name"
+      },
+      "project_param": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "ANGLE": {
+            "type": "string",
+            "pattern": "^-?[0-9]+$"
+          },
+          "DISTANCE": {
+            "type": "string",
+            "pattern": "^-?[0-9]+$"
+          },
+          "HAUTEUR_D_HERBE": {
+            "type": "string",
+            "pattern": "^-?[0-9]+$"
+          }
+        },
+        "title": "project_param",
+        "description": ""
+      },
+      "protocol": {
+        "$ref": "#/_protocol",
+        "title": "PROTOCOL",
+        "description": "Protocol for this form"
+      },
+      "second_hand": {
+        "$ref": "#/_zero_one",
+        "title": "SECOND_HAND",
+        "description": "Is the observation from another observer?"
+      },
+      "source": {
+        "type": "string",
+        "enum": [
+          "WEB",
+          "MOBILE_DELAYED",
+          "MOBILE_LIVE",
+          "MOBILE_FORM_LIVE",
+          "MOBILE_FORM_DELAYED",
+          "MOBILE_LIVE_IOS",
+          "MOBILE_DELAYED_IOS",
+          "MOBILE_FORM_LIVE_IOS",
+          "MOBILE_FORM_DELAYED_IOS",
+          "MOBILE_FORM_DELAYED_REALTIME"
+        ],
+        "title": "source"
+      },
+      "timing": {
+        "$ref": "#/_date",
+        "title": "TIMING",
+        "description": "Observation time"
+      },
+      "traid": {
+        "type": "string",
+        "format": "uuid",
+        "description": "Transmitter idenfier"
+      },
+      "update_date": {
+        "$ref": "#/_date",
+        "title": "UPDATE_DATE",
+        "description": "Date observation was updated"
+      },
+      "uuid": {
+        "type": "string",
+        "format": "uuid",
+        "description": "Observation UUID"
+      },
+      "version": {
+        "type": "string",
+        "pattern": "^-?[0-9]+$"
+      }
+    },
+    "title": "_observer"
+  },
+  "_chiro_identify_id": {
+    "type": "string",
+    "enum": ["242_1", "242_2"]
+  },
+  "_dir_oiseaux_id": {
+    "type": "string",
+    "enum": ["1", "2", "3", "4"]
+  },
+  "_uicn_id": {
+    "type": "string",
+    "enum": ["CR", "DD", "EN", "EW", "EX", "LC", "NA", "NE", "NT", "RE", "VU"]
+  },
+  "_lr_nat_id": {
+    "type": "string",
+    "enum": ["CR", "EN", "R", "VN", "VU"]
+  },
+  "_committee_validation": {
+    "type": "string",
+    "enum": ["ACCEPTED", "REQUESTED"]
+  },
+  "_details": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "count": {
+        "type": "string",
+        "pattern": "^-?[0-9]+$"
+      },
+      "sex": {
+        "$ref": "#/_sex"
+      },
+      "age": {
+        "$ref": "#/_age"
+      },
+      "condition": {
+        "OneOf": [
+          {
+            "$ref": "#/_condition_id"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "@id": {
+                "$ref": "#/_condition_id"
+              },
+              "#text": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "distance": {
+        "OneOf": [
+          {
+            "$ref": "#/_distance_id"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "@id": {
+                "$ref": "#/_distance_id"
+              },
+              "#text": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "section": {
+        "$ref": "#/_section"
+      }
+    },
+    "title": "_details"
+  },
+  "_media": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "@id": {
+        "type": "string",
+        "pattern": "^-?[0-9]+$"
+      },
+      "has_large": {
+        "$ref": "#/_zero_one"
+      },
+      "insert_date": {
+        "$ref": "#/_date"
+      },
+      "filename": {
+        "type": "string"
+      },
+      "media_is_hidden": {
+        "$ref": "#/_zero_one"
+      },
+      "metadata": {
+        "type": "string"
+      },
+      "path": {
+        "type": "string",
+        "format": "uri",
+        "qt-uri-protocols": ["https"]
+      },
+      "type": {
+        "type": "string",
+        "enum": ["PHOTO", "SOUND"],
+        "title": "Type"
+      }
+    },
+    "title": "_media"
+  },
+  "_extended_info": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "colony": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "nests": {
+            "type": "string",
+            "pattern": "^-?[0-9]+$"
+          },
+          "nests_is_min": {
+            "type": "string",
+            "pattern": "^-?[0-9]+$"
+          },
+          "couples": {
+            "type": "string",
+            "pattern": "^-?[0-9]+$"
+          },
+          "occupied_nests": {
+            "type": "string",
+            "pattern": "^-?[0-9]+$"
+          }
+        },
+        "title": "Colony"
+      },
+      "colony_extended": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "couples": {
+            "type": "string",
+            "pattern": "^-?[0-9]+$"
+          },
+          "nb_artificial_destructed_nests": {
+            "type": "string",
+            "pattern": "^-?[0-9]+$"
+          },
+          "nb_artificial_nests": {
+            "type": "string",
+            "pattern": "^-?[0-9]+$"
+          },
+          "nb_artificial_nests_is_min": {
+            "type": "string",
+            "pattern": "^-?[0-9]+$"
+          },
+          "nb_artificial_occup_nests": {
+            "type": "string",
+            "pattern": "^-?[0-9]+$"
+          },
+          "nb_artificial_other_species_nests": {
+            "type": "string",
+            "pattern": "^-?[0-9]+$"
+          },
+          "nb_construction_nests": {
+            "type": "string",
+            "pattern": "^-?[0-9]+$"
+          },
+          "nb_natural_destructed_nests": {
+            "type": "string",
+            "pattern": "^-?[0-9]+$"
+          },
+          "nb_natural_nests": {
+            "type": "string",
+            "pattern": "^-?[0-9]+$"
+          },
+          "nb_natural_nests_is_min": {
+            "type": "string",
+            "pattern": "^-?[0-9]+$"
+          },
+          "nb_natural_occup_nests": {
+            "type": "string",
+            "pattern": "^-?[0-9]+$"
+          },
+          "nb_natural_other_species_nests": {
+            "type": "string",
+            "pattern": "^-?[0-9]+$"
+          }
+        },
+        "title": "ColonyExtended"
+      },
+      "direction": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "degree": {
+            "type": "string",
+            "pattern": "^-?[0-9]*$"
+          }
+        },
+        "title": "direction"
+      },
+      "gypaetus_barbatus": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "@id": {
+              "type": "string",
+              "pattern": "^-?[0-9]+$"
+            },
+            "age": {
+              "$ref": "#/_age"
+            },
+            "altitude_max": {
+              "type": "string",
+              "pattern": "^-?[0-9]+$"
+            },
+            "altitude_min": {
+              "type": "string",
+              "pattern": "^-?[0-9]+$"
+            },
+            "behaviour": {
+              "OneOf": [
+                {
+                  "$ref": "#/_gypaetus_barbatus_behaviour"
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "@id": {
+                      "$ref": "#/_gypaetus_barbatus_behaviour"
+                    },
+                    "#text": {
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            },
+            "bird_interaction": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "@id": {
+                    "type": "string",
+                    "pattern": "^-?[0-9]+$"
+                  }
+                }
+              }
+            },
+            "distance_min": {
+              "type": "string",
+              "pattern": "^-?[0-9]+$"
+            },
+            "flight_direction": {
+              "$ref": "#/_direction"
+            },
+            "gypaetus_barbatus_birds": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "@id": {
+                    "type": "string",
+                    "pattern": "^-?[0-9]+$"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "interaction": {
+              "OneOf": [
+                {
+                  "$ref": "#/_interaction_id"
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "@id": {
+                      "$ref": "#/_interaction_id"
+                    },
+                    "#text": {
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            },
+            "interaction_benefit": {
+              "OneOf": [
+                {
+                  "$ref": "#/_interaction_benefit_id"
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "@id": {
+                      "$ref": "#/_interaction_benefit_id"
+                    },
+                    "#text": {
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            },
+            "signs": {
+              "type": "string"
+            },
+            "time_start": {
+              "type": "string",
+              "format": "time"
+            },
+            "time_stop": {
+              "type": "string",
+              "format": "time"
+            },
+            "time_unknown": {
+              "type": "string",
+              "pattern": "^-?[0-9]+$"
+            },
+            "weather": {
+              "$ref": "#/_weather"
+            }
+          }
+        },
+        "title": "gypaetus_barbatus"
+      },
+      "mortality": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "collected": {
+            "$ref": "#/_yes_no",
+            "title": "collected",
+            "description": ""
+          },
+          "collection_ref": {
+            "type": "string",
+            "title": "collection_ref",
+            "description": ""
+          },
+          "collision_km_point": {
+            "type": "string",
+            "pattern": "^-?[0-9]+$",
+            "title": "collision_km_point",
+            "description": ""
+          },
+          "comment": {
+            "type": "string",
+            "title": "comment",
+            "description": ""
+          },
+          "crash_object": {
+            "type": "string",
+            "enum": [
+              "BUILDING",
+              "CABLE",
+              "LIGHTHOUSE",
+              "OTHER",
+              "UNKNOWN",
+              "WINDOW",
+              "WIRE_FENCE"
+            ],
+            "title": "crash_object",
+            "description": ""
+          },
+          "death_cause2": {
+            "type": "string",
+            "enum": [
+              "AGRICULTURAL_NET",
+              "AIRCRAFT",
+              "BOAT",
+              "CRASH",
+              "DESTRUCTION",
+              "DISEASE_PARASITE",
+              "DROWNING",
+              "ELECTRIC",
+              "EOLIEN",
+              "EXHAUSTION",
+              "FALL",
+              "FISHING",
+              "HUNTING",
+              "NATURAL_DISASTER",
+              "NEST_FALL",
+              "PREDATION",
+              "OTHER",
+              "OTHER_INDIRECT",
+              "OTHER_INTENT",
+              "OTHER_NATURAL",
+              "OTHER_TRANSPORT",
+              "POISONING",
+              "POLLUTION",
+              "ROAD_VEHICLE",
+              "TRAIN",
+              "TRAP",
+              "UNKNOWN",
+              "UNKNOWN_INDIRECT",
+              "UNKNOWN_INTENT",
+              "UNKNOWN_NATURAL",
+              "UNKNOWN_TRANSPORT",
+              "WEATHER",
+              "WORK",
+              "WORK_VEGETAL"
+            ],
+            "title": "death_cause2",
+            "description": ""
+          },
+          "drowning": {
+            "type": "string",
+            "enum": [
+              "BASIN",
+              "FLOOD",
+              "NATURAL_WATER",
+              "OTHER",
+              "POOL",
+              "STORM_POND",
+              "TROUGH",
+              "UNKNOWN"
+            ],
+            "title": "drowning",
+            "description": ""
+          },
+          "destination_name": {
+            "type": "string",
+            "title": "destination_name",
+            "description": ""
+          },
+          "destruction_capture": {
+            "type": "string",
+            "enum": [
+              "BROOD_DESTRUCTION",
+              "CAPTURE_ACCIDENT",
+              "OTHER",
+              "SCIENTIFIC_SAMPLE",
+              "UNKNOWN"
+            ],
+            "title": "destruction_capture",
+            "description": ""
+          },
+          "electric_cause": {
+            "type": "string",
+            "enum": ["COLLISION", "ELECTROCUTION", "UNKNOWN"],
+            "title": "electric_cause",
+            "description": ""
+          },
+          "electric_hta_pylon_id": {
+            "type": "string",
+            "pattern": "^-?[0-9]+$"
+          },
+          "electric_object": {
+            "type": "string",
+            "enum": ["PYLON", "LINE", "OTHER", "UNKNOWN"],
+            "title": "electric_object",
+            "description": ""
+          },
+          "fall_into_object": {
+            "type": "string",
+            "enum": ["CHIMNEY", "HOLE", "OTHER", "UNKNOWN"],
+            "title": "fall_into_object",
+            "description": ""
+          },
+          "fishing_cause": {
+            "type": "string",
+            "enum": ["BEACHED", "DROWNED", "OTHER", "UNKNOWN"],
+            "title": "fishing_cause",
+            "description": ""
+          },
+          "hunting": {
+            "type": "string",
+            "enum": [
+              "DIGGING_UP",
+              "HOUNDS_HUNTING",
+              "OTHER",
+              "SHOOTING",
+              "UNKNOWN"
+            ],
+            "title": "hunting",
+            "description": ""
+          },
+          "natural_disaster": {
+            "type": "string",
+            "enum": ["AVALANCHE", "FIRE", "OTHER", "ROCK_FALL", "UNKNOWN"],
+            "title": "natural_disaster",
+            "description": ""
+          },
+          "predation2": {
+            "type": "string",
+            "enum": [
+              "BIRD",
+              "CAT",
+              "DOG",
+              "HEN",
+              "MAMMAL",
+              "OTHER",
+              "OTHER_DOMESTIC",
+              "UNKNOWN"
+            ],
+            "title": "predation2",
+            "description": ""
+          },
+          "pollution2": {
+            "type": "string",
+            "enum": ["CHEMICAL", "HYDROCARBURE", "PLASTIC", "OTHER", "UNKNOWN"],
+            "title": "predation2",
+            "description": ""
+          },
+          "radio": {
+            "$ref": "#/_yes_no",
+            "title": "radio",
+            "description": ""
+          },
+          "recipient": {
+            "type": "string",
+            "enum": [
+              "DDSV",
+              "HEALTH_CENTER",
+              "LOCAL_MUSEUM",
+              "NATIONAL_MUSEUM",
+              "ONCFS",
+              "OTHER",
+              "VETERINAIRE",
+              "UNKNOWN"
+            ],
+            "title": "recipient",
+            "description": ""
+          },
+          "response": {
+            "type": "string",
+            "enum": [
+              "CP",
+              "DISCUTION",
+              "LAWSUIT",
+              "LAWSUIT_X",
+              "NOTHING",
+              "POLICE",
+              "UNKNOWN"
+            ],
+            "title": "response",
+            "description": ""
+          },
+          "road_type2": {
+            "type": "string",
+            "enum": [
+              "HIGHWAY",
+              "OTHER",
+              "PARKING",
+              "PRINCIPAL_ROAD",
+              "SECONDARY_ROAD",
+              "TRACK",
+              "UNKNOWN"
+            ],
+            "title": "road_type2",
+            "description": ""
+          },
+          "electric_tht_pylon_id": {
+            "type": "string",
+            "pattern": "^-?[0-9]+$"
+          },
+          "track_number": {
+            "type": "string",
+            "title": "track_number",
+            "description": ""
+          },
+          "trap2": {
+            "type": "string",
+            "enum": [
+              "CAGE",
+              "GLUAUX",
+              "INSECT_TRAP",
+              "LETAL",
+              "NASSE",
+              "OTHER",
+              "POTEAU",
+              "TRAP",
+              "UNKNOWN"
+            ],
+            "title": "trap2",
+            "description": ""
+          },
+          "wind_turbine_cnt": {
+            "type": "string",
+            "pattern": "^-?[0-9]+$",
+            "title": "work",
+            "description": ""
+          },
+          "work": {
+            "type": "string",
+            "enum": ["BUILDING", "OTHER", "TRANS_INFRA", "UNKNOWN"],
+            "title": "work",
+            "description": ""
+          },
+          "work_vegetal": {
+            "type": "string",
+            "enum": ["MOWING", "OTHER", "PRUNING", "UNKNOWN"],
+            "title": "work_vegetal",
+            "description": ""
+          },
+          "weather": {
+            "$ref": "#/_weather",
+            "title": "weather",
+            "description": ""
+          },
+          "wounded": {
+            "type": "string",
+            "pattern": "^-?[0-9]+$",
+            "title": "wounded",
+            "description": ""
+          }
+        },
+        "title": "mortality",
+        "description": ""
+      },
+      "rarities_committee": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {}
+      },
+      "relations": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "with": {
+              "type": "string",
+              "pattern": "^-?[0-9]+$"
+            }
+          }
+        }
+      },
+      "sample": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "punch": {
+            "$ref": "#/_yes_no"
+          }
+        }
+      }
+    },
+    "title": "ExtendedInfo"
+  },
+  "_gypaetus_barbatus_behaviour": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "@id": {
+        "type": "string",
+        "enum": [
+          "BONE_BREAKING",
+          "CARRYING_BONES",
+          "CARRYING_MATERIAL_IN_BEAK",
+          "CARRYING_MATERIAL_IN_CLAWS",
+          "CIRCLING",
+          "FEEDING",
+          "FLYING_STRAIT",
+          "SLEEPING",
+          "SOCIAL_CONTACT",
+          "UNKNOWN"
+        ]
+      }
     }
+  },
+  "_behaviour": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "@id": {
+        "type": "string",
+        "enum": [
+          "134_",
+          "134_1",
+          "134_2",
+          "134_3",
+          "134_4",
+          "134_5",
+          "134_6",
+          "134_7",
+          "134_8",
+          "134_9",
+          "134_10",
+          "134_11",
+          "134_12",
+          "134_13",
+          "134_14",
+          "134_15",
+          "134_16",
+          "134_17",
+          "134_18",
+          "134_19",
+          "134_20",
+          "134_21",
+          "134_22",
+          "134_23",
+          "134_24",
+          "134_25",
+          "134_26",
+          "134_27",
+          "134_28",
+          "134_29",
+          "134_30",
+          "134_31",
+          "134_32",
+          "134_33",
+          "134_34",
+          "134_35",
+          "134_36",
+          "UNKNOWN"
+        ],
+        "title": "BehaviourId"
+      },
+      "name": {
+        "type": "string",
+        "enum": [
+          "",
+          "BREATH",
+          "CHASED",
+          "COUPLING",
+          "CYMBAL",
+          "DISPLAY",
+          "EMERGENCE",
+          "FOOD",
+          "GROUND_REST",
+          "JUMP",
+          "LAID",
+          "LAY_EGGS",
+          "LOCAL",
+          "MIGRATION",
+          "MIGRATION_ACTIV",
+          "MOVE",
+          "OTHER",
+          "PLAQUE",
+          "PROBE",
+          "REST",
+          "RUT",
+          "SLEEP",
+          "STRIDULE",
+          "SUMMERWINTERING",
+          "SUNBATH",
+          "SURFACE_REST",
+          "TANDEM",
+          "TERRITORY",
+          "TERRITORY_MARK",
+          "TRANSIT",
+          "U",
+          "WINTERING"
+        ],
+        "title": "Name"
+      },
+      "#text": {
+        "type": "string",
+        "title": "BehaviourText"
+      }
+    },
+    "title": "_behaviour"
+  },
+  "_sex": {
+    "OneOf": [
+      {
+        "$ref": "#/_sex_id"
+      },
+      {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "@id": {
+            "$ref": "#/_sex_id"
+          },
+          "#text": {
+            "type": "string"
+          }
+        }
+      }
+    ]
+  },
+  "_sex_id": {
+    "type": "string",
+    "enum": ["U", "M", "F", "FT"],
+    "title": "_sex",
+    "description": ""
+  },
+  "_age": {
+    "OneOf": [
+      {
+        "$ref": "#/_age_id"
+      },
+      {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "@id": {
+            "$ref": "#/_age_id"
+          },
+          "#text": {
+            "type": "string"
+          }
+        }
+      }
+    ],
+    "title": "_age"
+  },
+  "_age_id": {
+    "type": "string",
+    "enum": [
+      "AD",
+      "MATURE",
+      "SUBAD",
+      "JUVENILE",
+      "IMM",
+      "IMM3",
+      "EMERGENT",
+      "PULL",
+      "YOUNGDEP",
+      "EXUVIE",
+      "IMAGO",
+      "1Y",
+      "1YP",
+      "2Y",
+      "3Y",
+      "4Y",
+      "5Y",
+      "U"
+    ],
+    "title": "_age_id",
+    "description": ""
+  },
+  "_condition_id": {
+    "type": "string",
+    "enum": [
+      "VIEW",
+      "FLY",
+      "LAID",
+      "HAND",
+      "OBSIND",
+      "MAGNIFYING",
+      "AUDIO",
+      "U"
+    ],
+    "title": "_condition_id",
+    "description": ""
+  },
+  "_distance_id": {
+    "type": "string",
+    "enum": ["LESS25", "LESS100", "LESS200", "MORE200", "TRANSIT", "U"],
+    "title": "_distance_id",
+    "description": ""
+  },
+  "_section": {
+    "OneOf": [
+      {
+        "$ref": "#/_section_id"
+      },
+      {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "@id": {
+            "$ref": "#/_section_id"
+          },
+          "#text": {
+            "type": "string"
+          }
+        }
+      }
+    ]
+  },
+  "_section_id": {
+    "type": "string",
+    "enum": ["U"],
+    "title": "_section",
+    "description": ""
+  },
+  "_habitat_id": {
+    "type": "string",
+    "enum": [
+      "A0_A",
+      "A1_1",
+      "A1_2",
+      "A1_3",
+      "A2_1",
+      "A2_2",
+      "A2_3",
+      "A2_4",
+      "A2_5",
+      "A2_6",
+      "A2_7",
+      "A2_8",
+      "A2_9",
+      "A3_1",
+      "A3_2",
+      "A3_3",
+      "A3_4",
+      "A3_5",
+      "A3_6",
+      "A3_7",
+      "A3_8",
+      "A3_9",
+      "A3_10",
+      "B0_B",
+      "B0_1",
+      "B1_1",
+      "B1_2",
+      "B1_3",
+      "B2_1",
+      "B2_2",
+      "B2_3",
+      "B3_1",
+      "B3_2",
+      "B3_3",
+      "C0_C",
+      "C1_1",
+      "C1_2",
+      "C1_3",
+      "C1_4",
+      "C1_5",
+      "C1_6",
+      "C1_7",
+      "C1_8",
+      "D0_D",
+      "D1_1",
+      "D1_2",
+      "D1_3",
+      "D1_4",
+      "D1_5",
+      "D1_6",
+      "D2_1",
+      "D2_2",
+      "D2_3",
+      "D2_4",
+      "D2_5",
+      "D2_6",
+      "D2_7",
+      "D3_1",
+      "D3_2",
+      "D3_3",
+      "D3_4",
+      "E0_E",
+      "E1_1",
+      "E1_2",
+      "E1_3",
+      "E2_1",
+      "E2_2",
+      "E2_3",
+      "E3_1",
+      "E3_2",
+      "E3_3",
+      "E3_4",
+      "E3_5",
+      "E3_6",
+      "E3_7",
+      "E3_8",
+      "F0_F",
+      "F1_1",
+      "F1_2",
+      "F1_3",
+      "F1_4",
+      "F1_5",
+      "F1_6",
+      "F2_1",
+      "F2_2",
+      "F2_3",
+      "F2_4",
+      "F2_5",
+      "F3_1",
+      "F3_2",
+      "F3_3",
+      "F3_4",
+      "F3_5",
+      "F3_6",
+      "F3_7",
+      "F3_8",
+      "F3_9",
+      "G0_G",
+      "G1_1",
+      "G1_2",
+      "G1_3",
+      "G1_4"
+    ]
+  },
+  "_stoc_transport_id": {
+    "type": "string",
+    "enum": ["WALK"]
+  },
+  "_stoc_snow_id": {
+    "type": "string",
+    "enum": ["NO_SNOW"]
+  },
+  "_stoc_rain_id": {
+    "type": "string",
+    "enum": ["NO_RAIN", "STRONG_RAIN"]
+  },
+  "_stoc_wind_id": {
+    "type": "string",
+    "enum": ["NO_WIND", "WEAK_WIND"]
+  },
+  "_stoc_visibility_id": {
+    "type": "string",
+    "enum": ["GOOD_VISIBILITY"]
+  },
+  "_stoc_cloud_id": {
+    "type": "string",
+    "enum": ["ONE_THIRD", "TWO_THIRD", "THREE_THIRD"],
+    "title": "_stoc_cloud_id"
+  },
+  "_protocol": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "advanced": {
+        "type": "string",
+        "pattern": "^-?[0-9]+$"
+      },
+      "census_not_done": {
+        "$ref": "#/_yes_no"
+      },
+      "direction": {
+        "type": "string",
+        "pattern": "^-?[0-9]+$"
+      },
+      "habitat": {
+        "OneOf": [
+          {
+            "$ref": "#/_habitat_id"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "@id": {
+                "$ref": "#/_habitat_id"
+              },
+              "#text": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "form_comment_additional_observer": {
+        "type": "string"
+      },
+      "form_comment_changes": {
+        "type": "string"
+      },
+      "list_type": {
+        "type": "string",
+        "enum": ["-", "basic", "extended"]
+      },
+      "local_site_code": {
+        "type": "string"
+      },
+      "protocol_name": {
+        "type": "string",
+        "enum": [
+          "GENERIC_BIRD",
+          "LIMAT",
+          "SHOC",
+          "SHOC_SITE",
+          "STOC_EPS",
+          "STOC_MONTAGNE",
+          "STOC_ONF",
+          "STOC_SITES",
+          "STOC_SITES_RNF",
+          "TERRITORY_MAPPING",
+          "WATERBIRD"
+        ],
+        "title": "protocol_name"
+      },
+      "sequence_number": {
+        "type": "string",
+        "pattern": "^-?[0-9]+$"
+      },
+      "site_code": {
+        "type": "string"
+      },
+      "stoc_cloud": {
+        "OneOf": [
+          {
+            "$ref": "#/_stoc_cloud_id"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "@id": {
+                "$ref": "#/_stoc_cloud_id"
+              },
+              "#text": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "stoc_rain": {
+        "OneOf": [
+          {
+            "$ref": "#/_stoc_rain_id"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "@id": {
+                "$ref": "#/_stoc_rain_id"
+              },
+              "#text": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "stoc_snow": {
+        "OneOf": [
+          {
+            "$ref": "#/_stoc_snow_id"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "@id": {
+                "$ref": "#/_stoc_snow_id"
+              },
+              "#text": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "stoc_transport": {
+        "OneOf": [
+          {
+            "$ref": "#/_stoc_transport_id"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "@id": {
+                "$ref": "#/_stoc_transport_id"
+              },
+              "#text": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "stoc_visibility": {
+        "OneOf": [
+          {
+            "$ref": "#/_stoc_visibility_id"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "@id": {
+                "$ref": "#/_stoc_visibility_id"
+              },
+              "#text": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "stoc_wind": {
+        "OneOf": [
+          {
+            "$ref": "#/_stoc_wind_id"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "@id": {
+                "$ref": "#/_stoc_wind_id"
+              },
+              "#text": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "visit_number": {
+        "type": "string",
+        "pattern": "^-?[0-9]+$"
+      },
+      "waterbird_conditions": {
+        "OneOf": [
+          {
+            "$ref": "#/_waterbird_conditions_id"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "@id": {
+                "$ref": "#/_waterbird_conditions_id"
+              },
+              "#text": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "waterbird_conditions_reason": {
+        "OneOf": [
+          {
+            "$ref": "#/_waterbird_conditions_reason_id"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "@id": {
+                "$ref": "#/_waterbird_conditions_reason_id"
+              },
+              "#text": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "waterbird_count_payed": {
+        "$ref": "#/_yes_no"
+      },
+      "waterbird_countmethod": {
+        "OneOf": [
+          {
+            "$ref": "#/_waterbird_count_method_id"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "@id": {
+                "$ref": "#/_waterbird_count_method_id"
+              },
+              "#text": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "waterbird_counttype": {
+        "OneOf": [
+          {
+            "$ref": "#/_waterbird_count_type_id"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "@id": {
+                "$ref": "#/_waterbird_count_type_id"
+              },
+              "#text": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "waterbird_coverage": {
+        "OneOf": [
+          {
+            "$ref": "#/_waterbird_coverage_id"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "@id": {
+                "$ref": "#/_waterbird_coverage_id"
+              },
+              "#text": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "waterbird_ice": {
+        "OneOf": [
+          {
+            "$ref": "#/_waterbird_ice_id"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "@id": {
+                "$ref": "#/_waterbird_ice_id"
+              },
+              "#text": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "waterbird_optical": {
+        "OneOf": [
+          {
+            "$ref": "#/_waterbird_optical_id"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "@id": {
+                "$ref": "#/_waterbird_optical_id"
+              },
+              "#text": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "waterbird_snowcover": {
+        "OneOf": [
+          {
+            "$ref": "#/_waterbird_snow_cover_id"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "@id": {
+                "$ref": "#/_waterbird_snow_cover_id"
+              },
+              "#text": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "waterbird_visibility": {
+        "OneOf": [
+          {
+            "$ref": "#/_waterbird_visibility_id"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "@id": {
+                "$ref": "#/_waterbird_visibility_id"
+              },
+              "#text": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "waterbird_waterlevel": {
+        "OneOf": [
+          {
+            "$ref": "#/_waterbird_water_level_id"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "@id": {
+                "$ref": "#/_waterbird_water_level_id"
+              },
+              "#text": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "waterbird_waves": {
+        "OneOf": [
+          {
+            "$ref": "#/_waterbird_waves_id"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "@id": {
+                "$ref": "#/_waterbird_waves_id"
+              },
+              "#text": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "wkt": {
+        "type": "string"
+      }
+    },
+    "title": "_protocol"
+  },
+  "_waterbird_conditions_id": {
+    "type": "string",
+    "enum": ["BAD", "GOOD_NORMAL", "MODERATE"]
+  },
+  "_waterbird_conditions_reason_id": {
+    "type": "string",
+    "enum": [
+      "FISHING",
+      "FOG",
+      "HUNTING",
+      "MIXED_HUMAN",
+      "MIXED_WEATHER",
+      "OTHERS",
+      "WIND"
+    ]
+  },
+  "_waterbird_count_method_id": {
+    "type": "string",
+    "enum": ["GROUND"]
+  },
+  "_waterbird_count_type_id": {
+    "type": "string",
+    "enum": ["DAY_COUNT", "ROOST_COUNT"]
+  },
+  "_waterbird_coverage_id": {
+    "type": "string",
+    "enum": ["COMPLETE", "PARTLY", "UNKNOWN"]
+  },
+  "_waterbird_ice_id": {
+    "type": "string",
+    "enum": ["0_10", "10_50", "50_90", "NO_ICE", "UNKNOWN"]
+  },
+  "_waterbird_optical_id": {
+    "type": "string",
+    "enum": ["BINOCULARS", "NONE", "TELESCOPE"]
+  },
+  "_waterbird_snow_cover_id": {
+    "type": "string",
+    "enum": ["GOOD_NORMAL", "NO_SNOW", "SOME_SNOW"]
+  },
+  "_waterbird_visibility_id": {
+    "type": "string",
+    "enum": ["0_100", "100_300", "300_1000", "1000", "UNKNOWN"]
+  },
+  "_waterbird_water_level_id": {
+    "type": "string",
+    "enum": ["DRY_EMPTY", "HIGH", "LOW", "NORMAL", "UNKNOWN"]
+  },
+  "_waterbird_waves_id": {
+    "type": "string",
+    "enum": ["MODERATE", "NONE", "SMALL", "UNKNOWN"]
+  },
+  "_direction": {
+    "OneOf": [
+      {
+        "$ref": "#/_direction_id"
+      },
+      {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "@id": {
+            "$ref": "#/_direction_id"
+          },
+          "#text": {
+            "type": "string"
+          }
+        }
+      }
+    ],
+    "title": "_direction"
+  },
+  "_direction_id": {
+    "type": "string",
+    "enum": ["N", "NW", "W", "SW", "S", "SE", "E", "NE"],
+    "title": "_direction_id"
+  },
+  "_interaction_id": {
+    "type": "string",
+    "enum": ["MOBBING"],
+    "title": "_interaction_id"
+  },
+  "_interaction_benefit_id": {
+    "type": "string",
+    "enum": ["OTHER"],
+    "title": "_interaction_benefit_id"
+  },
+  "_weather": {
+    "OneOf": [
+      {
+        "$ref": "#/_weather_id"
+      },
+      {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "@id": {
+            "$ref": "#/_weather_id"
+          },
+          "#text": {
+            "type": "string"
+          }
+        }
+      }
+    ],
+    "title": "_weather"
+  },
+  "_weather_id": {
+    "type": "string",
+    "enum": ["SUNNY"],
+    "title": "_weather_id"
+  },
+  "_place_type_id": {
+    "type": "string",
+    "enum": [
+      "",
+      "garden",
+      "imprecise",
+      "municipality",
+      "place",
+      "precise",
+      "polygone",
+      "polygone_precise",
+      "square",
+      "subplace",
+      "subplace_precise",
+      "transect",
+      "transect_precise",
+      "water"
+    ],
+    "title": "_place_type_id"
+  },
+  "_yes_no": {
+    "OneOf": [
+      {
+        "$ref": "#/_yes_no_id"
+      },
+      {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "@id": {
+            "$ref": "#/_yes_no_id"
+          },
+          "#text": {
+            "type": "string"
+          }
+        }
+      }
+    ],
+    "title": "_yes_no"
+  },
+  "_yes_no_id": {
+    "type": "string",
+    "enum": ["YES", "NO"],
+    "title": "_yes_no_id"
+  },
+  "_zero_one": {
+    "type": "string",
+    "enum": ["0", "1"],
+    "title": "_zero_one"
+  }
 }
