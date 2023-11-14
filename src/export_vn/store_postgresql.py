@@ -1043,9 +1043,9 @@ class StorePostgresql(Postgresql):
                         ]
                     else:
                         id_form_universal = None
-                        
+
                     # First loop to prepare forms_data
-                    for (k, v) in items_dict["data"]["forms"][f].items():
+                    for k, v in items_dict["data"]["forms"][f].items():
                         if k == "sightings":
                             nb_s = len(v)
                             dates = []
@@ -1066,7 +1066,7 @@ class StorePostgresql(Postgresql):
                     self._store_form(forms_data, self._transformer.transform)
 
                     # Second loop to store_sightings
-                    for (k, v) in items_dict["data"]["forms"][f].items():
+                    for k, v in items_dict["data"]["forms"][f].items():
                         if k == "sightings":
                             nb_s = len(v)
                             logger.debug("Storing %d observations in form %d", nb_s, f)
