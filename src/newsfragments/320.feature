@@ -1,1 +1,0 @@
-Ajout du champ sempach_id_family dans la table observations.

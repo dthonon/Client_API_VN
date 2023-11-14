@@ -1,3 +1,37 @@
+Client-API-VN v2.12.0 (2023-11-14)
+==================================
+
+Features
+--------
+
+- When storing in Postgresql JSON database, forms are now created
+  before dependant sightings. (`#294 <https://github.com/dthonon/Client_API_VN/issues/294>`_)
+- Python 3.10 is supported (`#296 <https://github.com/dthonon/Client_API_VN/issues/296>`_)
+- Ajout du champ sempach_id_family dans la table observations. (`#320 <https://github.com/dthonon/Client_API_VN/issues/320>`_)
+
+
+Bugfixes
+--------
+
+- Solved several minor issues in code format and documentation. (`#306 <https://github.com/dthonon/Client_API_VN/issues/306>`_)
+- Unwanted additional downloads have been removed. (`#314 <https://github.com/dthonon/Client_API_VN/issues/314>`_)
+
+
+Improved Documentation
+----------------------
+
+- User guides are available for the scripts. (`#180 <https://github.com/dthonon/Client_API_VN/issues/180>`_)
+- Added a comment in YAML template :
+  use the territory short_name, not the territory id (`#289 <https://github.com/dthonon/Client_API_VN/issues/289>`_)
+- JSON schemas updated with current export format. (`#322 <https://github.com/dthonon/Client_API_VN/issues/322>`_)
+
+
+Deprecations and Removals
+-------------------------
+
+- update_uuid script is removed, as it was not fully tested. (`#303 <https://github.com/dthonon/Client_API_VN/issues/303>`_)
+
+
 Client-API-VN v2.11.1 (2022-12-05)
 ==================================
 
