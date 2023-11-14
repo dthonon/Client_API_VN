@@ -247,7 +247,7 @@ def test_validations_store(capsys):
 @pytest.mark.order(index=340)
 def test_observations_store_search_1_1(capsys):
     """Store observations from taxo_group 2 by specie to file, using search."""
-    file_json = str(Path.home()) + "/" + CFG.file_store + "observations_2_1.json.gz"
+    file_json = str(Path.home()) + "/" + CFG.file_store + "observations_2_138_1.json.gz"
     if Path(file_json).is_file():
         Path(file_json).unlink()
     OBSERVATIONS.store(2, method="search")
@@ -258,7 +258,7 @@ def test_observations_store_search_1_1(capsys):
 @pytest.mark.slow
 def test_observations_store_search_1_2(capsys):
     """Store observations from taxo_group 2 by specie to file, using search."""
-    file_json = str(Path.home()) + "/" + CFG.file_store + "observations_2_1.json.gz"
+    file_json = str(Path.home()) + "/" + CFG.file_store + "observations_2_138_1.json.gz"
     if Path(file_json).is_file():
         Path(file_json).unlink()
     OBSERVATIONS.store(2, method="search", short_version="1")

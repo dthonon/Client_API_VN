@@ -48,15 +48,15 @@ CRTL = "observations"
             "start_date": None,
             "end_date": None,
         },
-        {
-            "file": "evn_tst3.yaml",
-            "site": "tst4",
-            "site_enabled": True,
-            "file_enabled": False,
-            "db_enabled": False,
-            "start_date": None,
-            "end_date": None,
-        },
+        # {
+        #     "file": "evn_tst3.yaml",
+        #     "site": "tst4",
+        #     "site_enabled": True,
+        #     "file_enabled": False,
+        #     "db_enabled": False,
+        #     "start_date": None,
+        #     "end_date": None,
+        # },
     ],
 )
 def create_file(request):

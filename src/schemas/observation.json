@@ -1301,7 +1301,7 @@
           },
           "fall_into_object": {
             "type": "string",
-            "enum": ["CHIMNEY", "HOLE", "OTHER", "UNKNOWN"],
+            "enum": ["CHIMNEY", "HOLE", "OTHER", "POLE", "UNKNOWN"],
             "title": "fall_into_object",
             "description": ""
           },
