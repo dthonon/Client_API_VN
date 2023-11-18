@@ -25,9 +25,8 @@ from export_vn.download_vn import (
 from export_vn.evnconf import EvnConf
 from export_vn.store_postgresql import PostgresqlUtils, ReadPostgresql, StorePostgresql
 
-# Using faune-ardeche or faune-isere site, that needs to be created first
-# SITE = "t07"
-SITE = "t38"
+# Using faune-france site, that needs to be defined in .evn_test.yaml
+SITE = "tff"
 FILE = ".evn_test.yaml"
 
 # Get configuration for test site
@@ -131,7 +130,7 @@ def test_terr_u_api_pg_store():
 def test_terr_u_api_pg_read():
     """Read territorial units from database."""
     t_u = READ_PG.read("territorial_units")
-    assert len(t_u) == 1
+    assert len(t_u) > 100
 
 
 # -----------------

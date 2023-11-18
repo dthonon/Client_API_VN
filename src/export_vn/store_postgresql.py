@@ -203,7 +203,7 @@ class PostgresqlUtils:
             Column("error_count", Integer, index=True),
             Column("http_status", Integer, index=True),
             Column("comment", String),
-            Column("length", Integer, index=True),
+            Column("length", BigInteger, index=True),
             Column("duration", BigInteger, index=True),
         )
         return None

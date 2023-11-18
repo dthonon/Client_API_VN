@@ -10,9 +10,8 @@ from pathlib import Path
 from export_vn.evnconf import EvnConf
 from export_vn.store_file import StoreFile
 
-# Using faune-ardeche or faune-isere site, that needs to be created first
-# SITE = "t07"
-SITE = 't38'
+# Using faune-france site, that needs to be defined in .evn_test.yaml
+SITE = "tff"
 FILE = ".evn_test.yaml"
 
 # Get configuration for test site
