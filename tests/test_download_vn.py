@@ -24,9 +24,8 @@ from export_vn.download_vn import (
 from export_vn.evnconf import EvnConf
 from export_vn.store_file import StoreFile
 
-# Using faune-ardeche or faune-isere site, that needs to be created first
-# SITE = "t07"
-SITE = "t38"
+# Using faune-france site, that needs to be defined in .evn_test.yaml
+SITE = "tff"
 FILE = ".evn_test.yaml"
 
 # Get configuration for test site
@@ -87,10 +86,7 @@ def test_families_store(capsys):
     assert Path(file_json).is_file()
     with gzip.open(file_json, "rb") as g:
         items_dict = json.loads(g.read().decode("utf-8"))
-    if SITE == "t38":
-        assert len(items_dict["data"]) >= 20
-    elif SITE == "t07":
-        assert len(items_dict["data"]) >= 8
+    assert len(items_dict["data"]) >= 20
 
 
 # --------
@@ -123,7 +119,7 @@ def test_territorial_units_store(capsys):
     assert Path(file_json).is_file()
     with gzip.open(file_json, "rb") as g:
         items_dict = json.loads(g.read().decode("utf-8"))
-    assert len(items_dict["data"]) == 1
+    assert len(items_dict["data"]) > 100
 
 
 # -----------------
@@ -139,10 +135,7 @@ def test_local_admin_units_store(capsys):
     assert Path(file_json).is_file()
     with gzip.open(file_json, "rb") as g:
         items_dict = json.loads(g.read().decode("utf-8"))
-    if SITE == "t38":
-        assert len(items_dict["data"]) >= 534
-    elif SITE == "t07":
-        assert len(items_dict["data"]) >= 340
+    assert len(items_dict["data"]) >= 534
 
 
 # -------
@@ -159,10 +152,7 @@ def test_places_store(capsys):
     assert Path(file_json).is_file()
     with gzip.open(file_json, "rb") as g:
         items_dict = json.loads(g.read().decode("utf-8"))
-    if SITE == "t38":
-        assert len(items_dict["data"]) >= 31930
-    elif SITE == "t07":
-        assert len(items_dict["data"]) >= 23566
+    assert len(items_dict["data"]) >= 31930
 
 
 # ---------
@@ -179,10 +169,7 @@ def test_fields_store(capsys):
     assert Path(file_json).is_file()
     with gzip.open(file_json, "rb") as g:
         items_dict = json.loads(g.read().decode("utf-8"))
-    if SITE == "t38":
-        assert len(items_dict["data"]) >= 4
-    elif SITE == "t07":
-        assert len(items_dict["data"]) >= 8
+    assert len(items_dict["data"]) >= 1
 
 
 # ---------
@@ -198,10 +185,7 @@ def test_entities_store(capsys):
     assert Path(file_json).is_file()
     with gzip.open(file_json, "rb") as g:
         items_dict = json.loads(g.read().decode("utf-8"))
-    if SITE == "t38":
-        assert len(items_dict["data"]) >= 16
-    elif SITE == "t07":
-        assert len(items_dict["data"]) >= 8
+    assert len(items_dict["data"]) >= 16
 
 
 # ----------
@@ -218,10 +202,7 @@ def test_observers_store(capsys):
     assert Path(file_json).is_file()
     with gzip.open(file_json, "rb") as g:
         items_dict = json.loads(g.read().decode("utf-8"))
-    if SITE == "t38":
-        assert len(items_dict["data"]) >= 4500
-    elif SITE == "t07":
-        assert len(items_dict["data"]) >= 2400
+    assert len(items_dict["data"]) >= 4500
 
 
 # ------------
@@ -247,7 +228,7 @@ def test_validations_store(capsys):
 @pytest.mark.order(index=340)
 def test_observations_store_search_1_1(capsys):
     """Store observations from taxo_group 2 by specie to file, using search."""
-    file_json = str(Path.home()) + "/" + CFG.file_store + "observations_2_1.json.gz"
+    file_json = str(Path.home()) + "/" + CFG.file_store + "observations_2_138_1.json.gz"
     if Path(file_json).is_file():
         Path(file_json).unlink()
     OBSERVATIONS.store(2, method="search")
@@ -258,7 +239,7 @@ def test_observations_store_search_1_1(capsys):
 @pytest.mark.slow
 def test_observations_store_search_1_2(capsys):
     """Store observations from taxo_group 2 by specie to file, using search."""
-    file_json = str(Path.home()) + "/" + CFG.file_store + "observations_2_1.json.gz"
+    file_json = str(Path.home()) + "/" + CFG.file_store + "observations_2_138_1.json.gz"
     if Path(file_json).is_file():
         Path(file_json).unlink()
     OBSERVATIONS.store(2, method="search", short_version="1")

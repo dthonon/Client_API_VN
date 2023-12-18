@@ -318,7 +318,7 @@ class BiolovisionAPI:
                 else:
                     try:
                         logger.debug(
-                            _("Response content: %s, text: %s"), resp, resp.text
+                            _("Response content: %s, text: %s"), resp, resp.text[:1000]
                         )
                         # TWEAK: remove extra text outside JSON response
                         if len(resp.text) > 1:

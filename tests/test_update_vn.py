@@ -4,6 +4,7 @@ Test update_vn main.
 import csv
 import logging
 from pathlib import Path
+import time
 from unittest.mock import patch
 
 import pytest
@@ -12,9 +13,8 @@ from export_vn.evnconf import EvnConf
 from strictyaml import YAMLValidationError
 from update import update_vn
 
-# Using faune-ardeche or faune-isere site, that needs to be created first
-# SITE = "t07"
-SITE = "t38"
+# Using faune-france site, that needs to be defined in .evn_test.yaml
+SITE = "tff"
 FILE = ".evn_test.yaml"
 
 # Get configuration for test site
@@ -89,11 +89,11 @@ def sighting_for_test():
         "data": {
             "sightings": [
                 {
-                    "date": {"@timestamp": "1616753200"},
+                    "date": {"@timestamp": str(int(time.time()))},
                     "species": {"@id": "408"},
                     "observers": [
                         {
-                            "@id": "38",
+                            "@id": "11675",
                             "altitude": "230",
                             "comment": "TEST API !!! à supprimer !!!",
                             "coord_lat": "45.188302192726",
@@ -117,7 +117,7 @@ def sighting_for_test():
 @pytest.mark.slow
 def test_update(sighting_for_test):
     """Check Biolovision updating."""
-    name_yaml = ".evn_aura.yaml"
+    name_yaml = ".evn_test.yaml"
     file_yaml = str(Path.home()) + "/" + name_yaml
     assert Path(file_yaml).is_file()
     name_input = ".evn_pytest.csv"
@@ -134,14 +134,14 @@ def test_update(sighting_for_test):
         inwriter.writerow([" site", "id_universal ", "path", "operation", " value "])
         inwriter.writerow(
             [
-                "vn38",
+                "tff",
                 str(obs_1),
                 "$['data']['sightings'][0]['observers'][0]['atlas_code']",
                 "unknown",
                 "2",
             ]
         )
-    with patch("sys.argv", ["py.test", name_yaml, "../" + name_input]):
+    with patch("sys.argv", ["py.test", name_yaml, file_input]):
         update_vn.run()
 
     # Check handling of empty line
@@ -151,14 +151,14 @@ def test_update(sighting_for_test):
         inwriter.writerow([])
         inwriter.writerow(
             [
-                "vn38",
+                "tff",
                 str(obs_1),
                 "$['data']['sightings'][0]['observers'][0]['atlas_code']",
                 "unknown",
                 "2",
             ]
         )
-    with patch("sys.argv", ["py.test", name_yaml, "../" + name_input]):
+    with patch("sys.argv", ["py.test", name_yaml, file_input]):
         update_vn.run()
 
     # Update atlas_code
@@ -167,14 +167,14 @@ def test_update(sighting_for_test):
         inwriter.writerow(["site", "id_universal", "path", "operation", "value"])
         inwriter.writerow(
             [
-                "vn38",
+                "tff",
                 str(obs_1),
                 "$['data']['sightings'][0]['observers'][0]['atlas_code']",
                 "replace",
                 "2",
             ]
         )
-    with patch("sys.argv", ["py.test", name_yaml, "../" + name_input]):
+    with patch("sys.argv", ["py.test", name_yaml, file_input]):
         update_vn.run()
     sighting = OBSERVATIONS_API.api_get(str(obs_1))
     assert (
@@ -187,14 +187,14 @@ def test_update(sighting_for_test):
         inwriter.writerow(["site", "id_universal", "path", "operation", "value"])
         inwriter.writerow(
             [
-                "vn38",
+                "tff",
                 str(obs_1),
                 "$['data']['sightings'][0]['observers'][0]['atlas_code']",
                 "replace",
                 "4",
             ]
         )
-    with patch("sys.argv", ["py.test", name_yaml, "../" + name_input]):
+    with patch("sys.argv", ["py.test", name_yaml, file_input]):
         update_vn.run()
     sighting = OBSERVATIONS_API.api_get(str(obs_1))
     assert (
@@ -207,14 +207,14 @@ def test_update(sighting_for_test):
         inwriter.writerow(["site", "id_universal", "path", "operation", "value"])
         inwriter.writerow(
             [
-                "vn38",
+                "tff",
                 str(obs_1),
                 "$['data']['sightings'][0]['observers'][0]['atlas_code']",
                 "delete_attribute",
                 "",
             ]
         )
-    with patch("sys.argv", ["py.test", name_yaml, "../" + name_input]):
+    with patch("sys.argv", ["py.test", name_yaml, file_input]):
         update_vn.run()
     sighting = OBSERVATIONS_API.api_get(str(obs_1))
     assert "atlas_code" not in sighting["data"]["sightings"][0]["observers"][0]
@@ -225,24 +225,25 @@ def test_update(sighting_for_test):
         inwriter.writerow(["site", "id_universal", "path", "operation", "value"])
         inwriter.writerow(
             [
-                "vn38",
+                "tff",
                 str(obs_1),
                 "$['data']['sightings'][0]['observers'][0]['comment']",
                 "replace",
                 "'API update test'",
             ]
         )
-    with patch("sys.argv", ["py.test", name_yaml, "../" + name_input]):
+    with patch("sys.argv", ["py.test", name_yaml, file_input]):
         update_vn.run()
     sighting = OBSERVATIONS_API.api_get(str(obs_1))
     assert (
-        sighting["data"]["sightings"][0]["observers"][0]["comment"] == "API update test"
+        sighting["data"]["sightings"][0]["observers"][0]["comment"]
+        == "'API update test'"
     )
 
     # Remove observation
     with open(file_input, "w", newline="") as csvfile:
         inwriter = csv.writer(csvfile, delimiter=";", quoting=csv.QUOTE_MINIMAL)
         inwriter.writerow(["site", "id_universal", "path", "operation", "value"])
-        inwriter.writerow(["vn38", str(obs_1), "", "delete_observation", ""])
-    with patch("sys.argv", ["py.test", name_yaml, "../" + name_input]):
+        inwriter.writerow(["tff", str(obs_1), "", "delete_observation", ""])
+    with patch("sys.argv", ["py.test", name_yaml, file_input]):
         update_vn.run()

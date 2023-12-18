@@ -2,5 +2,5 @@
     package = ""
     package_dir = "src"
     filename = "CHANGELOG.rst"
-    issue_format = "`#{issue} <https://framagit.org/lpo/Client_API_VN/issues/{issue}>`_"
+    issue_format = "`#{issue} <https://github.com/dthonon/Client_API_VN/issues/{issue}>`_"
 

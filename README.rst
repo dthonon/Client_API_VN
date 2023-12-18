@@ -31,11 +31,11 @@ They are tested under Linux Ubuntu >20 or Debian 10. Other Linux
 distributions could work. Windows is not tested at all and will
 probably not work.
 
-See `Documentation <https://client-api-vn1.readthedocs.io/en/stable/>`_
+See `Documentation <https://client-api-vn.readthedocs.io/en/stable/>`_
 for more informations.
 
 A thin Python layer on top of Biolovision API is provided, as described in
-`API Manual <https://client-api-vn1.readthedocs.io/en/stable/api/modules.html>`_.
+`API Manual <https://client-api-vn.readthedocs.io/en/stable/api/modules.html>`_.
 
 Installation - Python
 ---------------------
@@ -43,7 +43,14 @@ Installation - Python
 These instructions present the steps required to install the
 Python applications.
 
-Add the following debian packages::
+Windows:
+
+    Install Python from Microsoft store
+    
+    Add python script directory to Path, as described in
+    `How to add Python to Windows PATH <https://datatofish.com/add-python-to-windows-path/>`_.
+
+Linux: add the following debian packages::
 
     sudo apt -y install build-essential python3-dev python3-venv
 
@@ -70,19 +77,22 @@ Docker applications::
                --tty --interactive \
                dthonon/client-api-vn bash
 
+This docker only contains the application and requires an external 
+Postgresql database.
+
 The following steps are the common to both Python and Docker installation.
 
 Getting Started - transfer_vn
 -----------------------------
 
-See `Documentation <https://client-api-vn1.readthedocs.io/en/latest/apps/transfer_vn.html>`__
+See `Documentation <https://client-api-vn.readthedocs.io/en/latest/apps/transfer_vn.html>`__
 for more informations.
 
 
 Getting Started - update_vn
 ---------------------------
 
-See `Documentation <https://client-api-vn1.readthedocs.io/en/latest/apps/update_vn.html>`__
+See `Documentation <https://client-api-vn.readthedocs.io/en/latest/apps/update_vn.html>`__
 for more informations.
 
 
@@ -90,7 +100,7 @@ Prerequisites
 -------------
 
 For Linux and Postgresql installation, refer to
-`Server installation <https://client-api-vn1.readthedocs.io/en/latest/apps/server_install.html>`_.
+`Server installation <https://client-api-vn.readthedocs.io/en/latest/apps/server_install.html>`_.
 
 Installation requires the following python module::
 

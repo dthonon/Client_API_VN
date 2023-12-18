@@ -16,21 +16,24 @@ Note: install Debian development environment first::
 Add newer python versions, using pyenv::
 
     curl https://pyenv.run | bash
-    pyenv install 3.7.7 # for example
-    pyenv global 3.7.7  # for example
+    pyenv install 3.10.8 # for example
+    pyenv global 3.10.8  # for example
 
 Create a python virtual environment, activate it and install or
 update basic tools::
 
-    python3 -m venv VN_env
-    source VN_env/bin/activate
+    python3 -m venv env_VN
+    source env_VN/bin/activate
     python -m pip install --upgrade pip
     pip install --upgrade setuptools wheel twine babel tox coverage
+
+Note : with newer versions of Ubuntu, you need to install these packages
+with apt instead of pip. Some are prefixed with python3.
 
 Add the following lines to .bashrc, to enable pyenv and venv::
 
     # Activate venv
-    source VN_env/bin/activate
+    source env_VN/bin/activate
     # Load pyenv automatically
     export PATH="~/.pyenv/bin:$PATH"
     eval "$(pyenv init -)"
@@ -39,9 +42,9 @@ Add the following lines to .bashrc, to enable pyenv and venv::
 Downloading source
 ------------------
 
-Clone framagit repository::
+Clone github repository::
 
-    git clone https://framagit.org/lpo/Client_API_VN.git
+    git clone https://github.com/dthonon/Client_API_VN.git
     cd Client_API_VN
     git checkout develop
 
@@ -57,19 +60,19 @@ Run::
 Code changes
 ------------
 
-Code changes must be related to an framagit issue. Any development, except
+Code changes must be related to an github issue. Any development, except
 urgent patches, must be done on the develop branch.
 
 The prefered editor is MS Visual Studio Code, with `blake` formating.
 
-Each commit must include a reference to the framagit issue and must be
+Each commit must include a reference to the github issue and must be
 documented.
 Changes are documented using towncrier (https://pypi.org/project/towncrier/).
 To document a change :
 
 1. Create a file in newsfragment, named `issue.type`, where:
 
-    - `issue` is the framagit issue number
+    - `issue` is the github issue number
     - `type` describes the type of change:
 
         - `feature`: Signifying a new feature.
@@ -101,12 +104,7 @@ Create the test database::
 
     transfer_vn --db_create .evn_test.yaml
 
-Run tests (try one or the other, as I haven't found which one is best)::
-
-    ./setup.py tests
-    pytest
-
-When tests are OK, run full test suite::
+Run tests ::
 
     tox
 
