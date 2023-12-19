@@ -933,6 +933,7 @@ class Places(DownloadVn):
         territorial_unit_ids : list
             List of territorial_units to include in storage.
         """
+        logger.info(_("Getting local_admin_units, before getting places"))
         # Get local_admin_units if needed
         if self._l_a_units is None:
             if self._config.db_enabled:
@@ -959,8 +960,13 @@ class Places(DownloadVn):
                         q_param = {"id_commune": l_a_u[0]["id"], "get_hidden": "1"}
                         super().store([q_param])
         else:
-            logger.debug(_("Getting places, using API list"))
-            super().store()
+            for l_a_u in self._l_a_units:
+                logger.info(
+                    _("Getting places from id_commune %s, using API list"),
+                    l_a_u[0]["id"],
+                )
+                q_param = {"id_commune": l_a_u[0]["id"], "get_hidden": "1"}
+                super().store([q_param])
 
     def update(self, territorial_unit_ids=None, since=None):
         """Download increment from VN by API and store json to file.
