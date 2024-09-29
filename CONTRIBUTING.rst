@@ -46,7 +46,7 @@ Clone github repository::
 
     git clone https://github.com/dthonon/Client_API_VN.git
     cd Client_API_VN
-    git checkout develop
+
 
 Installing the application
 --------------------------
@@ -61,7 +61,7 @@ Code changes
 ------------
 
 Code changes must be related to an github issue. Any development, except
-urgent patches, must be done on the develop branch.
+urgent patches, must be done on a specific branch.
 
 The prefered editor is MS Visual Studio Code, with `blake` formating.
 
