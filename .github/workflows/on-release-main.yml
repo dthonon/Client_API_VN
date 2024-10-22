@@ -39,4 +39,3 @@ jobs:
 
       - name: Deploy documentation
         run: poetry run mkdocs gh-deploy --force
-

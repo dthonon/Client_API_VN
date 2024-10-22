@@ -18,13 +18,14 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 
-# packages = [
-#   {include = "client_api_vn"}
-# ]
+packages = [{ include = "src/biolovision" }]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
 click = ">=8"
+types-setuptools = "^75.2.0.20241019"
+requests = "^2.32.3"
+types-requests = "^2.32.0.20241016"
 
 [tool.poetry.group.dev.dependencies]
 deptry = ">=0.20"
@@ -61,7 +62,7 @@ testpaths = ["tests"]
 target-version = "py312"
 line-length = 120
 fix = true
-select = [
+lint.select = [
   # flake8-2020
   "YTT",
   # flake8-bandit
@@ -94,11 +95,19 @@ select = [
   # tryceratops
   "TRY",
 ]
-ignore = [
+lint.ignore = [
   # LineTooLong
   "E501",
   # DoNotAssignLambda
   "E731",
+  # Exclusions temporaires
+  "C901",
+  "S113",
+  "SIM108",
+  "TRY400",
+  "C408",
+  "A002",
+  "B019",
 ]
 
 [tool.ruff.format]
@@ -112,5 +121,5 @@ branch = true
 source = ["client_api_vn"]
 
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101"]
