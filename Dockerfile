@@ -1,10 +1,21 @@
-FROM python:3.7-buster
+# syntax=docker/dockerfile:1
 
-VOLUME ["/xfer"]
+FROM python:3.12-slim-buster
 
-RUN apt update
-RUN apt -y install apt-utils
-RUN apt -y upgrade
-RUN apt -y install nano postgresql-client
-RUN pip install Client-API-VN --no-cache-dir
+ENV POETRY_VERSION=1.4 \
+    POETRY_VIRTUALENVS_CREATE=false
 
+# Install poetry
+RUN pip install "poetry==$POETRY_VERSION"
+
+# Copy only requirements to cache them in docker layer
+WORKDIR /code
+COPY poetry.lock pyproject.toml /code/
+
+# Project initialization:
+RUN poetry install --no-interaction --no-ansi --no-root --no-dev
+
+# Copy Python code to the Docker image
+COPY client_api_vn /code/client_api_vn/
+
+CMD [ "python", "client_api_vn/foo.py"]
