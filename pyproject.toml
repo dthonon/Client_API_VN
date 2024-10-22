@@ -23,9 +23,10 @@ packages = [{ include = "src/biolovision" }]
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
 click = ">=8"
-types-setuptools = "^75.2.0.20241019"
-requests = "^2.32.3"
-types-requests = "^2.32.0.20241016"
+requests = ">=2.32"
+types-requests = ">=2.32"
+types-requests-oauthlib = ">=2"
+types-setuptools = ">=75"
 
 [tool.poetry.group.dev.dependencies]
 deptry = ">=0.20"
