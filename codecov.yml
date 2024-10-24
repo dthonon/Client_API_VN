@@ -1,3 +1,0 @@
-fixes:
-  - ".tox/*/lib/*/site-packages/::src/"
-
