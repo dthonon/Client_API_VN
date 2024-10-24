@@ -1,0 +1,49 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "data": {
+            "$ref": "#/definitions/_data"
+        }
+    },
+    "required": [
+        "data"
+    ],
+    "title": "_taxo_groups",
+    "description": "Root of taxo_groups schema.",
+    "definitions": {
+        "_data": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "access_mode": {
+                        "type": "string",
+                        "enum": [
+                            "full",
+                            "limited",
+                            "none"
+                        ]
+                    },
+                    "id":{
+                        "type": "string",
+                        "format": "integer"
+                    },
+                    "latin_name": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "name_constant": {
+                        "type": "string"
+                    }    
+                }
+            },
+            "title": "_data",
+            "description": "Top level element of taxo_groups data."
+        }
+    }
+}

@@ -1,0 +1,47 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "data": {
+            "$ref": "#/definitions/_data"
+        }
+    },
+    "required": [
+        "data"
+    ],
+    "title": "_entities",
+    "description": "Root of entities schema.",
+    "definitions": {
+        "_data": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "address": {
+                        "type": "string"
+                    },
+                    "description_french": {
+                        "type": "string"
+                    },
+                    "full_name_french": {
+                        "type": "string"
+                    },
+                    "id":{
+                        "type": "string",
+                        "format": "integer"
+                    },
+                    "short_name": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": "string"
+                    }    
+                }
+            },
+            "title": "_data",
+            "description": "Top level element of entities data."
+        }
+    }
+}

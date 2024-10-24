@@ -1,23 +1,10 @@
-[tool.poetry]
-name = "Client_API_VN"
-version = "0.0.1"
-description = "Python API to Biolovision API and applications using it."
-authors = ["Daniel Thonon <d.thonon9@gmail.com>"]
-repository = "https://github.com/dthonon/Client-API-VN"
-documentation = "https://dthonon.github.io/Client-API-VN/"
-readme = "README.md"
-classifiers = [
-  "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: 3.12",
-  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
-  "Operating System :: POSIX :: Linux",
-  "Development Status :: 5 - Production/Stable",
-  "Environment :: Console",
-  "Topic :: Scientific/Engineering :: Bio-Informatics",
-]
+[tool.towncrier]
+    package = ""
+    package_dir = "src"
+    filename = "CHANGELOG.rst"
+    issue_format = "`#{issue} <https://github.com/dthonon/Client_API_VN/issues/{issue}>`_"
 
+<<<<<<< HEAD
 packages = [{ include = "src/biolovision" }]
 
 [tool.poetry.dependencies]
@@ -124,3 +111,5 @@ source = ["client_api_vn"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101"]
+=======
+>>>>>>> parent of 302ade3 (Initialisation environnement Poetry)

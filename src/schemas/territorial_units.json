@@ -1,0 +1,42 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "data": {
+            "$ref": "#/definitions/_data"
+        }
+    },
+    "required": [
+        "data"
+    ],
+    "title": "_territorial_units",
+    "description": "Root of territorial_units schema.",
+    "definitions": {
+        "_data": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "id":{
+                        "type": "string",
+                        "format": "integer"
+                    },
+                    "id_country": {
+                        "type": "string",
+                        "format": "integer"
+                    }, 
+                    "name": {
+                        "type": "string"
+                    },
+                    "short_name": {
+                        "type": "string"
+                    }
+                }
+            },
+            "title": "_data",
+            "description": "Top level element of territorial_units data."
+        }
+    }
+}

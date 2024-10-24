@@ -1,0 +1,234 @@
+# Test file with all possible parameters
+
+# General parameters
+main:
+    # Mail address for the execution report
+    admin_mail: nom.prenom@example.net
+
+# Biolovision API controlers parameters
+# Enables or disables download from each Biolovision API
+# Also provides controler specific parameters, when applicable
+controler:
+    entities:
+        # Enable download from this controler
+        enabled: true
+        # Define scheduling parameters
+        schedule:
+            year: '*'
+            month: '*'
+            day: '*'
+            week: '*'
+            day_of_week: 2
+            hour: 23
+            minute: '*'
+            second: '*'
+    families:
+        # Enable download from this controler
+        enabled: true
+        schedule:
+            # Every Friday at 23:00 UTC
+            day_of_week: 4
+            hour: 23
+    fields:
+        # Enable download from this controler
+        enabled: true
+        # Define scheduling parameters
+        schedule:
+            day_of_week: 2
+            hour: 23
+    local_admin_units:
+        # Enable download from this controler
+        enabled: true
+        # Define scheduling parameters
+        schedule:
+            day_of_week: 2
+            hour: 23
+    observations:
+        # Enable download from this controler
+        enabled: true
+        # Define scheduling parameters
+        schedule:
+            year: '*'
+            month: '*'
+            day: '*'
+            week: '*'
+            day_of_week: '*'
+            hour: '*'
+            minute: 0
+            second: 0
+    observers:
+        # Enable download from this controler
+        enabled: true
+        # Define scheduling parameters
+        schedule:
+            hour: 22
+    places:
+        # Enable download from this controler
+        enabled: true
+        # Define scheduling parameters
+        schedule:
+            hour: 5
+    species:
+        # Enable download from this controler
+        enabled: true
+        # Define scheduling parameters
+        schedule:
+            hour: 6
+    taxo_groups:
+        # Enable download from this controler
+        enabled: true
+        # Define scheduling parameters
+        schedule:
+            hour: 6
+    territorial_units:
+        # Enable download from this controler
+        enabled: true
+        # Define scheduling parameters
+        schedule:
+            hour: 5
+    validations:
+        # Enable download from this controler
+        enabled: true
+        schedule:
+            # Every Friday at 23:00 UTC
+            day_of_week: 4
+            hour: 23
+
+# Observations filter, to limit download scope
+filter:
+    # List of taxo_groups to exclude from download
+    # Uncommment taxo_groups to disable download
+    taxo_exclude:
+        #- TAXO_GROUP_BIRD
+        #- TAXO_GROUP_BAT
+        #- TAXO_GROUP_MAMMAL
+        #- TAXO_GROUP_SEA_MAMMAL
+        #- TAXO_GROUP_REPTILIAN
+        #- TAXO_GROUP_AMPHIBIAN
+        #- TAXO_GROUP_ODONATA
+        #- TAXO_GROUP_BUTTERFLY
+        #- TAXO_GROUP_MOTH
+        #- TAXO_GROUP_ORTHOPTERA
+        #- TAXO_GROUP_HYMENOPTERA
+        #- TAXO_GROUP_ORCHIDACEAE
+        #- TAXO_GROUP_TRASH
+        #- TAXO_GROUP_EPHEMEROPTERA
+        #- TAXO_GROUP_PLECOPTERA
+        #- TAXO_GROUP_MANTODEA
+        #- TAXO_GROUP_AUCHENORRHYNCHA
+        #- TAXO_GROUP_HETEROPTERA
+        #- TAXO_GROUP_COLEOPTERA
+        #- TAXO_GROUP_NEVROPTERA
+        #- TAXO_GROUP_TRICHOPTERA
+        #- TAXO_GROUP_MECOPTERA
+        #- TAXO_GROUP_DIPTERA
+        #- TAXO_GROUP_PHASMATODEA
+        #- TAXO_GROUP_ARACHNIDA
+        #- TAXO_GROUP_SCORPIONES
+        #- TAXO_GROUP_FISH
+        #- TAXO_GROUP_MALACOSTRACA
+        #- TAXO_GROUP_GASTROPODA
+        #- TAXO_GROUP_BIVALVIA
+        #- TAXO_GROUP_BRANCHIOPODA
+        - TAXO_GROUP_ALIEN_PLANTS
+    # List of territorial_unit_ids to download
+    # Comment out to download all territorial_units
+    territorial_unit_ids:
+        - 7
+    # Use short (recommended) or long JSON data
+    json_format: short
+    # Optional start and end dates
+    start_date: 2019-08-01
+    end_date: 2019-09-01
+    type_date: entry
+
+# VisioNature site access parameters
+site:
+    tst1:
+        # Enable download from this site
+        enabled: true
+        # URL
+        site: https://www.faune-xxx.org/
+        # Username
+        user_email: nom.prenom@example.net
+        # User password
+        user_pw: user_pw
+        # Client key, obtained from Biolovision
+        client_key: client_key
+        # Client secret, obtained from Biolovision
+        client_secret: client_secret
+    tst2:
+        # Enable download from this site
+        enabled: false
+        # URL
+        site: https://www.faune-xxx.org/
+        # Username
+        user_email: nom.prenom@example.net
+        # User password
+        user_pw: user_pw
+        # Client key, obtained from Biolovision
+        client_key: client_key
+        # Client secret, obtained from Biolovision
+        client_secret: client_secret
+
+# File storage backend parameters
+file:
+    # Enable storing to file
+    enabled: true
+    # Top level path name for downloaded file storage, relative to $HOME
+    file_store: test_files
+
+# Postgresql backend related parameters
+database:
+    # Enable storing to database
+    enabled: true
+    # Database host
+    db_host: localhost
+    # Database IP port
+    db_port: 5432
+    # Database name
+    db_name: faune_xxx
+    # Database schema inside db_name database, for imported JSON data
+    db_schema_import: import
+    # Database schema inside db_name database, for columns extracted from JSON
+    db_schema_vn: src_vn
+    # Postgresql user group accessing imported data
+    db_group: lpo_xxx
+    # Postgresql user used to import data
+    db_user: xferxx
+    # Postgresql user password
+    db_pw: db_pw
+    # PostgreSQL SecretKey for pseudonymization
+    db_secret_key: 'mySecretKey'
+    # Coordinates systems for local projection, see EPSG
+    db_out_proj: 2154
+
+# Tuning parameters, for expert use.
+tuning:
+    # Max items in an API list request. 
+    # Longer lists are split by API in max_list_length chunks.
+    max_list_length: 100
+    # Max chunks in a request before aborting.
+    max_chunks: 10
+    # Max retries of API calls before aborting.
+    max_retry: 5
+    # Maximum number of API requests, for debugging only.
+    # - 0 means unlimited
+    # - >0 limit number of API requests
+    max_requests: 0
+    # Delay between retries after an error
+    retry_delay: 5
+    # Delay between retries after an error HTTP 503 (service unavailable)
+    unavailable_delay: 600
+    # LRU cache size for common requests (taxo_groups...)
+    lru_maxsize: 32
+    # PID parameters, for throughput management.
+    pid_kp: 0.0
+    pid_ki: 0.003
+    pid_kd: 0.0
+    pid_setpoint: 10000
+    pid_limit_min: 1
+    pid_limit_max: 2000
+    pid_delta_days: 15
+    # Scheduler tuning parameters
+    sched_executors: 2

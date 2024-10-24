@@ -1,15 +1,7 @@
-<<<<<<< HEAD
-import gettext
-from pathlib import Path
-
-from pkg_resources import DistributionNotFound, get_distribution
-
-=======
 from pkg_resources import get_distribution, DistributionNotFound
 import gettext
 from pathlib import Path
 
->>>>>>> parent of 302ade3 (Initialisation environnement Poetry)
 try:
     # Change here if project is renamed and does not equal the package name
     dist_name = "Client_API_VN"

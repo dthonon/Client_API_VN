@@ -1,0 +1,99 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "data": {
+            "$ref": "#/definitions/_data"
+        }
+    },
+    "required": [
+        "data"
+    ],
+    "title": "_families",
+    "description": "Root of families schema.",
+    "definitions": {
+        "_data": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "atlas_end": {
+                        "type": "string",
+                        "format": "integer"
+                    }, 
+                    "atlas_start": {
+                        "type": "string",
+                        "format": "integer"
+                    }, 
+                    "category_1": {
+                        "type": "string",
+                        "enum": [
+                            "A",
+                            "B",
+                            "C",
+                            "H",
+                            "BH"
+                        ]
+                    },
+                    "english_name": {
+                        "type": "string"
+                    },
+                    "english_name_plur": {
+                        "type": "string"
+                    },
+                    "french_name": {
+                        "type": "string"
+                    },
+                    "french_name_plur": {
+                        "type": "string"
+                    },
+                    "id":{
+                        "type": "string",
+                        "format": "integer"
+                    },
+                    "id_taxo_group": {
+                        "type": "string",
+                        "format": "integer"
+                    }, 
+                    "is_used": {
+                        "$ref": "#/definitions/_zero_one"
+                    },
+                    "latin_name": {
+                        "type": "string"
+                    },
+                    "rarity": {
+                        "type": "string",
+                        "enum": [
+                            "common",
+                            "escaped",
+                            "never",
+                            "rare",
+                            "unusual",
+                            "verycommon",
+                            "veryrare"
+                        ]
+                    },
+                    "sempach_id_family":{
+                        "type": "string",
+                        "format": "integer"
+                    },
+                    "sys_order":{
+                        "type": "string",
+                        "format": "integer"
+                    }
+                }
+            },
+            "title": "_data",
+            "description": "Top level element of families data."
+        },
+        "_zero_one": {
+            "type": "string",
+            "enum": [
+                "0",
+                "1"
+            ]
+        }
+    }
+}

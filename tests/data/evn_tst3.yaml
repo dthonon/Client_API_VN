@@ -1,0 +1,131 @@
+# Test file with error
+
+# General parameters
+main:
+    # Mail address for the execution report
+    admin_mail: nom.prenom@example.net
+
+# Biolovision API controlers parameters
+# Enables or disables download from each Biolovision API
+# Also provides controler specific parameters, when applicable
+controler:
+    entities:
+        # Enable download from this controler
+        enabled: error
+    families:
+        # Enable download from this controler
+        enabled: true
+        schedule:
+            # Every Friday at 23:00 UTC
+            day_of_week: 4
+            hour: 23
+    fields:
+        # Enable download from this controler
+        enabled: true
+    local_admin_units:
+        # Enable download from this controler
+        enabled: true
+    observations:
+        # Enable download from this controler
+        enabled: true
+        # List of taxo_groups to exclude from download
+        # Uncommment taxo_groups to disable download
+        taxo_exclude:
+            #- TAXO_GROUP_BIRD
+            #- TAXO_GROUP_BAT
+            #- TAXO_GROUP_MAMMAL
+            #- TAXO_GROUP_SEA_MAMMAL
+            #- TAXO_GROUP_REPTILIAN
+            #- TAXO_GROUP_AMPHIBIAN
+            #- TAXO_GROUP_ODONATA
+            #- TAXO_GROUP_BUTTERFLY
+            #- TAXO_GROUP_MOTH
+            #- TAXO_GROUP_ORTHOPTERA
+            #- TAXO_GROUP_HYMENOPTERA
+            #- TAXO_GROUP_ORCHIDACEAE
+            #- TAXO_GROUP_TRASH
+            #- TAXO_GROUP_EPHEMEROPTERA
+            #- TAXO_GROUP_PLECOPTERA
+            #- TAXO_GROUP_MANTODEA
+            #- TAXO_GROUP_AUCHENORRHYNCHA
+            #- TAXO_GROUP_HETEROPTERA
+            #- TAXO_GROUP_COLEOPTERA
+            #- TAXO_GROUP_NEVROPTERA
+            #- TAXO_GROUP_TRICHOPTERA
+            #- TAXO_GROUP_MECOPTERA
+            #- TAXO_GROUP_DIPTERA
+            #- TAXO_GROUP_PHASMATODEA
+            #- TAXO_GROUP_ARACHNIDA
+            #- TAXO_GROUP_SCORPIONES
+            #- TAXO_GROUP_FISH
+            #- TAXO_GROUP_MALACOSTRACA
+            #- TAXO_GROUP_GASTROPODA
+            #- TAXO_GROUP_BIVALVIA
+            #- TAXO_GROUP_BRANCHIOPODA
+            - TAXO_GROUP_ALIEN_PLANTS
+    observers:
+        # Enable download from this controler
+        enabled: true
+    places:
+        # Enable download from this controler
+        enabled: true
+    species:
+        # Enable download from this controler
+        enabled: true
+    taxo_groups:
+        # Enable download from this controler
+        enabled: true
+    territorial_units:
+        # Enable download from this controler
+        enabled: true
+    validations:
+        # Enable download from this controler
+        enabled: true
+
+# VisioNature site access parameters
+site:
+    tst4:
+        # Enable download from this site
+        enabled: true
+        # URL
+        site: https://www.faune-xxx.org/
+        # Username
+        user_email: nom.prenom@example.net
+        # User password
+        user_pw: user_pw
+        # Client key, obtained from Biolovision
+        client_key: client_key
+        # Client secret, obtained from Biolovision
+        client_secret: client_secret
+
+# File storage backend parameters
+file:
+    # Enable storing to file
+    enabled: false
+    # Top level path name for downloaded file storage, relative to $HOME
+    file_store: test_files
+
+# Postgresql backend related parameters
+database:
+    # Enable storing to database
+    enabled: false
+    # Database host
+    db_host: localhost
+    # Database IP port
+    db_port: 5432
+    # Database name
+    db_name: faune_xxx
+    # Database schema inside db_name database, for imported JSON data
+    db_schema_import: import
+    # Database schema inside db_name database, for columns extracted from JSON
+    db_schema_vn: src_vn
+    # Postgresql user group accessing imported data
+    db_group: lpo_xxx
+    # Postgresql user used to import data
+    db_user: xferxx
+    # Postgresql user password
+    db_pw: db_pw
+    # PostgreSQL SecretKey for pseudonymization
+    db_secret_key: 'mySecretKey'
+    # Coordinates systems for local projection, see EPSG
+    db_out_proj: 2154
