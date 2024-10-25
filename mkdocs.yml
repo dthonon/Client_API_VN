@@ -5,7 +5,7 @@ site_description: This is a template repository for Python projects that use Poe
 site_author: Daniel Thonon
 edit_uri: edit/main/docs/
 repo_name: dthonon/Client_API_VN
-copyright: Maintained by <a href="https://dthonon.com">Florian</a>.
+copyright: Maintained by <a href="https://dthonon.com">Daniel Thonon</a>.
 
 nav:
   - Home: index.md
