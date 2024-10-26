@@ -8,7 +8,6 @@ import time
 from datetime import datetime, timedelta
 
 import pytest
-from export_vn.evnconf import EvnConf
 
 from biolovision.api import (
     EntitiesAPI,
@@ -26,6 +25,7 @@ from biolovision.api import (
     TerritorialUnitsAPI,
     ValidationsAPI,
 )
+from export_vn.evnconf import EvnConf
 
 # Using faune-france site, that needs to be defined in .evn_test.yaml
 SITE = "tff"

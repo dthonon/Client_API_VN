@@ -21,12 +21,31 @@ packages = [{ include = "src/**/*.py" }]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
-# click = ">=8"
+apscheduler = "<4"
+beautifulsoup4 = ">=4.12"
+docutils = ">=0.21"
+jinja2 = ">=3.1"
+jsonschema = ">=4.23"
+numpy = ">=2.1"
+psutil = ">=6.1"
+psycopg2-binary = ">=2.9.10"
+pyproj = ">=3.7"
 requests = ">=2.32"
-requests-oauthlib = ">=2.0.0"
+requests-oauthlib = ">=2.0"
+SQLAlchemy = "<2"
+strictyaml = ">=1.7"
+tabulate = ">=0.9"
 types-requests = ">=2.32"
 types-requests-oauthlib = ">=2"
 types-setuptools = ">=75"
+types-psutil = ">=6.1"
+types-tabulate = ">=0.9"
+types-beautifulsoup4 = ">=4.12"
+types-pytz = ">=2024.2"
+types-psycopg2 = ">=2.9"
+xmltodict = ">=0.14"
+yappi = ">=1.6"
+
 
 [tool.poetry.group.dev.dependencies]
 deptry = ">=0.20"
@@ -104,15 +123,28 @@ lint.ignore = [
   # DoNotAssignLambda
   "E731",
   # Exclusions ruff temporaires
-  "C901",
-  "S113",
-  "SIM108",
-  "TRY400",
-  "C408",
   "A001",
   "A002",
+  "B006",
   "B015",
   "B019",
+  "C408",
+  "C901",
+  "RUF015",
+  "S108",
+  "S110",
+  "S113",
+  "S602",
+  "S608",
+  "S701",
+  "S702",
+  "SIM102",
+  "SIM105",
+  "SIM108",
+  "SIM401",
+  "TRY301",
+  "TRY400",
+  "UP031",
 ]
 
 [tool.ruff.format]
