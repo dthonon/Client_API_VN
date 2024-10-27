@@ -1,5 +1,8 @@
+poetry.lock: pyproject.toml
+	poetry lock
+
 .PHONY: install
-install: ## Install the poetry environment and install the pre-commit hooks
+install: poetry.lock ## Install the poetry environment and install the pre-commit hooks
 	@echo "🚀 Creating virtual environment using pyenv and poetry"
 	@poetry install
 	@poetry run pre-commit install
