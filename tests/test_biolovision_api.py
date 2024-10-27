@@ -306,7 +306,7 @@ class TestPlaces:
                     "coord_lon": "5.8792190569144",
                     "created_by": "30",
                     "created_date": {
-                        "#text": "samedi 24 juin 2017, 04:34:53",
+                        "#text": "samedi, 24. juin 2017, 04:34:53",
                         "@ISO8601": "2017-06-24T04:34:53+02:00",
                         "@notime": "0",
                         "@offset": "7200",
@@ -318,7 +318,7 @@ class TestPlaces:
                     "is_private": "0",
                     "last_updated_by": "30",
                     "last_updated_date": {
-                        "#text": "mercredi 27 juin 2018, 04:24:34",
+                        "#text": "mercredi, 27. juin 2018, 04:24:34",
                         "@ISO8601": "2018-06-27T04:24:34+02:00",
                         "@notime": "0",
                         "@offset": "7200",
@@ -344,7 +344,7 @@ class TestPlaces:
                     "coord_lon": "4.7715669855908",
                     "created_by": "30",
                     "created_date": {
-                        "#text": "samedi 24 juin 2017, 04:35:37",
+                        "#text": "samedi, 24. juin 2017, 04:35:37",
                         "@ISO8601": "2017-06-24T04:35:37+02:00",
                         "@notime": "0",
                         "@offset": "7200",
@@ -356,7 +356,7 @@ class TestPlaces:
                     "is_private": "0",
                     "last_updated_by": "30",
                     "last_updated_date": {
-                        "#text": "mercredi 27 juin 2018, 04:24:34",
+                        "#text": "mercredi, 27. juin 2018, 04:24:34",
                         "@ISO8601": "2018-06-27T04:24:34+02:00",
                         "@notime": "0",
                         "@offset": "7200",
@@ -658,7 +658,7 @@ class TestObservations:
         assert sighting["data"]["sightings"][0]["date"]["@offset"] == "7200"
         assert sighting["data"]["sightings"][0]["date"]["@ISO8601"] == "2018-09-15T00:00:00+02:00"
         assert sighting["data"]["sightings"][0]["date"]["@timestamp"] == "1536962400"
-        assert sighting["data"]["sightings"][0]["date"]["#text"] == "samedi 15 septembre 2018"
+        assert sighting["data"]["sightings"][0]["date"]["#text"] == "samedi, 15. septembre 2018"
         assert sighting["data"]["sightings"][0]["species"]["latin_name"] == "Anas platyrhynchos"
         assert sighting["data"]["sightings"][0]["species"]["rarity"] == "verycommon"
         assert sighting["data"]["sightings"][0]["species"]["sys_order"] == "262"
