@@ -670,7 +670,7 @@ class TestObservations:
         assert sighting["data"]["sightings"][0]["observers"][0]["id_sighting"] == "71846872"
         assert (
             sighting["data"]["sightings"][0]["observers"][0]["insert_date"]["#text"]
-            == "samedi 15 septembre 2018, 19:44:58"
+            == "samedi, 15. septembre 2018, 19:44:58"
         )
         assert (
             sighting["data"]["sightings"][0]["observers"][0]["insert_date"]["@ISO8601"] == "2018-09-15T19:44:58+02:00"
@@ -691,7 +691,7 @@ class TestObservations:
         )
         assert (
             sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["insert_date"]["#text"]
-            == "lundi 12 décembre 2022, 00:24:50"
+            == "lundi, 12. décembre 2022, 00:24:50"
         )
         assert (
             sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["insert_date"]["@ISO8601"]
@@ -710,7 +710,8 @@ class TestObservations:
         assert sighting["data"]["sightings"][0]["observers"][0]["id_universal"] == "65_71846872"
         assert sighting["data"]["sightings"][0]["observers"][0]["traid"] == "8583"
         assert (
-            sighting["data"]["sightings"][0]["observers"][0]["timing"]["#text"] == "samedi 15 septembre 2018, 17:19:00"
+            sighting["data"]["sightings"][0]["observers"][0]["timing"]["#text"]
+            == "samedi, 15. septembre 2018, 17:19:00"
         )
         assert sighting["data"]["sightings"][0]["observers"][0]["timing"]["@ISO8601"] == "2018-09-15T17:19:00+02:00"
         assert sighting["data"]["sightings"][0]["observers"][0]["timing"]["@notime"] == "0"
