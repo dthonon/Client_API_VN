@@ -5,13 +5,13 @@ Sample application: skeleton for new applications
 """
 
 import argparse
+import importlib.resources
 import logging
 import shutil
 import sys
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
-import pkg_resources
 from strictyaml import YAMLValidationError
 
 from export_vn.evnconf import EvnConf
@@ -49,11 +49,12 @@ def arguments(args):
 
 def init(config: str):
     """Copy template YAML file to home directory."""
-    yaml_src = pkg_resources.resource_filename(__name__, "data/evn_template.yaml")
-    yaml_dst = str(Path.home() / config)
-    logger.info(_("Creating YAML configuration file %s, from %s"), yaml_dst, yaml_src)
-    shutil.copyfile(yaml_src, yaml_dst)
-    logger.info(_("Please edit %s before running the script"), yaml_dst)
+    ref = importlib.resources.files("export_vn") / "data/evn_template.yaml"
+    with importlib.resources.as_file(ref) as yaml_src:
+        yaml_dst = str(Path.home() / config)
+        logger.info(_("Creating YAML configuration file %s, from %s"), yaml_dst, yaml_src)
+        shutil.copyfile(yaml_src, yaml_dst)
+        logger.info(_("Please edit %s before running the script"), yaml_dst)
 
 
 def main(args):

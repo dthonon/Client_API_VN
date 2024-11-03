@@ -18,8 +18,6 @@ Modification are tracked in hidden_comment.
 import argparse
 import csv
 import datetime
-
-# import pkg_resources
 import importlib.resources
 import json
 import logging
@@ -72,7 +70,6 @@ def init(config: str):
     logger = logging.getLogger(APP_NAME + ".init")
     ref = importlib.resources.files("export_vn") / "data/evn_template.yaml"
     with importlib.resources.as_file(ref) as yaml_src:
-        # yaml_src = pkg_resources.resource_filename("export_vn", "data/evn_template.yaml")
         yaml_dst = str(Path.home() / config)
         logger.info(_("Creating YAML configuration file %s, from %s"), yaml_dst, yaml_src)
         shutil.copyfile(yaml_src, yaml_dst)
