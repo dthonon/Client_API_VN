@@ -16,7 +16,7 @@ from datetime import UTC, datetime
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
-import pkg_resources
+# import pkg_resources
 import psutil
 import requests
 import yappi

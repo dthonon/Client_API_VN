@@ -21,6 +21,11 @@ check: ## Run code quality tools.
 
 .PHONY: test
 test: ## Test the code with pytest
+	@echo "🚀 Testing code: Running pytest not slow"
+	@poetry run pytest --cov --cov-config=pyproject.toml --cov-report=xml -m "not slow"
+
+.PHONY: test_slow
+test_slow: ## Test the code with pytest
 	@echo "🚀 Testing code: Running pytest"
 	@poetry run pytest --cov --cov-config=pyproject.toml --cov-report=xml
 
