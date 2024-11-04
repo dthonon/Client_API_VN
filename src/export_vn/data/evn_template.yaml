@@ -146,22 +146,9 @@ filter:
 
 # VisioNature site access parameters
 site:
-  tst1:
+  tff:
     # Enable download from this site
     enabled: true
-    # URL
-    site: https://www.faune-xxx.org/
-    # Username
-    user_email: nom.prenom@example.net
-    # User password
-    user_pw: user_pw
-    # Client key, obtained from Biolovision
-    client_key: client_key
-    # Client secret, obtained from Biolovision
-    client_secret: client_secret
-  tst2:
-    # Enable download from this site
-    enabled: false
     # URL
     site: https://www.faune-xxx.org/
     # Username
