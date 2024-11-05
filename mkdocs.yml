@@ -9,12 +9,19 @@ copyright: Maintained by <a href="https://dthonon.com">Daniel Thonon</a>.
 
 nav:
   - Home: index.md
+  - Applications:
+      - Examples: apps/examples.md
+      - transfer_vn: apps/transfer_vn.md
+      - update_vn: apps/update_vn.md
+      - validate_vn: apps/validate_vn.md
   - Modules: modules.md
 plugins:
   - search
   - mkdocstrings:
       handlers:
         python:
+          options:
+            docstring_style: "numpy"
           setup_commands:
             - import sys
             - sys.path.append('../')

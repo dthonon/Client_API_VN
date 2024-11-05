@@ -6,31 +6,90 @@
 [![Commit activity](https://img.shields.io/github/commit-activity/m/dthonon/Client_API_VN)](https://img.shields.io/github/commit-activity/m/dthonon/Client_API_VN)
 [![License](https://img.shields.io/github/license/dthonon/Client_API_VN)](https://img.shields.io/github/license/dthonon/Client_API_VN)
 
-This is a template repository for Python projects that use Poetry for their dependency management.
+## Presentation
+
+Python applications that use Biolovision/VisioNature (VN) API to:
+
+- download data from VN sites and stores it to a Postgresql database.
+- update sightings directly in VN site
+
+Applications are available either as:
+
+- Python modules from PyPI
+- Docker images from Docker Hub
+
+They are tested under Linux Ubuntu >20 or Debian 10. Other Linux
+distributions could work. Windows is not tested at all and will
+probably not work.
 
 - **Github repository**: <https://github.com/dthonon/Client_API_VN/>
 - **Documentation** <https://dthonon.github.io/Client_API_VN/>
 
-## Getting started with your project
+A thin Python layer on top of Biolovision API is provided, as described in
+<https://github.com/dthonon/Client_API_VN/>.
 
-First, create a repository on GitHub with the same name as this project, and then run the following commands:
+### Installation - Python
 
-```bash
-git init -b main
-git add .
-git commit -m "init commit"
-git remote add origin git@github.com:dthonon/Client_API_VN.git
-git push -u origin main
-```
+These instructions present the steps required to install the
+Python applications.
 
-Finally, install the environment and the pre-commit hooks with
+Windows:
 
-```bash
-make install
-```
+    Install Python from Microsoft store
 
-You are now ready to start development on your project!
-The CI/CD pipeline will be triggered when you open a pull request, merge to main, or when you create a new release.
+    Add python script directory to Path, as described in
+    `How to add Python to Windows PATH <https://datatofish.com/add-python-to-windows-path/>`_.
+
+Linux: add the following debian packages::
+
+    sudo apt -y install build-essential python3-dev python3-venv
+
+Create a python virtual environment, activate it and update basic tools::
+
+    python3 -m venv env_VN
+    source env_VN/bin/activate
+    python -m pip install --upgrade pip
+
+Install from PyPI::
+
+    pip install Client-API-VN
+
+### Installation - Docker
+
+These instructions present the steps required to install the
+Docker applications::
+
+    docker pull dthonon/client-api-vn
+    docker run --name xfer_vn \
+               --mount source=xfer_vn,target=/root \
+               --workdir /root \
+               --tty --interactive \
+               dthonon/client-api-vn bash
+
+This docker only contains the application and requires an external
+Postgresql database.
+
+The following steps are the common to both Python and Docker installation.
+
+### Getting Started - transfer_vn
+
+See <https://dthonon.github.io/Client_API_VN/> for more information.
+
+### Getting Started - update_vn
+
+See <https://dthonon.github.io/Client_API_VN/> for more information.
+
+### Prerequisites
+
+For Linux and Postgresql installation, refer to <https://dthonon.github.io/Client_API_VN/>.
+
+Installation requires the following python module::
+
+    pip
+
+All other python dependencies are managed by pip install.
+
+## Finalizing migration
 
 To finalize the set-up for publishing to PyPI or Artifactory, see [here](https://fpgmaas.github.io/cookiecutter-poetry/features/publishing/#set-up-for-pypi).
 For activating the automatic documentation with MkDocs, see [here](https://fpgmaas.github.io/cookiecutter-poetry/features/mkdocs/#enabling-the-documentation-on-github).

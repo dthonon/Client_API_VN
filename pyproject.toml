@@ -2,7 +2,7 @@
 name = "Client_API_VN"
 version = "3.0.0a0"
 description = "Python API to Biolovision API and applications using it."
-authors = ["Daniel Thonon <d.thonon9@gmail.com>"]
+authors = ["Daniel Thonon <d.thonon9@outlook.com>"]
 repository = "https://github.com/dthonon/Client-API-VN"
 documentation = "https://dthonon.github.io/Client-API-VN/"
 readme = "README.md"
