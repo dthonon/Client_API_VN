@@ -3,6 +3,7 @@ import importlib.metadata
 from pathlib import Path
 
 __version__ = "unknown"
+
 try:
     __version__ = importlib.metadata.version("my_package_name")
 except importlib.metadata.PackageNotFoundError:

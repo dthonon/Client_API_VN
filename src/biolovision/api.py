@@ -277,6 +277,7 @@ class BiolovisionAPI:
                     resp.text,
                     protected_url,
                 )
+
                 if (self._http_status >= 400) and (self._http_status <= 499):  # pragma: no cover
                     # Unreceverable error
                     logger.error(resp)
@@ -292,6 +293,7 @@ class BiolovisionAPI:
                 else:
                     # A transient error: short wait
                     time.sleep(self._config.tuning_retry_delay)
+
                 if self._transfer_errors > self._limits["max_retry"]:  # pragma: no cover
                     # Too many retries. Raising exception
                     logger.critical(_("Too many error %s, raising exception"), self._transfer_errors)
