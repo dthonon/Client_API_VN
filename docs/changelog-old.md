@@ -200,7 +200,7 @@
 - Updating sightings within forms is now possible.
   Changing data of a sighting inside a forms should use the simple path::
 
-  Isère;3079911;$['data']['sightings'][0]['observers'][0]['project'];replace;26
+  `Isère;3079911;$['data']['sightings'][0]['observers'][0]['project'];replace;26`
 
   and not include `['forms'][0]`. (`#141 <https://github.com/dthonon/Client_API_VN/issues/141>`\_)
 
