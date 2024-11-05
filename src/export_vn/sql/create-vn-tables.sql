@@ -420,9 +420,9 @@ CREATE OR REPLACE FUNCTION update_forms() RETURNS TRIGGER AS $$
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
-            INSERT INTO {{ cfg.db_schema_vn }}.forms(site, id, id_form_universal, observer_uid, date_start, 
-                                              date_stop, time_start, time_stop, full_form, version, 
-                                              coord_lat, coord_lon, coord_x_local, coord_y_local, 
+            INSERT INTO {{ cfg.db_schema_vn }}.forms(site, id, id_form_universal, observer_uid, date_start,
+                                              date_stop, time_start, time_stop, full_form, version,
+                                              coord_lat, coord_lon, coord_x_local, coord_y_local,
                                               comments, protocol_name, protocol)
             VALUES (
                 NEW.site,
@@ -448,9 +448,9 @@ CREATE OR REPLACE FUNCTION update_forms() RETURNS TRIGGER AS $$
 
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting row when raw data is inserted
-        INSERT INTO {{ cfg.db_schema_vn }}.forms(site, id, id_form_universal, observer_uid, date_start, 
-                                          date_stop, time_start, time_stop, full_form, version, 
-                                          coord_lat, coord_lon, coord_x_local, coord_y_local, 
+        INSERT INTO {{ cfg.db_schema_vn }}.forms(site, id, id_form_universal, observer_uid, date_start,
+                                          date_stop, time_start, time_stop, full_form, version,
+                                          coord_lat, coord_lon, coord_x_local, coord_y_local,
                                           comments, protocol_name, protocol)
         VALUES (
             NEW.site,

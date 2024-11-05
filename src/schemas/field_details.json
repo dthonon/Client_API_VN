@@ -7,9 +7,7 @@
             "$ref": "#/definitions/_data"
         }
     },
-    "required": [
-        "data"
-    ],
+    "required": ["data"],
     "title": "_field_details",
     "description": "Root of field_details schema.",
     "definitions": {
@@ -19,11 +17,11 @@
                 "type": "object",
                 "additionalProperties": false,
                 "properties": {
-                    "group":{
+                    "group": {
                         "type": "string",
                         "format": "integer"
                     },
-                    "id":{
+                    "id": {
                         "type": "string"
                     },
                     "name": {
@@ -32,7 +30,7 @@
                     "order_id": {
                         "type": "string",
                         "format": "integer"
-                    }, 
+                    },
                     "text": {
                         "type": "string"
                     },

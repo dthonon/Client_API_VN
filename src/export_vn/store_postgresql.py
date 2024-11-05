@@ -10,16 +10,17 @@ Properties
 -
 
 """
+
 import logging
 from datetime import date
 
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from pyproj import Transformer
 from sqlalchemy import (
+    BigInteger,
     Column,
     DateTime,
     Integer,
-    BigInteger,
     MetaData,
     PrimaryKeyConstraint,
     String,
@@ -121,9 +122,7 @@ def store_1_observation(item):
     # Insert simple sightings,
     # each row contains id, update timestamp and full json body
     elem = item.elem
-    logger.debug(
-        _("Storing observation %s to database"), elem["observers"][0]["id_sighting"]
-    )
+    logger.debug(_("Storing observation %s to database"), elem["observers"][0]["id_sighting"])
     # Find last update timestamp
     if "update_date" in elem["observers"][0]:
         # update_date = elem['observers'][0]['update_date']['@timestamp']
@@ -136,9 +135,7 @@ def store_1_observation(item):
     (
         elem["observers"][0]["coord_x_local"],
         elem["observers"][0]["coord_y_local"],
-    ) = item.transformer(
-        elem["observers"][0]["coord_lon"], elem["observers"][0]["coord_lat"]
-    )
+    ) = item.transformer(elem["observers"][0]["coord_lon"], elem["observers"][0]["coord_lat"])
 
     # Store in Postgresql
     metadata = item.metadata
@@ -182,9 +179,7 @@ class PostgresqlUtils:
         """
         # Store to database, if enabled
         if self._config.db_enabled:
-            if (
-                self._config.db_schema_import + "." + name
-            ) not in self._metadata.tables:
+            if (self._config.db_schema_import + "." + name) not in self._metadata.tables:
                 logger.info(_("Table %s not found => Creating it"), name)
                 table = Table(name, self._metadata, *cols)
                 table.create(self._db)
@@ -402,41 +397,31 @@ class PostgresqlUtils:
             conn.connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
 
             # Group role:
-            text = """
-                SELECT FROM pg_catalog.pg_roles WHERE rolname = '{db_group}'
-                """.format(
-                db_group=self._config.db_group
-            )
+            text = f"""
+                SELECT FROM pg_catalog.pg_roles WHERE rolname = '{self._config.db_group}'
+                """
             result = conn.execute(text)
             row = result.fetchone()
             if row is None:
-                text = """
-                    CREATE ROLE {db_group} NOLOGIN NOSUPERUSER INHERIT NOCREATEDB
+                text = f"""
+                    CREATE ROLE {self._config.db_group} NOLOGIN NOSUPERUSER INHERIT NOCREATEDB
                     NOCREATEROLE NOREPLICATION
-                    """.format(
-                    db_group=self._config.db_group
-                )
+                    """
             else:
-                text = """
-                    ALTER ROLE {db_group} NOLOGIN NOSUPERUSER INHERIT NOCREATEDB
+                text = f"""
+                    ALTER ROLE {self._config.db_group} NOLOGIN NOSUPERUSER INHERIT NOCREATEDB
                     NOCREATEROLE NOREPLICATION
-                    """.format(
-                    db_group=self._config.db_group
-                )
+                    """
             conn.execute(text)
 
             # Import role:
-            text = "GRANT {} TO {}".format(self._config.db_group, self._config.db_user)
+            text = f"GRANT {self._config.db_group} TO {self._config.db_user}"
             conn.execute(text)
 
             # Create database:
-            text = "CREATE DATABASE {} WITH OWNER = {}".format(
-                self._config.db_name, self._config.db_group
-            )
+            text = f"CREATE DATABASE {self._config.db_name} WITH OWNER = {self._config.db_group}"
             conn.execute(text)
-            text = "GRANT ALL ON DATABASE {} TO {}".format(
-                self._config.db_name, self._config.db_group
-            )
+            text = f"GRANT ALL ON DATABASE {self._config.db_name} TO {self._config.db_group}"
             conn.execute(text)
             conn.close()
             db.dispose()
@@ -477,11 +462,11 @@ class PostgresqlUtils:
             }
             logger.debug(_("Dropping tables: %s"), text)
             conn.execute(text)
-            text = "DROP DATABASE IF EXISTS {}".format(self._config.db_name)
+            text = f"DROP DATABASE IF EXISTS {self._config.db_name}"
             logger.debug(_("Dropping database: %s"), text)
             conn.execute(text)
             try:
-                text = "DROP ROLE IF EXISTS {}".format(self._config.db_group)
+                text = f"DROP ROLE IF EXISTS {self._config.db_group}"
                 logger.debug(_("Dropping role: %s"), text)
                 conn.execute(text)
             except exc.SQLAlchemyError as e:
@@ -527,9 +512,7 @@ class PostgresqlUtils:
             conn.execute(text)
 
             # Create import schema
-            text = "CREATE SCHEMA IF NOT EXISTS {} AUTHORIZATION {}".format(
-                self._config.db_schema_import, self._config.db_group
-            )
+            text = f"CREATE SCHEMA IF NOT EXISTS {self._config.db_schema_import} AUTHORIZATION {self._config.db_group}"
             conn.execute(text)
 
             # Enable privileges
@@ -538,12 +521,10 @@ class PostgresqlUtils:
             GRANT INSERT, SELECT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON TABLES
             TO postgres"""
             conn.execute(text)
-            text = """
+            text = f"""
             ALTER DEFAULT PRIVILEGES
             GRANT INSERT, SELECT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON TABLES
-            TO {}""".format(
-                self._config.db_group
-            )
+            TO {self._config.db_group}"""
             conn.execute(text)
 
             # Set path to include VN import schema
@@ -604,13 +585,11 @@ class PostgresqlUtils:
             self._metadata = MetaData(schema=dbschema)
             # self._metadata.reflect(self._db)
 
-            text = """
+            text = f"""
             SELECT site, ((item->>0)::json->'species') ->> 'taxonomy' AS taxonomy, COUNT(id)
-                FROM {}.observations_json
+                FROM {dbschema}.observations_json
                 GROUP BY site, ((item->>0)::json->'species') ->> 'taxonomy';
-            """.format(
-                dbschema
-            )
+            """
 
             result = conn.execute(text).fetchall()
 
@@ -645,15 +624,13 @@ class PostgresqlUtils:
             self._metadata = MetaData(schema=dbschema)
             # self._metadata.reflect(self._db)
 
-            text = """
+            text = f"""
             SELECT o.site, o.taxonomy, t.name, COUNT(o.id_sighting)
-                FROM {}.observations AS o
-                    LEFT JOIN {}.taxo_groups AS t
+                FROM {dbschema}.observations AS o
+                    LEFT JOIN {dbschema}.taxo_groups AS t
                         ON (o.taxonomy::integer = t.id AND o.site LIKE t.site)
                 GROUP BY o.site, o.taxonomy, t.name
-            """.format(
-                dbschema, dbschema
-            )
+            """
 
             result = conn.execute(text).fetchall()
 
@@ -705,53 +682,29 @@ class Postgresql:
                 "territorial_units": {"type": "simple", "metadata": None},
                 "validations": {"type": "simple", "metadata": None},
             }
-            self._table_defs["entities"]["metadata"] = self._metadata.tables[
-                dbschema + ".entities_json"
-            ]
-            self._table_defs["families"]["metadata"] = self._metadata.tables[
-                dbschema + ".families_json"
-            ]
-            self._table_defs["field_groups"]["metadata"] = self._metadata.tables[
-                dbschema + ".field_groups_json"
-            ]
-            self._table_defs["field_details"]["metadata"] = self._metadata.tables[
-                dbschema + ".field_details_json"
-            ]
-            self._table_defs["forms"]["metadata"] = self._metadata.tables[
-                dbschema + ".forms_json"
-            ]
+            self._table_defs["entities"]["metadata"] = self._metadata.tables[dbschema + ".entities_json"]
+            self._table_defs["families"]["metadata"] = self._metadata.tables[dbschema + ".families_json"]
+            self._table_defs["field_groups"]["metadata"] = self._metadata.tables[dbschema + ".field_groups_json"]
+            self._table_defs["field_details"]["metadata"] = self._metadata.tables[dbschema + ".field_details_json"]
+            self._table_defs["forms"]["metadata"] = self._metadata.tables[dbschema + ".forms_json"]
             self._table_defs["local_admin_units"]["metadata"] = self._metadata.tables[
                 dbschema + ".local_admin_units_json"
             ]
             # self._table_defs["uuid_xref"]["metadata"] = self._metadata.tables[
             #     dbschema + ".uuid_xref"
             # ]
-            self._table_defs["observations"]["metadata"] = self._metadata.tables[
-                dbschema + ".observations_json"
-            ]
-            self._table_defs["observers"]["metadata"] = self._metadata.tables[
-                dbschema + ".observers_json"
-            ]
-            self._table_defs["places"]["metadata"] = self._metadata.tables[
-                dbschema + ".places_json"
-            ]
-            self._table_defs["species"]["metadata"] = self._metadata.tables[
-                dbschema + ".species_json"
-            ]
-            self._table_defs["taxo_groups"]["metadata"] = self._metadata.tables[
-                dbschema + ".taxo_groups_json"
-            ]
+            self._table_defs["observations"]["metadata"] = self._metadata.tables[dbschema + ".observations_json"]
+            self._table_defs["observers"]["metadata"] = self._metadata.tables[dbschema + ".observers_json"]
+            self._table_defs["places"]["metadata"] = self._metadata.tables[dbschema + ".places_json"]
+            self._table_defs["species"]["metadata"] = self._metadata.tables[dbschema + ".species_json"]
+            self._table_defs["taxo_groups"]["metadata"] = self._metadata.tables[dbschema + ".taxo_groups_json"]
             self._table_defs["territorial_units"]["metadata"] = self._metadata.tables[
                 dbschema + ".territorial_units_json"
             ]
-            self._table_defs["validations"]["metadata"] = self._metadata.tables[
-                dbschema + ".validations_json"
-            ]
+            self._table_defs["validations"]["metadata"] = self._metadata.tables[dbschema + ".validations_json"]
 
             # Create transformation
-            self._transformer = Transformer.from_proj(
-                4326, int(self._config.db_out_proj), always_xy=True
-            )
+            self._transformer = Transformer.from_proj(4326, int(self._config.db_out_proj), always_xy=True)
 
         return None
 
@@ -837,12 +790,8 @@ class StorePostgresql(Postgresql):
         for elem in items_dict["data"]:
             # Convert to json
             logger.debug(_("Storing element %s"), elem)
-            insert_stmt = insert(metadata).values(
-                id=elem["id"], site=self._config.site, item=elem
-            )
-            do_update_stmt = insert_stmt.on_conflict_do_update(
-                constraint=metadata.primary_key, set_=dict(item=elem)
-            )
+            insert_stmt = insert(metadata).values(id=elem["id"], site=self._config.site, item=elem)
+            do_update_stmt = insert_stmt.on_conflict_do_update(constraint=metadata.primary_key, set_=dict(item=elem))
             self._conn.execute(do_update_stmt)
 
         return len(items_dict["data"])
@@ -898,9 +847,7 @@ class StorePostgresql(Postgresql):
         for elem in items_dict["data"]:
             logger.debug(_("Storing element %s"), elem)
             insert_stmt = insert(metadata).values(id=elem["id"], item=elem)
-            do_update_stmt = insert_stmt.on_conflict_do_update(
-                constraint=metadata.primary_key, set_=dict(item=elem)
-            )
+            do_update_stmt = insert_stmt.on_conflict_do_update(constraint=metadata.primary_key, set_=dict(item=elem))
             self._conn.execute(do_update_stmt)
 
         return len(items_dict["data"])
@@ -933,19 +880,13 @@ class StorePostgresql(Postgresql):
 
         # Add local coordinates
         if ("lon" in items_dict) and ("lat" in items_dict):
-            items_dict["coord_x_local"], items_dict["coord_y_local"] = transformer(
-                items_dict["lon"], items_dict["lat"]
-            )
+            items_dict["coord_x_local"], items_dict["coord_y_local"] = transformer(items_dict["lon"], items_dict["lat"])
 
         # Convert to json
         logger.debug(_("Storing element %s"), items_dict)
         metadata = self._table_defs[controler]["metadata"]
-        insert_stmt = insert(metadata).values(
-            id=items_dict["@id"], site=self._config.site, item=items_dict
-        )
-        do_update_stmt = insert_stmt.on_conflict_do_update(
-            constraint=metadata.primary_key, set_=dict(item=items_dict)
-        )
+        insert_stmt = insert(metadata).values(id=items_dict["@id"], site=self._config.site, item=items_dict)
+        do_update_stmt = insert_stmt.on_conflict_do_update(constraint=metadata.primary_key, set_=dict(item=items_dict))
         self._conn.execute(do_update_stmt)
 
         return len(items_dict)
@@ -1010,9 +951,7 @@ class StorePostgresql(Postgresql):
         # Insert simple sightings, each row contains id, update timestamp and
         # full json body
         nb_obs = 0
-        logger.debug(
-            _("Storing %d single observations"), len(items_dict["data"]["sightings"])
-        )
+        logger.debug(_("Storing %d single observations"), len(items_dict["data"]["sightings"]))
         for i in range(0, len(items_dict["data"]["sightings"])):
             elem = items_dict["data"]["sightings"][i]
             # # Create UUID
@@ -1038,9 +977,7 @@ class StorePostgresql(Postgresql):
                     # It's a real form
                     forms_data = {}
                     if "id_form_universal" in items_dict["data"]["forms"][f]:
-                        id_form_universal = items_dict["data"]["forms"][f][
-                            "id_form_universal"
-                        ]
+                        id_form_universal = items_dict["data"]["forms"][f]["id_form_universal"]
                     else:
                         id_form_universal = None
 
@@ -1052,9 +989,7 @@ class StorePostgresql(Postgresql):
                             logger.debug("Preparing form %d", f)
                             for i in range(0, nb_s):
                                 # Find max and min dates
-                                dates.append(
-                                    date.fromtimestamp(int(v[i]["date"]["@timestamp"]))
-                                )
+                                dates.append(date.fromtimestamp(int(v[i]["date"]["@timestamp"])))
                             # Add presumed start and stop date from observations
                             forms_data["date_start"] = min(dates).isoformat()
                             forms_data["date_stop"] = max(dates).isoformat()
@@ -1210,8 +1145,7 @@ class StorePostgresql(Postgresql):
                     .where(
                         and_(
                             self._table_defs["observations"]["metadata"].c.id == obs,
-                            self._table_defs["observations"]["metadata"].c.site
-                            == self._config.site,
+                            self._table_defs["observations"]["metadata"].c.site == self._config.site,
                         )
                     )
                 )
@@ -1244,8 +1178,7 @@ class StorePostgresql(Postgresql):
                     .where(
                         and_(
                             self._table_defs["places"]["metadata"].c.id == obs,
-                            self._table_defs["places"]["metadata"].c.site
-                            == self._config.site,
+                            self._table_defs["places"]["metadata"].c.site == self._config.site,
                         )
                     )
                 )
@@ -1284,9 +1217,7 @@ class StorePostgresql(Postgresql):
         """
         # Store to database, if enabled
         if self._config.db_enabled:
-            metadata = self._metadata.tables[
-                self._config.db_schema_import + "." + "download_log"
-            ]
+            metadata = self._metadata.tables[self._config.db_schema_import + "." + "download_log"]
             stmt = metadata.insert().values(
                 site=site,
                 controler=controler,
@@ -1314,13 +1245,9 @@ class StorePostgresql(Postgresql):
         """
         # Store to database, if enabled
         if self._config.db_enabled:
-            metadata = self._metadata.tables[
-                self._config.db_schema_import + "." + "increment_log"
-            ]
+            metadata = self._metadata.tables[self._config.db_schema_import + "." + "increment_log"]
 
-            insert_stmt = insert(metadata).values(
-                taxo_group=taxo_group, site=site, last_ts=last_ts
-            )
+            insert_stmt = insert(metadata).values(taxo_group=taxo_group, site=site, last_ts=last_ts)
             do_update_stmt = insert_stmt.on_conflict_do_update(
                 constraint=metadata.primary_key, set_=dict(last_ts=last_ts)
             )
@@ -1346,9 +1273,7 @@ class StorePostgresql(Postgresql):
         row = None
         # Store to database, if enabled
         if self._config.db_enabled:
-            metadata = self._metadata.tables[
-                self._config.db_schema_import + "." + "increment_log"
-            ]
+            metadata = self._metadata.tables[self._config.db_schema_import + "." + "increment_log"]
             stmt = select([metadata.c.last_ts]).where(
                 and_(metadata.c.taxo_group == taxo_group, metadata.c.site == site)
             )

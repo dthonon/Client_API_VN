@@ -4,5 +4,5 @@ FROM src_vn.observations
 INNER JOIN src_vn.places ON places.id = observations.id_place
 INNER JOIN src_vn.local_admin_units ON local_admin_units.id = places.id_commune
 INNER JOIN src_vn.territorial_units ON territorial_units.id = local_admin_units.id_canton
-ORDER BY site ASC, id_sighting ASC 
+ORDER BY site ASC, id_sighting ASC
 LIMIT 100

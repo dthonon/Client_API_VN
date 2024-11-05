@@ -7,9 +7,7 @@
             "$ref": "#/definitions/_data"
         }
     },
-    "required": [
-        "data"
-    ],
+    "required": ["data"],
     "title": "_field_groups ",
     "description": "Root of field_groups schema.",
     "definitions": {
@@ -19,22 +17,22 @@
                 "type": "object",
                 "additionalProperties": false,
                 "properties": {
-                    "default":{
+                    "default": {
                         "type": "string",
                         "format": "integer"
                     },
-                    "empty_choice":{
+                    "empty_choice": {
                         "type": "string",
                         "format": "integer"
                     },
-                    "group":{
+                    "group": {
                         "type": "string",
                         "format": "integer"
                     },
                     "mandatory": {
                         "$ref": "#/definitions/_zero_one"
                     },
-                    "id":{
+                    "id": {
                         "type": "string",
                         "format": "integer"
                     },
@@ -51,10 +49,7 @@
         },
         "_zero_one": {
             "type": "string",
-            "enum": [
-                "0",
-                "1"
-            ]
+            "enum": ["0", "1"]
         }
     }
 }

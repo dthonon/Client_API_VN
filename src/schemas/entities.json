@@ -7,9 +7,7 @@
             "$ref": "#/definitions/_data"
         }
     },
-    "required": [
-        "data"
-    ],
+    "required": ["data"],
     "title": "_entities",
     "description": "Root of entities schema.",
     "definitions": {
@@ -28,7 +26,7 @@
                     "full_name_french": {
                         "type": "string"
                     },
-                    "id":{
+                    "id": {
                         "type": "string",
                         "format": "integer"
                     },
@@ -37,7 +35,7 @@
                     },
                     "url": {
                         "type": "string"
-                    }    
+                    }
                 }
             },
             "title": "_data",

@@ -1,6 +1,7 @@
 """
 Test each method of store_file module.
 """
+
 import gzip
 import json
 import logging

@@ -1,6 +1,7 @@
 """
 Test each method of download_vn module, using file store.
 """
+
 import gzip
 import json
 import logging
@@ -8,6 +9,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import pytest
+
 from export_vn.download_vn import (
     Entities,
     Families,

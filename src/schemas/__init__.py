@@ -1,15 +1,21 @@
-from pkg_resources import get_distribution, DistributionNotFound
 import gettext
+import importlib.metadata
 from pathlib import Path
 
+__version__ = "unknown"
 try:
-    # Change here if project is renamed and does not equal the package name
-    dist_name = "Client_API_VN"
-    __version__ = get_distribution(dist_name).version
-except DistributionNotFound:  # pragma: no cover
-    __version__ = "unknown"
-finally:
-    del get_distribution, DistributionNotFound
+    __version__ = importlib.metadata.version("my_package_name")
+except importlib.metadata.PackageNotFoundError:
+    # Fall back on getting it from a local pyproject.toml.
+    # This works in a development environment where the
+    # package has not been installed from a distribution.
+    import toml
+
+    pyproject_toml_file = Path(__file__).parent.parent.parent / "pyproject.toml"
+    if pyproject_toml_file.exists() and pyproject_toml_file.is_file():
+        __version__ = toml.load(pyproject_toml_file)["tool"]["poetry"]["version"]
+        # Indicate it might be locally modified or unreleased.
+        __version__ = __version__ + "+"
 
 # Install gettext for any file in the application
 localedir = Path(__file__).resolve().parent / "locale"

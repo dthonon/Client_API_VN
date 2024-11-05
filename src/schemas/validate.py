@@ -4,6 +4,7 @@ Validate schema and downloaded JSON files.
 Generate property reports from schema.
 
 """
+
 import argparse
 import gzip
 import json
@@ -17,7 +18,7 @@ from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 from typing import Any
 
-import pkg_resources
+# import pkg_resources
 from jsonschema.validators import validator_for
 from strictyaml import YAMLValidationError
 
@@ -38,22 +39,16 @@ def arguments(args):
         :obj:`argparse.Namespace`: command line parameters namespace
     """
     # Get options
-    parser = argparse.ArgumentParser(
-        description="JSON schemas validation and reporting."
-    )
+    parser = argparse.ArgumentParser(description="JSON schemas validation and reporting.")
     parser.add_argument(
         "--version",
         help=_("Print version number"),
         action="version",
-        version="%(prog)s {version}".format(version=__version__),
+        version=f"%(prog)s {__version__}",
     )
     out_group = parser.add_mutually_exclusive_group()
-    out_group.add_argument(
-        "--verbose", help=_("Increase output verbosity"), action="store_true"
-    )
-    out_group.add_argument(
-        "--quiet", help=_("Reduce output verbosity"), action="store_true"
-    )
+    out_group.add_argument("--verbose", help=_("Increase output verbosity"), action="store_true")
+    out_group.add_argument("--quiet", help=_("Reduce output verbosity"), action="store_true")
     parser.add_argument(
         "--validate",
         help=_("Validate the schemas against downloaded JSON files"),
@@ -72,10 +67,8 @@ def arguments(args):
     parser.add_argument(
         "--samples",
         help=_(
-            (
-                "If float in range [0.0, 1.0], the parameter represents a "
-                "proportion of files, else integer absolute counts."
-            )
+            "If float in range [0.0, 1.0], the parameter represents a "
+            "proportion of files, else integer absolute counts."
         ),
         default="0.1",
     )
@@ -95,11 +88,7 @@ def validate_schema(cfg_site_list: Any, samples: float) -> None:
     """Validate schemas against downloaded files.
     Files are renamed *.done after successful processing."""
     # Iterate over schema list
-    js_list = [
-        f
-        for f in pkg_resources.resource_listdir(__name__, "")
-        if re.match(r".*\.json", f)
-    ]
+    js_list = [f for f in pkg_resources.resource_listdir(__name__, "") if re.match(r".*\.json", f)]
     for js_f in js_list:
         schema = js_f.split(".")[0]
         file = pkg_resources.resource_filename(__name__, js_f)
@@ -134,11 +123,7 @@ def validate_schema(cfg_site_list: Any, samples: float) -> None:
 def restore(cfg_site_list: Any) -> None:
     """Restore file names."""
     # Iterate over schema list
-    js_list = [
-        f
-        for f in pkg_resources.resource_listdir(__name__, "")
-        if re.match(r".*\.json", f)
-    ]
+    js_list = [f for f in pkg_resources.resource_listdir(__name__, "") if re.match(r".*\.json", f)]
     for js_f in js_list:
         schema = js_f.split(".")[0]
         logger.info(_("Restoring files for schema %s"), schema)
@@ -160,11 +145,7 @@ def report(cfg_site_list: Any) -> None:
     """Print of list of properties in the schemas."""
     pp = pprint.PrettyPrinter(indent=2)
     # Iterate over schema list
-    js_list = [
-        f
-        for f in pkg_resources.resource_listdir(__name__, "")
-        if re.match(r".*\.json", f)
-    ]
+    js_list = [f for f in pkg_resources.resource_listdir(__name__, "") if re.match(r".*\.json", f)]
     for js_f in js_list:
         schema = js_f.split(".")[0]
         file = pkg_resources.resource_filename(__name__, js_f)
@@ -197,9 +178,7 @@ def main(args):
     # create console handler with a higher log level
     ch = logging.StreamHandler()
     # create formatter and add it to the handlers
-    formatter = logging.Formatter(
-        "%(asctime)s - %(levelname)s - %(module)s:%(funcName)s - %(message)s"
-    )
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(module)s:%(funcName)s - %(message)s")
     fh.setFormatter(formatter)
     ch.setFormatter(formatter)
     # add the handlers to the logger
@@ -238,16 +217,13 @@ def main(args):
         samples = _get_int_or_float(args.samples)
         if isinstance(samples, float) and (samples < 0 or samples > 1):
             logger.error(
-                _(
-                    "--samples float parameter: %s "
-                    "must be between 0.0 and 1.0. Coerced to 0.1"
-                ),
+                _("--samples float parameter: %s must be between 0.0 and 1.0. Coerced to 0.1"),
                 samples,
             )
             samples = 0.1
         if isinstance(samples, int) and (samples < 0):
             logger.error(
-                _("--samples int parameter: %s " "must be positive. Coerced to 0.1"),
+                _("--samples int parameter: %s must be positive. Coerced to 0.1"),
                 samples,
             )
             samples = 0.1

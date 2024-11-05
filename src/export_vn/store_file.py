@@ -10,19 +10,20 @@ Properties
 -
 
 """
+
 import gzip
 import json
 import logging
 import os
 from pathlib import Path
 
-from . import __version__, _
+from . import _, __version__
 
 logger = logging.getLogger("transfer_vn.store_file")
 
 
 class StoreFileException(Exception):
-    """An exception occurred while handling download or store. """
+    """An exception occurred while handling download or store."""
 
 
 class StoreFile:
@@ -83,9 +84,7 @@ class StoreFile:
             if len(items_dict["data"]) > 0:
                 # Convert to json
                 logger.debug(_("Converting to json %d items"), len(items_dict["data"]))
-                items_json = json.dumps(
-                    items_dict, sort_keys=True, indent=4, separators=(",", ": ")
-                )
+                items_json = json.dumps(items_dict, sort_keys=True, indent=4, separators=(",", ": "))
                 file_json_gz = json_path + controler + "_" + seq + ".json.gz"
                 logger.debug(_("Received data, storing json to %s"), file_json_gz)
                 with gzip.open(file_json_gz, "wb", 9) as g:

@@ -7,9 +7,7 @@
             "$ref": "#/definitions/_data"
         }
     },
-    "required": [
-        "data"
-    ],
+    "required": ["data"],
     "title": "_local_admin_units",
     "description": "Root of local_admin_units schema.",
     "definitions": {
@@ -22,16 +20,16 @@
                     "coord_lat": {
                         "type": "string",
                         "format": "number"
-                    }, 
+                    },
                     "coord_lon": {
                         "type": "string",
                         "format": "number"
-                    }, 
-                    "id":{
+                    },
+                    "id": {
                         "type": "string",
                         "format": "integer"
                     },
-                    "id_canton":{
+                    "id_canton": {
                         "type": "string",
                         "format": "integer"
                     },

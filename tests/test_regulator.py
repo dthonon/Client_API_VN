@@ -1,11 +1,12 @@
 """
 Test download size regulator.
 """
+
 import logging
 
-from export_vn.regulator import PID
-
 import pytest
+
+from export_vn.regulator import PID
 
 
 @pytest.mark.order(index=90)

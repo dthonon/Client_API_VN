@@ -3,16 +3,18 @@
 Sample application: skeleton for new applications
 
 """
+
 import argparse
+import importlib.resources
 import logging
 import shutil
+import sys
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
-import sys
 
-import pkg_resources
-from export_vn.evnconf import EvnConf
 from strictyaml import YAMLValidationError
+
+from export_vn.evnconf import EvnConf
 
 from . import _, __version__
 
@@ -29,25 +31,17 @@ def arguments(args):
         :obj:`argparse.Namespace`: command line parameters namespace
     """
     # Get options
-    parser = argparse.ArgumentParser(
-        description="Sample Biolovision API client application."
-    )
+    parser = argparse.ArgumentParser(description="Sample Biolovision API client application.")
     parser.add_argument(
         "--version",
         help=_("Print version number"),
         action="version",
-        version="%(prog)s {version}".format(version=__version__),
+        version=f"%(prog)s {__version__}",
     )
     out_group = parser.add_mutually_exclusive_group()
-    out_group.add_argument(
-        "--verbose", help=_("Increase output verbosity"), action="store_true"
-    )
-    out_group.add_argument(
-        "--quiet", help=_("Reduce output verbosity"), action="store_true"
-    )
-    parser.add_argument(
-        "--init", help=_("Initialize the YAML configuration file"), action="store_true"
-    )
+    out_group.add_argument("--verbose", help=_("Increase output verbosity"), action="store_true")
+    out_group.add_argument("--quiet", help=_("Reduce output verbosity"), action="store_true")
+    parser.add_argument("--init", help=_("Initialize the YAML configuration file"), action="store_true")
     parser.add_argument("config", help=_("Configuration file name"))
 
     return parser.parse_args(args)
@@ -55,11 +49,12 @@ def arguments(args):
 
 def init(config: str):
     """Copy template YAML file to home directory."""
-    yaml_src = pkg_resources.resource_filename(__name__, "data/evn_template.yaml")
-    yaml_dst = str(Path.home() / config)
-    logger.info(_("Creating YAML configuration file %s, from %s"), yaml_dst, yaml_src)
-    shutil.copyfile(yaml_src, yaml_dst)
-    logger.info(_("Please edit %s before running the script"), yaml_dst)
+    ref = importlib.resources.files("export_vn") / "data/evn_template.yaml"
+    with importlib.resources.as_file(ref) as yaml_src:
+        yaml_dst = str(Path.home() / config)
+        logger.info(_("Creating YAML configuration file %s, from %s"), yaml_dst, yaml_src)
+        shutil.copyfile(yaml_src, yaml_dst)
+        logger.info(_("Please edit %s before running the script"), yaml_dst)
 
 
 def main(args):
@@ -81,9 +76,7 @@ def main(args):
     # create console handler with a higher log level
     ch = logging.StreamHandler()
     # create formatter and add it to the handlers
-    formatter = logging.Formatter(
-        "%(asctime)s - %(levelname)s - %(module)s:%(funcName)s - %(message)s"
-    )
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(module)s:%(funcName)s - %(message)s")
     fh.setFormatter(formatter)
     ch.setFormatter(formatter)
     # add the handlers to the logger
@@ -112,9 +105,7 @@ def main(args):
 
     # Get configuration from file
     if not (Path.home() / args.config).is_file():
-        logger.critical(
-            _("Configuration file %s does not exist"), str(Path.home() / args.config)
-        )
+        logger.critical(_("Configuration file %s does not exist"), str(Path.home() / args.config))
         return None
     logger.info(_("Getting configuration data from %s"), args.config)
     try:
@@ -129,8 +120,7 @@ def main(args):
 
 
 def run():
-    """Entry point for console_scripts
-    """
+    """Entry point for console_scripts"""
     main(sys.argv[1:])
 
 

@@ -82,13 +82,12 @@ Exceptions:
 - IncorrectParameter         - Incorrect or missing parameter
 
 """
+
 import json
 import logging
 import re
 import time
 from functools import lru_cache
-
-from typing import Dict, Optional
 from urllib import parse
 
 import requests
@@ -129,9 +128,7 @@ class IncorrectParameter(BiolovisionApiException):
 class BiolovisionAPI:
     """Top class, not for direct use. Provides internal and template methods."""
 
-    def __init__(
-        self, config, controler, max_retry=None, max_requests=None, max_chunks=None
-    ):
+    def __init__(self, config, controler, max_retry=None, max_requests=None, max_chunks=None):
         self._config = config
         if max_retry is None:
             max_retry = config.tuning_max_retry
@@ -239,9 +236,7 @@ class BiolovisionAPI:
                 headers.update(optional_headers)
             protected_url = self._api_url + scope
             if method == "GET":
-                resp = requests.get(
-                    url=protected_url, auth=self._oauth, params=payload, headers=headers
-                )
+                resp = requests.get(url=protected_url, auth=self._oauth, params=payload, headers=headers)
             elif method == "POST":
                 resp = requests.post(
                     url=protected_url,
@@ -259,9 +254,7 @@ class BiolovisionAPI:
                     data=body,
                 )
             elif method == "DELETE":
-                resp = requests.delete(
-                    url=protected_url, auth=self._oauth, params=payload, headers=headers
-                )
+                resp = requests.delete(url=protected_url, auth=self._oauth, params=payload, headers=headers)
             else:
                 raise NotImplementedException
 
@@ -285,9 +278,7 @@ class BiolovisionAPI:
                     protected_url,
                 )
 
-                if (self._http_status >= 400) and (
-                    self._http_status <= 499
-                ):  # pragma: no cover
+                if (self._http_status >= 400) and (self._http_status <= 499):  # pragma: no cover
                     # Unreceverable error
                     logger.error(resp)
                     logger.critical(
@@ -303,13 +294,9 @@ class BiolovisionAPI:
                     # A transient error: short wait
                     time.sleep(self._config.tuning_retry_delay)
 
-                if (
-                    self._transfer_errors > self._limits["max_retry"]
-                ):  # pragma: no cover
+                if self._transfer_errors > self._limits["max_retry"]:  # pragma: no cover
                     # Too many retries. Raising exception
-                    logger.critical(
-                        _("Too many error %s, raising exception"), self._transfer_errors
-                    )
+                    logger.critical(_("Too many error %s, raising exception"), self._transfer_errors)
                     raise HTTPError(resp.status_code)
             else:
                 # No error from request: processing response if needed
@@ -320,10 +307,7 @@ class BiolovisionAPI:
                     resp_chunk = json.loads("{}")
                 else:
                     try:
-
-                        logger.debug(
-                            _("Response content: %s, text: %s"), resp, resp.text[:1000]
-                        )
+                        logger.debug(_("Response content: %s, text: %s"), resp, resp.text[:1000])
                         # TWEAK: remove extra text outside JSON response
                         if len(resp.text) > 1:
                             rsp = re.findall(r"([\[{].*[}\]])", resp.text)
@@ -339,9 +323,7 @@ class BiolovisionAPI:
                         resp_chunk = json.loads("{}")
                         logger.error(_("Incorrect response content: %s"), resp)
                     except Exception:
-                        logger.exception(
-                            _("Response text causing exception: %s"), resp.text
-                        )
+                        logger.exception(_("Response text causing exception: %s"), resp.text)
                         raise
 
                 # Initialize or append to response dict, depending on content
@@ -358,16 +340,12 @@ class BiolovisionAPI:
                             data_rec = resp_chunk
                         else:
                             if "sightings" in data_rec["data"]:
-                                data_rec["data"]["sightings"] += resp_chunk["data"][
-                                    "sightings"
-                                ]
+                                data_rec["data"]["sightings"] += resp_chunk["data"]["sightings"]
                             else:
                                 # logger.error(_("No 'sightings' in previous data"))
                                 # logger.error(data_rec)
                                 # logger.error(resp_chunk)
-                                data_rec["data"]["sightings"] = resp_chunk["data"][
-                                    "sightings"
-                                ]
+                                data_rec["data"]["sightings"] = resp_chunk["data"]["sightings"]
                     if "forms" in resp_chunk["data"]:
                         observations = True
                         logger.debug(
@@ -462,9 +440,7 @@ class BiolovisionAPI:
             optional_headers,
         )
         # GET from API
-        entities = self._url_get(params, self._ctrl, optional_headers=optional_headers)[
-            "data"
-        ]
+        entities = self._url_get(params, self._ctrl, optional_headers=optional_headers)["data"]
         logger.debug(_("Number of entities = %i"), len(entities))
         return {"data": entities}
 
@@ -603,9 +579,7 @@ class LocalAdminUnitsAPI(BiolovisionAPI):
     """
 
     def __init__(self, config, max_retry=None, max_requests=None, max_chunks=None):
-        super().__init__(
-            config, "local_admin_units", max_retry, max_requests, max_chunks
-        )
+        super().__init__(config, "local_admin_units", max_retry, max_requests, max_chunks)
 
 
 class ObservationsAPI(BiolovisionAPI):
@@ -732,7 +706,7 @@ class ObservationsAPI(BiolovisionAPI):
         # GET from API
         return super()._url_get(params, "observations/search/", "POST", body)
 
-    def api_create(self, data: Dict) -> None:
+    def api_create(self, data: dict) -> None:
         """Create an observation.
 
         Calls POST on /observations to create a new observation.
@@ -756,7 +730,7 @@ class ObservationsAPI(BiolovisionAPI):
         else:
             raise HTTPError(self._http_status)
 
-    def api_update(self, id: str, data: Dict) -> None:
+    def api_update(self, id: str, data: dict) -> None:
         """Update an observation.
 
         Calls PUT on /observations/%id% to update the observation.
@@ -775,9 +749,7 @@ class ObservationsAPI(BiolovisionAPI):
         }
         logger.debug(_("Update observation %s, with data %s"), id, data)
         # PUT to API
-        return super()._url_get(
-            params, "observations/" + id, "PUT", body=json.dumps(data)
-        )
+        return super()._url_get(params, "observations/" + id, "PUT", body=json.dumps(data))
 
     def api_delete(self, id: str) -> None:
         """Deleta an observation.
@@ -798,7 +770,7 @@ class ObservationsAPI(BiolovisionAPI):
         # DELETE to API
         return super()._url_get(params, "observations/" + id, "DELETE")
 
-    def api_delete_list(self, data: Optional[Dict] = None) -> None:
+    def api_delete_list(self, data: dict | None = None) -> None:
         """Deleta a list/form.
 
         Calls POST on /observations/delete_list/%id% to delete the observation.
@@ -816,9 +788,7 @@ class ObservationsAPI(BiolovisionAPI):
         logger.debug(_("Delete observation %s"), id)
         # POST to API
         if data is not None:
-            res = super()._url_get(
-                params, "observations/delete_list", "POST", body=json.dumps(data)
-            )
+            res = super()._url_get(params, "observations/delete_list", "POST", body=json.dumps(data))
         else:
             logger.warn(_("No parameter passed: call ignored"))
             res = None
@@ -934,9 +904,7 @@ class TerritorialUnitsAPI(BiolovisionAPI):
     """
 
     def __init__(self, config, max_retry=None, max_requests=None, max_chunks=None):
-        super().__init__(
-            config, "territorial_units", max_retry, max_requests, max_chunks
-        )
+        super().__init__(config, "territorial_units", max_retry, max_requests, max_chunks)
 
     @lru_cache(maxsize=32)
     def api_list(self, opt_params=None):

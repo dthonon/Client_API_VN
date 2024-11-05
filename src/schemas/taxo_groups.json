@@ -7,9 +7,7 @@
             "$ref": "#/definitions/_data"
         }
     },
-    "required": [
-        "data"
-    ],
+    "required": ["data"],
     "title": "_taxo_groups",
     "description": "Root of taxo_groups schema.",
     "definitions": {
@@ -21,13 +19,9 @@
                 "properties": {
                     "access_mode": {
                         "type": "string",
-                        "enum": [
-                            "full",
-                            "limited",
-                            "none"
-                        ]
+                        "enum": ["full", "limited", "none"]
                     },
-                    "id":{
+                    "id": {
                         "type": "string",
                         "format": "integer"
                     },
@@ -39,7 +33,7 @@
                     },
                     "name_constant": {
                         "type": "string"
-                    }    
+                    }
                 }
             },
             "title": "_data",

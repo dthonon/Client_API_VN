@@ -3,7 +3,9 @@
 Program managing VisioNature export to Postgresql database
 
 """
+
 import argparse
+import importlib.resources
 import logging
 import os
 import shutil
@@ -11,11 +13,10 @@ import signal
 import subprocess
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
-import pkg_resources
 import psutil
 import requests
 import yappi
@@ -77,9 +78,7 @@ class Jobs:
             if event.job_id in self._job_set:
                 self._job_set.remove(event.job_id)
             else:
-                logger.error(
-                    _("Job %s not found in job_set"), event.job_id
-                )  # pragma: no cover
+                logger.error(_("Job %s not found in job_set"), event.job_id)  # pragma: no cover
             if event.exception:
                 logger.error(_("The job %s crashed"), event.job_id)  # pragma: no cover
             else:
@@ -116,9 +115,7 @@ class Jobs:
             job_defaults=job_defaults,
             timezone=utc,
         )
-        self._scheduler.add_listener(
-            self._listener, EVENT_JOB_SUBMITTED | EVENT_JOB_EXECUTED | EVENT_JOB_ERROR
-        )
+        self._scheduler.add_listener(self._listener, EVENT_JOB_SUBMITTED | EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
 
     def __enter__(self):
         return self
@@ -170,9 +167,7 @@ class Jobs:
         self._scheduler.remove_all_jobs()
 
     def add_job_once(self, job_fn, args=None, kwargs=None):
-        logger.debug(
-            _("Adding immediate job %s"), args[0].__name__ + "_" + args[2].site
-        )
+        logger.debug(_("Adding immediate job %s"), args[0].__name__ + "_" + args[2].site)
         self._scheduler.add_job(
             job_fn,
             args=args,
@@ -195,9 +190,7 @@ class Jobs:
         minute=None,
         second=None,
     ):
-        logger.debug(
-            _("Adding scheduled job %s"), args[0].__name__ + "_" + args[2].site
-        )
+        logger.debug(_("Adding scheduled job %s"), args[0].__name__ + "_" + args[2].site)
         self._scheduler.add_job(
             job_fn,
             args=args,
@@ -224,7 +217,7 @@ class Jobs:
             logger.debug(
                 _("Job %s, scheduled in: %s"),
                 j.id,
-                j.next_run_time - datetime.now(timezone.utc),
+                j.next_run_time - datetime.now(UTC),
             )
         logger.debug(_("Number of jobs running, %s"), len(self._job_set))
         return len(self._job_set)
@@ -263,31 +256,20 @@ def arguments(args):
     """
     # Get options
     parser = argparse.ArgumentParser(
-        description="Script that transfers data from Biolovision"
-        + "and stores it to a Postgresql database."
+        description="Script that transfers data from Biolovision" + "and stores it to a Postgresql database."
     )
     parser.add_argument(
         "--version",
         help=_("Print version number"),
         action="version",
-        version="%(prog)s {version}".format(version=__version__),
+        version=f"%(prog)s {__version__}",
     )
     out_group = parser.add_mutually_exclusive_group()
-    out_group.add_argument(
-        "--verbose", help=_("Increase output verbosity"), action="store_true"
-    )
-    out_group.add_argument(
-        "--quiet", help=_("Reduce output verbosity"), action="store_true"
-    )
-    parser.add_argument(
-        "--init", help=_("Initialize the YAML configuration file"), action="store_true"
-    )
-    parser.add_argument(
-        "--db_drop", help=_("Delete if exists database and roles"), action="store_true"
-    )
-    parser.add_argument(
-        "--db_create", help=_("Create database and roles"), action="store_true"
-    )
+    out_group.add_argument("--verbose", help=_("Increase output verbosity"), action="store_true")
+    out_group.add_argument("--quiet", help=_("Reduce output verbosity"), action="store_true")
+    parser.add_argument("--init", help=_("Initialize the YAML configuration file"), action="store_true")
+    parser.add_argument("--db_drop", help=_("Delete if exists database and roles"), action="store_true")
+    parser.add_argument("--db_create", help=_("Create database and roles"), action="store_true")
     parser.add_argument(
         "--db_migrate",
         help=_("Migrate database to current version"),
@@ -304,12 +286,8 @@ def arguments(args):
         action="store_true",
     )
     download_group = parser.add_mutually_exclusive_group()
-    download_group.add_argument(
-        "--full", help=_("Perform a full download"), action="store_true"
-    )
-    download_group.add_argument(
-        "--update", help=_("Perform an incremental download"), action="store_true"
-    )
+    download_group.add_argument("--full", help=_("Perform a full download"), action="store_true")
+    download_group.add_argument("--update", help=_("Perform an incremental download"), action="store_true")
     download_group.add_argument(
         "--schedule",
         help=_("Create or modify incremental download schedule"),
@@ -325,9 +303,7 @@ def arguments(args):
         help=_("Count observations by site and taxo_group"),
         action="store_true",
     )
-    parser.add_argument(
-        "--profile", help=_("Gather and print profiling times"), action="store_true"
-    )
+    parser.add_argument("--profile", help=_("Gather and print profiling times"), action="store_true")
     parser.add_argument("file", help=_("Configuration file name"))
 
     return parser.parse_args(args)
@@ -335,11 +311,12 @@ def arguments(args):
 
 def init(file: str):
     """Copy template YAML file to home directory."""
-    yaml_src = pkg_resources.resource_filename(__name__, "data/evn_template.yaml")
-    yaml_dst = str(Path.home() / file)
-    logger.info(_("Creating YAML configuration file %s, from %s"), yaml_dst, yaml_src)
-    shutil.copyfile(yaml_src, yaml_dst)
-    logger.info(_("Please edit %s before running the script"), yaml_dst)
+    ref = importlib.resources.files("export_vn") / "data/evn_template.yaml"
+    with importlib.resources.as_file(ref) as yaml_src:
+        yaml_dst = str(Path.home() / file)
+        logger.info(_("Creating YAML configuration file %s, from %s"), yaml_dst, yaml_src)
+        shutil.copyfile(yaml_src, yaml_dst)
+        logger.info(_("Please edit %s before running the script"), yaml_dst)
 
 
 def col_table_create(cfg, sql_quiet, client_min_message):
@@ -424,9 +401,7 @@ def full_download_1(ctrl, cfg_crtl_list, cfg):
                 downloader.name,
             )
             if downloader.name == "observations":
-                logger.info(
-                    _("%s => Excluded taxo_groups: %s"), cfg.site, cfg.taxo_exclude
-                )
+                logger.info(_("%s => Excluded taxo_groups: %s"), cfg.site, cfg.taxo_exclude)
                 downloader.store(
                     id_taxo_group=None,
                     method="search",
@@ -435,9 +410,7 @@ def full_download_1(ctrl, cfg_crtl_list, cfg):
                     territorial_unit_ids=cfg.territorial_unit_ids,
                     short_version=(1 if cfg.json_format == "short" else 0),
                 )
-            elif (downloader.name == "local_admin_units") or (
-                downloader.name == "places"
-            ):
+            elif (downloader.name == "local_admin_units") or (downloader.name == "places"):
                 logger.info(
                     _("%s => Included territorial_unit_ids: %s"),
                     cfg.site,
@@ -448,9 +421,7 @@ def full_download_1(ctrl, cfg_crtl_list, cfg):
                 )
             else:
                 downloader.store()
-            logger.info(
-                _("%s => Ending download using controler %s"), cfg.site, downloader.name
-            )
+            logger.info(_("%s => Ending download using controler %s"), cfg.site, downloader.name)
 
 
 def full_download(cfg_ctrl):
@@ -481,36 +452,16 @@ def full_download(cfg_ctrl):
         for site, cfg in cfg_site_list.items():
             if cfg.enabled:
                 logger.info(_("Scheduling work for site %s"), cfg.site)
-                jobs.add_job_once(
-                    job_fn=full_download_1, args=[Entities, cfg_crtl_list, cfg]
-                )
-                jobs.add_job_once(
-                    job_fn=full_download_1, args=[Families, cfg_crtl_list, cfg]
-                )
-                jobs.add_job_once(
-                    job_fn=full_download_1, args=[LocalAdminUnits, cfg_crtl_list, cfg]
-                )
-                jobs.add_job_once(
-                    job_fn=full_download_1, args=[Observations, cfg_crtl_list, cfg]
-                )
-                jobs.add_job_once(
-                    job_fn=full_download_1, args=[Observers, cfg_crtl_list, cfg]
-                )
-                jobs.add_job_once(
-                    job_fn=full_download_1, args=[Places, cfg_crtl_list, cfg]
-                )
-                jobs.add_job_once(
-                    job_fn=full_download_1, args=[Species, cfg_crtl_list, cfg]
-                )
-                jobs.add_job_once(
-                    job_fn=full_download_1, args=[TaxoGroup, cfg_crtl_list, cfg]
-                )
-                jobs.add_job_once(
-                    job_fn=full_download_1, args=[TerritorialUnits, cfg_crtl_list, cfg]
-                )
-                jobs.add_job_once(
-                    job_fn=full_download_1, args=[Validations, cfg_crtl_list, cfg]
-                )
+                jobs.add_job_once(job_fn=full_download_1, args=[Entities, cfg_crtl_list, cfg])
+                jobs.add_job_once(job_fn=full_download_1, args=[Families, cfg_crtl_list, cfg])
+                jobs.add_job_once(job_fn=full_download_1, args=[LocalAdminUnits, cfg_crtl_list, cfg])
+                jobs.add_job_once(job_fn=full_download_1, args=[Observations, cfg_crtl_list, cfg])
+                jobs.add_job_once(job_fn=full_download_1, args=[Observers, cfg_crtl_list, cfg])
+                jobs.add_job_once(job_fn=full_download_1, args=[Places, cfg_crtl_list, cfg])
+                jobs.add_job_once(job_fn=full_download_1, args=[Species, cfg_crtl_list, cfg])
+                jobs.add_job_once(job_fn=full_download_1, args=[TaxoGroup, cfg_crtl_list, cfg])
+                jobs.add_job_once(job_fn=full_download_1, args=[TerritorialUnits, cfg_crtl_list, cfg])
+                jobs.add_job_once(job_fn=full_download_1, args=[Validations, cfg_crtl_list, cfg])
             else:
                 logger.info(_("Skipping site %s"), site)
 
@@ -536,9 +487,7 @@ def increment_download_1(ctrl, cfg_crtl_list, cfg):
                 downloader.name,
             )
             if downloader.name == "observations":
-                logger.info(
-                    _("%s => Excluded taxo_groups: %s"), cfg.site, cfg.taxo_exclude
-                )
+                logger.info(_("%s => Excluded taxo_groups: %s"), cfg.site, cfg.taxo_exclude)
                 downloader.update(taxo_groups_ex=cfg.taxo_exclude)
             elif downloader.name == "places":
                 logger.info(
@@ -560,9 +509,7 @@ def increment_download_1(ctrl, cfg_crtl_list, cfg):
                 )
             else:
                 downloader.store()
-            logger.info(
-                _("%s => Ending download using controler %s"), cfg.site, downloader.name
-            )
+            logger.info(_("%s => Ending download using controler %s"), cfg.site, downloader.name)
 
 
 def increment_download(cfg_ctrl):
@@ -616,9 +563,7 @@ def increment_schedule(cfg_ctrl):
             logger.info(_("Scheduling increments on site %s"), site)
             for ctrl_name, ctrl_props in cfg_crtl_list.items():
                 if ctrl_props.enabled:
-                    logger.debug(
-                        _("%s => Adding schedule for controler %s"), site, ctrl_name
-                    )
+                    logger.debug(_("%s => Adding schedule for controler %s"), site, ctrl_name)
                     jobs.add_job_schedule(
                         job_fn=increment_download_1,
                         args=[CTRL_DEFS[ctrl_name], cfg_crtl_list, cfg],
@@ -696,16 +641,12 @@ def count_observations(cfg_ctrl):
                             for r in col_counts:
                                 if r[0] == site and r[2] == taxo:
                                     col_c = r[3]
-                            site_counts.append(
-                                [
-                                    cfg.site,
-                                    taxo,
-                                    int(
-                                        rows[i].contents[0].contents[0].replace(" ", "")
-                                    ),
-                                    col_c,
-                                ]
-                            )
+                            site_counts.append([
+                                cfg.site,
+                                taxo,
+                                int(rows[i].contents[0].contents[0].replace(" ", "")),
+                                col_c,
+                            ])
                 print(
                     tabulate(
                         site_counts,
@@ -743,9 +684,7 @@ def main(args):
     # create console handler with a higher log level
     ch = logging.StreamHandler()
     # create formatter and add it to the handlers
-    formatter = logging.Formatter(
-        "%(asctime)s - %(levelname)s - %(name)s - %(message)s"
-    )
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(name)s - %(message)s")
     fh.setFormatter(formatter)
     ch.setFormatter(formatter)
     # add the handlers to the logger

@@ -145,13 +145,9 @@ class StoreAll:
         """
         # Call backends if needed
         if self._config.file_enabled:
-            self._file_backend.log(
-                site, controler, error_count, http_status, comment, length, duration
-            )
+            self._file_backend.log(site, controler, error_count, http_status, comment, length, duration)
         if self._config.db_enabled:
-            self._db_backend.log(
-                site, controler, error_count, http_status, comment, length, duration
-            )
+            self._db_backend.log(site, controler, error_count, http_status, comment, length, duration)
         return None
 
     def increment_log(self, site, taxo_group, last_ts):

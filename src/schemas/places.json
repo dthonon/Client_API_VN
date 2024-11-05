@@ -7,9 +7,7 @@
             "$ref": "#/definitions/_data"
         }
     },
-    "required": [
-        "data"
-    ],
+    "required": ["data"],
     "title": "_local_admin_units",
     "description": "Root of local_admin_units schema.",
     "definitions": {
@@ -19,34 +17,34 @@
                 "type": "object",
                 "additionalProperties": false,
                 "properties": {
-                    "altitude":{
+                    "altitude": {
                         "type": "string",
                         "format": "integer"
                     },
                     "coord_lat": {
                         "type": "string",
                         "format": "number"
-                    }, 
+                    },
                     "coord_lon": {
                         "type": "string",
                         "format": "number"
-                    }, 
-                    "id":{
+                    },
+                    "id": {
                         "type": "string",
                         "format": "integer"
                     },
-                    "id_commune":{
+                    "id_commune": {
                         "type": "string",
                         "format": "integer"
                     },
-                    "id_region":{
+                    "id_region": {
                         "type": "string",
                         "format": "integer"
                     },
                     "is_private": {
                         "$ref": "#/definitions/_zero_one"
                     },
-                    "loc_precision":{
+                    "loc_precision": {
                         "type": "string",
                         "format": "integer"
                     },
@@ -78,10 +76,7 @@
         },
         "_zero_one": {
             "type": "string",
-            "enum": [
-                "0",
-                "1"
-            ]
+            "enum": ["0", "1"]
         }
     }
 }

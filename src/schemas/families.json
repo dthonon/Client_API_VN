@@ -7,9 +7,7 @@
             "$ref": "#/definitions/_data"
         }
     },
-    "required": [
-        "data"
-    ],
+    "required": ["data"],
     "title": "_families",
     "description": "Root of families schema.",
     "definitions": {
@@ -22,14 +20,14 @@
                     "generic": {
                         "$ref": "#/definitions/_zero_one"
                     },
-                    "id":{
+                    "id": {
                         "type": "string",
                         "format": "integer"
                     },
                     "id_taxo_group": {
                         "type": "string",
                         "format": "integer"
-                    }, 
+                    },
                     "latin_name": {
                         "type": "string"
                     },
@@ -43,10 +41,7 @@
         },
         "_zero_one": {
             "type": "string",
-            "enum": [
-                "0",
-                "1"
-            ]
+            "enum": ["0", "1"]
         }
     }
 }

@@ -7,9 +7,7 @@
             "$ref": "#/definitions/_data"
         }
     },
-    "required": [
-        "data"
-    ],
+    "required": ["data"],
     "title": "_validations",
     "description": "Root of validations schema.",
     "definitions": {
@@ -21,27 +19,24 @@
                 "properties": {
                     "committee": {
                         "type": "string",
-                        "enum": [
-                            "CHR",
-                            "CHN"
-                        ]
+                        "enum": ["CHR", "CHN"]
                     },
-                    "date_start":{
+                    "date_start": {
                         "type": "string",
                         "format": "integer"
                     },
-                    "date_stop":{
+                    "date_stop": {
                         "type": "string",
                         "format": "integer"
                     },
-                    "id":{
+                    "id": {
                         "type": "string",
                         "format": "integer"
                     },
-                    "id_species":{
+                    "id_species": {
                         "type": "string",
                         "format": "integer"
-                    } 
+                    }
                 }
             },
             "title": "_data",

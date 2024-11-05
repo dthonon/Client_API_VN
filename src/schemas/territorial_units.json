@@ -7,9 +7,7 @@
             "$ref": "#/definitions/_data"
         }
     },
-    "required": [
-        "data"
-    ],
+    "required": ["data"],
     "title": "_territorial_units",
     "description": "Root of territorial_units schema.",
     "definitions": {
@@ -19,14 +17,14 @@
                 "type": "object",
                 "additionalProperties": false,
                 "properties": {
-                    "id":{
+                    "id": {
                         "type": "string",
                         "format": "integer"
                     },
                     "id_country": {
                         "type": "string",
                         "format": "integer"
-                    }, 
+                    },
                     "name": {
                         "type": "string"
                     },

@@ -997,4 +997,3 @@ msgstr "Site %s : mise à jour de l'observation %s, opération %s"
 #, python-format
 msgid "Unknown operation in row, ignored %s"
 msgstr "Opération inconnue ignorée au rang %s"
-

@@ -10,16 +10,15 @@ Derived from https://github.com/m-lundberg/simple-pid
 import logging
 
 from . import _, __version__
-from typing import Optional, Tuple
 
 logger = logging.getLogger("transfer_vn.regulator")
 
 
-class PID(object):
+class PID:
     """A simple PID controller. No fuss."""
 
-    Limits = Tuple[Optional[float], Optional[float]]
-    Tunings = Tuple[float, float, float]
+    Limits = tuple[float | None, float | None]
+    Tunings = tuple[float, float, float]
 
     def __init__(
         self,
@@ -87,9 +86,7 @@ class PID(object):
         # compute error terms
         error = self.setpoint - input_
         self._error_sum += self.ki * error
-        d_input = input_ - (
-            self._last_input if self._last_input is not None else input_
-        )
+        d_input = input_ - (self._last_input if self._last_input is not None else input_)
 
         # compute the proportional term
         self._proportional = self.kp * error

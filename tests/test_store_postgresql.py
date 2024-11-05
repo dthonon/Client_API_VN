@@ -2,13 +2,14 @@
 Test each method of store_postgresql module.
 Also test them as backend to download_vn.
 """
+
 import logging
 from datetime import datetime
 from unittest.mock import patch
 
 import pytest
-from export_vn import transfer_vn
 
+from export_vn import transfer_vn
 from export_vn.download_vn import (
     Entities,
     Families,

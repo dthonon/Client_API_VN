@@ -10,6 +10,7 @@ Properties
 -
 
 """
+
 import logging
 from collections import deque
 from datetime import datetime, timedelta
@@ -191,12 +192,8 @@ class Entities(DownloadVn):
 
     """
 
-    def __init__(
-        self, config, backend, max_retry=None, max_requests=None, max_chunks=None
-    ):
-        super().__init__(
-            config, EntitiesAPI(config), backend, max_retry, max_requests, max_chunks
-        )
+    def __init__(self, config, backend, max_retry=None, max_requests=None, max_chunks=None):
+        super().__init__(config, EntitiesAPI(config), backend, max_retry, max_requests, max_chunks)
         return None
 
 
@@ -208,12 +205,8 @@ class Families(DownloadVn):
 
     """
 
-    def __init__(
-        self, config, backend, max_retry=None, max_requests=None, max_chunks=None
-    ):
-        super().__init__(
-            config, FamiliesAPI(config), backend, max_retry, max_requests, max_chunks
-        )
+    def __init__(self, config, backend, max_retry=None, max_requests=None, max_chunks=None):
+        super().__init__(config, FamiliesAPI(config), backend, max_retry, max_requests, max_chunks)
         return None
 
 
@@ -225,12 +218,8 @@ class Fields(DownloadVn):
 
     """
 
-    def __init__(
-        self, config, backend, max_retry=None, max_requests=None, max_chunks=None
-    ):
-        super().__init__(
-            config, FieldsAPI(config), backend, max_retry, max_requests, max_chunks
-        )
+    def __init__(self, config, backend, max_retry=None, max_requests=None, max_chunks=None):
+        super().__init__(config, FieldsAPI(config), backend, max_retry, max_requests, max_chunks)
         return None
 
     def store(self, opt_params_iter=None):
@@ -279,9 +268,7 @@ class Fields(DownloadVn):
                     field_details = self._api_instance.api_get(field_id)
                     for detail in field_details["data"]:
                         detail["group"] = field_id
-                    logger.debug(
-                        _("Details for field group %s = %s"), field_id, field_details
-                    )
+                    logger.debug(_("Details for field group %s = %s"), field_id, field_details)
                     # Call backend to store groups of fields
                     self._backend.store("field_details", str(i), field_details)
         except self._api_instance.HTTPError:
@@ -304,9 +291,7 @@ class LocalAdminUnits(DownloadVn):
 
     """
 
-    def __init__(
-        self, config, backend, max_retry=None, max_requests=None, max_chunks=None
-    ):
+    def __init__(self, config, backend, max_retry=None, max_requests=None, max_chunks=None):
         super().__init__(
             config,
             LocalAdminUnitsAPI(config),
@@ -352,9 +337,7 @@ class Observations(DownloadVn):
 
     """
 
-    def __init__(
-        self, config, backend, max_retry=None, max_requests=None, max_chunks=None
-    ):
+    def __init__(self, config, backend, max_retry=None, max_requests=None, max_chunks=None):
         super().__init__(
             config,
             ObservationsAPI(config),
@@ -406,23 +389,17 @@ class Observations(DownloadVn):
             for taxo in taxo_groups:
                 if taxo["access_mode"] != "none":
                     id_taxo_group = taxo["id"]
-                    self._backend.increment_log(
-                        self._config.site, id_taxo_group, datetime.now()
-                    )
+                    self._backend.increment_log(self._config.site, id_taxo_group, datetime.now())
                     logger.info(
                         _("Getting observations from taxo_group %s, in _store_list"),
                         id_taxo_group,
                     )
                     if by_specie:
-                        species = SpeciesAPI(self._config).api_list(
-                            {"id_taxo_group": str(id_taxo_group)}
-                        )["data"]
+                        species = SpeciesAPI(self._config).api_list({"id_taxo_group": str(id_taxo_group)})["data"]
                         for specie in species:
                             if specie["is_used"] == "1":
                                 logger.info(
-                                    _(
-                                        "Getting observations from taxo_group %s, specie %s"
-                                    ),
+                                    _("Getting observations from taxo_group %s, specie %s"),
                                     id_taxo_group,
                                     specie["id"],
                                 )
@@ -440,9 +417,7 @@ class Observations(DownloadVn):
                                     self._api_instance.transfer_errors,
                                     self._api_instance.http_status,
                                     (
-                                        _(
-                                            "observations from taxo_group %s, species %s"
-                                        ),
+                                        _("observations from taxo_group %s, species %s"),
                                         id_taxo_group,
                                         specie["id"],
                                     ),
@@ -457,9 +432,7 @@ class Observations(DownloadVn):
                                 )
                     else:
                         timing = perf_counter_ns()
-                        items_dict = self._api_instance.api_list(
-                            id_taxo_group, short_version=short_version
-                        )
+                        items_dict = self._api_instance.api_list(id_taxo_group, short_version=short_version)
                         timing = (perf_counter_ns() - timing) / 1000
                         # Call backend to store list by taxo_group log
                         self._backend.log(
@@ -488,9 +461,7 @@ class Observations(DownloadVn):
 
         return None
 
-    def _store_search(
-        self, id_taxo_group, territorial_unit_ids=None, short_version="1"
-    ):
+    def _store_search(self, id_taxo_group, territorial_unit_ids=None, short_version="1"):
         """Download from VN by API search and store json to file.
 
         Calls biolovision_api to get observations, convert to json and store.
@@ -515,9 +486,7 @@ class Observations(DownloadVn):
                 self._t_units = ReadPostgresql(self._config).read("territorial_units")
             if (self._t_units is None) or (len(self._t_units) == 0):
                 # No territorial_units available, read from API
-                self._t_units = [
-                    [tu] for tu in TerritorialUnitsAPI(self._config).api_list()["data"]
-                ]
+                self._t_units = [[tu] for tu in TerritorialUnitsAPI(self._config).api_list()["data"]]
 
         # GET from API
         logger.debug(
@@ -542,20 +511,14 @@ class Observations(DownloadVn):
                         end_date = datetime.now()
                     else:
                         end_date = self._config.end_date
-                    since = self._backend.increment_get(
-                        self._config.site, id_taxo_group
-                    )
+                    since = self._backend.increment_get(self._config.site, id_taxo_group)
                     if since is None:
                         since = end_date
                     self._backend.increment_log(self._config.site, id_taxo_group, since)
 
                     # When to start download interval
                     start_date = end_date
-                    min_date = (
-                        datetime(1900, 1, 1)
-                        if self._config.start_date is None
-                        else self._config.start_date
-                    )
+                    min_date = datetime(1900, 1, 1) if self._config.start_date is None else self._config.start_date
                     seq = 1
                     pid = PID(
                         kp=self._config.tuning_pid_kp,
@@ -583,44 +546,26 @@ class Observations(DownloadVn):
                                 q_param["entry_date"] = "1"
                             else:
                                 q_param["entry_date"] = "0"
-                        if (
-                            territorial_unit_ids is None
-                            or len(territorial_unit_ids) == 0
-                        ):
+                        if territorial_unit_ids is None or len(territorial_unit_ids) == 0:
                             t_us = self._t_units
                         else:
-                            t_us = [
-                                u
-                                for u in self._t_units
-                                if u[0]["short_name"] in territorial_unit_ids
-                            ]
+                            t_us = [u for u in self._t_units if u[0]["short_name"] in territorial_unit_ids]
                         for t_u in t_us:
                             logger.debug(
-                                _(
-                                    "Getting observations from territorial_unit %s, using API search"
-                                ),
+                                _("Getting observations from territorial_unit %s, using API search"),
                                 t_u[0]["name"],
                             )
                             q_param["location_choice"] = "territorial_unit"
-                            q_param["territorial_unit_ids"] = [
-                                t_u[0]["id_country"] + t_u[0]["short_name"]
-                            ]
+                            q_param["territorial_unit_ids"] = [t_u[0]["id_country"] + t_u[0]["short_name"]]
 
                             timing = perf_counter_ns()
-                            items_dict = self._api_instance.api_search(
-                                q_param, short_version=short_version
-                            )
+                            items_dict = self._api_instance.api_search(q_param, short_version=short_version)
                             timing = (perf_counter_ns() - timing) / 1000
 
                             # Call backend to store results
                             nb_o = self._backend.store(
                                 self._api_instance.controler,
-                                str(id_taxo_group)
-                                + "_"
-                                + t_u[0]["id_country"]
-                                + t_u[0]["short_name"]
-                                + "_"
-                                + str(seq),
+                                str(id_taxo_group) + "_" + t_u[0]["id_country"] + t_u[0]["short_name"] + "_" + str(seq),
                                 items_dict,
                             )
                             # Throttle on max size downloaded during each interval
@@ -668,9 +613,7 @@ class Observations(DownloadVn):
             taxo_groups = TaxoGroupsAPI(self._config).api_list()
             taxo_list = []
             for taxo in taxo_groups["data"]:
-                if (not taxo["name_constant"] in taxo_groups_ex) and (
-                    taxo["access_mode"] != "none"
-                ):
+                if (taxo["name_constant"] not in taxo_groups_ex) and (taxo["access_mode"] != "none"):
                     logger.debug(
                         _("Starting to download observations from taxo_group %s: %s"),
                         taxo["id"],
@@ -730,15 +673,9 @@ class Observations(DownloadVn):
 
         if method == "search":
             for taxo in taxo_list:
-                self._store_search(
-                    taxo, territorial_unit_ids, short_version=short_version
-                )
+                self._store_search(taxo, territorial_unit_ids, short_version=short_version)
         elif method == "list":
-            logger.warning(
-                _(
-                    "Download using list method is deprecated. Please use search method only"
-                )
-            )
+            logger.warning(_("Download using list method is deprecated. Please use search method only"))
             for taxo in taxo_list:
                 self._store_list(taxo, by_specie=by_specie, short_version=short_version)
         else:
@@ -746,9 +683,7 @@ class Observations(DownloadVn):
 
         return None
 
-    def update(
-        self, id_taxo_group=None, since=None, taxo_groups_ex=None, short_version="1"
-    ):
+    def update(self, id_taxo_group=None, since=None, taxo_groups_ex=None, short_version="1"):
         """Download increment from VN by API and store json to file.
 
         Gets previous update date from database and updates since then.
@@ -786,12 +721,8 @@ class Observations(DownloadVn):
             if since is not None:
                 # Valid since date provided or found in database
                 self._backend.increment_log(self._config.site, taxo, datetime.now())
-                logger.info(
-                    _("Getting updates for taxo_group %s since %s"), taxo, since
-                )
-                items_dict = self._api_instance.api_diff(
-                    taxo, since, modification_type="all"
-                )
+                logger.info(_("Getting updates for taxo_group %s since %s"), taxo, since)
+                items_dict = self._api_instance.api_diff(taxo, since, modification_type="all")
 
                 # List by processing type
                 for item in items_dict:
@@ -817,26 +748,19 @@ class Observations(DownloadVn):
                     len(deleted),
                 )
             else:
-                logger.error(
-                    _("No date found for last download, increment not performed")
-                )
+                logger.error(_("No date found for last download, increment not performed"))
 
             # Process updates
             try:
                 if len(updated) > 0:
-                    logger.debug(
-                        _("Creating or updating %d observations"), len(updated)
-                    )
+                    logger.debug(_("Creating or updating %d observations"), len(updated))
                     # Update backend store, in chunks
                     for i in range(
-                        (len(updated) + self._config.tuning_max_list_length - 1)
-                        // self._config.tuning_max_list_length
+                        (len(updated) + self._config.tuning_max_list_length - 1) // self._config.tuning_max_list_length
                     ):
                         s_list = ",".join(
                             updated[
-                                i
-                                * self._config.tuning_max_list_length : (i + 1)
-                                * self._config.tuning_max_list_length
+                                i * self._config.tuning_max_list_length : (i + 1) * self._config.tuning_max_list_length
                             ]
                         )
                         logger.debug(_("Updating slice %s"), s_list)
@@ -861,8 +785,7 @@ class Observations(DownloadVn):
                             self._api_instance.controler,
                             self._api_instance.transfer_errors,
                             self._api_instance.http_status,
-                            _("Creating or updating %d observations")
-                            % (s_list.count(",") + 1),
+                            _("Creating or updating %d observations") % (s_list.count(",") + 1),
                             total_size(items_dict),
                             timing,
                         )
@@ -890,12 +813,8 @@ class Observers(DownloadVn):
 
     """
 
-    def __init__(
-        self, config, backend, max_retry=None, max_requests=None, max_chunks=None
-    ):
-        super().__init__(
-            config, ObserversAPI(config), backend, max_retry, max_requests, max_chunks
-        )
+    def __init__(self, config, backend, max_retry=None, max_requests=None, max_chunks=None):
+        super().__init__(config, ObserversAPI(config), backend, max_retry, max_requests, max_chunks)
         return None
 
 
@@ -908,15 +827,9 @@ class Places(DownloadVn):
 
     """
 
-    def __init__(
-        self, config, backend, max_retry=None, max_requests=None, max_chunks=None
-    ):
-        super().__init__(
-            config, PlacesAPI(config), backend, max_retry, max_requests, max_chunks
-        )
-        self._place_id = (
-            -1
-        )  # Integer index, to comply with taxo_groups, for increment log
+    def __init__(self, config, backend, max_retry=None, max_requests=None, max_chunks=None):
+        super().__init__(config, PlacesAPI(config), backend, max_retry, max_requests, max_chunks)
+        self._place_id = -1  # Integer index, to comply with taxo_groups, for increment log
         self._l_a_units = None
         return None
 
@@ -951,9 +864,7 @@ class Places(DownloadVn):
                 for l_a_u in self._l_a_units:
                     if l_a_u[0]["id_canton"] == id_canton:
                         logger.info(
-                            _(
-                                "Getting places from id_canton %s, id_commune %s, using API list"
-                            ),
+                            _("Getting places from id_canton %s, id_commune %s, using API list"),
                             id_canton,
                             l_a_u[0]["id"],
                         )
@@ -991,9 +902,7 @@ class Places(DownloadVn):
             since = self._backend.increment_get(self._config.site, self._place_id)
         if since is not None:
             # Valid since date provided or found in database
-            self._backend.increment_log(
-                self._config.site, self._place_id, datetime.now()
-            )
+            self._backend.increment_log(self._config.site, self._place_id, datetime.now())
             logger.info(_("Getting updates for places since %s"), since)
             items_dict = self._api_instance.api_diff(since, modification_type="all")
 
@@ -1064,12 +973,8 @@ class Species(DownloadVn):
 
     """
 
-    def __init__(
-        self, config, backend, max_retry=None, max_requests=None, max_chunks=None
-    ):
-        super().__init__(
-            config, SpeciesAPI(config), backend, max_retry, max_requests, max_chunks
-        )
+    def __init__(self, config, backend, max_retry=None, max_requests=None, max_chunks=None):
+        super().__init__(config, SpeciesAPI(config), backend, max_retry, max_requests, max_chunks)
         return None
 
     def store(self):
@@ -1093,12 +998,8 @@ class TaxoGroup(DownloadVn):
 
     """
 
-    def __init__(
-        self, config, backend, max_retry=None, max_requests=None, max_chunks=None
-    ):
-        super().__init__(
-            config, TaxoGroupsAPI(config), backend, max_retry, max_requests, max_chunks
-        )
+    def __init__(self, config, backend, max_retry=None, max_requests=None, max_chunks=None):
+        super().__init__(config, TaxoGroupsAPI(config), backend, max_retry, max_requests, max_chunks)
         return None
 
 
@@ -1110,9 +1011,7 @@ class TerritorialUnits(DownloadVn):
 
     """
 
-    def __init__(
-        self, config, backend, max_retry=None, max_requests=None, max_chunks=None
-    ):
+    def __init__(self, config, backend, max_retry=None, max_requests=None, max_chunks=None):
         super().__init__(
             config,
             TerritorialUnitsAPI(config),
@@ -1132,9 +1031,7 @@ class Validations(DownloadVn):
 
     """
 
-    def __init__(
-        self, config, backend, max_retry=None, max_requests=None, max_chunks=None
-    ):
+    def __init__(self, config, backend, max_retry=None, max_requests=None, max_chunks=None):
         super().__init__(
             config,
             ValidationsAPI(config),

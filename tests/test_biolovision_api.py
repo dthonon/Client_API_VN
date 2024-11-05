@@ -1,6 +1,7 @@
 """
 Test each API call of biolovision_api module.
 """
+
 import json
 import logging
 import time
@@ -57,7 +58,7 @@ class TestVarious:
 
     def test_wrong_api(self):
         """Raise an exception."""
-        with pytest.raises(HTTPError) as excinfo:  # noqa: F841
+        with pytest.raises(HTTPError) as excinfo:
             error = PLACES_API.wrong_api()  # noqa: F841
         logging.debug("HTTPError code %s", excinfo)
 
@@ -173,11 +174,7 @@ class TestSpecies:
         """Get a list of updated species from taxo_group 30."""
         species_list = SPECIES_API.api_list(
             {"id_taxo_group": "30"},
-            optional_headers={
-                "If-Modified-Since": datetime(2019, 2, 1).strftime(
-                    "%a, %d %b %Y %H:%M:%S GMT"
-                )
-            },
+            optional_headers={"If-Modified-Since": datetime(2019, 2, 1).strftime("%a, %d %b %Y %H:%M:%S GMT")},
             # optional_headers={"If-Modified-Since": "Sun, 01 Sep 2019 00:00:00 GMT"},
         )
         logging.debug("Taxo_group 30 ==> {} species".format(len(species_list["data"])))
@@ -187,8 +184,8 @@ class TestSpecies:
         """Get a list of species from taxo_group 1, limited to 1 chunk."""
         with pytest.raises(MaxChunksError) as excinfo:  # noqa: F841
             species_list = SPECIES_API_ERR.api_list(  # noqa: F841
-                {"id_taxo_group": "1"}  # noqa: F841
-            )  # noqa: F841
+                {"id_taxo_group": "1"}
+            )
 
 
 # -----------------------------------
@@ -263,9 +260,7 @@ class TestLocalAdminUnits:
         """Get list of all local admin units."""
         logging.debug("Getting all local admin unit")
         local_admin_units_list = LOCAL_ADMIN_UNITS_API.api_list()
-        logging.debug(
-            "Received %d local admin units", len(local_admin_units_list["data"])
-        )
+        logging.debug("Received %d local admin units", len(local_admin_units_list["data"]))
         assert LOCAL_ADMIN_UNITS_API.transfer_errors == 0
         assert len(local_admin_units_list["data"]) >= 35000
 
@@ -273,27 +268,15 @@ class TestLocalAdminUnits:
         """Get a list of local_admin_units from territorial units."""
         # 39 (Isère)
         logging.debug("Getting local admin unit from {id_canton: 39}")
-        local_admin_units_list = LOCAL_ADMIN_UNITS_API.api_list(
-            opt_params={"id_canton": "39"}
-        )
-        logging.debug(
-            "territorial unit ==> {} local admin unit ".format(
-                len(local_admin_units_list["data"])
-            )
-        )
+        local_admin_units_list = LOCAL_ADMIN_UNITS_API.api_list(opt_params={"id_canton": "39"})
+        logging.debug("territorial unit ==> {} local admin unit ".format(len(local_admin_units_list["data"])))
         assert LOCAL_ADMIN_UNITS_API.transfer_errors == 0
         assert len(local_admin_units_list["data"]) >= 534
         assert local_admin_units_list["data"][0]["name"] == "Abrets (Les)"
         # 07 (Ardèche)
         logging.debug("Getting local admin unit from {id_canton: 07}")
-        local_admin_units_list = LOCAL_ADMIN_UNITS_API.api_list(
-            opt_params={"id_canton": "07"}
-        )
-        logging.debug(
-            "territorial unit ==> {} local admin unit ".format(
-                len(local_admin_units_list["data"])
-            )
-        )
+        local_admin_units_list = LOCAL_ADMIN_UNITS_API.api_list(opt_params={"id_canton": "07"})
+        logging.debug("territorial unit ==> {} local admin unit ".format(len(local_admin_units_list["data"])))
         assert LOCAL_ADMIN_UNITS_API.transfer_errors == 0
         assert len(local_admin_units_list["data"]) >= 340
         assert local_admin_units_list["data"][0]["name"] == "Accons"
@@ -323,7 +306,7 @@ class TestPlaces:
                     "coord_lon": "5.8792190569144",
                     "created_by": "30",
                     "created_date": {
-                        "#text": "samedi 24 juin 2017, 04:34:53",
+                        "#text": "samedi, 24. juin 2017, 04:34:53",
                         "@ISO8601": "2017-06-24T04:34:53+02:00",
                         "@notime": "0",
                         "@offset": "7200",
@@ -335,7 +318,7 @@ class TestPlaces:
                     "is_private": "0",
                     "last_updated_by": "30",
                     "last_updated_date": {
-                        "#text": "mercredi 27 juin 2018, 04:24:34",
+                        "#text": "mercredi, 27. juin 2018, 04:24:34",
                         "@ISO8601": "2018-06-27T04:24:34+02:00",
                         "@notime": "0",
                         "@offset": "7200",
@@ -361,7 +344,7 @@ class TestPlaces:
                     "coord_lon": "4.7715669855908",
                     "created_by": "30",
                     "created_date": {
-                        "#text": "samedi 24 juin 2017, 04:35:37",
+                        "#text": "samedi, 24. juin 2017, 04:35:37",
                         "@ISO8601": "2017-06-24T04:35:37+02:00",
                         "@notime": "0",
                         "@offset": "7200",
@@ -373,7 +356,7 @@ class TestPlaces:
                     "is_private": "0",
                     "last_updated_by": "30",
                     "last_updated_date": {
-                        "#text": "mercredi 27 juin 2018, 04:24:34",
+                        "#text": "mercredi, 27. juin 2018, 04:24:34",
                         "@ISO8601": "2018-06-27T04:24:34+02:00",
                         "@notime": "0",
                         "@offset": "7200",
@@ -395,10 +378,7 @@ class TestPlaces:
         logging.debug("Received %d places", len(places_list["data"]))
         assert PLACES_API.transfer_errors == 0
         assert len(places_list["data"]) >= 1900000
-        assert (
-            places_list["data"][1000]["name"]
-            == "Passy-en-Valois - sans lieu-dit défini"
-        )
+        assert places_list["data"][1000]["name"] == "Passy-en-Valois - sans lieu-dit défini"
 
     def test_places_diff(self):
         """Get list of all places."""
@@ -410,7 +390,7 @@ class TestPlaces:
         #     }
         # )
         since = (datetime.now() - timedelta(days=1)).strftime("%H:%M:%S %d.%m.%Y")
-        logging.debug("Getting updates since {}".format(since))
+        logging.debug(f"Getting updates since {since}")
         places_list = PLACES_API.api_diff(since)
         logging.debug("Received %d places", len(places_list))
         assert PLACES_API.transfer_errors == 0
@@ -420,9 +400,7 @@ class TestPlaces:
         # Isère
         place = "14693"
         places_list = PLACES_API.api_list({"id_commune": place})
-        logging.debug(
-            "local admin unit {} ==> {} place ".format(place, len(places_list["data"]))
-        )
+        logging.debug("local admin unit {} ==> {} place ".format(place, len(places_list["data"])))
         assert PLACES_API.transfer_errors == 0
         assert len(places_list["data"]) >= 164
         assert len(places_list["data"]) <= 200
@@ -430,9 +408,7 @@ class TestPlaces:
         # Ardèche
         place = "2096"
         places_list = PLACES_API.api_list({"id_commune": place})
-        logging.debug(
-            "local admin unit {} ==> {} place ".format(place, len(places_list["data"]))
-        )
+        logging.debug("local admin unit {} ==> {} place ".format(place, len(places_list["data"])))
         assert PLACES_API.transfer_errors == 0
         assert len(places_list["data"]) >= 38
         assert len(places_list["data"]) <= 50
@@ -622,7 +598,7 @@ class TestObservations:
     def test_observations_diff(self):
         """Get list of diffs from last day."""
         since = (datetime.now() - timedelta(days=1)).strftime("%H:%M:%S %d.%m.%Y")
-        logging.debug("Getting updates since {}".format(since))
+        logging.debug(f"Getting updates since {since}")
         diff = OBSERVATIONS_API.api_diff("1", since)
         assert OBSERVATIONS_API.transfer_errors == 0
         assert len(diff) > 0
@@ -641,41 +617,27 @@ class TestObservations:
     def test_observations_list_2_1(self):
         """Get the list of sightings, from taxo_group 1, specie 218."""
         list = OBSERVATIONS_API.api_list("1", id_species="218", short_version="1")
-        logging.debug(
-            "local test_observations_list_3_0 unit {} sightings/forms ".format(
-                len(list)
-            )
-        )
+        logging.debug(f"local test_observations_list_3_0 unit {len(list)} sightings/forms ")
         assert OBSERVATIONS_API.transfer_errors == 0
         assert len(list["data"]) > 1
 
     def test_observations_list_3_0(self):
         """Get the list of sightings, from taxo_group 1, specie 153."""
         list = OBSERVATIONS_API.api_list("1", id_species="153")
-        logging.debug(
-            "local test_observations_list_3_0 unit {} sightings/forms ".format(
-                len(list)
-            )
-        )
+        logging.debug(f"local test_observations_list_3_0 unit {len(list)} sightings/forms ")
         assert OBSERVATIONS_API.transfer_errors == 0
         assert len(list["data"]) > 1
 
     def test_observations_list_3_1(self):
         """Get the list of sightings, from taxo_group 1, specie 153."""
         list = OBSERVATIONS_API.api_list("1", id_species="153", short_version="1")
-        logging.debug(
-            "local test_observations_list_3_0 unit {} sightings/forms ".format(
-                len(list)
-            )
-        )
+        logging.debug(f"local test_observations_list_3_0 unit {len(list)} sightings/forms ")
         assert OBSERVATIONS_API.transfer_errors == 0
         assert len(list["data"]) > 1
 
     def test_observations_list_list(self):
         """Get the list of sightings, from taxo_group 1 523219."""
-        list = OBSERVATIONS_API.api_list(
-            "1", id_sightings_list="523219,523550", short_version="1"
-        )
+        list = OBSERVATIONS_API.api_list("1", id_sightings_list="523219,523550", short_version="1")
         logging.debug(json.dumps(list, sort_keys=True, indent=4))
 
     def test_observations_get(self):
@@ -686,83 +648,39 @@ class TestObservations:
         assert sighting["data"]["sightings"][0]["place"]["municipality"] == "Grenoble"
         assert sighting["data"]["sightings"][0]["place"]["country"] == ""
         assert sighting["data"]["sightings"][0]["place"]["altitude"] == "215"
-        assert (
-            sighting["data"]["sightings"][0]["place"]["coord_lat"] == "45.187677239404"
-        )
-        assert (
-            sighting["data"]["sightings"][0]["place"]["coord_lon"] == "5.735372035327"
-        )
-        assert (
-            sighting["data"]["sightings"][0]["place"]["name"]
-            == "Museum (Parc du Museum)"
-        )
+        assert sighting["data"]["sightings"][0]["place"]["coord_lat"] == "45.187677239404"
+        assert sighting["data"]["sightings"][0]["place"]["coord_lon"] == "5.735372035327"
+        assert sighting["data"]["sightings"][0]["place"]["name"] == "Museum (Parc du Museum)"
         assert sighting["data"]["sightings"][0]["place"]["@id"] == "927830"
         assert sighting["data"]["sightings"][0]["place"]["loc_precision"] == "750"
         assert sighting["data"]["sightings"][0]["place"]["place_type"] == "place"
         assert sighting["data"]["sightings"][0]["date"]["@notime"] == "1"
         assert sighting["data"]["sightings"][0]["date"]["@offset"] == "7200"
-        assert (
-            sighting["data"]["sightings"][0]["date"]["@ISO8601"]
-            == "2018-09-15T00:00:00+02:00"
-        )
+        assert sighting["data"]["sightings"][0]["date"]["@ISO8601"] == "2018-09-15T00:00:00+02:00"
         assert sighting["data"]["sightings"][0]["date"]["@timestamp"] == "1536962400"
-        assert (
-            sighting["data"]["sightings"][0]["date"]["#text"]
-            == "samedi 15 septembre 2018"
-        )
-        assert (
-            sighting["data"]["sightings"][0]["species"]["latin_name"]
-            == "Anas platyrhynchos"
-        )
+        assert sighting["data"]["sightings"][0]["date"]["#text"] == "samedi, 15. septembre 2018"
+        assert sighting["data"]["sightings"][0]["species"]["latin_name"] == "Anas platyrhynchos"
         assert sighting["data"]["sightings"][0]["species"]["rarity"] == "verycommon"
         assert sighting["data"]["sightings"][0]["species"]["sys_order"] == "262"
         assert sighting["data"]["sightings"][0]["species"]["name"] == "Canard colvert"
         assert sighting["data"]["sightings"][0]["species"]["@id"] == "86"
         assert sighting["data"]["sightings"][0]["species"]["taxonomy"] == "1"
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["estimation_code"]
-            == "MINIMUM"
-        )
+        assert sighting["data"]["sightings"][0]["observers"][0]["estimation_code"] == "MINIMUM"
         assert sighting["data"]["sightings"][0]["observers"][0]["count"] == "15"
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["id_sighting"]
-            == "71846872"
-        )
+        assert sighting["data"]["sightings"][0]["observers"][0]["id_sighting"] == "71846872"
         assert (
             sighting["data"]["sightings"][0]["observers"][0]["insert_date"]["#text"]
-            == "samedi 15 septembre 2018, 19:44:58"
+            == "samedi, 15. septembre 2018, 19:44:58"
         )
         assert (
-            sighting["data"]["sightings"][0]["observers"][0]["insert_date"]["@ISO8601"]
-            == "2018-09-15T19:44:58+02:00"
+            sighting["data"]["sightings"][0]["observers"][0]["insert_date"]["@ISO8601"] == "2018-09-15T19:44:58+02:00"
         )
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["insert_date"]["@notime"]
-            == "0"
-        )
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["insert_date"]["@offset"]
-            == "7200"
-        )
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["insert_date"][
-                "@timestamp"
-            ]
-            == "1537033498"
-        )
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["atlas_grid_name"]
-            == "E091N645"
-        )
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["name"] == "Daniel Thonon"
-        )
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["medias"][0][
-                "media_is_hidden"
-            ]
-            == "0"
-        )
+        assert sighting["data"]["sightings"][0]["observers"][0]["insert_date"]["@notime"] == "0"
+        assert sighting["data"]["sightings"][0]["observers"][0]["insert_date"]["@offset"] == "7200"
+        assert sighting["data"]["sightings"][0]["observers"][0]["insert_date"]["@timestamp"] == "1537033498"
+        assert sighting["data"]["sightings"][0]["observers"][0]["atlas_grid_name"] == "E091N645"
+        assert sighting["data"]["sightings"][0]["observers"][0]["name"] == "Daniel Thonon"
+        assert sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["media_is_hidden"] == "0"
         assert (
             sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["filename"]
             == "3_1537024802877-15194452-5272.jpg"
@@ -772,83 +690,37 @@ class TestObservations:
             == "https://cdnmedia3.biolovision.net/data.biolovision.net/2018-09"
         )
         assert (
-            sighting["data"]["sightings"][0]["observers"][0]["medias"][0][
-                "insert_date"
-            ]["#text"]
-            == "lundi 12 décembre 2022, 00:24:50"
+            sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["insert_date"]["#text"]
+            == "lundi, 12. décembre 2022, 00:24:50"
         )
         assert (
-            sighting["data"]["sightings"][0]["observers"][0]["medias"][0][
-                "insert_date"
-            ]["@ISO8601"]
+            sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["insert_date"]["@ISO8601"]
             == "2022-12-12T00:24:50+01:00"
         )
+        assert sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["insert_date"]["@notime"] == "0"
+        assert sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["insert_date"]["@offset"] == "3600"
         assert (
-            sighting["data"]["sightings"][0]["observers"][0]["medias"][0][
-                "insert_date"
-            ]["@notime"]
-            == "0"
+            sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["insert_date"]["@timestamp"] == "1670801090"
         )
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["medias"][0][
-                "insert_date"
-            ]["@offset"]
-            == "3600"
-        )
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["medias"][0][
-                "insert_date"
-            ]["@timestamp"]
-            == "1670801090"
-        )
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["metadata"]
-            == ""
-        )
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["type"]
-            == "PHOTO"
-        )
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["@id"]
-            == "7537102"
-        )
+        assert sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["metadata"] == ""
+        assert sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["type"] == "PHOTO"
+        assert sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["@id"] == "7537102"
         assert sighting["data"]["sightings"][0]["observers"][0]["@uid"] == "11675"
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["precision"] == "precise"
-        )
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["id_universal"]
-            == "65_71846872"
-        )
+        assert sighting["data"]["sightings"][0]["observers"][0]["precision"] == "precise"
+        assert sighting["data"]["sightings"][0]["observers"][0]["id_universal"] == "65_71846872"
         assert sighting["data"]["sightings"][0]["observers"][0]["traid"] == "8583"
         assert (
             sighting["data"]["sightings"][0]["observers"][0]["timing"]["#text"]
-            == "samedi 15 septembre 2018, 17:19:00"
+            == "samedi, 15. septembre 2018, 17:19:00"
         )
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["timing"]["@ISO8601"]
-            == "2018-09-15T17:19:00+02:00"
-        )
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["timing"]["@notime"] == "0"
-        )
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["timing"]["@offset"]
-            == "7200"
-        )
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["timing"]["@timestamp"]
-            == "1537024740"
-        )
+        assert sighting["data"]["sightings"][0]["observers"][0]["timing"]["@ISO8601"] == "2018-09-15T17:19:00+02:00"
+        assert sighting["data"]["sightings"][0]["observers"][0]["timing"]["@notime"] == "0"
+        assert sighting["data"]["sightings"][0]["observers"][0]["timing"]["@offset"] == "7200"
+        assert sighting["data"]["sightings"][0]["observers"][0]["timing"]["@timestamp"] == "1537024740"
         assert sighting["data"]["sightings"][0]["observers"][0]["altitude"] == "215"
         assert sighting["data"]["sightings"][0]["observers"][0]["source"] == "WEB"
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["coord_lat"] == "45.18724"
-        )
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["coord_lon"] == "5.735458"
-        )
+        assert sighting["data"]["sightings"][0]["observers"][0]["coord_lat"] == "45.18724"
+        assert sighting["data"]["sightings"][0]["observers"][0]["coord_lon"] == "5.735458"
         assert sighting["data"]["sightings"][0]["observers"][0]["flight_number"] == "1"
         assert sighting["data"]["sightings"][0]["observers"][0]["anonymous"] == "0"
         assert sighting["data"]["sightings"][0]["observers"][0]["@id"] == "8583"
@@ -861,10 +733,7 @@ class TestObservations:
         assert sighting["data"]["sightings"][0]["place"]["lat"] == "45.187677239404"
         assert sighting["data"]["sightings"][0]["place"]["lon"] == "5.735372035327"
         assert sighting["data"]["sightings"][0]["place"]["loc_precision"] == "750"
-        assert (
-            sighting["data"]["sightings"][0]["place"]["name"]
-            == "Museum (Parc du Museum)"
-        )
+        assert sighting["data"]["sightings"][0]["place"]["name"] == "Museum (Parc du Museum)"
         assert sighting["data"]["sightings"][0]["place"]["place_type"] == "place"
         assert sighting["data"]["sightings"][0]["date"]["@notime"] == "1"
         assert sighting["data"]["sightings"][0]["date"]["@offset"] == "7200"
@@ -872,29 +741,12 @@ class TestObservations:
         assert sighting["data"]["sightings"][0]["species"]["@id"] == "86"
         assert sighting["data"]["sightings"][0]["species"]["rarity"] == "verycommon"
         assert sighting["data"]["sightings"][0]["species"]["taxonomy"] == "1"
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["estimation_code"]
-            == "MINIMUM"
-        )
+        assert sighting["data"]["sightings"][0]["observers"][0]["estimation_code"] == "MINIMUM"
         assert sighting["data"]["sightings"][0]["observers"][0]["count"] == "15"
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["id_sighting"]
-            == "71846872"
-        )
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["id_universal"]
-            == "65_71846872"
-        )
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["insert_date"]
-            == "1537033498"
-        )
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["medias"][0][
-                "media_is_hidden"
-            ]
-            == "0"
-        )
+        assert sighting["data"]["sightings"][0]["observers"][0]["id_sighting"] == "71846872"
+        assert sighting["data"]["sightings"][0]["observers"][0]["id_universal"] == "65_71846872"
+        assert sighting["data"]["sightings"][0]["observers"][0]["insert_date"] == "1537033498"
+        assert sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["media_is_hidden"] == "0"
         assert (
             sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["filename"]
             == "3_1537024802877-15194452-5272.jpg"
@@ -903,46 +755,20 @@ class TestObservations:
             sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["path"]
             == "https://cdnmedia3.biolovision.net/data.biolovision.net/2018-09"
         )
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["insert_date"]
-            == "1670801090"
-        )
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["type"]
-            == "PHOTO"
-        )
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["@id"]
-            == "7537102"
-        )
+        assert sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["insert_date"] == "1670801090"
+        assert sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["type"] == "PHOTO"
+        assert sighting["data"]["sightings"][0]["observers"][0]["medias"][0]["@id"] == "7537102"
         assert sighting["data"]["sightings"][0]["observers"][0]["@uid"] == "11675"
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["precision"] == "precise"
-        )
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["id_universal"]
-            == "65_71846872"
-        )
+        assert sighting["data"]["sightings"][0]["observers"][0]["precision"] == "precise"
+        assert sighting["data"]["sightings"][0]["observers"][0]["id_universal"] == "65_71846872"
         assert sighting["data"]["sightings"][0]["observers"][0]["traid"] == "8583"
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["timing"]["@notime"] == "0"
-        )
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["timing"]["@offset"]
-            == "7200"
-        )
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["timing"]["@timestamp"]
-            == "1537024740"
-        )
+        assert sighting["data"]["sightings"][0]["observers"][0]["timing"]["@notime"] == "0"
+        assert sighting["data"]["sightings"][0]["observers"][0]["timing"]["@offset"] == "7200"
+        assert sighting["data"]["sightings"][0]["observers"][0]["timing"]["@timestamp"] == "1537024740"
         assert sighting["data"]["sightings"][0]["observers"][0]["altitude"] == "215"
         assert sighting["data"]["sightings"][0]["observers"][0]["source"] == "WEB"
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["coord_lat"] == "45.18724"
-        )
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["coord_lon"] == "5.735458"
-        )
+        assert sighting["data"]["sightings"][0]["observers"][0]["coord_lat"] == "45.18724"
+        assert sighting["data"]["sightings"][0]["observers"][0]["coord_lon"] == "5.735458"
         assert sighting["data"]["sightings"][0]["observers"][0]["flight_number"] == "1"
         assert sighting["data"]["sightings"][0]["observers"][0]["@id"] == "8583"
         assert sighting["data"]["sightings"][0]["observers"][0]["version"] == "0"
@@ -984,28 +810,17 @@ class TestObservations:
         sighting = OBSERVATIONS_API.api_get(obs, short_version="1")
         assert OBSERVATIONS_API.transfer_errors == 0
         assert sighting["data"]["sightings"][0]["observers"][0]["id_sighting"] == obs
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["id_universal"]
-            == "65_138181516"
-        )
+        assert sighting["data"]["sightings"][0]["observers"][0]["id_universal"] == "65_138181516"
         # Update
-        sighting["data"]["sightings"][0]["observers"][0][
-            "hidden_comment"
-        ] = "API update test"
+        sighting["data"]["sightings"][0]["observers"][0]["hidden_comment"] = "API update test"
         OBSERVATIONS_API.api_update(obs, sighting)
         assert OBSERVATIONS_API.transfer_errors == 0
         # Check
         sighting = OBSERVATIONS_API.api_get(obs, short_version="1")
         assert OBSERVATIONS_API.transfer_errors == 0
         assert sighting["data"]["sightings"][0]["observers"][0]["id_sighting"] == obs
-        assert (
-            sighting["data"]["sightings"][0]["observers"][0]["id_universal"]
-            == "65_138181516"
-        )
-        assert (
-            int(sighting["data"]["sightings"][0]["observers"][0]["update_date"])
-            > time.time() - 60
-        )
+        assert sighting["data"]["sightings"][0]["observers"][0]["id_universal"] == "65_138181516"
+        assert int(sighting["data"]["sightings"][0]["observers"][0]["update_date"]) > time.time() - 60
 
     # @pytest.mark.skipif(SITE == "t07", reason="SITE t07 not supported")
     # def test_observations_crud_s(self):
@@ -1127,38 +942,21 @@ class TestObservations:
 
         # Read created observation
         sighting = OBSERVATIONS_API.api_get(obs_1, short_version="1")
-        assert (
-            sighting["data"]["forms"][0]["sightings"][0]["observers"][0]["id_sighting"]
-            == obs_1
-        )
-        assert (
-            sighting["data"]["forms"][0]["sightings"][0]["observers"][0]["comment"]
-            == "TEST API !!! à supprimer !!!"
-        )
+        assert sighting["data"]["forms"][0]["sightings"][0]["observers"][0]["id_sighting"] == obs_1
+        assert sighting["data"]["forms"][0]["sightings"][0]["observers"][0]["comment"] == "TEST API !!! à supprimer !!!"
 
         # Update
         sighting["data"] = sighting["data"]["forms"][0]
         logging.debug(sighting)
-        sighting["data"]["sightings"][0]["observers"][0][
-            "hidden_comment"
-        ] = "API update test"
+        sighting["data"]["sightings"][0]["observers"][0]["hidden_comment"] = "API update test"
         OBSERVATIONS_API.api_update(obs_1, sighting)
         # Check
         sighting = OBSERVATIONS_API.api_get(obs_1, short_version="1")
-        assert (
-            sighting["data"]["forms"][0]["sightings"][0]["observers"][0][
-                "hidden_comment"
-            ]
-            == "API update test"
-        )
+        assert sighting["data"]["forms"][0]["sightings"][0]["observers"][0]["hidden_comment"] == "API update test"
 
         # Delete test observation
-        id_form_universal = sighting["data"]["forms"][0]["sightings"][0]["observers"][
-            0
-        ]["id_form_universal"]
+        id_form_universal = sighting["data"]["forms"][0]["sightings"][0]["observers"][0]["id_form_universal"]
         res = OBSERVATIONS_API.api_delete(obs_1)
         logging.debug(res)
-        res = OBSERVATIONS_API.api_delete_list(
-            data={"id_form_universal": id_form_universal}
-        )
+        res = OBSERVATIONS_API.api_delete_list(data={"id_form_universal": id_form_universal})
         logging.debug(res)
