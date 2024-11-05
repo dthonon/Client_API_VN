@@ -89,3 +89,7 @@ Installation requires the following python module::
     pip
 
 All other python dependencies are managed by pip install.
+
+---
+
+Repository initiated with [fpgmaas/cookiecutter-poetry](https://github.com/fpgmaas/cookiecutter-poetry).
