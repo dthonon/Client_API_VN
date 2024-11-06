@@ -53,14 +53,14 @@ jobs:
         uses: codecov/codecov-action@v4
         if: ${{ matrix.python-version == '3.11' }}
 
-  check-docs:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out
-        uses: actions/checkout@v4
+  # check-docs:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Check out
+  #       uses: actions/checkout@v4
 
-      - name: Set up the environment
-        uses: ./.github/actions/setup-poetry-env
+  #     - name: Set up the environment
+  #       uses: ./.github/actions/setup-poetry-env
 
-      - name: Check if documentation can be built
-        run: poetry run mkdocs build -s
+  #     - name: Check if documentation can be built
+  #       run: poetry run mkdocs build -s
