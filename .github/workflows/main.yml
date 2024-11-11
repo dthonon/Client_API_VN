@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+  permissions:
+    contents: write
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
 
@@ -53,29 +55,7 @@ jobs:
         uses: codecov/codecov-action@v4
         if: ${{ matrix.python-version == '3.11' }}
 
-  check-docs:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out
-        uses: actions/checkout@v4
-
-      - name: Set up the environment
-        uses: ./.github/actions/setup-poetry-env
-
-      - name: Check if documentation can be built
-        run: poetry run mkdocs build -s
-
-  publish:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out
-        uses: actions/checkout@v4
-
-      - name: Set up the environment
-        uses: ./.github/actions/setup-poetry-env
-
   deploy-docs:
-    needs: publish
     runs-on: ubuntu-latest
     steps:
       - name: Check out

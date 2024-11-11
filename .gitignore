@@ -182,3 +182,5 @@ monkeytype.sqlite3
 docs/api/*
 docs/_rst/*
 cover/*
+
+.ruff_cache
