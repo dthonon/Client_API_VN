@@ -4,10 +4,11 @@ on:
   push:
     branches:
       - main
-  permissions:
-    contents: write
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: write
 
 jobs:
   quality:
