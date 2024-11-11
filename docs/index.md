@@ -41,24 +41,24 @@ Windows:
     Add python script directory to Path, as described in
     `How to add Python to Windows PATH <https://datatofish.com/add-python-to-windows-path/>`_.
 
-Linux: add the following debian packages::
+Linux: add the following debian packages:
 
     sudo apt -y install build-essential python3-dev python3-venv
 
-Create a python virtual environment, activate it and update basic tools::
+Create a python virtual environment, activate it and update basic tools:
 
     python3 -m venv env_VN
     source env_VN/bin/activate
     python -m pip install --upgrade pip
 
-Install from PyPI::
+Install from PyPI:
 
     pip install Client-API-VN
 
 ### Installation - Docker
 
 These instructions present the steps required to install the
-Docker applications::
+Docker applications:
 
     docker pull dthonon/client-api-vn
     docker run --name xfer_vn \
@@ -78,17 +78,23 @@ See [transfer_vn](apps/transfer_vn.md) for more information.
 
 ### Getting Started - update_vn
 
-See <https://dthonon.github.io/Client_API_VN/> for more information.
+See [update_vn](apps/update_vn.md) for more information.
+
+### Getting Started - validate_vn
+
+See [validate_vn](apps/validate_vn.md) for more information.
 
 ### Prerequisites
 
-For Linux and Postgresql installation, refer to <https://dthonon.github.io/Client_API_VN/>.
+For Linux and Postgresql installation, refer to [server installation](apps/server_install.md).
 
-Installation requires the following python module::
+Installation requires the following python module:
 
-    pip
+```bash
+pip
+```
 
-All other python dependencies are managed by pip install.
+All other python dependencies are managed by `make install`.
 
 ---
 

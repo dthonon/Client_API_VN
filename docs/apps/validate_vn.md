@@ -14,7 +14,7 @@ The application runs as:
 ```bash
 validate_vn options config
 ```
-where::
+where:
 
     options  command line options described below
     config   YAML file, located in $HOME directory, described in sample file
