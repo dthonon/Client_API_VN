@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Client_API_VN"
-version = "3.0.0a2"
+version = "3.0.0b0"
 description = "Python API to Biolovision API and applications using it."
 authors = ["Daniel Thonon <d.thonon9@outlook.com>"]
 repository = "https://github.com/dthonon/Client_API_VN"
@@ -64,6 +64,7 @@ types-psycopg2 = ">=2.9"
 mkdocs = ">=1.6"
 mkdocs-material = ">=9"
 mkdocstrings = { extras = ["python"], version = ">=0.26" }
+Pygments = ">=2.18"
 
 [tool.poetry.scripts]
 transfer_vn = "export_vn.transfer_vn:run"

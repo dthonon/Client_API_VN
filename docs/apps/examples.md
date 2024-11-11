@@ -6,7 +6,6 @@ The following SQL code creates view on the database for Nature-isere.
 It can be used as a base for defining views on the database, for export.
 
 ```psql
-
 --
 -- Initialisation de la base pour export vers nature_isere
 --  - Création des roles (mots de passes à définir). xfer38 est créé lors de l'installation du serveur debian
@@ -22,13 +21,13 @@ It can be used as a base for defining views on the database, for export.
 -- Role: lpo_isere
 
 CREATE ROLE lpo_isere WITH
-NOLOGIN
-NOSUPERUSER
-INHERIT
-NOCREATEDB
-NOCREATEROLE
-NOREPLICATION;
-GRANT lpo_isere TO xfer38;
+    NOLOGIN
+    NOSUPERUSER
+    INHERIT
+    NOCREATEDB
+    NOCREATEROLE
+    NOREPLICATION;
+    GRANT lpo_isere TO xfer38;
 
 -- Role: nature_isere
 -- DROP ROLE nature_isere;

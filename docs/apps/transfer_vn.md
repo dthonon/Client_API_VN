@@ -5,14 +5,17 @@
 ### Initial setup
 
 Initialize the sample YAML file in your HOME directory and edit with
-your local details. The YAML file is self documented::
+your local details. The YAML file is self documented:
 
-    transfer_vn --init .evn_your_site.yaml
-    editor $HOME/.evn_your_site.yaml
+```bash
+transfer_vn --init .evn_your_site.yaml
+editor $HOME/.evn_your_site.yaml
+```
 
-Create the database and tables::
-
-    transfer_vn --db_create --json_tables_create --col_tables_create .evn_your_site.yaml
+Create the database and tables:
+```bash
+transfer_vn --db_create --json_tables_create --col_tables_create .evn_your_site.yaml
+```
 
 ### Running the application
 
@@ -32,39 +35,41 @@ restart `transfer_vn --full` on part of the database.
 
 Beware that, depending on the volume of observations,
 this can take several hours. We recommend starting with a small taxonomic
-group first::
-
-    transfer_vn --full .evn_your_site.yaml
+group first:
+```bash
+transfer_vn --full .evn_your_site.yaml
+```
 
 After this full download, data can be updated. For observations, only new,
 modified or deleted observations are downloaded. For other controlers, a full
 download is always performed. Each controler runs on its own schedule,
 defined in the YAML configuration file. This step needs to be performed
 after each `--full` execution or YAML file modification. To create or update,
-after modifying the configuration file, the schedule::
-
-    transfer_vn --schedule .evn_your_site.yaml
-
-Once this is done, you can update the database with new observations::
-
-    transfer_vn --update .evn_your_site.yaml
-
+after modifying the configuration file, the schedule:
+```bash
+transfer_vn --schedule .evn_your_site.yaml
+```
+Once this is done, you can update the database with new observations:
+```bash
+transfer_vn --update .evn_your_site.yaml
+```
 This can be done by cron, every hour for example. At each run, all scheduled
 tasks are performed. Note: you must wait until the first scheduled task has
 expired for a transfer to be carried out. With the default schedule, you must
 therefore wait for the next round hour `--schedule`. It must run at least
 once a week. The virtual environment must be activated in the cron job, for
-example::
-
-    0 * * * * echo 'source client_api_vn/env_VN/bin/activate;cd client_api_vn/;transfer_vn --update .evn_your_site.yaml --verbose'| /bin/bash > /dev/null
+example:
+```bash
+0 * * * * echo 'source client_api_vn/env_VN/bin/activate;cd client_api_vn/;transfer_vn --update .evn_your_site.yaml --verbose'| /bin/bash > /dev/null
+```
 
 ## Reference
 
-The application runs as::
-
-    transfer_vn options config
-
-where::
+The application runs as:
+```bash
+transfer_vn options config
+```
+where:
 
     options  command line options described below
     config   YAML file, located in $HOME directory, described in sample file

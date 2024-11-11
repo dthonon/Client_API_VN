@@ -5,7 +5,7 @@ site_description: This is a template repository for Python projects that use Poe
 site_author: Daniel Thonon
 edit_uri: edit/main/docs/
 repo_name: dthonon/Client_API_VN
-copyright: Maintained by <a href="https://dthonon.com">Daniel Thonon</a>.
+copyright: Maintained by <a href="mailto:d.thonon9@outlook.com">Daniel Thonon</a>.
 
 nav:
   - Home: index.md
@@ -60,7 +60,16 @@ extra:
       link: https://pypi.org/project/Client_API_VN
 
 markdown_extensions:
+  - markdown.extensions.tables
   - toc:
       permalink: true
   - pymdownx.arithmatex:
       generic: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.details
