@@ -58,7 +58,7 @@ example::
 
     0 * * * * echo 'source client_api_vn/env_VN/bin/activate;cd client_api_vn/;transfer_vn --update .evn_your_site.yaml --verbose'| /bin/bash > /dev/null
 
-### Command-line options - transfer_vn
+## Reference
 
 The application runs as::
 
@@ -69,19 +69,19 @@ where::
     options  command line options described below
     config   YAML file, located in $HOME directory, described in sample file
 
--h, --help Prints help and exits
---version Print version number
---verbose Increase output verbosity
---quiet Reduce output verbosity
---init Initialize the YAML configuration file
---db_drop Delete if exists database and roles
---db_create Create database and roles
---json_tables_create Create or recreate JSON tables in import schema
---col_tables_create Create or recreate colums based tables
---migrate Migrates the JSON import schema to latest version
---full Perform a full download
---update Perform an incremental download
---schedule Create or update the incremental update schedule
---status Print downloading status (schedule, errors...)
---count Count observations by site and taxo_group
---profile Gather and print profiling times
+    -h, --help Prints help and exits
+    --version Print version number
+    --verbose Increase output verbosity
+    --quiet Reduce output verbosity
+    --init Initialize the YAML configuration file
+    --db_drop Delete if exists database and roles
+    --db_create Create database and roles
+    --json_tables_create Create or recreate JSON tables in import schema
+    --col_tables_create Create or recreate colums based tables
+    --migrate Migrates the JSON import schema to latest version
+    --full Perform a full download
+    --update Perform an incremental download
+    --schedule Create or update the incremental update schedule
+    --status Print downloading status (schedule, errors...)
+    --count Count observations by site and taxo_group
+    --profile Gather and print profiling times
