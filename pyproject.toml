@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Client_API_VN"
-version = "3.0.0a1"
+version = "3.0.0a2"
 description = "Python API to Biolovision API and applications using it."
 authors = ["Daniel Thonon <d.thonon9@outlook.com>"]
 repository = "https://github.com/dthonon/Client_API_VN"
