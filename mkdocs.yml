@@ -31,8 +31,8 @@ plugins:
             - sys.path.append('../')
 theme:
   name: material
-  feature:
-    tabs: true
+  # feature:
+  #   tabs: true
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -48,6 +48,7 @@ theme:
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
+  logo: img/logo_vn2pg.png
   icon:
     repo: fontawesome/brands/github
 
