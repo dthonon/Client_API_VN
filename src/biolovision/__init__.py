@@ -5,7 +5,7 @@ from pathlib import Path
 __version__ = "unknown"
 
 try:
-    __version__ = importlib.metadata.version("my_package_name")
+    __version__ = importlib.metadata.version("Client_API_VN")
 except importlib.metadata.PackageNotFoundError:
     # Fall back on getting it from a local pyproject.toml.
     # This works in a development environment where the
