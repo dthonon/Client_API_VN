@@ -1,4 +1,5 @@
 poetry.lock: pyproject.toml
+	@echo "🚀 Updating lockfile"
 	poetry lock
 
 .PHONY: install
@@ -16,8 +17,8 @@ check: ## Run code quality tools.
 	@poetry run pre-commit run -a
 	@echo "🚀 Static type checking: Running mypy"
 	@poetry run mypy
-	# @echo "🚀 Checking for obsolete dependencies: Running deptry"
-	# @poetry run deptry .
+	@echo "🚀 Checking for obsolete dependencies: Running deptry"
+	@poetry run deptry .
 
 .PHONY: test
 test: ## Test the code with pytest

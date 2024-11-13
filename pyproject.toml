@@ -38,6 +38,7 @@ jsonschema = ">=4.23"
 psutil = ">=6.1"
 psycopg2-binary = ">=2.9.10"
 pyproj = ">=3.7"
+pytz = ">=2024"
 requests = ">=2.32"
 requests-oauthlib = ">=2.0"
 SQLAlchemy = "<2"
@@ -88,7 +89,6 @@ ignore_errors = "True"
 # warn_return_any = "True"
 # warn_unused_ignores = "True"
 # show_error_codes = "True"
-
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -183,3 +183,6 @@ source = ["src"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101"]
+
+[tool.deptry]
+known_first_party = ["biolovision", "export_vn"]
