@@ -3,8 +3,6 @@ name = "Client_API_VN"
 version = "3.0.0rc0"
 description = "Python API to Biolovision API and applications using it."
 authors = ["Daniel Thonon <d.thonon9@outlook.com>"]
-repository = "https://github.com/dthonon/Client_API_VN"
-documentation = "https://dthonon.github.io/Client_API_VN/"
 readme = "README.md"
 classifiers = [
   "Programming Language :: Python :: 3 :: Only",
@@ -24,6 +22,11 @@ packages = [
   { include = "schemas", from = "src" },
   { include = "update", from = "src" },
 ]
+
+[tool.poetry.urls]
+Repository = "https://github.com/dthonon/Client_API_VN"
+Documentation = "https://dthonon.github.io/Client_API_VN/"
+Issues = "https://github.com/dthonon/Client_API_VN/issues"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
