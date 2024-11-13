@@ -136,7 +136,7 @@ filter:
   # Note : use the territory short_name, not the territory id
   # Comment out to download all territorial_units
   # territorial_unit_ids:
-  #- 7
+  #- 07
   # Use short (recommended) or long JSON data
   # json_format: short
   # Optional start and end dates

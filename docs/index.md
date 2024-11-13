@@ -19,10 +19,10 @@ Python applications that use Biolovision/VisioNature (VN) API to:
 
 Applications are available either as:
 
-- Python modules from PyPI
-- Docker images from Docker Hub
+- Python modules from [PyPI](https://pypi.org/project/Client_API_VN/)
+- Docker images from [Docker Hub](https://hub.docker.com/repository/docker/dthonon/client-api-vn/general)
 
-They are tested under Linux Ubuntu >20 or Debian 10. Other Linux
+They are tested under Linux Ubuntu >20. Other Linux
 distributions could work. Windows is not tested at all and will
 probably not work.
 
