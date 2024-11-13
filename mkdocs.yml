@@ -14,11 +14,13 @@ nav:
       - transfer_vn: apps/transfer_vn.md
       - update_vn: apps/update_vn.md
       - validate_vn: apps/validate_vn.md
+      - Server installation: apps/server_install.md
   - API: modules.md
+  - Contributing: contributing.md
+  - Changelog before v3: changelog-old.md
   - About:
       - Authors: authors.md
-      - Changelog before v3: changelog-old.md
-      - Server installation: apps/server_install.md
+
 plugins:
   - search
   - mkdocstrings:

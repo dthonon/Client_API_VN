@@ -1,4 +1,6 @@
-# Contributors:
+# About Client_API_VN
+![Logo](img/logo_vn2pg.png)
+## Contributors:
 
 - [Daniel Thonon](https://github.com/dthonon) - _Initial work_
 - [Frédéric Cloitre](https://github.com/lpofredc) - _Testing and bug fixing_
