@@ -56,7 +56,7 @@ jobs:
         uses: codecov/codecov-action@v4
         if: ${{ matrix.python-version == '3.11' }}
 
-  deploy-docs:
+  test-docs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out
@@ -66,4 +66,4 @@ jobs:
         uses: ./.github/actions/setup-poetry-env
 
       - name: Deploy documentation
-        run: poetry run mkdocs gh-deploy --force
+        run: poetry run mkdocs build -s
