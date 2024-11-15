@@ -65,5 +65,5 @@ jobs:
       - name: Set up the environment
         uses: ./.github/actions/setup-poetry-env
 
-      - name: Deploy documentation
+      - name: Check documentation
         run: poetry run mkdocs build -s

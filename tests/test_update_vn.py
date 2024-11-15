@@ -6,10 +6,9 @@ import csv
 import logging
 import time
 from pathlib import Path
-from unittest.mock import patch
 
 import pytest
-from strictyaml import YAMLValidationError
+from click.testing import CliRunner
 
 from biolovision.api import HTTPError, ObservationsAPI
 from export_vn.evnconf import EvnConf
@@ -24,30 +23,30 @@ CFG = EvnConf(FILE).site_list[SITE]
 OBSERVATIONS_API = ObservationsAPI(CFG)
 
 
-def test_version():
+@pytest.fixture(scope="module")
+def runner():
+    return CliRunner()
+
+
+def test_version(runner):
     """Check if version is defined."""
-    with patch("sys.argv", ["py.test", "--version"]):
-        with pytest.raises(SystemExit):
-            update_vn.run()
+    result = runner.invoke(update_vn.main, ["--version"])
+    assert result.exit_code == 0
 
 
-def test_init():
+def test_init(runner):
     """Check --init parameter."""
     name_yaml = ".evn_pytest.yaml"
     file_yaml = str(Path.home()) + "/" + name_yaml
     if Path(file_yaml).is_file():
         Path(file_yaml).unlink()
-    name_input = ".evn_pytest.csv"
-    file_input = str(Path.home()) + "/" + name_input
-    Path(file_input).touch()
-    with patch("sys.argv", ["py.test", "--init", "--verbose", name_yaml, name_input]):
-        update_vn.run()
+    result = runner.invoke(update_vn.main, ["--verbose", "init", name_yaml])
+    assert result.exit_code == 0
     assert Path(file_yaml).is_file()
     Path(file_yaml).unlink()
-    Path(file_input).unlink()
 
 
-def test_files():
+def test_files(runner):
     """Check errors if files missing or incorrect."""
     # Missing YAML file
     name_yaml = ".evn_missing.yaml"
@@ -57,9 +56,8 @@ def test_files():
     name_input = ".evn_missing.csv"
     file_input = str(Path.home()) + "/" + name_input
     Path(file_input).touch()
-    with patch("sys.argv", ["py.test", "--verbose", name_yaml, name_input]):
-        with pytest.raises(FileNotFoundError) as excinfo:
-            update_vn.run()
+    result = runner.invoke(update_vn.main, ["--verbose", "update", name_yaml, name_input])
+    assert result.exit_code == 1
     # Missing CSV file
     name_yaml = ".evn_tst1.yaml"
     file_yaml = str(Path.home()) + "/" + name_yaml
@@ -67,18 +65,16 @@ def test_files():
     file_input = str(Path.home()) + "/" + name_input
     if Path(file_input).is_file():
         Path(file_input).unlink()
-    with patch("sys.argv", ["py.test", "--verbose", name_yaml, name_input]):
-        with pytest.raises(FileNotFoundError) as excinfo:
-            update_vn.run()
+    result = runner.invoke(update_vn.main, ["--verbose", "update", name_yaml, name_input])
+    assert result.exit_code == 1
     # Incorrect YAML file
     name_yaml = ".evn_tst3.yaml"
     file_yaml = str(Path.home()) + "/" + name_yaml
     name_input = ".evn_missing.csv"
     file_input = str(Path.home()) + "/" + name_input
     Path(file_input).touch()
-    with patch("sys.argv", ["py.test", "--verbose", name_yaml, name_input]):
-        with pytest.raises(YAMLValidationError) as excinfo:  # noqa: F841
-            update_vn.run()
+    result = runner.invoke(update_vn.main, ["--verbose", "update", name_yaml, name_input])
+    assert result.exit_code == 1
     # Cleanup
     if Path(file_input).is_file():
         Path(file_input).unlink()
@@ -117,7 +113,7 @@ def sighting_for_test():
 
 
 @pytest.mark.slow
-def test_update(sighting_for_test):
+def test_update(runner, sighting_for_test):
     """Check Biolovision updating."""
     name_yaml = ".evn_test.yaml"
     file_yaml = str(Path.home()) + "/" + name_yaml
@@ -141,8 +137,8 @@ def test_update(sighting_for_test):
             "unknown",
             "2",
         ])
-    with patch("sys.argv", ["py.test", name_yaml, file_input]):
-        update_vn.run()
+    result = runner.invoke(update_vn.main, ["--verbose", "update", name_yaml, str(file_input)])
+    assert result.exit_code == 0
 
     # Check handling of empty line
     with open(file_input, "w", newline="") as csvfile:
@@ -156,8 +152,8 @@ def test_update(sighting_for_test):
             "unknown",
             "2",
         ])
-    with patch("sys.argv", ["py.test", name_yaml, file_input]):
-        update_vn.run()
+    result = runner.invoke(update_vn.main, ["--verbose", "update", name_yaml, str(file_input)])
+    assert result.exit_code == 0
 
     # Update atlas_code
     with open(file_input, "w", newline="") as csvfile:
@@ -170,8 +166,8 @@ def test_update(sighting_for_test):
             "replace",
             "2",
         ])
-    with patch("sys.argv", ["py.test", name_yaml, file_input]):
-        update_vn.run()
+    result = runner.invoke(update_vn.main, ["--verbose", "update", name_yaml, str(file_input)])
+    assert result.exit_code == 0
     sighting = OBSERVATIONS_API.api_get(str(obs_1))
     assert sighting["data"]["sightings"][0]["observers"][0]["atlas_code"]["@id"] == "3_2"
 
@@ -186,8 +182,8 @@ def test_update(sighting_for_test):
             "replace",
             "4",
         ])
-    with patch("sys.argv", ["py.test", name_yaml, file_input]):
-        update_vn.run()
+    result = runner.invoke(update_vn.main, ["--verbose", "update", name_yaml, str(file_input)])
+    assert result.exit_code == 0
     sighting = OBSERVATIONS_API.api_get(str(obs_1))
     assert sighting["data"]["sightings"][0]["observers"][0]["atlas_code"]["@id"] == "3_4"
 
@@ -202,8 +198,8 @@ def test_update(sighting_for_test):
             "delete_attribute",
             "",
         ])
-    with patch("sys.argv", ["py.test", name_yaml, file_input]):
-        update_vn.run()
+    result = runner.invoke(update_vn.main, ["--verbose", "update", name_yaml, str(file_input)])
+    assert result.exit_code == 0
     sighting = OBSERVATIONS_API.api_get(str(obs_1))
     assert "atlas_code" not in sighting["data"]["sightings"][0]["observers"][0]
 
@@ -218,8 +214,8 @@ def test_update(sighting_for_test):
             "replace",
             "'API update test'",
         ])
-    with patch("sys.argv", ["py.test", name_yaml, file_input]):
-        update_vn.run()
+    result = runner.invoke(update_vn.main, ["--verbose", "update", name_yaml, str(file_input)])
+    assert result.exit_code == 0
     sighting = OBSERVATIONS_API.api_get(str(obs_1))
     assert sighting["data"]["sightings"][0]["observers"][0]["comment"] == "'API update test'"
 
@@ -228,5 +224,5 @@ def test_update(sighting_for_test):
         inwriter = csv.writer(csvfile, delimiter=";", quoting=csv.QUOTE_MINIMAL)
         inwriter.writerow(["site", "id_universal", "path", "operation", "value"])
         inwriter.writerow(["tff", str(obs_1), "", "delete_observation", ""])
-    with patch("sys.argv", ["py.test", name_yaml, file_input]):
-        update_vn.run()
+    result = runner.invoke(update_vn.main, ["--verbose", "update", name_yaml, str(file_input)])
+    assert result.exit_code == 0
