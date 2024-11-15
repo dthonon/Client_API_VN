@@ -15,7 +15,6 @@ Modification are tracked in hidden_comment.
 
 """
 
-import argparse
 import csv
 import datetime
 import importlib.resources
@@ -26,6 +25,7 @@ import sys
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
+import click
 from strictyaml import YAMLValidationError
 
 from biolovision.api import ObservationsAPI
@@ -38,48 +38,96 @@ APP_NAME = "update_vn"
 logger = logging.getLogger(APP_NAME)
 
 
-def arguments(args):
-    """Define and parse command arguments.
+@click.version_option(package_name="Client_API_VN")
+@click.group()
+@click.option("--verbose/--quiet", default=False, help="Increase or decrease output verbosity")
+def main(
+    verbose: bool,
+) -> None:
+    """Update biolovision database.
 
-    Args:
-        args ([str]): command line parameters as list of strings
+    CONFIG: configuration filename
 
-    Returns:
-        :obj:`argparse.Namespace`: command line parameters namespace
+    INPUT: CSV file listing modifications to be applied
     """
-    # Get options
-    parser = argparse.ArgumentParser(description="Sample Biolovision API client application.")
-    parser.add_argument(
-        "--version",
-        help=_("Print version number"),
-        action="version",
-        version=f"%(prog)s {__version__}",
+    # Create $HOME/tmp directory if it does not exist
+    (Path.home() / "tmp").mkdir(exist_ok=True)
+
+    # Define logger format and handlers
+    logger = logging.getLogger(APP_NAME)
+    # create file handler which logs even debug messages
+    fh = TimedRotatingFileHandler(
+        str(Path.home()) + "/tmp/" + APP_NAME + ".log",
+        when="midnight",
+        interval=1,
+        backupCount=100,
     )
-    out_group = parser.add_mutually_exclusive_group()
-    out_group.add_argument("--verbose", help=_("Increase output verbosity"), action="store_true")
-    out_group.add_argument("--quiet", help=_("Reduce output verbosity"), action="store_true")
-    parser.add_argument("--init", help=_("Initialize the YAML configuration file"), action="store_true")
-    parser.add_argument("config", help=_("Configuration file name"))
-    parser.add_argument("input", help=_("Update list file name, in CSV format"))
+    # Create console handler with a higher log level
+    ch = logging.StreamHandler()
+    # Create formatter and add it to the handlers
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(name)s - %(message)s")
+    fh.setFormatter(formatter)
+    ch.setFormatter(formatter)
+    # Add the handlers to the logger
+    logger.addHandler(fh)
+    logger.addHandler(ch)
 
-    return parser.parse_args(args)
+    # Define verbosity
+    if verbose:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
+
+    logger.info(_("update_vn version %s"), __version__)
+
+    return None
 
 
+@main.command()
+@click.argument(
+    "config",
+)
 def init(config: str):
     """Copy template YAML file to home directory."""
     logger = logging.getLogger(APP_NAME + ".init")
-    ref = importlib.resources.files("export_vn") / "data/evn_template.yaml"
-    with importlib.resources.as_file(ref) as yaml_src:
-        yaml_dst = str(Path.home() / config)
-        logger.info(_("Creating YAML configuration file %s, from %s"), yaml_dst, yaml_src)
-        shutil.copyfile(yaml_src, yaml_dst)
-        logger.info(_("Please edit %s before running the script"), yaml_dst)
+    yaml_dst = Path.home() / config
+    if yaml_dst.is_file():
+        logger.warning(_("YAML configuration file %s exists and is not overwritten"), yaml_dst)
+    else:
+        logger.info(_("Creating YAML configuration file"))
+        ref = importlib.resources.files("export_vn") / "data/evn_template.yaml"
+        with importlib.resources.as_file(ref) as yaml_src:
+            logger.info(_("Creating YAML configuration file %s, from %s"), yaml_dst, yaml_src)
+            shutil.copyfile(yaml_src, yaml_dst)
+            logger.info(_("Please edit %s before running the script"), yaml_dst)
 
 
-def update(cfg_ctrl, input: str):
+@main.command()
+@click.argument(
+    "config",
+)
+@click.argument(
+    "input",
+)
+def update(config: str, input: str) -> None:
     """Update Biolovision database."""
     logger = logging.getLogger(APP_NAME + ".update")
+    # Get configuration from file
+    if not (Path.home() / config).is_file():
+        logger.critical(_("Configuration file %s does not exist"), str(Path.home() / config))
+        raise FileNotFoundError
+    logger.info(_("Getting configuration data from %s"), config)
+    try:
+        cfg_ctrl = EvnConf(config)
+    except YAMLValidationError:
+        logger.critical(_("Incorrect content in YAML configuration %s"), config)
+        raise
     cfg_site_list = cfg_ctrl.site_list
+
+    # Update Biolovision site from update file
+    if not Path(input).is_file():
+        logger.critical(_("Input file %s does not exist"), str(Path(input)))
+        raise FileNotFoundError
 
     obs_api = dict()
     for site, cfg in cfg_site_list.items():
@@ -168,76 +216,13 @@ def update(cfg_ctrl, input: str):
                         # Update to remote site
                         obs_api[row[0].strip()].api_update(row[1].strip(), sighting)
 
-
-def main(args):
-    """Main entry point allowing external calls
-
-    Args:
-      args ([str]): command line parameter list
-    """
-    # Create $HOME/tmp directory if it does not exist
-    (Path.home() / "tmp").mkdir(exist_ok=True)
-
-    # Define logger format and handlers
-    logger = logging.getLogger(APP_NAME)
-    # create file handler which logs even debug messages
-    fh = TimedRotatingFileHandler(
-        str(Path.home()) + "/tmp/" + APP_NAME + ".log",
-        when="midnight",
-        interval=1,
-        backupCount=100,
-    )
-    # Create console handler with a higher log level
-    ch = logging.StreamHandler()
-    # Create formatter and add it to the handlers
-    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(name)s - %(message)s")
-    fh.setFormatter(formatter)
-    ch.setFormatter(formatter)
-    # Add the handlers to the logger
-    logger.addHandler(fh)
-    logger.addHandler(ch)
-
-    # Get command line arguments
-    args = arguments(args)
-
-    # Define verbosity
-    if args.verbose:
-        logger.setLevel(logging.DEBUG)
-    else:
-        logger.setLevel(logging.INFO)
-
-    logger.info(_("%s, version %s"), sys.argv[0], __version__)
-    logger.info(_("Arguments: %s"), sys.argv[1:])
-
-    # If required, first create YAML file
-    if args.init:
-        logger.info(_("Creating YAML configuration file"))
-        init(args.config)
-        return None
-
-    # Get configuration from file
-    if not (Path.home() / args.config).is_file():
-        logger.critical(_("Configuration file %s does not exist"), str(Path.home() / args.config))
-        raise FileNotFoundError
-    logger.info(_("Getting configuration data from %s"), args.config)
-    try:
-        cfg_ctrl = EvnConf(args.config)
-    except YAMLValidationError:
-        logger.critical(_("Incorrect content in YAML configuration %s"), args.config)
-        raise
-
-    # Update Biolovision site from update file
-    if not Path(args.input).is_file():
-        logger.critical(_("Input file %s does not exist"), str(Path(args.input)))
-        raise FileNotFoundError
-    update(cfg_ctrl, args.input)
-
     return None
 
 
-def run():
+def run() -> None:
     """Entry point for console_scripts"""
     main(sys.argv[1:])
+    return None
 
 
 # Main wrapper
