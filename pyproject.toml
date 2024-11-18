@@ -73,7 +73,7 @@ Pygments = ">=2.18"
 
 [tool.poetry.scripts]
 transfer_vn = "export_vn.transfer_vn:run"
-update_vn = "update.update_vn:run"
+update_vn = "update_vn.update_vn:run"
 validate_vn = "schemas.validate:run"
 
 [build-system]
