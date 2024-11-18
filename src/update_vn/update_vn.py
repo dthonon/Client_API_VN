@@ -5,7 +5,7 @@ Update sightings attributes in Biolovision database.
 Application that reads a CSV file and updates the observations in Biolovision database.
 CSV file must contain:
 
-- site, as defined in YAML site section
+- site, as defined in toml site section
 - id_universal of the sighting to modify
 - path to the attribute to modify, in JSONPath syntax
 - operation: update or replace
@@ -26,10 +26,9 @@ from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
 import click
-from strictyaml import YAMLValidationError
+from dynaconf import Dynaconf
 
 from biolovision.api import ObservationsAPI
-from export_vn.evnconf import EvnConf
 
 from . import _, __version__
 
@@ -88,18 +87,18 @@ def main(
     "config",
 )
 def init(config: str):
-    """Copy template YAML file to home directory."""
+    """Copy template TOML file to home directory."""
     logger = logging.getLogger(APP_NAME + ".init")
-    yaml_dst = Path.home() / config
-    if yaml_dst.is_file():
-        logger.warning(_("YAML configuration file %s exists and is not overwritten"), yaml_dst)
+    toml_dst = Path.home() / config
+    if toml_dst.is_file():
+        logger.warning(_("toml configuration file %s exists and is not overwritten"), toml_dst)
     else:
-        logger.info(_("Creating YAML configuration file"))
-        ref = importlib.resources.files("export_vn") / "data/evn_template.yaml"
-        with importlib.resources.as_file(ref) as yaml_src:
-            logger.info(_("Creating YAML configuration file %s, from %s"), yaml_dst, yaml_src)
-            shutil.copyfile(yaml_src, yaml_dst)
-            logger.info(_("Please edit %s before running the script"), yaml_dst)
+        logger.info(_("Creating toml configuration file"))
+        ref = importlib.resources.files("update_vn") / "data/evn_template.toml"
+        with importlib.resources.as_file(ref) as toml_src:
+            logger.info(_("Creating toml configuration file %s, from %s"), toml_dst, toml_src)
+            shutil.copyfile(toml_src, toml_dst)
+            logger.info(_("Please edit %s before running the script"), toml_dst)
 
 
 @main.command()
@@ -117,12 +116,11 @@ def update(config: str, input: str) -> None:
         logger.critical(_("Configuration file %s does not exist"), str(Path.home() / config))
         raise FileNotFoundError
     logger.info(_("Getting configuration data from %s"), config)
-    try:
-        cfg_ctrl = EvnConf(config)
-    except YAMLValidationError:
-        logger.critical(_("Incorrect content in YAML configuration %s"), config)
-        raise
-    cfg_site_list = cfg_ctrl.site_list
+    settings = Dynaconf(
+        settings_files=["settings.toml", ".secrets.toml"],
+    )
+
+    cfg_site_list = settings.site_list
 
     # Update Biolovision site from update file
     if not Path(input).is_file():
