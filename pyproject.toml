@@ -45,7 +45,6 @@ requests-oauthlib = ">=2.0"
 SQLAlchemy = "<2"
 strictyaml = ">=1.7"
 tabulate = ">=0.9"
-toml = ">=0.10"
 yappi = ">=1.6"
 
 [tool.poetry.group.dev.dependencies]
