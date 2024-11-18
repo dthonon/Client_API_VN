@@ -12,7 +12,7 @@ from click.testing import CliRunner
 
 from biolovision.api import HTTPError, ObservationsAPI
 from export_vn.evnconf import EvnConf
-from update import update_vn
+from update_vn import update_vn
 
 # Using faune-france site, that needs to be defined in .evn_test.yaml
 SITE = "tff"
