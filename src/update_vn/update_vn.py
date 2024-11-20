@@ -117,10 +117,11 @@ def update(config: str, input: str) -> None:
         raise FileNotFoundError
     logger.info(_("Getting configuration data from %s"), config)
     settings = Dynaconf(
-        settings_files=["settings.toml", ".secrets.toml"],
+        settings_files=[config],
     )
 
-    cfg_site_list = settings.site_list
+    cfg_site_list = settings.sites
+    print(cfg_site_list.items())
 
     # Update Biolovision site from update file
     if not Path(input).is_file():
@@ -130,7 +131,13 @@ def update(config: str, input: str) -> None:
     obs_api = dict()
     for site, cfg in cfg_site_list.items():
         logger.debug(_("Preparing update for site %s"), site)
-        obs_api[site] = ObservationsAPI(cfg)
+        obs_api[site] = ObservationsAPI(
+            user_email=cfg.user_email,
+            user_pw=cfg.user_pw,
+            base_url=cfg.site,
+            client_key=cfg.client_key,
+            client_secret=cfg.client_secret,
+        )
 
     with open(input, newline="") as csvfile:
         reader = csv.reader(csvfile, delimiter=";")
