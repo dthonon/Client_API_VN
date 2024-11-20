@@ -99,20 +99,15 @@ class BiolovisionAPI:
             logger.fatal(_("client_secret must be defined"))
             raise BiolovisionApiException
         if max_retry is None:
-            logger.fatal(_("max_retry must be defined"))
-            raise BiolovisionApiException
+            max_retry = 5
         if max_requests is None:
-            logger.fatal(_("max_requests must be defined"))
-            raise BiolovisionApiException
+            max_requests = 0
         if max_chunks is None:
-            logger.fatal(_("max_chunks must be defined"))
-            raise BiolovisionApiException
+            max_chunks = 50
         if tuning_unavailable_delay is None:
-            logger.fatal(_("tuning_unavailable_delay must be defined"))
-            raise BiolovisionApiException
+            tuning_unavailable_delay = 600
         if tuning_retry_delay is None:
-            logger.fatal(_("tuning_retry_delay must be defined"))
-            raise BiolovisionApiException
+            tuning_retry_delay = 5
         self._limits = {
             "max_retry": max_retry,
             "max_requests": max_requests,
