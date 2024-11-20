@@ -22,6 +22,7 @@ from biolovision.api import (
     EntitiesAPI,
     FamiliesAPI,
     FieldsAPI,
+    HTTPError,
     LocalAdminUnitsAPI,
     ObservationsAPI,
     ObserversAPI,
@@ -172,7 +173,7 @@ class DownloadVn:
                 )
                 # Call backend to store results
                 self._backend.store(self._api_instance.controler, str(i), items_dict)
-        except self._api_instance.HTTPError:
+        except HTTPError:
             self._backend.log(
                 self._config.site,
                 self._api_instance.controler,
@@ -193,7 +194,25 @@ class Entities(DownloadVn):
     """
 
     def __init__(self, config, backend, max_retry=None, max_requests=None, max_chunks=None):
-        super().__init__(config, EntitiesAPI(config), backend, max_retry, max_requests, max_chunks)
+        super().__init__(
+            config,
+            EntitiesAPI(
+                user_email=config.user_email,
+                user_pw=config.user_pw,
+                base_url=config.base_url,
+                client_key=config.client_key,
+                client_secret=config.client_secret,
+                max_retry=config.tuning_max_retry,
+                max_requests=config.tuning_max_requests,
+                max_chunks=config.tuning_max_chunks,
+                tuning_unavailable_delay=config.tuning_unavailable_delay,
+                tuning_retry_delay=config.tuning_retry_delay,
+            ),
+            backend,
+            max_retry,
+            max_requests,
+            max_chunks,
+        )
         return None
 
 
@@ -206,7 +225,25 @@ class Families(DownloadVn):
     """
 
     def __init__(self, config, backend, max_retry=None, max_requests=None, max_chunks=None):
-        super().__init__(config, FamiliesAPI(config), backend, max_retry, max_requests, max_chunks)
+        super().__init__(
+            config,
+            FamiliesAPI(
+                user_email=config.user_email,
+                user_pw=config.user_pw,
+                base_url=config.base_url,
+                client_key=config.client_key,
+                client_secret=config.client_secret,
+                max_retry=config.tuning_max_retry,
+                max_requests=config.tuning_max_requests,
+                max_chunks=config.tuning_max_chunks,
+                tuning_unavailable_delay=config.tuning_unavailable_delay,
+                tuning_retry_delay=config.tuning_retry_delay,
+            ),
+            backend,
+            max_retry,
+            max_requests,
+            max_chunks,
+        )
         return None
 
 
@@ -219,7 +256,25 @@ class Fields(DownloadVn):
     """
 
     def __init__(self, config, backend, max_retry=None, max_requests=None, max_chunks=None):
-        super().__init__(config, FieldsAPI(config), backend, max_retry, max_requests, max_chunks)
+        super().__init__(
+            config,
+            FieldsAPI(
+                user_email=config.user_email,
+                user_pw=config.user_pw,
+                base_url=config.base_url,
+                client_key=config.client_key,
+                client_secret=config.client_secret,
+                max_retry=config.tuning_max_retry,
+                max_requests=config.tuning_max_requests,
+                max_chunks=config.tuning_max_chunks,
+                tuning_unavailable_delay=config.tuning_unavailable_delay,
+                tuning_retry_delay=config.tuning_retry_delay,
+            ),
+            backend,
+            max_retry,
+            max_requests,
+            max_chunks,
+        )
         return None
 
     def store(self, opt_params_iter=None):
@@ -271,7 +326,7 @@ class Fields(DownloadVn):
                     logger.debug(_("Details for field group %s = %s"), field_id, field_details)
                     # Call backend to store groups of fields
                     self._backend.store("field_details", str(i), field_details)
-        except self._api_instance.HTTPError:
+        except HTTPError:
             self._backend.log(
                 self._config.site,
                 self._api_instance.controler,
@@ -294,7 +349,18 @@ class LocalAdminUnits(DownloadVn):
     def __init__(self, config, backend, max_retry=None, max_requests=None, max_chunks=None):
         super().__init__(
             config,
-            LocalAdminUnitsAPI(config),
+            LocalAdminUnitsAPI(
+                user_email=config.user_email,
+                user_pw=config.user_pw,
+                base_url=config.base_url,
+                client_key=config.client_key,
+                client_secret=config.client_secret,
+                max_retry=config.tuning_max_retry,
+                max_requests=config.tuning_max_requests,
+                max_chunks=config.tuning_max_chunks,
+                tuning_unavailable_delay=config.tuning_unavailable_delay,
+                tuning_retry_delay=config.tuning_retry_delay,
+            ),
             backend,
             max_retry,
             max_requests,
@@ -340,7 +406,18 @@ class Observations(DownloadVn):
     def __init__(self, config, backend, max_retry=None, max_requests=None, max_chunks=None):
         super().__init__(
             config,
-            ObservationsAPI(config),
+            ObservationsAPI(
+                user_email=config.user_email,
+                user_pw=config.user_pw,
+                base_url=config.base_url,
+                client_key=config.client_key,
+                client_secret=config.client_secret,
+                max_retry=config.tuning_max_retry,
+                max_requests=config.tuning_max_requests,
+                max_chunks=config.tuning_max_chunks,
+                tuning_unavailable_delay=config.tuning_unavailable_delay,
+                tuning_retry_delay=config.tuning_retry_delay,
+            ),
             backend,
             max_retry,
             max_requests,
@@ -374,7 +451,20 @@ class Observations(DownloadVn):
                 self._t_units = ReadPostgresql(self._config).read("territorial_units")
             if (self._t_units is None) or (len(self._t_units) == 0):
                 # No territorial_units available, read from API
-                self._t_units = [TerritorialUnitsAPI(self._config).api_list()["data"]]
+                self._t_units = [
+                    TerritorialUnitsAPI(
+                        user_email=self._config.user_email,
+                        user_pw=self._config.user_pw,
+                        base_url=self._config.base_url,
+                        client_key=self._config.client_key,
+                        client_secret=self._config.client_secret,
+                        max_retry=self._config.tuning_max_retry,
+                        max_requests=self._config.tuning_max_requests,
+                        max_chunks=self._config.tuning_max_chunks,
+                        tuning_unavailable_delay=self._config.tuning_unavailable_delay,
+                        tuning_retry_delay=self._config.tuning_retry_delay,
+                    ).api_list()["data"]
+                ]
 
         # GET from API
         logger.debug(
@@ -382,7 +472,18 @@ class Observations(DownloadVn):
             self._api_instance.controler,
         )
         if id_taxo_group is None:
-            taxo_groups = TaxoGroupsAPI(self._config).api_list()["data"]
+            taxo_groups = TaxoGroupsAPI(
+                user_email=self._config.user_email,
+                user_pw=self._config.user_pw,
+                base_url=self._config.base_url,
+                client_key=self._config.client_key,
+                client_secret=self._config.client_secret,
+                max_retry=self._config.tuning_max_retry,
+                max_requests=self._config.tuning_max_requests,
+                max_chunks=self._config.tuning_max_chunks,
+                tuning_unavailable_delay=self._config.tuning_unavailable_delay,
+                tuning_retry_delay=self._config.tuning_retry_delay,
+            ).api_list()["data"]
         else:
             taxo_groups = [{"id": id_taxo_group, "access_mode": "full"}]
         try:
@@ -395,7 +496,18 @@ class Observations(DownloadVn):
                         id_taxo_group,
                     )
                     if by_specie:
-                        species = SpeciesAPI(self._config).api_list({"id_taxo_group": str(id_taxo_group)})["data"]
+                        species = SpeciesAPI(
+                            user_email=self._config.user_email,
+                            user_pw=self._config.user_pw,
+                            base_url=self._config.base_url,
+                            client_key=self._config.client_key,
+                            client_secret=self._config.client_secret,
+                            max_retry=self._config.tuning_max_retry,
+                            max_requests=self._config.tuning_max_requests,
+                            max_chunks=self._config.tuning_max_chunks,
+                            tuning_unavailable_delay=self._config.tuning_unavailable_delay,
+                            tuning_retry_delay=self._config.tuning_retry_delay,
+                        ).api_list({"id_taxo_group": str(id_taxo_group)})["data"]
                         for specie in species:
                             if specie["is_used"] == "1":
                                 logger.info(
@@ -450,7 +562,7 @@ class Observations(DownloadVn):
                             str(id_taxo_group) + "_1",
                             items_dict,
                         )
-        except self._api_instance.HTTPError:
+        except HTTPError:
             self._backend.log(
                 self._config.site,
                 self._api_instance.controler,
@@ -486,7 +598,21 @@ class Observations(DownloadVn):
                 self._t_units = ReadPostgresql(self._config).read("territorial_units")
             if (self._t_units is None) or (len(self._t_units) == 0):
                 # No territorial_units available, read from API
-                self._t_units = [[tu] for tu in TerritorialUnitsAPI(self._config).api_list()["data"]]
+                self._t_units = [
+                    [tu]
+                    for tu in TerritorialUnitsAPI(
+                        user_email=self._config.user_email,
+                        user_pw=self._config.user_pw,
+                        base_url=self._config.base_url,
+                        client_key=self._config.client_key,
+                        client_secret=self._config.client_secret,
+                        max_retry=self._config.tuning_max_retry,
+                        max_requests=self._config.tuning_max_requests,
+                        max_chunks=self._config.tuning_max_chunks,
+                        tuning_unavailable_delay=self._config.tuning_unavailable_delay,
+                        tuning_retry_delay=self._config.tuning_retry_delay,
+                    ).api_list()["data"]
+                ]
 
         # GET from API
         logger.debug(
@@ -494,7 +620,18 @@ class Observations(DownloadVn):
             self._api_instance.controler,
         )
         if id_taxo_group is None:
-            taxo_groups = TaxoGroupsAPI(self._config).api_list()["data"]
+            taxo_groups = TaxoGroupsAPI(
+                user_email=self._config.user_email,
+                user_pw=self._config.user_pw,
+                base_url=self._config.base_url,
+                client_key=self._config.client_key,
+                client_secret=self._config.client_secret,
+                max_retry=self._config.tuning_max_retry,
+                max_requests=self._config.tuning_max_requests,
+                max_chunks=self._config.tuning_max_chunks,
+                tuning_unavailable_delay=self._config.tuning_unavailable_delay,
+                tuning_retry_delay=self._config.tuning_retry_delay,
+            ).api_list()["data"]
         else:
             taxo_groups = [{"id": id_taxo_group, "access_mode": "full"}]
         try:
@@ -595,7 +732,7 @@ class Observations(DownloadVn):
                         seq += 1
                         end_date = start_date
                         delta_days = int(pid(nb_obs))
-        except self._api_instance.HTTPError:
+        except HTTPError:
             self._backend.log(
                 self._config.site,
                 self._api_instance.controler,
@@ -610,7 +747,18 @@ class Observations(DownloadVn):
         """Return the list of enabled taxo_groups."""
         if id_taxo_group is None:
             # Get all active taxo_groups
-            taxo_groups = TaxoGroupsAPI(self._config).api_list()
+            taxo_groups = TaxoGroupsAPI(
+                user_email=self._config.user_email,
+                user_pw=self._config.user_pw,
+                base_url=self._config.base_url,
+                client_key=self._config.client_key,
+                client_secret=self._config.client_secret,
+                max_retry=self._config.tuning_max_retry,
+                max_requests=self._config.tuning_max_requests,
+                max_chunks=self._config.tuning_max_chunks,
+                tuning_unavailable_delay=self._config.tuning_unavailable_delay,
+                tuning_retry_delay=self._config.tuning_retry_delay,
+            ).api_list()
             taxo_list = []
             for taxo in taxo_groups["data"]:
                 if (taxo["name_constant"] not in taxo_groups_ex) and (taxo["access_mode"] != "none"):
@@ -789,7 +937,7 @@ class Observations(DownloadVn):
                             total_size(items_dict),
                             timing,
                         )
-            except self._api_instance.HTTPError:
+            except HTTPError:
                 self._backend.log(
                     self._config.site,
                     self._api_instance.controler,
@@ -814,7 +962,25 @@ class Observers(DownloadVn):
     """
 
     def __init__(self, config, backend, max_retry=None, max_requests=None, max_chunks=None):
-        super().__init__(config, ObserversAPI(config), backend, max_retry, max_requests, max_chunks)
+        super().__init__(
+            config,
+            ObserversAPI(
+                user_email=config.user_email,
+                user_pw=config.user_pw,
+                base_url=config.base_url,
+                client_key=config.client_key,
+                client_secret=config.client_secret,
+                max_retry=config.tuning_max_retry,
+                max_requests=config.tuning_max_requests,
+                max_chunks=config.tuning_max_chunks,
+                tuning_unavailable_delay=config.tuning_unavailable_delay,
+                tuning_retry_delay=config.tuning_retry_delay,
+            ),
+            backend,
+            max_retry,
+            max_requests,
+            max_chunks,
+        )
         return None
 
 
@@ -828,7 +994,25 @@ class Places(DownloadVn):
     """
 
     def __init__(self, config, backend, max_retry=None, max_requests=None, max_chunks=None):
-        super().__init__(config, PlacesAPI(config), backend, max_retry, max_requests, max_chunks)
+        super().__init__(
+            config,
+            PlacesAPI(
+                user_email=config.user_email,
+                user_pw=config.user_pw,
+                base_url=config.base_url,
+                client_key=config.client_key,
+                client_secret=config.client_secret,
+                max_retry=config.tuning_max_retry,
+                max_requests=config.tuning_max_requests,
+                max_chunks=config.tuning_max_chunks,
+                tuning_unavailable_delay=config.tuning_unavailable_delay,
+                tuning_retry_delay=config.tuning_retry_delay,
+            ),
+            backend,
+            max_retry,
+            max_requests,
+            max_chunks,
+        )
         self._place_id = -1  # Integer index, to comply with taxo_groups, for increment log
         self._l_a_units = None
         return None
@@ -854,7 +1038,20 @@ class Places(DownloadVn):
                 self._l_a_units = ReadPostgresql(self._config).read("local_admin_units")
             if (self._l_a_units is None) or (len(self._l_a_units) == 0):
                 # No local_admin_units available, read from API
-                self._l_a_units = [LocalAdminUnitsAPI(self._config).api_list()["data"]]
+                self._l_a_units = [
+                    LocalAdminUnitsAPI(
+                        user_email=self._config.user_email,
+                        user_pw=self._config.user_pw,
+                        base_url=self._config.base_url,
+                        client_key=self._config.client_key,
+                        client_secret=self._config.client_secret,
+                        max_retry=self._config.tuning_max_retry,
+                        max_requests=self._config.tuning_max_requests,
+                        max_chunks=self._config.tuning_max_chunks,
+                        tuning_unavailable_delay=self._config.tuning_unavailable_delay,
+                        tuning_retry_delay=self._config.tuning_retry_delay,
+                    ).api_list()["data"]
+                ]
 
         self._backend.increment_log(self._config.site, self._place_id, datetime.now())
         if territorial_unit_ids is not None and len(territorial_unit_ids) > 0:
@@ -974,12 +1171,41 @@ class Species(DownloadVn):
     """
 
     def __init__(self, config, backend, max_retry=None, max_requests=None, max_chunks=None):
-        super().__init__(config, SpeciesAPI(config), backend, max_retry, max_requests, max_chunks)
+        super().__init__(
+            config,
+            SpeciesAPI(
+                user_email=config.user_email,
+                user_pw=config.user_pw,
+                base_url=config.base_url,
+                client_key=config.client_key,
+                client_secret=config.client_secret,
+                max_retry=config.tuning_max_retry,
+                max_requests=config.tuning_max_requests,
+                max_chunks=config.tuning_max_chunks,
+                tuning_unavailable_delay=config.tuning_unavailable_delay,
+                tuning_retry_delay=config.tuning_retry_delay,
+            ),
+            backend,
+            max_retry,
+            max_requests,
+            max_chunks,
+        )
         return None
 
     def store(self):
         """Store species, iterating over taxo_groups"""
-        taxo_groups = TaxoGroupsAPI(self._config).api_list()
+        taxo_groups = TaxoGroupsAPI(
+            user_email=self._config.user_email,
+            user_pw=self._config.user_pw,
+            base_url=self._config.base_url,
+            client_key=self._config.client_key,
+            client_secret=self._config.client_secret,
+            max_retry=self._config.tuning_max_retry,
+            max_requests=self._config.tuning_max_requests,
+            max_chunks=self._config.tuning_max_chunks,
+            tuning_unavailable_delay=self._config.tuning_unavailable_delay,
+            tuning_retry_delay=self._config.tuning_retry_delay,
+        ).api_list()
         taxo_list = []
         for taxo in taxo_groups["data"]:
             if taxo["access_mode"] != "none":
@@ -999,7 +1225,25 @@ class TaxoGroup(DownloadVn):
     """
 
     def __init__(self, config, backend, max_retry=None, max_requests=None, max_chunks=None):
-        super().__init__(config, TaxoGroupsAPI(config), backend, max_retry, max_requests, max_chunks)
+        super().__init__(
+            config,
+            TaxoGroupsAPI(
+                user_email=config.user_email,
+                user_pw=config.user_pw,
+                base_url=config.base_url,
+                client_key=config.client_key,
+                client_secret=config.client_secret,
+                max_retry=config.tuning_max_retry,
+                max_requests=config.tuning_max_requests,
+                max_chunks=config.tuning_max_chunks,
+                tuning_unavailable_delay=config.tuning_unavailable_delay,
+                tuning_retry_delay=config.tuning_retry_delay,
+            ),
+            backend,
+            max_retry,
+            max_requests,
+            max_chunks,
+        )
         return None
 
 
@@ -1014,7 +1258,18 @@ class TerritorialUnits(DownloadVn):
     def __init__(self, config, backend, max_retry=None, max_requests=None, max_chunks=None):
         super().__init__(
             config,
-            TerritorialUnitsAPI(config),
+            TerritorialUnitsAPI(
+                user_email=config.user_email,
+                user_pw=config.user_pw,
+                base_url=config.base_url,
+                client_key=config.client_key,
+                client_secret=config.client_secret,
+                max_retry=config.tuning_max_retry,
+                max_requests=config.tuning_max_requests,
+                max_chunks=config.tuning_max_chunks,
+                tuning_unavailable_delay=config.tuning_unavailable_delay,
+                tuning_retry_delay=config.tuning_retry_delay,
+            ),
             backend,
             max_retry,
             max_requests,
@@ -1034,7 +1289,18 @@ class Validations(DownloadVn):
     def __init__(self, config, backend, max_retry=None, max_requests=None, max_chunks=None):
         super().__init__(
             config,
-            ValidationsAPI(config),
+            ValidationsAPI(
+                user_email=config.user_email,
+                user_pw=config.user_pw,
+                base_url=config.base_url,
+                client_key=config.client_key,
+                client_secret=config.client_secret,
+                max_retry=config.tuning_max_retry,
+                max_requests=config.tuning_max_requests,
+                max_chunks=config.tuning_max_chunks,
+                tuning_unavailable_delay=config.tuning_unavailable_delay,
+                tuning_retry_delay=config.tuning_retry_delay,
+            ),
             backend,
             max_retry,
             max_requests,
