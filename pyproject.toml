@@ -47,6 +47,7 @@ SQLAlchemy = "<2"
 strictyaml = ">=1.7"
 tabulate = ">=0.9"
 yappi = ">=1.6"
+babel = ">=2.16"
 
 [tool.poetry.group.dev.dependencies]
 deptry = ">=0.20"
