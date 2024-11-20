@@ -81,6 +81,7 @@ Clone github repository:
 git clone https://github.com/dthonon/Client_API_VN.git
 cd Client_API_VN
 ```
+
 ### Installing the application
 Run:
 ```bash
@@ -100,11 +101,28 @@ git checkout -b name-of-your-bugfix-or-feature
 
 Now you can make your changes locally.
 
-Don't forget to add test cases for your added functionality to the `tests` directory.
-
 When you're done making changes, check that your changes pass the formatting tests.
 ```bash
 make check
+```
+
+### Running the tests
+Don't forget to add test cases for your added functionality to the `tests` directory.
+
+Create .evn_test.toml file in your root directory:
+```bash
+transfer_vn --init .evn_test.toml
+```
+Replace template text with actual data (site, user, password...).
+The tests access the active production site of biolovision and requires admin rights.
+
+Currently, tests are only defined for the following sites:
+```
+tff: https://www.faune-aura.org/
+```
+Create the test database::
+```bash
+transfer_vn --db_create .evn_test.yaml
 ```
 
 Now, validate that all unit tests are passing:
@@ -121,6 +139,15 @@ tox
 This requires you to have multiple versions of python installed.
 This step is also triggered in the CI/CD pipeline, so you could also choose to skip this step locally.
 
+### Update translations
+If you added new text messages, enclosed in _(), you need to update the translations:
+```bash
+make update_catalog
+editor src/export_vn/locale/fr_FR/LC_MESSAGES/export_vn.po
+make compile_catalog
+```
+
+### Finalize changes
 Commit your changes and push your branch to GitHub:
 
 ```bash

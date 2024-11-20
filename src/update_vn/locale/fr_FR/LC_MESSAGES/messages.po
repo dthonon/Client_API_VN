@@ -1,0 +1,83 @@
+# French (France) translations for PROJECT.
+# Copyright (C) 2024 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2024.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2024-11-20 23:05+0100\n"
+"PO-Revision-Date: 2024-11-20 23:07+0100\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: fr_FR\n"
+"Language-Team: fr_FR <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.16.0\n"
+
+#: src/update_vn/update_vn.py:80
+#, python-format
+msgid "update_vn version %s"
+msgstr ""
+
+#: src/update_vn/update_vn.py:94
+#, python-format
+msgid "toml configuration file %s exists and is not overwritten"
+msgstr "Le fichier de configuration toml %s existe et n'est pas écrasé"
+
+#: src/update_vn/update_vn.py:96
+msgid "Creating toml configuration file"
+msgstr "Création du fichier de configuration toml"
+
+#: src/update_vn/update_vn.py:99
+#, python-format
+msgid "Creating toml configuration file %s, from %s"
+msgstr "Création du fichier de configuration toml %s à partir de %s"
+
+#: src/update_vn/update_vn.py:101
+#, python-format
+msgid "Please edit %s before running the script"
+msgstr ""
+
+#: src/update_vn/update_vn.py:116
+#, python-format
+msgid "Configuration file %s does not exist"
+msgstr ""
+
+#: src/update_vn/update_vn.py:118
+#, python-format
+msgid "Getting configuration data from %s"
+msgstr ""
+
+#: src/update_vn/update_vn.py:127
+#, python-format
+msgid "Input file %s does not exist"
+msgstr ""
+
+#: src/update_vn/update_vn.py:132
+#, python-format
+msgid "Preparing update for site %s"
+msgstr "Préparation de la mise à jour du site %s"
+
+#: src/update_vn/update_vn.py:154
+#, python-format
+msgid "Site %s: updating sighting %s, operation %s"
+msgstr "Site %s : mise à jour observation %s, opération %s"
+
+#: src/update_vn/update_vn.py:164
+#, python-format
+msgid "Unknown operation in row, ignored %s"
+msgstr "Opération inconnue ignorée en ligne %s"
+
+#: src/update_vn/update_vn.py:174
+#, python-format
+msgid "Before: %s"
+msgstr "Avant : %s"
+
+#: src/update_vn/update_vn.py:213
+#, python-format
+msgid "After: %s"
+msgstr "Après : %s"

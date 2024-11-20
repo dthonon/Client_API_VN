@@ -30,7 +30,7 @@ from dynaconf import Dynaconf
 
 from biolovision.api import ObservationsAPI
 
-from . import _, __version__
+from . import __version__
 
 APP_NAME = "update_vn"
 
