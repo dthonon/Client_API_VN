@@ -6,7 +6,6 @@ authors = ["Daniel Thonon <d.thonon9@outlook.com>"]
 readme = "README.md"
 classifiers = [
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
@@ -29,7 +28,7 @@ Documentation = "https://dthonon.github.io/Client_API_VN/"
 Issues = "https://github.com/dthonon/Client_API_VN/issues"
 
 [tool.poetry.dependencies]
-python = ">=3.10,<4.0"
+python = ">=3.11,<4.0"
 alembic = ">=1.14"
 apscheduler = "<4"
 beautifulsoup4 = ">=4.12"
@@ -38,7 +37,7 @@ dynaconf = ">=3.2"
 jinja2 = ">=3.1"
 jsonschema = ">=4.23"
 psutil = ">=6.1"
-psycopg2-binary = ">=2.9.10"
+psycopg2-binary = ">=2.9"
 pyproj = ">=3.7"
 pytz = ">=2024"
 requests = ">=2.32"
@@ -73,7 +72,7 @@ Pygments = ">=2.18"
 
 [tool.poetry.scripts]
 transfer_vn = "export_vn.transfer_vn:run"
-update_vn = "update.update_vn:run"
+update_vn = "update_vn.update_vn:run"
 validate_vn = "schemas.validate:run"
 
 [build-system]

@@ -20,7 +20,18 @@ FILE = ".evn_test.yaml"
 
 # Get configuration for test site
 CFG = EvnConf(FILE).site_list[SITE]
-OBSERVATIONS_API = ObservationsAPI(CFG)
+OBSERVATIONS_API = ObservationsAPI(
+    user_email=CFG.user_email,
+    user_pw=CFG.user_pw,
+    base_url=CFG.base_url,
+    client_key=CFG.client_key,
+    client_secret=CFG.client_secret,
+    max_retry=CFG.tuning_max_retry,
+    max_requests=CFG.tuning_max_requests,
+    max_chunks=CFG.tuning_max_chunks,
+    tuning_unavailable_delay=CFG.tuning_unavailable_delay,
+    tuning_retry_delay=CFG.tuning_retry_delay,
+)
 
 
 @pytest.fixture(scope="module")

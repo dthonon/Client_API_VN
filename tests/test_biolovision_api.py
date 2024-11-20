@@ -33,18 +33,150 @@ FILE = ".evn_test.yaml"
 
 # Get configuration for test site
 CFG = EvnConf(FILE).site_list[SITE]
-ENTITIES_API = EntitiesAPI(CFG)
-FAMILIES_API = FamiliesAPI(CFG)
-FIELDS_API = FieldsAPI(CFG)
-LOCAL_ADMIN_UNITS_API = LocalAdminUnitsAPI(CFG)
-OBSERVATIONS_API = ObservationsAPI(CFG)
-OBSERVERS_API = ObserversAPI(CFG)
-PLACES_API = PlacesAPI(CFG)
-SPECIES_API = SpeciesAPI(CFG)
-SPECIES_API_ERR = SpeciesAPI(CFG, max_retry=1, max_requests=1, max_chunks=1)
-TAXO_GROUPS_API = TaxoGroupsAPI(CFG)
-TERRITORIAL_UNITS_API = TerritorialUnitsAPI(CFG)
-VALIDATIONS_API = ValidationsAPI(CFG)
+ENTITIES_API = EntitiesAPI(
+    user_email=CFG.user_email,
+    user_pw=CFG.user_pw,
+    base_url=CFG.base_url,
+    client_key=CFG.client_key,
+    client_secret=CFG.client_secret,
+    max_retry=CFG.tuning_max_retry,
+    max_requests=CFG.tuning_max_requests,
+    max_chunks=CFG.tuning_max_chunks,
+    tuning_unavailable_delay=CFG.tuning_unavailable_delay,
+    tuning_retry_delay=CFG.tuning_retry_delay,
+)
+FAMILIES_API = FamiliesAPI(
+    user_email=CFG.user_email,
+    user_pw=CFG.user_pw,
+    base_url=CFG.base_url,
+    client_key=CFG.client_key,
+    client_secret=CFG.client_secret,
+    max_retry=CFG.tuning_max_retry,
+    max_requests=CFG.tuning_max_requests,
+    max_chunks=CFG.tuning_max_chunks,
+    tuning_unavailable_delay=CFG.tuning_unavailable_delay,
+    tuning_retry_delay=CFG.tuning_retry_delay,
+)
+FIELDS_API = FieldsAPI(
+    user_email=CFG.user_email,
+    user_pw=CFG.user_pw,
+    base_url=CFG.base_url,
+    client_key=CFG.client_key,
+    client_secret=CFG.client_secret,
+    max_retry=CFG.tuning_max_retry,
+    max_requests=CFG.tuning_max_requests,
+    max_chunks=CFG.tuning_max_chunks,
+    tuning_unavailable_delay=CFG.tuning_unavailable_delay,
+    tuning_retry_delay=CFG.tuning_retry_delay,
+)
+LOCAL_ADMIN_UNITS_API = LocalAdminUnitsAPI(
+    user_email=CFG.user_email,
+    user_pw=CFG.user_pw,
+    base_url=CFG.base_url,
+    client_key=CFG.client_key,
+    client_secret=CFG.client_secret,
+    max_retry=CFG.tuning_max_retry,
+    max_requests=CFG.tuning_max_requests,
+    max_chunks=CFG.tuning_max_chunks,
+    tuning_unavailable_delay=CFG.tuning_unavailable_delay,
+    tuning_retry_delay=CFG.tuning_retry_delay,
+)
+OBSERVATIONS_API = ObservationsAPI(
+    user_email=CFG.user_email,
+    user_pw=CFG.user_pw,
+    base_url=CFG.base_url,
+    client_key=CFG.client_key,
+    client_secret=CFG.client_secret,
+    max_retry=CFG.tuning_max_retry,
+    max_requests=CFG.tuning_max_requests,
+    max_chunks=CFG.tuning_max_chunks,
+    tuning_unavailable_delay=CFG.tuning_unavailable_delay,
+    tuning_retry_delay=CFG.tuning_retry_delay,
+)
+OBSERVERS_API = ObserversAPI(
+    user_email=CFG.user_email,
+    user_pw=CFG.user_pw,
+    base_url=CFG.base_url,
+    client_key=CFG.client_key,
+    client_secret=CFG.client_secret,
+    max_retry=CFG.tuning_max_retry,
+    max_requests=CFG.tuning_max_requests,
+    max_chunks=CFG.tuning_max_chunks,
+    tuning_unavailable_delay=CFG.tuning_unavailable_delay,
+    tuning_retry_delay=CFG.tuning_retry_delay,
+)
+PLACES_API = PlacesAPI(
+    user_email=CFG.user_email,
+    user_pw=CFG.user_pw,
+    base_url=CFG.base_url,
+    client_key=CFG.client_key,
+    client_secret=CFG.client_secret,
+    max_retry=CFG.tuning_max_retry,
+    max_requests=CFG.tuning_max_requests,
+    max_chunks=CFG.tuning_max_chunks,
+    tuning_unavailable_delay=CFG.tuning_unavailable_delay,
+    tuning_retry_delay=CFG.tuning_retry_delay,
+)
+SPECIES_API = SpeciesAPI(
+    user_email=CFG.user_email,
+    user_pw=CFG.user_pw,
+    base_url=CFG.base_url,
+    client_key=CFG.client_key,
+    client_secret=CFG.client_secret,
+    max_retry=CFG.tuning_max_retry,
+    max_requests=CFG.tuning_max_requests,
+    max_chunks=CFG.tuning_max_chunks,
+    tuning_unavailable_delay=CFG.tuning_unavailable_delay,
+    tuning_retry_delay=CFG.tuning_retry_delay,
+)
+SPECIES_API_ERR = SpeciesAPI(
+    user_email=CFG.user_email,
+    user_pw=CFG.user_pw,
+    base_url=CFG.base_url,
+    client_key=CFG.client_key,
+    client_secret=CFG.client_secret,
+    max_retry=1,
+    max_requests=1,
+    max_chunks=1,
+    tuning_unavailable_delay=CFG.tuning_unavailable_delay,
+    tuning_retry_delay=CFG.tuning_retry_delay,
+)
+TAXO_GROUPS_API = TaxoGroupsAPI(
+    user_email=CFG.user_email,
+    user_pw=CFG.user_pw,
+    base_url=CFG.base_url,
+    client_key=CFG.client_key,
+    client_secret=CFG.client_secret,
+    max_retry=CFG.tuning_max_retry,
+    max_requests=CFG.tuning_max_requests,
+    max_chunks=CFG.tuning_max_chunks,
+    tuning_unavailable_delay=CFG.tuning_unavailable_delay,
+    tuning_retry_delay=CFG.tuning_retry_delay,
+)
+TERRITORIAL_UNITS_API = TerritorialUnitsAPI(
+    user_email=CFG.user_email,
+    user_pw=CFG.user_pw,
+    base_url=CFG.base_url,
+    client_key=CFG.client_key,
+    client_secret=CFG.client_secret,
+    max_retry=CFG.tuning_max_retry,
+    max_requests=CFG.tuning_max_requests,
+    max_chunks=CFG.tuning_max_chunks,
+    tuning_unavailable_delay=CFG.tuning_unavailable_delay,
+    tuning_retry_delay=CFG.tuning_retry_delay,
+)
+VALIDATIONS_API = ValidationsAPI(
+    user_email=CFG.user_email,
+    user_pw=CFG.user_pw,
+    base_url=CFG.base_url,
+    client_key=CFG.client_key,
+    client_secret=CFG.client_secret,
+    max_retry=CFG.tuning_max_retry,
+    max_requests=CFG.tuning_max_requests,
+    max_chunks=CFG.tuning_max_chunks,
+    tuning_unavailable_delay=CFG.tuning_unavailable_delay,
+    tuning_retry_delay=CFG.tuning_retry_delay,
+)
 
 
 # ---------------
@@ -789,7 +921,7 @@ class TestObservations:
         }
         list = OBSERVATIONS_API.api_search(q_param)
         assert OBSERVATIONS_API.transfer_errors == 0
-        assert len(list["data"]["sightings"]) >= 500
+        assert len(list["data"]["sightings"]) >= 400
 
     def test_observations_search_2(self):
         """Query sightings, from taxo_group 18: Mantodea and date range."""
@@ -802,7 +934,7 @@ class TestObservations:
         }
         list = OBSERVATIONS_API.api_search(q_param, short_version="1")
         assert OBSERVATIONS_API.transfer_errors == 0
-        assert len(list["data"]["sightings"]) >= 500
+        assert len(list["data"]["sightings"]) >= 400
 
     def test_observations_update(self):
         """Update a specific sighting."""

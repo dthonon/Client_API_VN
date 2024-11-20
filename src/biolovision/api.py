@@ -1,52 +1,6 @@
 """Provide python interface to Biolovision API.
 
-Thin Python binding to Biolovision API, returning dict instead of JSON.
-Currently, only a subset of API controlers are implemented, and only a subset
-of functions and parameters for implemented controlers.
-See details in each class.
-
-Each Biolovision controler is mapped to a python class.
-Class name is derived from controler name by removing '_' and using CamelCase.
-Methods names are similar to the corresponding API call, prefixed by 'api'.
-For example, method 'api_list' in class 'LocalAdminUnits' will
-call 'local_admin_units'.
-
-Most notable difference is that API chunks are grouped under 'data', i.e.
-calling species_list('1') will return all birds in one array under 'data' key.
-This means that requests returning lots of chunks (all bird sightings !)
-must be avoided, as memory could be insufficient.
-max_chunks __init__ parameter controls the maximum number of chunks
-allowed and raises an exception if it exceeds.
-
-Biolovision API to Classes mapping:
-```
-| Controler                     | Class               |
-+-------------------------------+---------------------+
-| Taxo groups                   | TaxoGroupsAPI       |
-| Families                      | FamiliesAPI         |
-| Species                       | SpeciesAPI          |
-| Territorial Units             | TerritorialUnitsAPI |
-| Local admin units             | LocalAdminUnitsAPI  |
-| Places                        | PlacesAPI           |
-| Observers                     | ObserversAPI        |
-| Entities                      | EntitiesAPI         |
-| Protocols                     | NA                  |
-| Export organizations          | NA                  |
-| Observations                  | ObservationsAPI     |
-| Fields                        | FieldsAPI           |
-| Media                         | NA                  |
-| Import files                  | NA                  |
-| Import files/Observations     | NA                  |
-| Validations                   | ValidationsAPI      |
-| Mortality informations        | NA                  |
-| Bearded Vulture Birds         | NA                  |
-| Bearded Vulture informations  | NA                  |
-| Grids                         | NA                  |
-| Grid-Commune                  | NA                  |
-| Atlas documents               | NA                  |
-```
-
-Methods, see each class
+Methods, see each class.
 
 Properties:
 
@@ -106,29 +60,72 @@ class IncorrectParameter(BiolovisionApiException):
 class BiolovisionAPI:
     """Top class, not for direct use. Provides internal and template methods."""
 
-    def __init__(self, config, controler, max_retry=None, max_requests=None, max_chunks=None):
-        self._config = config
+    def __init__(
+        self,
+        controler: str = "",
+        user_email: str | None = None,
+        user_pw: str | None = None,
+        base_url: str | None = None,
+        client_key: str | None = None,
+        client_secret: str | None = None,
+        max_retry: int | None = None,
+        max_requests: int | None = None,
+        max_chunks: int | None = None,
+        tuning_unavailable_delay: int | None = None,
+        tuning_retry_delay: int | None = None,
+    ) -> None:
+        if controler == "":
+            logger.fatal(_("controler must be defined"))
+            raise BiolovisionApiException
+        else:
+            self._ctrl = controler
+        if user_email is None:
+            logger.fatal(_("user_email must be defined"))
+            raise BiolovisionApiException
+        else:
+            self._user_email = user_email
+        if user_pw is None:
+            logger.fatal(_("user_pw must be defined"))
+            raise BiolovisionApiException
+        else:
+            self._user_pw = user_pw
+        if base_url is None:
+            logger.fatal(_("base_url must be defined"))
+            raise BiolovisionApiException
+        if client_key is None:
+            logger.fatal(_("client_key must be defined"))
+            raise BiolovisionApiException
+        if client_secret is None:
+            logger.fatal(_("client_secret must be defined"))
+            raise BiolovisionApiException
         if max_retry is None:
-            max_retry = config.tuning_max_retry
+            max_retry = 5
         if max_requests is None:
-            max_requests = config.tuning_max_requests
+            max_requests = 0
         if max_chunks is None:
-            max_chunks = config.tuning_max_chunks
+            max_chunks = 50
+        if tuning_unavailable_delay is None:
+            tuning_unavailable_delay = 600
+        if tuning_retry_delay is None:
+            tuning_retry_delay = 5
         self._limits = {
             "max_retry": max_retry,
             "max_requests": max_requests,
             "max_chunks": max_chunks,
+            "tuning_unavailable_delay": tuning_unavailable_delay,
+            "tuning_retry_delay": tuning_retry_delay,
         }
         self._transfer_errors = 0
         self._http_status = 0
-        self._ctrl = controler
 
         # Using OAuth1 auth helper to get access
-        self._api_url = config.base_url + "api/"  # URL of API
-        self._oauth = OAuth1(config.client_key, client_secret=config.client_secret)
+        self._api_url = base_url + "api/"  # URL of API
+        self._oauth = OAuth1(client_key, client_secret=client_secret)
+
+        return None
 
     @property
-    def version(self):
+    def version(self) -> str:
         """Return version."""
         return __version__
 
@@ -267,10 +264,10 @@ class BiolovisionAPI:
                 self._transfer_errors += 1  # pragma: no cover
                 if self._http_status == 503:  # pragma: no cover
                     # Service unavailable: long wait
-                    time.sleep(self._config.tuning_unavailable_delay)
+                    time.sleep(self._limits["tuning_unavailable_delay"])
                 else:
                     # A transient error: short wait
-                    time.sleep(self._config.tuning_retry_delay)
+                    time.sleep(self._limits["tuning_retry_delay"])
 
                 if self._transfer_errors > self._limits["max_retry"]:  # pragma: no cover
                     # Too many retries. Raising exception
@@ -406,8 +403,8 @@ class BiolovisionAPI:
         """
         # Mandatory parameters.
         params = {
-            "user_email": self._config.user_email,
-            "user_pw": self._config.user_pw,
+            "user_email": self._user_email,
+            "user_pw": self._user_pw,
         }
         if opt_params is not None:
             params.update(opt_params)
@@ -446,8 +443,8 @@ class BiolovisionAPI:
         """
         # Mandatory parameters.
         params = {
-            "user_email": self._config.user_email,
-            "user_pw": self._config.user_pw,
+            "user_email": self._user_email,
+            "user_pw": self._user_pw,
         }
         for key, value in kwargs.items():
             params[key] = value
@@ -493,8 +490,8 @@ class BiolovisionAPI:
         """
         # Mandatory parameters.
         params = {
-            "user_email": self._config.user_email,
-            "user_pw": self._config.user_pw,
+            "user_email": self._user_email,
+            "user_pw": self._user_pw,
         }
         # GET from API
         return self._url_get(params, "error/")
@@ -511,8 +508,33 @@ class EntitiesAPI(BiolovisionAPI):
 
     """
 
-    def __init__(self, config, max_retry=None, max_requests=None, max_chunks=None):
-        super().__init__(config, "entities", max_retry, max_requests, max_chunks)
+    def __init__(
+        self,
+        user_email: str | None = None,
+        user_pw: str | None = None,
+        base_url: str | None = None,
+        client_key: str | None = None,
+        client_secret: str | None = None,
+        max_retry: int | None = None,
+        max_requests: int | None = None,
+        max_chunks: int | None = None,
+        tuning_unavailable_delay: int | None = None,
+        tuning_retry_delay: int | None = None,
+    ) -> None:
+        super().__init__(
+            controler="entities",
+            user_email=user_email,
+            user_pw=user_pw,
+            base_url=base_url,
+            client_key=client_key,
+            client_secret=client_secret,
+            max_retry=max_retry,
+            max_requests=max_requests,
+            max_chunks=max_chunks,
+            tuning_unavailable_delay=tuning_unavailable_delay,
+            tuning_retry_delay=tuning_retry_delay,
+        )
+        return None
 
 
 class FamiliesAPI(BiolovisionAPI):
@@ -526,8 +548,34 @@ class FamiliesAPI(BiolovisionAPI):
 
     """
 
-    def __init__(self, config, max_retry=None, max_requests=None, max_chunks=None):
-        super().__init__(config, "families", max_retry, max_requests, max_chunks)
+    def __init__(
+        self,
+        config: dict | None = None,
+        user_email: str | None = None,
+        user_pw: str | None = None,
+        base_url: str | None = None,
+        client_key: str | None = None,
+        client_secret: str | None = None,
+        max_retry: int | None = None,
+        max_requests: int | None = None,
+        max_chunks: int | None = None,
+        tuning_unavailable_delay: int | None = None,
+        tuning_retry_delay: int | None = None,
+    ) -> None:
+        super().__init__(
+            controler="families",
+            user_email=user_email,
+            user_pw=user_pw,
+            base_url=base_url,
+            client_key=client_key,
+            client_secret=client_secret,
+            max_retry=max_retry,
+            max_requests=max_requests,
+            max_chunks=max_chunks,
+            tuning_unavailable_delay=tuning_unavailable_delay,
+            tuning_retry_delay=tuning_retry_delay,
+        )
+        return None
 
 
 class FieldsAPI(BiolovisionAPI):
@@ -541,8 +589,34 @@ class FieldsAPI(BiolovisionAPI):
 
     """
 
-    def __init__(self, config, max_retry=None, max_requests=None, max_chunks=None):
-        super().__init__(config, "fields", max_retry, max_requests, max_chunks)
+    def __init__(
+        self,
+        config: dict | None = None,
+        user_email: str | None = None,
+        user_pw: str | None = None,
+        base_url: str | None = None,
+        client_key: str | None = None,
+        client_secret: str | None = None,
+        max_retry: int | None = None,
+        max_requests: int | None = None,
+        max_chunks: int | None = None,
+        tuning_unavailable_delay: int | None = None,
+        tuning_retry_delay: int | None = None,
+    ) -> None:
+        super().__init__(
+            controler="fields",
+            user_email=user_email,
+            user_pw=user_pw,
+            base_url=base_url,
+            client_key=client_key,
+            client_secret=client_secret,
+            max_retry=max_retry,
+            max_requests=max_requests,
+            max_chunks=max_chunks,
+            tuning_unavailable_delay=tuning_unavailable_delay,
+            tuning_retry_delay=tuning_retry_delay,
+        )
+        return None
 
 
 class LocalAdminUnitsAPI(BiolovisionAPI):
@@ -556,8 +630,34 @@ class LocalAdminUnitsAPI(BiolovisionAPI):
 
     """
 
-    def __init__(self, config, max_retry=None, max_requests=None, max_chunks=None):
-        super().__init__(config, "local_admin_units", max_retry, max_requests, max_chunks)
+    def __init__(
+        self,
+        config: dict | None = None,
+        user_email: str | None = None,
+        user_pw: str | None = None,
+        base_url: str | None = None,
+        client_key: str | None = None,
+        client_secret: str | None = None,
+        max_retry: int | None = None,
+        max_requests: int | None = None,
+        max_chunks: int | None = None,
+        tuning_unavailable_delay: int | None = None,
+        tuning_retry_delay: int | None = None,
+    ) -> None:
+        super().__init__(
+            controler="local_admin_units",
+            user_email=user_email,
+            user_pw=user_pw,
+            base_url=base_url,
+            client_key=client_key,
+            client_secret=client_secret,
+            max_retry=max_retry,
+            max_requests=max_requests,
+            max_chunks=max_chunks,
+            tuning_unavailable_delay=tuning_unavailable_delay,
+            tuning_retry_delay=tuning_retry_delay,
+        )
+        return None
 
 
 class ObservationsAPI(BiolovisionAPI):
@@ -583,8 +683,34 @@ class ObservationsAPI(BiolovisionAPI):
 
     """
 
-    def __init__(self, config, max_retry=None, max_requests=None, max_chunks=None):
-        super().__init__(config, "observations", max_retry, max_requests, max_chunks)
+    def __init__(
+        self,
+        config: dict | None = None,
+        user_email: str | None = None,
+        user_pw: str | None = None,
+        base_url: str | None = None,
+        client_key: str | None = None,
+        client_secret: str | None = None,
+        max_retry: int | None = None,
+        max_requests: int | None = None,
+        max_chunks: int | None = None,
+        tuning_unavailable_delay: int | None = None,
+        tuning_retry_delay: int | None = None,
+    ) -> None:
+        super().__init__(
+            controler="observations",
+            user_email=user_email,
+            user_pw=user_pw,
+            base_url=base_url,
+            client_key=client_key,
+            client_secret=client_secret,
+            max_retry=max_retry,
+            max_requests=max_requests,
+            max_chunks=max_chunks,
+            tuning_unavailable_delay=tuning_unavailable_delay,
+            tuning_retry_delay=tuning_retry_delay,
+        )
+        return None
 
     def api_list(self, id_taxo_group, **kwargs):
         """Query for list of observations by taxo_group from the controler.
@@ -634,8 +760,8 @@ class ObservationsAPI(BiolovisionAPI):
         """
         # Mandatory parameters.
         params = {
-            "user_email": self._config.user_email,
-            "user_pw": self._config.user_pw,
+            "user_email": self._user_email,
+            "user_pw": self._user_pw,
         }
         # Specific parameters.
         params["id_taxo_group"] = str(id_taxo_group)
@@ -665,8 +791,8 @@ class ObservationsAPI(BiolovisionAPI):
         """
         # Mandatory parameters.
         params = {
-            "user_email": self._config.user_email,
-            "user_pw": self._config.user_pw,
+            "user_email": self._user_email,
+            "user_pw": self._user_pw,
         }
         for key, value in kwargs.items():
             params[key] = value
@@ -696,8 +822,8 @@ class ObservationsAPI(BiolovisionAPI):
         """
         # Mandatory parameters.
         params = {
-            "user_email": self._config.user_email,
-            "user_pw": self._config.user_pw,
+            "user_email": self._user_email,
+            "user_pw": self._user_pw,
         }
         logger.debug(_("Create observation, with data %s"), data)
         # POST to API
@@ -706,7 +832,7 @@ class ObservationsAPI(BiolovisionAPI):
             # Successful creation
             return resp
         else:
-            raise HTTPError(self._http_status)
+            raise super().HTTPError(self._http_status)
 
     def api_update(self, id: str, data: dict) -> None:
         """Update an observation.
@@ -722,8 +848,8 @@ class ObservationsAPI(BiolovisionAPI):
         """
         # Mandatory parameters.
         params = {
-            "user_email": self._config.user_email,
-            "user_pw": self._config.user_pw,
+            "user_email": self._user_email,
+            "user_pw": self._user_pw,
         }
         logger.debug(_("Update observation %s, with data %s"), id, data)
         # PUT to API
@@ -741,8 +867,8 @@ class ObservationsAPI(BiolovisionAPI):
         """
         # Mandatory parameters.
         params = {
-            "user_email": self._config.user_email,
-            "user_pw": self._config.user_pw,
+            "user_email": self._user_email,
+            "user_pw": self._user_pw,
         }
         logger.debug(_("Delete observation %s"), id)
         # DELETE to API
@@ -760,15 +886,15 @@ class ObservationsAPI(BiolovisionAPI):
         """
         # Mandatory parameters.
         params = {
-            "user_email": self._config.user_email,
-            "user_pw": self._config.user_pw,
+            "user_email": self._user_email,
+            "user_pw": self._user_pw,
         }
         logger.debug(_("Delete observation %s"), id)
         # POST to API
         if data is not None:
             res = super()._url_get(params, "observations/delete_list", "POST", body=json.dumps(data))
         else:
-            logger.warn(_("No parameter passed: call ignored"))
+            logger.warning(_("No parameter passed: call ignored"))
             res = None
         return res
 
@@ -784,8 +910,34 @@ class ObserversAPI(BiolovisionAPI):
 
     """
 
-    def __init__(self, config, max_retry=None, max_requests=None, max_chunks=None):
-        super().__init__(config, "observers", max_retry, max_requests, max_chunks)
+    def __init__(
+        self,
+        config: dict | None = None,
+        user_email: str | None = None,
+        user_pw: str | None = None,
+        base_url: str | None = None,
+        client_key: str | None = None,
+        client_secret: str | None = None,
+        max_retry: int | None = None,
+        max_requests: int | None = None,
+        max_chunks: int | None = None,
+        tuning_unavailable_delay: int | None = None,
+        tuning_retry_delay: int | None = None,
+    ) -> None:
+        super().__init__(
+            controler="observers",
+            user_email=user_email,
+            user_pw=user_pw,
+            base_url=base_url,
+            client_key=client_key,
+            client_secret=client_secret,
+            max_retry=max_retry,
+            max_requests=max_requests,
+            max_chunks=max_chunks,
+            tuning_unavailable_delay=tuning_unavailable_delay,
+            tuning_retry_delay=tuning_retry_delay,
+        )
+        return None
 
 
 class PlacesAPI(BiolovisionAPI):
@@ -801,8 +953,34 @@ class PlacesAPI(BiolovisionAPI):
 
     """
 
-    def __init__(self, config, max_retry=None, max_requests=None, max_chunks=None):
-        super().__init__(config, "places", max_retry, max_requests, max_chunks)
+    def __init__(
+        self,
+        config: dict | None = None,
+        user_email: str | None = None,
+        user_pw: str | None = None,
+        base_url: str | None = None,
+        client_key: str | None = None,
+        client_secret: str | None = None,
+        max_retry: int | None = None,
+        max_requests: int | None = None,
+        max_chunks: int | None = None,
+        tuning_unavailable_delay: int | None = None,
+        tuning_retry_delay: int | None = None,
+    ) -> None:
+        super().__init__(
+            controler="places",
+            user_email=user_email,
+            user_pw=user_pw,
+            base_url=base_url,
+            client_key=client_key,
+            client_secret=client_secret,
+            max_retry=max_retry,
+            max_requests=max_requests,
+            max_chunks=max_chunks,
+            tuning_unavailable_delay=tuning_unavailable_delay,
+            tuning_retry_delay=tuning_retry_delay,
+        )
+        return None
 
     def api_diff(self, delta_time, modification_type="all"):
         """Query for a list of updates or deletions since a given date.
@@ -825,8 +1003,8 @@ class PlacesAPI(BiolovisionAPI):
         """
         # Mandatory parameters.
         params = {
-            "user_email": self._config.user_email,
-            "user_pw": self._config.user_pw,
+            "user_email": self._user_email,
+            "user_pw": self._user_pw,
         }
         # Specific parameters.
         params["modification_type"] = modification_type
@@ -846,8 +1024,34 @@ class SpeciesAPI(BiolovisionAPI):
 
     """
 
-    def __init__(self, config, max_retry=None, max_requests=None, max_chunks=None):
-        super().__init__(config, "species", max_retry, max_requests, max_chunks)
+    def __init__(
+        self,
+        config: dict | None = None,
+        user_email: str | None = None,
+        user_pw: str | None = None,
+        base_url: str | None = None,
+        client_key: str | None = None,
+        client_secret: str | None = None,
+        max_retry: int | None = None,
+        max_requests: int | None = None,
+        max_chunks: int | None = None,
+        tuning_unavailable_delay: int | None = None,
+        tuning_retry_delay: int | None = None,
+    ) -> None:
+        super().__init__(
+            controler="species",
+            user_email=user_email,
+            user_pw=user_pw,
+            base_url=base_url,
+            client_key=client_key,
+            client_secret=client_secret,
+            max_retry=max_retry,
+            max_requests=max_requests,
+            max_chunks=max_chunks,
+            tuning_unavailable_delay=tuning_unavailable_delay,
+            tuning_retry_delay=tuning_retry_delay,
+        )
+        return None
 
 
 class TaxoGroupsAPI(BiolovisionAPI):
@@ -861,8 +1065,34 @@ class TaxoGroupsAPI(BiolovisionAPI):
 
     """
 
-    def __init__(self, config, max_retry=None, max_requests=None, max_chunks=None):
-        super().__init__(config, "taxo_groups", max_retry, max_requests, max_chunks)
+    def __init__(
+        self,
+        config: dict | None = None,
+        user_email: str | None = None,
+        user_pw: str | None = None,
+        base_url: str | None = None,
+        client_key: str | None = None,
+        client_secret: str | None = None,
+        max_retry: int | None = None,
+        max_requests: int | None = None,
+        max_chunks: int | None = None,
+        tuning_unavailable_delay: int | None = None,
+        tuning_retry_delay: int | None = None,
+    ) -> None:
+        super().__init__(
+            controler="taxo_groups",
+            user_email=user_email,
+            user_pw=user_pw,
+            base_url=base_url,
+            client_key=client_key,
+            client_secret=client_secret,
+            max_retry=max_retry,
+            max_requests=max_requests,
+            max_chunks=max_chunks,
+            tuning_unavailable_delay=tuning_unavailable_delay,
+            tuning_retry_delay=tuning_retry_delay,
+        )
+        return None
 
     @lru_cache(maxsize=32)
     def api_list(self, opt_params=None):
@@ -881,8 +1111,34 @@ class TerritorialUnitsAPI(BiolovisionAPI):
 
     """
 
-    def __init__(self, config, max_retry=None, max_requests=None, max_chunks=None):
-        super().__init__(config, "territorial_units", max_retry, max_requests, max_chunks)
+    def __init__(
+        self,
+        config: dict | None = None,
+        user_email: str | None = None,
+        user_pw: str | None = None,
+        base_url: str | None = None,
+        client_key: str | None = None,
+        client_secret: str | None = None,
+        max_retry: int | None = None,
+        max_requests: int | None = None,
+        max_chunks: int | None = None,
+        tuning_unavailable_delay: int | None = None,
+        tuning_retry_delay: int | None = None,
+    ) -> None:
+        super().__init__(
+            controler="territorial_units",
+            user_email=user_email,
+            user_pw=user_pw,
+            base_url=base_url,
+            client_key=client_key,
+            client_secret=client_secret,
+            max_retry=max_retry,
+            max_requests=max_requests,
+            max_chunks=max_chunks,
+            tuning_unavailable_delay=tuning_unavailable_delay,
+            tuning_retry_delay=tuning_retry_delay,
+        )
+        return None
 
     @lru_cache(maxsize=32)
     def api_list(self, opt_params=None):
@@ -901,5 +1157,31 @@ class ValidationsAPI(BiolovisionAPI):
 
     """
 
-    def __init__(self, config, max_retry=None, max_requests=None, max_chunks=None):
-        super().__init__(config, "validations", max_retry, max_requests, max_chunks)
+    def __init__(
+        self,
+        config: dict | None = None,
+        user_email: str | None = None,
+        user_pw: str | None = None,
+        base_url: str | None = None,
+        client_key: str | None = None,
+        client_secret: str | None = None,
+        max_retry: int | None = None,
+        max_requests: int | None = None,
+        max_chunks: int | None = None,
+        tuning_unavailable_delay: int | None = None,
+        tuning_retry_delay: int | None = None,
+    ) -> None:
+        super().__init__(
+            controler="validations",
+            user_email=user_email,
+            user_pw=user_pw,
+            base_url=base_url,
+            client_key=client_key,
+            client_secret=client_secret,
+            max_retry=max_retry,
+            max_requests=max_requests,
+            max_chunks=max_chunks,
+            tuning_unavailable_delay=tuning_unavailable_delay,
+            tuning_retry_delay=tuning_retry_delay,
+        )
+        return None
