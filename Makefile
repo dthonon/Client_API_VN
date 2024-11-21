@@ -21,8 +21,8 @@ check: ## Run code quality tools.
 	@poetry run deptry .
 
 #
-# update_catalog: extract_messages
-# compile_catalog:
+# update_catalog: pybabel extract src/update_vn/ -o src/update_vn/locale/update_vn.pot
+# compile_catalog: pybabel compile -D update_vn -d src/update_vn/locale/
 
 .PHONY: test
 test: ## Test the code with pytest
