@@ -1,6 +1,9 @@
 # Initialization file for python scripts
 # Needs to be customized for each site. See comments below for details
 
+# Message added to hidden_comment after update
+message = "Modification en masse, le {date}, opération {op}, attribut {path}, depuis {old} vers {new}"
+
 [sites]
 # Connection details for each Biolovision site
 

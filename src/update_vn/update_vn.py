@@ -18,7 +18,6 @@ Modification are tracked in hidden_comment.
 import csv
 import datetime
 import importlib.resources
-import json
 import logging
 import shutil
 import sys
@@ -198,13 +197,17 @@ def update(config: str, input: str) -> None:
                         except KeyError:  # pragma: no cover
                             msg = ""
                         # Prepare logging message to be appended to hidden_comment
-                        msg = msg + json.dumps({
-                            "updated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                            "op": row[3].strip(),
-                            "path": row[2].strip(),
-                            "old": old_attr,
-                            "new": row[4].strip(),
-                        })
+                        msg = (
+                            msg
+                            + " / "
+                            + settings.message.format(
+                                date=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                op=row[3].strip(),
+                                path=row[2].strip(),
+                                old=old_attr,
+                                new=row[4].strip(),
+                            )
+                        )
                         if row[3].strip() == "replace":
                             exec("{} = {}".format(repl, "row[4].strip()"))
                         else:  # delete_attribute

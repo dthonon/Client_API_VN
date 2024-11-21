@@ -40,22 +40,22 @@ msgstr "Création du fichier de configuration toml %s à partir de %s"
 #: src/update_vn/update_vn.py:101
 #, python-format
 msgid "Please edit %s before running the script"
-msgstr ""
+msgstr "Veuillez modifier %s avant de lancer le script"
 
 #: src/update_vn/update_vn.py:116
 #, python-format
 msgid "Configuration file %s does not exist"
-msgstr ""
+msgstr "Le fichier de configuration %s n'existe pas"
 
 #: src/update_vn/update_vn.py:118
 #, python-format
 msgid "Getting configuration data from %s"
-msgstr ""
+msgstr "Lecture de la configuration depuis %s"
 
 #: src/update_vn/update_vn.py:127
 #, python-format
 msgid "Input file %s does not exist"
-msgstr ""
+msgstr "Le fichier d'entrée %s n'existe pas"
 
 #: src/update_vn/update_vn.py:132
 #, python-format

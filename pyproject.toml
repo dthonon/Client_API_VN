@@ -187,3 +187,6 @@ source = ["src"]
 
 [tool.deptry]
 known_first_party = ["biolovision", "export_vn"]
+
+[tool.deptry.per_rule_ignores]
+DEP002 = ["babel"]
