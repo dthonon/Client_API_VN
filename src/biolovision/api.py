@@ -71,8 +71,8 @@ class BiolovisionAPI:
         max_retry: int | None = None,
         max_requests: int | None = None,
         max_chunks: int | None = None,
-        tuning_unavailable_delay: int | None = None,
-        tuning_retry_delay: int | None = None,
+        unavailable_delay: int | None = None,
+        retry_delay: int | None = None,
     ) -> None:
         if controler == "":
             logger.fatal(_("controler must be defined"))
@@ -104,16 +104,16 @@ class BiolovisionAPI:
             max_requests = 0
         if max_chunks is None:
             max_chunks = 50
-        if tuning_unavailable_delay is None:
-            tuning_unavailable_delay = 600
-        if tuning_retry_delay is None:
-            tuning_retry_delay = 5
+        if unavailable_delay is None:
+            unavailable_delay = 600
+        if retry_delay is None:
+            retry_delay = 5
         self._limits = {
             "max_retry": max_retry,
             "max_requests": max_requests,
             "max_chunks": max_chunks,
-            "tuning_unavailable_delay": tuning_unavailable_delay,
-            "tuning_retry_delay": tuning_retry_delay,
+            "unavailable_delay": unavailable_delay,
+            "retry_delay": retry_delay,
         }
         self._transfer_errors = 0
         self._http_status = 0
@@ -264,10 +264,10 @@ class BiolovisionAPI:
                 self._transfer_errors += 1  # pragma: no cover
                 if self._http_status == 503:  # pragma: no cover
                     # Service unavailable: long wait
-                    time.sleep(self._limits["tuning_unavailable_delay"])
+                    time.sleep(self._limits["unavailable_delay"])
                 else:
                     # A transient error: short wait
-                    time.sleep(self._limits["tuning_retry_delay"])
+                    time.sleep(self._limits["retry_delay"])
 
                 if self._transfer_errors > self._limits["max_retry"]:  # pragma: no cover
                     # Too many retries. Raising exception
@@ -518,8 +518,8 @@ class EntitiesAPI(BiolovisionAPI):
         max_retry: int | None = None,
         max_requests: int | None = None,
         max_chunks: int | None = None,
-        tuning_unavailable_delay: int | None = None,
-        tuning_retry_delay: int | None = None,
+        unavailable_delay: int | None = None,
+        retry_delay: int | None = None,
     ) -> None:
         super().__init__(
             controler="entities",
@@ -531,8 +531,8 @@ class EntitiesAPI(BiolovisionAPI):
             max_retry=max_retry,
             max_requests=max_requests,
             max_chunks=max_chunks,
-            tuning_unavailable_delay=tuning_unavailable_delay,
-            tuning_retry_delay=tuning_retry_delay,
+            unavailable_delay=unavailable_delay,
+            retry_delay=retry_delay,
         )
         return None
 
@@ -559,8 +559,8 @@ class FamiliesAPI(BiolovisionAPI):
         max_retry: int | None = None,
         max_requests: int | None = None,
         max_chunks: int | None = None,
-        tuning_unavailable_delay: int | None = None,
-        tuning_retry_delay: int | None = None,
+        unavailable_delay: int | None = None,
+        retry_delay: int | None = None,
     ) -> None:
         super().__init__(
             controler="families",
@@ -572,8 +572,8 @@ class FamiliesAPI(BiolovisionAPI):
             max_retry=max_retry,
             max_requests=max_requests,
             max_chunks=max_chunks,
-            tuning_unavailable_delay=tuning_unavailable_delay,
-            tuning_retry_delay=tuning_retry_delay,
+            unavailable_delay=unavailable_delay,
+            retry_delay=retry_delay,
         )
         return None
 
@@ -600,8 +600,8 @@ class FieldsAPI(BiolovisionAPI):
         max_retry: int | None = None,
         max_requests: int | None = None,
         max_chunks: int | None = None,
-        tuning_unavailable_delay: int | None = None,
-        tuning_retry_delay: int | None = None,
+        unavailable_delay: int | None = None,
+        retry_delay: int | None = None,
     ) -> None:
         super().__init__(
             controler="fields",
@@ -613,8 +613,8 @@ class FieldsAPI(BiolovisionAPI):
             max_retry=max_retry,
             max_requests=max_requests,
             max_chunks=max_chunks,
-            tuning_unavailable_delay=tuning_unavailable_delay,
-            tuning_retry_delay=tuning_retry_delay,
+            unavailable_delay=unavailable_delay,
+            retry_delay=retry_delay,
         )
         return None
 
@@ -641,8 +641,8 @@ class LocalAdminUnitsAPI(BiolovisionAPI):
         max_retry: int | None = None,
         max_requests: int | None = None,
         max_chunks: int | None = None,
-        tuning_unavailable_delay: int | None = None,
-        tuning_retry_delay: int | None = None,
+        unavailable_delay: int | None = None,
+        retry_delay: int | None = None,
     ) -> None:
         super().__init__(
             controler="local_admin_units",
@@ -654,8 +654,8 @@ class LocalAdminUnitsAPI(BiolovisionAPI):
             max_retry=max_retry,
             max_requests=max_requests,
             max_chunks=max_chunks,
-            tuning_unavailable_delay=tuning_unavailable_delay,
-            tuning_retry_delay=tuning_retry_delay,
+            unavailable_delay=unavailable_delay,
+            retry_delay=retry_delay,
         )
         return None
 
@@ -694,8 +694,8 @@ class ObservationsAPI(BiolovisionAPI):
         max_retry: int | None = None,
         max_requests: int | None = None,
         max_chunks: int | None = None,
-        tuning_unavailable_delay: int | None = None,
-        tuning_retry_delay: int | None = None,
+        unavailable_delay: int | None = None,
+        retry_delay: int | None = None,
     ) -> None:
         super().__init__(
             controler="observations",
@@ -707,8 +707,8 @@ class ObservationsAPI(BiolovisionAPI):
             max_retry=max_retry,
             max_requests=max_requests,
             max_chunks=max_chunks,
-            tuning_unavailable_delay=tuning_unavailable_delay,
-            tuning_retry_delay=tuning_retry_delay,
+            unavailable_delay=unavailable_delay,
+            retry_delay=retry_delay,
         )
         return None
 
@@ -921,8 +921,8 @@ class ObserversAPI(BiolovisionAPI):
         max_retry: int | None = None,
         max_requests: int | None = None,
         max_chunks: int | None = None,
-        tuning_unavailable_delay: int | None = None,
-        tuning_retry_delay: int | None = None,
+        unavailable_delay: int | None = None,
+        retry_delay: int | None = None,
     ) -> None:
         super().__init__(
             controler="observers",
@@ -934,8 +934,8 @@ class ObserversAPI(BiolovisionAPI):
             max_retry=max_retry,
             max_requests=max_requests,
             max_chunks=max_chunks,
-            tuning_unavailable_delay=tuning_unavailable_delay,
-            tuning_retry_delay=tuning_retry_delay,
+            unavailable_delay=unavailable_delay,
+            retry_delay=retry_delay,
         )
         return None
 
@@ -964,8 +964,8 @@ class PlacesAPI(BiolovisionAPI):
         max_retry: int | None = None,
         max_requests: int | None = None,
         max_chunks: int | None = None,
-        tuning_unavailable_delay: int | None = None,
-        tuning_retry_delay: int | None = None,
+        unavailable_delay: int | None = None,
+        retry_delay: int | None = None,
     ) -> None:
         super().__init__(
             controler="places",
@@ -977,8 +977,8 @@ class PlacesAPI(BiolovisionAPI):
             max_retry=max_retry,
             max_requests=max_requests,
             max_chunks=max_chunks,
-            tuning_unavailable_delay=tuning_unavailable_delay,
-            tuning_retry_delay=tuning_retry_delay,
+            unavailable_delay=unavailable_delay,
+            retry_delay=retry_delay,
         )
         return None
 
@@ -1035,8 +1035,8 @@ class SpeciesAPI(BiolovisionAPI):
         max_retry: int | None = None,
         max_requests: int | None = None,
         max_chunks: int | None = None,
-        tuning_unavailable_delay: int | None = None,
-        tuning_retry_delay: int | None = None,
+        unavailable_delay: int | None = None,
+        retry_delay: int | None = None,
     ) -> None:
         super().__init__(
             controler="species",
@@ -1048,8 +1048,8 @@ class SpeciesAPI(BiolovisionAPI):
             max_retry=max_retry,
             max_requests=max_requests,
             max_chunks=max_chunks,
-            tuning_unavailable_delay=tuning_unavailable_delay,
-            tuning_retry_delay=tuning_retry_delay,
+            unavailable_delay=unavailable_delay,
+            retry_delay=retry_delay,
         )
         return None
 
@@ -1076,8 +1076,8 @@ class TaxoGroupsAPI(BiolovisionAPI):
         max_retry: int | None = None,
         max_requests: int | None = None,
         max_chunks: int | None = None,
-        tuning_unavailable_delay: int | None = None,
-        tuning_retry_delay: int | None = None,
+        unavailable_delay: int | None = None,
+        retry_delay: int | None = None,
     ) -> None:
         super().__init__(
             controler="taxo_groups",
@@ -1089,8 +1089,8 @@ class TaxoGroupsAPI(BiolovisionAPI):
             max_retry=max_retry,
             max_requests=max_requests,
             max_chunks=max_chunks,
-            tuning_unavailable_delay=tuning_unavailable_delay,
-            tuning_retry_delay=tuning_retry_delay,
+            unavailable_delay=unavailable_delay,
+            retry_delay=retry_delay,
         )
         return None
 
@@ -1122,8 +1122,8 @@ class TerritorialUnitsAPI(BiolovisionAPI):
         max_retry: int | None = None,
         max_requests: int | None = None,
         max_chunks: int | None = None,
-        tuning_unavailable_delay: int | None = None,
-        tuning_retry_delay: int | None = None,
+        unavailable_delay: int | None = None,
+        retry_delay: int | None = None,
     ) -> None:
         super().__init__(
             controler="territorial_units",
@@ -1135,8 +1135,8 @@ class TerritorialUnitsAPI(BiolovisionAPI):
             max_retry=max_retry,
             max_requests=max_requests,
             max_chunks=max_chunks,
-            tuning_unavailable_delay=tuning_unavailable_delay,
-            tuning_retry_delay=tuning_retry_delay,
+            unavailable_delay=unavailable_delay,
+            retry_delay=retry_delay,
         )
         return None
 
@@ -1168,8 +1168,8 @@ class ValidationsAPI(BiolovisionAPI):
         max_retry: int | None = None,
         max_requests: int | None = None,
         max_chunks: int | None = None,
-        tuning_unavailable_delay: int | None = None,
-        tuning_retry_delay: int | None = None,
+        unavailable_delay: int | None = None,
+        retry_delay: int | None = None,
     ) -> None:
         super().__init__(
             controler="validations",
@@ -1181,7 +1181,7 @@ class ValidationsAPI(BiolovisionAPI):
             max_retry=max_retry,
             max_requests=max_requests,
             max_chunks=max_chunks,
-            tuning_unavailable_delay=tuning_unavailable_delay,
-            tuning_retry_delay=tuning_retry_delay,
+            unavailable_delay=unavailable_delay,
+            retry_delay=retry_delay,
         )
         return None

@@ -115,12 +115,10 @@ def update(config: str, input: str) -> None:
         logger.critical(_("Configuration file %s does not exist"), str(Path.home() / config))
         raise FileNotFoundError
     logger.info(_("Getting configuration data from %s"), config)
-    settings = Dynaconf(
-        settings_files=[config],
-    )
+    ref = str(importlib.resources.files("update_vn") / "data/evn_default.toml")
+    settings = Dynaconf(preload=[ref], settings_files=[config])
 
     cfg_site_list = settings.sites
-    print(cfg_site_list.items())
 
     # Update Biolovision site from update file
     if not Path(input).is_file():
@@ -136,6 +134,11 @@ def update(config: str, input: str) -> None:
             base_url=cfg.site,
             client_key=cfg.client_key,
             client_secret=cfg.client_secret,
+            max_retry=settings.tuning.max_retry,
+            max_requests=settings.tuning.max_requests,
+            max_chunks=settings.tuning.max_chunks,
+            unavailable_delay=settings.tuning.unavailable_delay,
+            retry_delay=settings.tuning.retry_delay,
         )
 
     with open(input, newline="") as csvfile:

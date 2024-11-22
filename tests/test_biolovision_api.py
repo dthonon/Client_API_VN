@@ -42,8 +42,8 @@ ENTITIES_API = EntitiesAPI(
     max_retry=CFG.tuning_max_retry,
     max_requests=CFG.tuning_max_requests,
     max_chunks=CFG.tuning_max_chunks,
-    tuning_unavailable_delay=CFG.tuning_unavailable_delay,
-    tuning_retry_delay=CFG.tuning_retry_delay,
+    unavailable_delay=CFG.tuning_unavailable_delay,
+    retry_delay=CFG.tuning_retry_delay,
 )
 FAMILIES_API = FamiliesAPI(
     user_email=CFG.user_email,
@@ -54,8 +54,8 @@ FAMILIES_API = FamiliesAPI(
     max_retry=CFG.tuning_max_retry,
     max_requests=CFG.tuning_max_requests,
     max_chunks=CFG.tuning_max_chunks,
-    tuning_unavailable_delay=CFG.tuning_unavailable_delay,
-    tuning_retry_delay=CFG.tuning_retry_delay,
+    unavailable_delay=CFG.tuning_unavailable_delay,
+    retry_delay=CFG.tuning_retry_delay,
 )
 FIELDS_API = FieldsAPI(
     user_email=CFG.user_email,
@@ -66,8 +66,8 @@ FIELDS_API = FieldsAPI(
     max_retry=CFG.tuning_max_retry,
     max_requests=CFG.tuning_max_requests,
     max_chunks=CFG.tuning_max_chunks,
-    tuning_unavailable_delay=CFG.tuning_unavailable_delay,
-    tuning_retry_delay=CFG.tuning_retry_delay,
+    unavailable_delay=CFG.tuning_unavailable_delay,
+    retry_delay=CFG.tuning_retry_delay,
 )
 LOCAL_ADMIN_UNITS_API = LocalAdminUnitsAPI(
     user_email=CFG.user_email,
@@ -78,8 +78,8 @@ LOCAL_ADMIN_UNITS_API = LocalAdminUnitsAPI(
     max_retry=CFG.tuning_max_retry,
     max_requests=CFG.tuning_max_requests,
     max_chunks=CFG.tuning_max_chunks,
-    tuning_unavailable_delay=CFG.tuning_unavailable_delay,
-    tuning_retry_delay=CFG.tuning_retry_delay,
+    unavailable_delay=CFG.tuning_unavailable_delay,
+    retry_delay=CFG.tuning_retry_delay,
 )
 OBSERVATIONS_API = ObservationsAPI(
     user_email=CFG.user_email,
@@ -90,8 +90,8 @@ OBSERVATIONS_API = ObservationsAPI(
     max_retry=CFG.tuning_max_retry,
     max_requests=CFG.tuning_max_requests,
     max_chunks=CFG.tuning_max_chunks,
-    tuning_unavailable_delay=CFG.tuning_unavailable_delay,
-    tuning_retry_delay=CFG.tuning_retry_delay,
+    unavailable_delay=CFG.tuning_unavailable_delay,
+    retry_delay=CFG.tuning_retry_delay,
 )
 OBSERVERS_API = ObserversAPI(
     user_email=CFG.user_email,
@@ -102,8 +102,8 @@ OBSERVERS_API = ObserversAPI(
     max_retry=CFG.tuning_max_retry,
     max_requests=CFG.tuning_max_requests,
     max_chunks=CFG.tuning_max_chunks,
-    tuning_unavailable_delay=CFG.tuning_unavailable_delay,
-    tuning_retry_delay=CFG.tuning_retry_delay,
+    unavailable_delay=CFG.tuning_unavailable_delay,
+    retry_delay=CFG.tuning_retry_delay,
 )
 PLACES_API = PlacesAPI(
     user_email=CFG.user_email,
@@ -114,8 +114,8 @@ PLACES_API = PlacesAPI(
     max_retry=CFG.tuning_max_retry,
     max_requests=CFG.tuning_max_requests,
     max_chunks=CFG.tuning_max_chunks,
-    tuning_unavailable_delay=CFG.tuning_unavailable_delay,
-    tuning_retry_delay=CFG.tuning_retry_delay,
+    unavailable_delay=CFG.tuning_unavailable_delay,
+    retry_delay=CFG.tuning_retry_delay,
 )
 SPECIES_API = SpeciesAPI(
     user_email=CFG.user_email,
@@ -126,8 +126,8 @@ SPECIES_API = SpeciesAPI(
     max_retry=CFG.tuning_max_retry,
     max_requests=CFG.tuning_max_requests,
     max_chunks=CFG.tuning_max_chunks,
-    tuning_unavailable_delay=CFG.tuning_unavailable_delay,
-    tuning_retry_delay=CFG.tuning_retry_delay,
+    unavailable_delay=CFG.tuning_unavailable_delay,
+    retry_delay=CFG.tuning_retry_delay,
 )
 SPECIES_API_ERR = SpeciesAPI(
     user_email=CFG.user_email,
@@ -138,8 +138,8 @@ SPECIES_API_ERR = SpeciesAPI(
     max_retry=1,
     max_requests=1,
     max_chunks=1,
-    tuning_unavailable_delay=CFG.tuning_unavailable_delay,
-    tuning_retry_delay=CFG.tuning_retry_delay,
+    unavailable_delay=CFG.tuning_unavailable_delay,
+    retry_delay=CFG.tuning_retry_delay,
 )
 TAXO_GROUPS_API = TaxoGroupsAPI(
     user_email=CFG.user_email,
@@ -150,8 +150,8 @@ TAXO_GROUPS_API = TaxoGroupsAPI(
     max_retry=CFG.tuning_max_retry,
     max_requests=CFG.tuning_max_requests,
     max_chunks=CFG.tuning_max_chunks,
-    tuning_unavailable_delay=CFG.tuning_unavailable_delay,
-    tuning_retry_delay=CFG.tuning_retry_delay,
+    unavailable_delay=CFG.tuning_unavailable_delay,
+    retry_delay=CFG.tuning_retry_delay,
 )
 TERRITORIAL_UNITS_API = TerritorialUnitsAPI(
     user_email=CFG.user_email,
@@ -162,8 +162,8 @@ TERRITORIAL_UNITS_API = TerritorialUnitsAPI(
     max_retry=CFG.tuning_max_retry,
     max_requests=CFG.tuning_max_requests,
     max_chunks=CFG.tuning_max_chunks,
-    tuning_unavailable_delay=CFG.tuning_unavailable_delay,
-    tuning_retry_delay=CFG.tuning_retry_delay,
+    unavailable_delay=CFG.tuning_unavailable_delay,
+    retry_delay=CFG.tuning_retry_delay,
 )
 VALIDATIONS_API = ValidationsAPI(
     user_email=CFG.user_email,
@@ -174,8 +174,8 @@ VALIDATIONS_API = ValidationsAPI(
     max_retry=CFG.tuning_max_retry,
     max_requests=CFG.tuning_max_requests,
     max_chunks=CFG.tuning_max_chunks,
-    tuning_unavailable_delay=CFG.tuning_unavailable_delay,
-    tuning_retry_delay=CFG.tuning_retry_delay,
+    unavailable_delay=CFG.tuning_unavailable_delay,
+    retry_delay=CFG.tuning_retry_delay,
 )
 
 
