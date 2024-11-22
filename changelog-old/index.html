@@ -1,0 +1,1629 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="This is a template repository for Python projects that use Poetry for their dependency management.">
+      
+      
+        <meta name="author" content="Daniel Thonon">
+      
+      
+        <link rel="canonical" href="https://dthonon.github.io/Client_API_VN/changelog-old/">
+      
+      
+        <link rel="prev" href="../contributing/">
+      
+      
+        <link rel="next" href="../authors/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.45">
+    
+    
+      
+        <title>Changelog before v3 - Client_API_VN</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.0253249f.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="deep-orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#client-api-vn-v2120-2023-11-14" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Client_API_VN" class="md-header__button md-logo" aria-label="Client_API_VN" data-md-component="logo">
+      
+  <img src="../img/logo_vn2pg.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Client_API_VN
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Changelog before v3
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/dthonon/Client_API_VN" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    dthonon/Client_API_VN
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Client_API_VN" class="md-nav__button md-logo" aria-label="Client_API_VN" data-md-component="logo">
+      
+  <img src="../img/logo_vn2pg.png" alt="logo">
+
+    </a>
+    Client_API_VN
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/dthonon/Client_API_VN" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    dthonon/Client_API_VN
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Applications
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Applications
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../apps/examples/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Examples
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../apps/transfer_vn/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    transfer_vn
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../apps/update_vn/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    update_vn
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../apps/validate_vn/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    validate_vn
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../apps/server_install/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Server installation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    API
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Contributing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Changelog before v3
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Changelog before v3
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bugfixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bugfixes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#improved-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Improved Documentation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deprecations-and-removals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Deprecations and Removals
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    About
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            About
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../authors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Authors
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bugfixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bugfixes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#improved-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Improved Documentation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deprecations-and-removals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Deprecations and Removals
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="client-api-vn-v2120-2023-11-14">Client-API-VN v2.12.0 (2023-11-14)<a class="headerlink" href="#client-api-vn-v2120-2023-11-14" title="Permanent link">&para;</a></h1>
+<h2 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h2>
+<ul>
+<li>When storing in Postgresql JSON database, forms are now created
+  before dependant sightings. (<code>#294 &lt;https://github.com/dthonon/Client_API_VN/issues/294&gt;</code>_)</li>
+<li>Python 3.10 is supported (<code>#296 &lt;https://github.com/dthonon/Client_API_VN/issues/296&gt;</code>_)</li>
+<li>Ajout du champ sempach<em>id_family dans la table observations. (<code>#320 &lt;https://github.com/dthonon/Client_API_VN/issues/320&gt;</code></em>)</li>
+</ul>
+<h2 id="bugfixes">Bugfixes<a class="headerlink" href="#bugfixes" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Solved several minor issues in code format and documentation. (<code>#306 &lt;https://github.com/dthonon/Client_API_VN/issues/306&gt;</code>_)</li>
+<li>Unwanted additional downloads have been removed. (<code>#314 &lt;https://github.com/dthonon/Client_API_VN/issues/314&gt;</code>_)</li>
+</ul>
+<h2 id="improved-documentation">Improved Documentation<a class="headerlink" href="#improved-documentation" title="Permanent link">&para;</a></h2>
+<ul>
+<li>User guides are available for the scripts. (<code>#180 &lt;https://github.com/dthonon/Client_API_VN/issues/180&gt;</code>_)</li>
+<li>Added a comment in YAML template :
+  use the territory short<em>name, not the territory id (<code>#289 &lt;https://github.com/dthonon/Client_API_VN/issues/289&gt;</code></em>)</li>
+<li>JSON schemas updated with current export format. (<code>#322 &lt;https://github.com/dthonon/Client_API_VN/issues/322&gt;</code>_)</li>
+</ul>
+<h2 id="deprecations-and-removals">Deprecations and Removals<a class="headerlink" href="#deprecations-and-removals" title="Permanent link">&para;</a></h2>
+<ul>
+<li>update<em>uuid script is removed, as it was not fully tested. (<code>#303 &lt;https://github.com/dthonon/Client_API_VN/issues/303&gt;</code></em>)</li>
+</ul>
+<h1 id="client-api-vn-v2111-2022-12-05">Client-API-VN v2.11.1 (2022-12-05)<a class="headerlink" href="#client-api-vn-v2111-2022-12-05" title="Permanent link">&para;</a></h1>
+<h2 id="bugfixes_1">Bugfixes<a class="headerlink" href="#bugfixes_1" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Update<em>vn would fail if EOL character is in private_comment.
+  This should be solved by removing EOL from the comment. (<code>#300 &lt;https://github.com/dthonon/Client_API_VN/issues/300&gt;</code></em>)</li>
+</ul>
+<h2 id="improved-documentation_1">Improved Documentation<a class="headerlink" href="#improved-documentation_1" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Added an example of database usage. (<code>#279 &lt;https://github.com/dthonon/Client_API_VN/issues/279&gt;</code>_)</li>
+<li>Installation on Windows is now documented.
+  Tested for update<em>vn script only. (<code>#284 &lt;https://github.com/dthonon/Client_API_VN/issues/284&gt;</code></em>)</li>
+</ul>
+<h2 id="misc">Misc<a class="headerlink" href="#misc" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>#290 &lt;https://github.com/dthonon/Client_API_VN/issues/290&gt;</code>_</li>
+</ul>
+<h1 id="client-api-vn-v2110-2022-06-26">Client-API-VN v2.11.0 (2022-06-26)<a class="headerlink" href="#client-api-vn-v2110-2022-06-26" title="Permanent link">&para;</a></h1>
+<h2 id="features_1">Features<a class="headerlink" href="#features_1" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Places are downloaded by increment when using <code>--update</code>. (<code>#166 &lt;https://github.com/dthonon/Client_API_VN/issues/166&gt;</code>_)</li>
+</ul>
+<h2 id="bugfixes_2">Bugfixes<a class="headerlink" href="#bugfixes_2" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Username and password are now replaced by <code>***</code> in log file. (<code>#267 &lt;https://framagit.org/lpo/Client_API_VN/issues/267&gt;</code>_)</li>
+</ul>
+<h2 id="misc_1">Misc<a class="headerlink" href="#misc_1" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Upgraded code for URL() deprecation. <code>#143 &lt;https://github.com/dthonon/Client_API_VN/issues/143&gt;</code>_</li>
+</ul>
+<h1 id="client-api-vn-v2100-2022-04-17">Client-API-VN v2.10.0 (2022-04-17)<a class="headerlink" href="#client-api-vn-v2100-2022-04-17" title="Permanent link">&para;</a></h1>
+<h2 id="features_2">Features<a class="headerlink" href="#features_2" title="Permanent link">&para;</a></h2>
+<ul>
+<li>A new action is available: <code>transfer_vn --migrate</code>.
+  This action updates the JSON schema to the latest version.
+  Running this action is requested in the CHANGELOG, if needed. (<code>#184 &lt;https://github.com/dthonon/Client_API_VN/issues/184&gt;</code>_)</li>
+<li>New missing index on observations_json.id_form_universal field.</li>
+</ul>
+<p>Please run <code>transfer_vn --migrate</code> to update your database to
+  revision ID: 1929ad3f463c. (<code>#185 &lt;https://github.com/dthonon/Client_API_VN/issues/185&gt;</code>_)</p>
+<ul>
+<li>wkt field, containing transects, is available in places table.
+  Please run <code>transfer_vn --col-table-create</code> to update the database. (<code>#191 &lt;https://github.com/dthonon/Client_API_VN/issues/191&gt;</code>_)</li>
+<li>Column source has been added to observations table.
+  Please run <code>transfer_vn --col-table-create</code> to update the database. (<code>#192 &lt;https://github.com/dthonon/Client_API_VN/issues/192&gt;</code>_)</li>
+</ul>
+<h2 id="bugfixes_3">Bugfixes<a class="headerlink" href="#bugfixes_3" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Storing to files works. (<code>#175 &lt;https://github.com/dthonon/Client_API_VN/issues/175&gt;</code>_)</li>
+<li>Storing to files in JSON long format works. (<code>#183 &lt;https://github.com/dthonon/Client_API_VN/issues/183&gt;</code>_)</li>
+<li>Transfers ending with HTTPerror are now logged in download<em>log table. (<code>#189 &lt;https://github.com/dthonon/Client_API_VN/issues/189&gt;</code></em>)</li>
+</ul>
+<h2 id="improved-documentation_2">Improved Documentation<a class="headerlink" href="#improved-documentation_2" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Documentation is available for transfer<em>vn and update_vn, see
+  <code>transfer_vn Documentation &lt;https://client-api-readthedocs.io/en/latest/apps/transfer_vn.html&gt;</code></em> and
+  <code>update_vn Documentation &lt;https://client-api-readthedocs.io/en/latest/apps/update_vn.html&gt;</code><em> (<code>#180 &lt;https://github.com/dthonon/Client_API_VN/issues/180&gt;</code></em>)</li>
+<li>JSON schemas are updated to reflect latest API downloads. (<code>#193 &lt;https://github.com/dthonon/Client_API_VN/issues/193&gt;</code>_)</li>
+</ul>
+<h2 id="misc_2">Misc<a class="headerlink" href="#misc_2" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>#188 &lt;https://github.com/dthonon/Client_API_VN/issues/188&gt;</code>_</li>
+</ul>
+<h1 id="client-api-vn-v293-2021-11-08">Client-API-VN v2.9.3 (2021-11-08)<a class="headerlink" href="#client-api-vn-v293-2021-11-08" title="Permanent link">&para;</a></h1>
+<h2 id="bugfixes_4">Bugfixes<a class="headerlink" href="#bugfixes_4" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Observations were not deleted from PG database if deleted in Biolovision site.
+  This is fixed and deletion are now synchronized.
+  A full download is required to delete previous observations. (<code>#171 &lt;https://github.com/dthonon/Client_API_VN/issues/171&gt;</code>_)</li>
+<li>Parameter max<em>chunks has been raised, by default to 1000,
+  to allow for much larger transfers.
+  Please consider modifying your existing YAML configuration files. (<code>#178 &lt;https://github.com/dthonon/Client_API_VN/issues/178&gt;</code></em>)</li>
+</ul>
+<h1 id="client-api-vn-v292-2021-11-03">Client-API-VN v2.9.2 (2021-11-03)<a class="headerlink" href="#client-api-vn-v292-2021-11-03" title="Permanent link">&para;</a></h1>
+<h2 id="bugfixes_5">Bugfixes<a class="headerlink" href="#bugfixes_5" title="Permanent link">&para;</a></h2>
+<ul>
+<li>In download<em>log table, the number of observations updated is now correct. (<code>#157 &lt;https://github.com/dthonon/Client_API_VN/issues/157&gt;</code></em>)</li>
+<li>Downloading a taxo<em>group with limited access will raise HTTP 401 error,
+  it the account does not have access right. In that case,
+  it must be excluded in YAML file. (<code>#165 &lt;https://github.com/dthonon/Client_API_VN/issues/165&gt;</code></em>)</li>
+</ul>
+<h2 id="improved-documentation_3">Improved Documentation<a class="headerlink" href="#improved-documentation_3" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Minimal versions of supported OS has been updated.
+  They are tested under Linux Ubuntu &gt;20 or Debian 10. (<code>#163 &lt;https://github.com/dthonon/Client_API_VN/issues/163&gt;</code>_)</li>
+<li>Minimal documentation of transfer<em>vn is available. (<code>#164 &lt;https://github.com/dthonon/Client_API_VN/issues/164&gt;</code></em>)</li>
+</ul>
+<h1 id="client-api-vn-v291-2021-10-31">Client-API-VN v2.9.1 (2021-10-31)<a class="headerlink" href="#client-api-vn-v291-2021-10-31" title="Permanent link">&para;</a></h1>
+<h2 id="bugfixes_6">Bugfixes<a class="headerlink" href="#bugfixes_6" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Several transient errors could stop transfer<em>vn after max_retry errors.
+  This is fixed: a succesful transfer resets the error counter. (<code>#155 &lt;https://github.com/dthonon/Client_API_VN/issues/155&gt;</code></em>)</li>
+<li>Places are now downloaded and stored correctly. (<code>#168 &lt;https://github.com/dthonon/Client_API_VN/issues/168&gt;</code>_)</li>
+<li>Very long transfer duration are now handled without error. (<code>#176 &lt;https://github.com/dthonon/Client_API_VN/issues/176&gt;</code>_)</li>
+</ul>
+<h1 id="client-api-vn-v290-2021-10-11">Client-API-VN v2.9.0 (2021-10-11)<a class="headerlink" href="#client-api-vn-v290-2021-10-11" title="Permanent link">&para;</a></h1>
+<h2 id="features_3">Features<a class="headerlink" href="#features_3" title="Permanent link">&para;</a></h2>
+<ul>
+<li>In case of HTTP error, the error message in the text included
+  in the response is printed. (<code>#156 &lt;https://github.com/dthonon/Client_API_VN/issues/156&gt;</code>_)</li>
+<li>Supported python versions are 3.7 to 3.9.
+  Previous versions are not supported and will not work. (<code>#172 &lt;https://github.com/dthonon/Client_API_VN/issues/172&gt;</code>_)</li>
+<li>observations/delete<em>list is available in biolovision/apy.
+  Note that id_form or id_form_universal to delete must be
+  included in data dict. (<code>#173 &lt;https://github.com/dthonon/Client_API_VN/issues/173&gt;</code></em>)</li>
+</ul>
+<h2 id="bugfixes_7">Bugfixes<a class="headerlink" href="#bugfixes_7" title="Permanent link">&para;</a></h2>
+<ul>
+<li>update<em>vn now accepts single quote "'" in value parameter.
+  It must be quoted with double-quote, i.e. "aujourd'hui". (<code>#154 &lt;https://github.com/dthonon/Client_API_VN/issues/154&gt;</code></em>)</li>
+</ul>
+<h2 id="improved-documentation_4">Improved Documentation<a class="headerlink" href="#improved-documentation_4" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Link to documentation now refer to readthedocs/stable. (<code>#160 &lt;https://github.com/dthonon/Client_API_VN/issues/160&gt;</code>_)</li>
+<li>Running transfer<em>vn from cron is now documented in README (<code>#174 &lt;https://github.com/dthonon/Client_API_VN/issues/174&gt;</code></em>)</li>
+</ul>
+<h2 id="misc_3">Misc<a class="headerlink" href="#misc_3" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>#68 &lt;https://github.com/dthonon/Client_API_VN/issues/68&gt;</code>_</li>
+</ul>
+<h1 id="client-api-vn-v281-2021-06-02">Client-API-VN v2.8.1 (2021-06-02)<a class="headerlink" href="#client-api-vn-v281-2021-06-02" title="Permanent link">&para;</a></h1>
+<h2 id="features_4">Features<a class="headerlink" href="#features_4" title="Permanent link">&para;</a></h2>
+<ul>
+<li>
+<p>In order to get timing data of each request, table import.download_log is extended.
+  If you upgrade without recreating JSON tables, you must run the following script::</p>
+<p>ALTER TABLE import.download_log ADD COLUMN length integer;
+  ALTER TABLE import.download_log ADD COLUMN duration integer;
+  CREATE INDEX ix_import_download_log_duration ON import.download_log USING btree(duration);
+  CREATE INDEX ix_import_download_log_length ON import.download_log USING btree(length);</p>
+</li>
+<li>
+<p>confirmed<em>by is now available in observations table. (<code>#151 &lt;https://github.com/dthonon/Client_API_VN/issues/151&gt;</code></em>)</p>
+</li>
+</ul>
+<h2 id="bugfixes_8">Bugfixes<a class="headerlink" href="#bugfixes_8" title="Permanent link">&para;</a></h2>
+<ul>
+<li>When dropping database (--db<em>drop), transfer_vn just logs a warning if the role is still used and cannot be dropped. (<code>#148 &lt;https://github.com/dthonon/Client_API_VN/issues/148&gt;</code></em>)</li>
+<li>When no territorial<em>unit_ids parameter is defined in YAML configuration file,
+  all territorial_units are downloaded. (<code>#150 &lt;https://github.com/dthonon/Client_API_VN/issues/150&gt;</code></em>)</li>
+</ul>
+<h2 id="improved-documentation_5">Improved Documentation<a class="headerlink" href="#improved-documentation_5" title="Permanent link">&para;</a></h2>
+<ul>
+<li>JSON schemas are updated. (<code>#149 &lt;https://github.com/dthonon/Client_API_VN/issues/149&gt;</code>_)</li>
+</ul>
+<h1 id="client-api-vn-v280-2021-04-10">Client-API-VN v2.8.0 (2021-04-10)<a class="headerlink" href="#client-api-vn-v280-2021-04-10" title="Permanent link">&para;</a></h1>
+<h2 id="features_5">Features<a class="headerlink" href="#features_5" title="Permanent link">&para;</a></h2>
+<ul>
+<li>
+<p>It is now possible to filter download by territorial_unit.
+  An optional parameter is available in YAML configuration file, <code>filter</code> section::</p>
+<p># List of territorial_unit_ids to download
+  territorial_unit_ids:
+      - 01
+      - 03</p>
+</li>
+</ul>
+<p>(<code>#134 &lt;https://github.com/dthonon/Client_API_VN/issues/134&gt;</code>_)</p>
+<ul>
+<li>In observations table, project<em>code is indexed. (<code>#142 &lt;https://github.com/dthonon/Client_API_VN/issues/142&gt;</code></em>)</li>
+<li>UUID, from JSON dowloaded, is now stored in observations table.
+  <code>import.uuid_xref</code> is removed. (<code>#146 &lt;https://github.com/dthonon/Client_API_VN/issues/146&gt;</code>_)</li>
+</ul>
+<h2 id="bugfixes_9">Bugfixes<a class="headerlink" href="#bugfixes_9" title="Permanent link">&para;</a></h2>
+<ul>
+<li>update<em>vn gracefuly ignores empty line in CSV file. (<code>#130 &lt;https://github.com/dthonon/Client_API_VN/issues/130&gt;</code></em>)</li>
+<li>evn<em>conf raises an exception if configuration file does not exist. (<code>#132 &lt;https://github.com/dthonon/Client_API_VN/issues/132&gt;</code></em>)</li>
+<li>Number of downloaded sightings is now displayed for each territorial<em>unit. (<code>#137 &lt;https://github.com/dthonon/Client_API_VN/issues/137&gt;</code></em>)</li>
+<li>Both schemas are now created with <code>db_group</code> owner. (<code>#140 &lt;https://github.com/dthonon/Client_API_VN/issues/140&gt;</code>_)</li>
+<li>Updating sightings within forms is now possible.
+  Changing data of a sighting inside a forms should use the simple path::</li>
+</ul>
+<p><code>Isère;3079911;$['data']['sightings'][0]['observers'][0]['project'];replace;26</code></p>
+<p>and not include <code>['forms'][0]</code>. (<code>#141 &lt;https://github.com/dthonon/Client_API_VN/issues/141&gt;</code>_)</p>
+<h2 id="improved-documentation_6">Improved Documentation<a class="headerlink" href="#improved-documentation_6" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Documentation improvement for API and installation. (<code>#129 &lt;https://github.com/dthonon/Client_API_VN/issues/129&gt;</code>_)</li>
+</ul>
+<h2 id="deprecations-and-removals_1">Deprecations and Removals<a class="headerlink" href="#deprecations-and-removals_1" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Support for list download is deprecated and will be removed in a future version.
+  Download should only be performed using search method. (<code>#135 &lt;https://github.com/dthonon/Client_API_VN/issues/135&gt;</code>_)</li>
+</ul>
+<h1 id="client-api-vn-v271-2021-02-07">Client-API-VN v2.7.1 (2021-02-07)<a class="headerlink" href="#client-api-vn-v271-2021-02-07" title="Permanent link">&para;</a></h1>
+<h2 id="bugfixes_10">Bugfixes<a class="headerlink" href="#bugfixes_10" title="Permanent link">&para;</a></h2>
+<ul>
+<li>In column based tables, all text is now stored as TEXT instead of VACHAR(n) (<code>#138 &lt;https://github.com/dthonon/Client_API_VN/issues/138&gt;</code>_)</li>
+</ul>
+<h1 id="client-api-vn-v270-2020-07-06">Client-API-VN v2.7.0 (2020-07-06)<a class="headerlink" href="#client-api-vn-v270-2020-07-06" title="Permanent link">&para;</a></h1>
+<h2 id="features_6">Features<a class="headerlink" href="#features_6" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Storing to database can be disabled.</li>
+</ul>
+<p>Dowload_vn can now store to any or both Postgresql and File backend stores.</p>
+<p>The database section is optional.
+  If present, a new key is required::</p>
+<div class="language-text highlight"><pre><span></span><code>  database:
+      # Enable storing to database
+      enabled: true (`#63 &lt;https://github.com/dthonon/Client_API_VN/issues/63&gt;`_)
+</code></pre></div>
+<ul>
+<li>Validation controler is available in biolovision.api.
+  (<code>#74 &lt;https://github.com/dthonon/Client_API_VN/issues/74&gt;</code>_)</li>
+<li>In case of service unavailable error (HTTP 503), wait for longer delay
+  before retry. Delay can be changed by YAML parameter unavailable<em>delay. (<code>#94 &lt;https://github.com/dthonon/Client_API_VN/issues/94&gt;</code></em>)</li>
+<li>Added field information from JSON download.</li>
+</ul>
+<p>In field_group table :</p>
+<ul>
+<li>text_v, from 'text' attribute</li>
+<li>group_v, from 'group' attributé</li>
+</ul>
+<p>in field_details table :</p>
+<ul>
+<li>
+<p>text<em>v, from 'text' attribute (<code>#107 &lt;https://github.com/dthonon/Client_API_VN/issues/107&gt;</code></em>)</p>
+</li>
+<li>
+<p>New commands added to update_vn.</p>
+</li>
+<li>delete_attribute, to keep the observation and remove the attribute with the given path</li>
+<li>delete<em>observation, to remove completely the observation (<code>#113 &lt;https://github.com/dthonon/Client_API_VN/issues/113&gt;</code></em>)</li>
+<li>Python version 3.8 is now supported. (<code>#116 &lt;https://github.com/dthonon/Client_API_VN/issues/116&gt;</code>_)</li>
+<li>Added families controler in api and download<em>vn. (<code>#120 &lt;https://github.com/dthonon/Client_API_VN/issues/120&gt;</code></em>)</li>
+<li>A new application, validate, checks downloaded JSON files against its schema.
+  JSON schemas are used to document the dowloaded files. (<code>#123 &lt;https://github.com/dthonon/Client_API_VN/issues/123&gt;</code>_)</li>
+<li>update<em>vn adds "updated" date in the hidden_comment (<code>#127 &lt;https://github.com/dthonon/Client_API_VN/issues/127&gt;</code></em>)</li>
+</ul>
+<h2 id="bugfixes_11">Bugfixes<a class="headerlink" href="#bugfixes_11" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Scheduled jobs are now terminated by Ctrl-C.
+  There is still an OSError raised during shutdown. (<code>#96 &lt;https://github.com/dthonon/Client_API_VN/issues/96&gt;</code>_)</li>
+<li>Option --status does not start pending tasks. (<code>#112 &lt;https://github.com/dthonon/Client_API_VN/issues/112&gt;</code>_)</li>
+<li>update<em>vn accepts files with leading or trailing blanks in the values. (<code>#118 &lt;https://github.com/dthonon/Client_API_VN/issues/118&gt;</code></em>)</li>
+<li>Long json<em>format was not enforced by transfer_vn.
+  When json_format: long is defined in YAML file and file storage is enablesd,
+  files are now correctly containing long JSON data.
+  Note: long json_format is not compatible with PostgreSQL storage. (<code>#122 &lt;https://github.com/dthonon/Client_API_VN/issues/122&gt;</code></em>)</li>
+</ul>
+<h2 id="misc_4">Misc<a class="headerlink" href="#misc_4" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>#75 &lt;https://github.com/dthonon/Client_API_VN/issues/75&gt;</code><em>, <code>#104 &lt;https://github.com/dthonon/Client_API_VN/issues/104&gt;</code></em>, <code>#111 &lt;https://github.com/dthonon/Client_API_VN/issues/111&gt;</code><em>, <code>#114 &lt;https://github.com/dthonon/Client_API_VN/issues/114&gt;</code></em>, <code>#115 &lt;https://github.com/dthonon/Client_API_VN/issues/115&gt;</code>_</li>
+</ul>
+<h1 id="client-api-vn-v264-2020-04-01">Client-API-VN v2.6.4 (2020-04-01)<a class="headerlink" href="#client-api-vn-v264-2020-04-01" title="Permanent link">&para;</a></h1>
+<h2 id="features_7">Features<a class="headerlink" href="#features_7" title="Permanent link">&para;</a></h2>
+<ul>
+<li>In biolovision.api, api<em>create and api_delete are implemented. (<code>#98 &lt;https://github.com/dthonon/Client_API_VN/issues/98&gt;</code></em>)</li>
+</ul>
+<h2 id="bugfixes_12">Bugfixes<a class="headerlink" href="#bugfixes_12" title="Permanent link">&para;</a></h2>
+<ul>
+<li>In biolovision.api, api<em>search works again (corrected regression). (<code>#102 &lt;https://github.com/dthonon/Client_API_VN/issues/102&gt;</code></em>)</li>
+<li>end<em>date and start_date are now correctly used, ie:
+  interval starts with start_date and ends with end_date.
+  Exception is raised if not in correct order.
+  NOTE : if used in YAML, please check the correct order. (<code>#105 &lt;https://github.com/dthonon/Client_API_VN/issues/105&gt;</code></em>)</li>
+<li>When using --update, the list of new observations could get too long and return HTTP error 414.
+  Update list are now chunked, and chunk size is controled by YAML parameter max<em>list_length. (<code>#109 &lt;https://github.com/dthonon/Client_API_VN/issues/109&gt;</code></em>)</li>
+</ul>
+<h1 id="client-api-vn-v263-2020-03-14">Client-API-VN v2.6.3 (2020-03-14)<a class="headerlink" href="#client-api-vn-v263-2020-03-14" title="Permanent link">&para;</a></h1>
+<h2 id="bugfixes_13">Bugfixes<a class="headerlink" href="#bugfixes_13" title="Permanent link">&para;</a></h2>
+<ul>
+<li>api<em>search, used in full download, was returning an empty dict.
+  It is now working correctly. (<code>#108 &lt;https://github.com/dthonon/Client_API_VN/issues/108&gt;</code></em>)</li>
+</ul>
+<h1 id="client-api-vn-v260-2019-10-17">Client-API-VN v2.6.0 (2019-10-17)<a class="headerlink" href="#client-api-vn-v260-2019-10-17" title="Permanent link">&para;</a></h1>
+<h2 id="features_8">Features<a class="headerlink" href="#features_8" title="Permanent link">&para;</a></h2>
+<ul>
+<li>A sample application is available in src/template. Copy sample<em>app.py
+  and </em><em>init</em><em>.py to a new directory to start creating a new application. (<code>#100 &lt;https://github.com/dthonon/Client_API_VN/issues/100&gt;</code></em>)</li>
+<li>update<em>vn application is available for field test.
+  See README for details on how to use it. (<code>#101 &lt;https://github.com/dthonon/Client_API_VN/issues/101&gt;</code></em>)</li>
+</ul>
+<h1 id="client-api-vn-v252-2019-10-06">Client-API-VN v2.5.2 (2019-10-06)<a class="headerlink" href="#client-api-vn-v252-2019-10-06" title="Permanent link">&para;</a></h1>
+<h2 id="features_9">Features<a class="headerlink" href="#features_9" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Application is now available as docker container.
+  See README for installation instructions. (<code>#95 &lt;https://github.com/dthonon/Client_API_VN/issues/95&gt;</code>_)</li>
+</ul>
+<h1 id="client-api-vn-v250-2019-10-01">Client-API-VN v2.5.0 (2019-10-01)<a class="headerlink" href="#client-api-vn-v250-2019-10-01" title="Permanent link">&para;</a></h1>
+<h2 id="features_10">Features<a class="headerlink" href="#features_10" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Major change on incremental (and full) download.
+  All controlers can now be downloaded on a regular basis.
+  See README for more information on download process.</li>
+</ul>
+<p>YAML configuration file must be updated to define download
+  schedule for all controlers. A typical example is given below:</p>
+<p>.. code-block:: yaml</p>
+<div class="language-text highlight"><pre><span></span><code>  # Biolovision API controlers parameters
+  # Enables or disables download from each Biolovision API
+  # Also defines scheduling (cron-like) parameters, in UTC
+  controler:
+      entities:
+          # Enable download from this controler
+          enabled: true
+          schedule:
+              # Every Friday at 23:00 UTC
+              day_of_week: 4
+              hour: 23
+      fields:
+          # Enable download from this controler
+          enabled: true
+          schedule:
+              # Every Friday at 23:00 UTC
+              day_of_week: 4
+              hour: 23
+      local_admin_units:
+          # Enable download from this controler
+          enabled: true
+          schedule:
+              # Every Monday at 05:00 UTC
+              day_of_week: 0
+              hour: 5
+      observations:
+          # Enable download from this controler
+          enabled: true
+          # Define scheduling parameters
+          schedule:
+              # Every hour
+              year: &#39;*&#39;
+              month: &#39;*&#39;
+              day: &#39;*&#39;
+              week: &#39;*&#39;
+              day_of_week: &#39;*&#39;
+              hour: &#39;*&#39;
+              minute: 0
+      observers:
+          # Enable download from this controler
+          enabled: true
+          schedule:
+              # Every day at 06:00 UTC
+              hour: 6
+      places:
+          # Enable download from this controler
+          enabled: true
+          schedule:
+              # Every Thursday at 23:00 UTC
+              day_of_week: 3
+              hour: 23
+      species:
+          # Enable download from this controler
+          enabled: true
+          schedule:
+              # Every Wednesday at 22:00 UTC
+              day_of_week: 2
+              hour: 22
+      taxo_groups:
+          # Enable download from this controler
+          enabled: true
+          schedule:
+              # Every Wednesday at 22:00 UTC
+              day_of_week: 2
+              hour: 22
+      territorial_units:
+          # Enable download from this controler
+          enabled: true
+          schedule:
+              # Every Thursday at 23:00 UTC
+              day_of_week: 3
+              hour: 23
+</code></pre></div>
+<p>(<code>#24 &lt;https://github.com/dthonon/Client_API_VN/issues/24&gt;</code>_)</p>
+<ul>
+<li>When using --update option, observations create or update are
+  grouped in a single API call. This should improve performances.
+  download<em>log table now contains one row for each group of updates. (<code>#76 &lt;https://github.com/dthonon/Client_API_VN/issues/76&gt;</code></em>)</li>
+<li>For developers: biolovision<em>api.py moved to an independant module.
+  Replace <code>from export_vn.biolovision_api import ...</code> by <code>from biolovision.api import ...</code> (<code>#88 &lt;https://github.com/dthonon/Client_API_VN/issues/88&gt;</code></em>)</li>
+<li>In case of parsing error in YAML configuration file,
+  the error message is printed without traceback. (<code>#89 &lt;https://github.com/dthonon/Client_API_VN/issues/89&gt;</code>_)</li>
+<li>A new <code>filter:</code> section is added to YAML configuration file.
+  <code>taxo_exclude:</code> list needs to be moved to this new section.</li>
+</ul>
+<p>To limit full download to a time interval, you can add:</p>
+<ul>
+<li><code>start_date</code>, optional date of first observation.
+    If omitted, start with earliest data.</li>
+<li><code>end_date</code>, optional date of last observation.
+    If omitted, start with latest data.</li>
+</ul>
+<p>Date format is YYYY-MM-DD.</p>
+<p>For example:</p>
+<p>.. code-block:: yaml</p>
+<div class="language-text highlight"><pre><span></span><code>  # Observations filter, to limit download scope
+  filter:
+      # List of taxo_groups to exclude from download
+      # Uncommment taxo_groups to disable download
+      taxo_exclude:
+          #- TAXO_GROUP_BIRD
+          #- TAXO_GROUP_BAT
+          #- TAXO_GROUP_MAMMAL
+          - TAXO_GROUP_SEA_MAMMAL
+          #- TAXO_GROUP_REPTILIAN
+          #- TAXO_GROUP_AMPHIBIAN
+          #- TAXO_GROUP_ODONATA
+          #- TAXO_GROUP_BUTTERFLY
+          #- TAXO_GROUP_MOTH
+          #- TAXO_GROUP_ORTHOPTERA
+          #- TAXO_GROUP_HYMENOPTERA
+          #- TAXO_GROUP_ORCHIDACEAE
+          #- TAXO_GROUP_TRASH
+          #- TAXO_GROUP_EPHEMEROPTERA
+          #- TAXO_GROUP_PLECOPTERA
+          #- TAXO_GROUP_MANTODEA
+          #- TAXO_GROUP_AUCHENORRHYNCHA
+          #- TAXO_GROUP_HETEROPTERA
+          #- TAXO_GROUP_COLEOPTERA
+          #- TAXO_GROUP_NEVROPTERA
+          #- TAXO_GROUP_TRICHOPTERA
+          #- TAXO_GROUP_MECOPTERA
+          #- TAXO_GROUP_DIPTERA
+          #- TAXO_GROUP_PHASMATODEA
+          #- TAXO_GROUP_ARACHNIDA
+          #- TAXO_GROUP_SCORPIONES
+          #- TAXO_GROUP_FISH
+          #- TAXO_GROUP_MALACOSTRACA
+          #- TAXO_GROUP_GASTROPODA
+          #- TAXO_GROUP_BIVALVIA
+          #- TAXO_GROUP_BRANCHIOPODA
+          - TAXO_GROUP_ALIEN_PLANTS
+      # Use short (recommended) or long JSON data
+      # json_format: short
+      # Optional start and end dates
+      # start_date: 2019-09-01
+      # end_date: 2019-08-01
+</code></pre></div>
+<p>(<code>#93 &lt;https://github.com/dthonon/Client_API_VN/issues/93&gt;</code>_)</p>
+<h2 id="misc_5">Misc<a class="headerlink" href="#misc_5" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>#36 &lt;https://github.com/dthonon/Client_API_VN/issues/36&gt;</code><em>, <code>#84 &lt;https://github.com/dthonon/Client_API_VN/issues/84&gt;</code></em></li>
+</ul>
+<h1 id="client-api-vn-v244-2019-08-22">Client-API-VN v2.4.4 (2019-08-22)<a class="headerlink" href="#client-api-vn-v244-2019-08-22" title="Permanent link">&para;</a></h1>
+<h2 id="features_11">Features<a class="headerlink" href="#features_11" title="Permanent link">&para;</a></h2>
+<ul>
+<li>
+<p>The following colums are added to forms::</p>
+<p>observer_uid        INT
+  date_start          DATE
+  date_stop           DATE</p>
+</li>
+</ul>
+<p>(<code>#86 &lt;https://github.com/dthonon/Client_API_VN/issues/86&gt;</code>_)</p>
+<h1 id="client-api-vn-v243-2019-08-22">Client-API-VN v2.4.3 (2019-08-22)<a class="headerlink" href="#client-api-vn-v243-2019-08-22" title="Permanent link">&para;</a></h1>
+<h2 id="features_12">Features<a class="headerlink" href="#features_12" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Added protocol<em>name column in forms table. (<code>#85 &lt;https://github.com/dthonon/Client_API_VN/issues/85&gt;</code></em>)</li>
+</ul>
+<h2 id="bugfixes_14">Bugfixes<a class="headerlink" href="#bugfixes_14" title="Permanent link">&para;</a></h2>
+<ul>
+<li>VACUUM is only performed on json and column-based tables created by transfer<em>vn.
+  This avoids a lengthy VACUUM on the full database. (<code>#70 &lt;https://github.com/dthonon/Client_API_VN/issues/70&gt;</code></em>)</li>
+<li>Corrected loggin message "Updating observation {}" (<code>#79 &lt;https://github.com/dthonon/Client_API_VN/issues/79&gt;</code>_)</li>
+<li>UUID are now correctly created for all observations. (<code>#80 &lt;https://github.com/dthonon/Client_API_VN/issues/80&gt;</code>_)</li>
+<li>In observations, date and date<em>year are correctly extracted from JSON. (<code>#82 &lt;https://github.com/dthonon/Client_API_VN/issues/82&gt;</code></em>)</li>
+<li>Protocol data is stored in JSONB column, in forms table.
+  See <code>example query &lt;https://github.com/dthonon/partage-de-codes/snippets/3741&gt;</code>_
+  for how to use it to get STOC data.</li>
+</ul>
+<p>Note: For survey datas, as G. Delaloye pointed out, protocols rights accesses
+  must be configured in portals:
+  +-----------------+--------------------------------------------------------+
+  | compte | droit |
+  +=================+========================================================+
+  | utilisateur_api | Droits de gestion des données complémentaires Gypaètes |
+  +-----------------+--------------------------------------------------------+
+  | utilisateur_api | Droit de voir toutes les observations cachées |
+  +-----------------+--------------------------------------------------------+
+  | utilisateur_api | Droits de faire des recherches, malgré le quota |
+  +-----------------+--------------------------------------------------------+
+  | utilisateur_api | Droits de gestion des observations |
+  +-----------------+--------------------------------------------------------+
+  | utilisateur_api | Droits d'administration |
+  +-----------------+--------------------------------------------------------+
+  | utilisateur_api | Accès admin Wetlands |
+  +-----------------+--------------------------------------------------------+
+  | utilisateur_api | Accès aux comptes utilisateurs tiers via l'API |
+  +-----------------+--------------------------------------------------------+
+  | utilisateur_api | Accès admin comptage protocolé |
+  +-----------------+--------------------------------------------------------+
+  | utilisateur_api | Accès admin STOC Montagne |
+  +-----------------+--------------------------------------------------------+
+  | utilisateur_api | Accès admin STOC Sites |
+  +-----------------+--------------------------------------------------------+
+  | utilisateur_api | Accès admin SHOC |
+  +-----------------+--------------------------------------------------------+
+  | utilisateur_api | Accès admin STOC EPS |
+  +-----------------+--------------------------------------------------------+</p>
+<h1 id="client-api-vn-v242-2019-08-20">Client-API-VN v2.4.2 (2019-08-20)<a class="headerlink" href="#client-api-vn-v242-2019-08-20" title="Permanent link">&para;</a></h1>
+<h2 id="features_13">Features<a class="headerlink" href="#features_13" title="Permanent link">&para;</a></h2>
+<ul>
+<li>When using <code>--full</code> option, observations and forms are processed after all other controlers. (<code>#77 &lt;https://github.com/dthonon/Client_API_VN/issues/77&gt;</code>_)</li>
+</ul>
+<h2 id="bugfixes_15">Bugfixes<a class="headerlink" href="#bugfixes_15" title="Permanent link">&para;</a></h2>
+<ul>
+<li>
+<p>Some options are exclusives::</p>
+<p>[--verbose | --quiet]
+  [--full | --update] (<code>#78 &lt;https://github.com/dthonon/Client_API_VN/issues/78&gt;</code>_)</p>
+</li>
+</ul>
+<h1 id="client-api-vn-v241-2019-08-19">Client-API-VN v2.4.1 (2019-08-19)<a class="headerlink" href="#client-api-vn-v241-2019-08-19" title="Permanent link">&para;</a></h1>
+<h2 id="features_14">Features<a class="headerlink" href="#features_14" title="Permanent link">&para;</a></h2>
+<ul>
+<li>
+<p>First pass of database tuning:</p>
+</li>
+<li>
+<p>Added indexes on main id columns</p>
+</li>
+<li>
+<p>Added id indexes on JSON tables (<code>#65 &lt;https://github.com/dthonon/Client_API_VN/issues/65&gt;</code>_)</p>
+</li>
+<li>
+<p>The number of concurrent database insertion threads was 4, which
+  is too much for the work required. At most 1 or 2 are used.
+  The default is now 2 workers.</p>
+</li>
+</ul>
+<p>NOTE: if your YAML configuration file contains a <code>[tuning]</code> section,
+  please modify <code>db_worker_threads: 2</code>. (<code>#71 &lt;https://github.com/dthonon/Client_API_VN/issues/71&gt;</code>_)</p>
+<ul>
+<li>For sites with a large number of observations per day, the minimum was too
+  large, leading to chunks exceeding 10 000 observations. Large chunk size
+  reduce parallel processing between client and server.
+  The minimum is now 5 days by default.</li>
+</ul>
+<p>NOTE: if your YAML configuration file contains a <code>[tuning]</code> section,
+  please modify <code>pid_limit_min: 5</code>. If your chunk size are still larger
+  than 10 000 observations, you can reduce it further. (<code>#72 &lt;https://github.com/dthonon/Client_API_VN/issues/72&gt;</code>_)</p>
+<h2 id="bugfixes_16">Bugfixes<a class="headerlink" href="#bugfixes_16" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Forms should now be correctly updated if changed on the site. (<code>#66 &lt;https://github.com/dthonon/Client_API_VN/issues/66&gt;</code>_)</li>
+<li><code>id_form_universal</code> added to observations table, to refer to enclosing form. (<code>#73 &lt;https://github.com/dthonon/Client_API_VN/issues/73&gt;</code>_)</li>
+</ul>
+<h1 id="client-api-vn-v240-2019-08-07">Client-API-VN v2.4.0 (2019-08-07)<a class="headerlink" href="#client-api-vn-v240-2019-08-07" title="Permanent link">&para;</a></h1>
+<h2 id="features_15">Features<a class="headerlink" href="#features_15" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Storage and processing of JSON data has been improved, reducing processing time. (<code>#56 &lt;https://github.com/dthonon/Client_API_VN/issues/56&gt;</code>_)</li>
+<li>Field groups details use the text index provided by the API.
+  For example, field<em>details.id '5_1' is value '1' of group '5', meaning 'COLL_TRANS'. (<code>#62 &lt;https://github.com/dthonon/Client_API_VN/issues/62&gt;</code></em>)</li>
+<li>In observers<em>json, id_universal is stored in a separate column. (<code>#64 &lt;https://github.com/dthonon/Client_API_VN/issues/64&gt;</code></em>)</li>
+</ul>
+<h1 id="client-api-vn-v233-2019-08-04">Client-API-VN v2.3.3 (2019-08-04)<a class="headerlink" href="#client-api-vn-v233-2019-08-04" title="Permanent link">&para;</a></h1>
+<h2 id="features_16">Features<a class="headerlink" href="#features_16" title="Permanent link">&para;</a></h2>
+<ul>
+<li>
+<p>Several performance enhancements:</p>
+</li>
+<li>
+<p>projection to local coordinates is much faster, reducing processing
+    time by at least a factor of 6</p>
+</li>
+<li>
+<p>forms are only processed once, at the first observation of the form. (<code>#56 &lt;https://github.com/dthonon/Client_API_VN/issues/56&gt;</code>_)</p>
+</li>
+</ul>
+<h2 id="bugfixes_17">Bugfixes<a class="headerlink" href="#bugfixes_17" title="Permanent link">&para;</a></h2>
+<ul>
+<li>SQL file should be correct, when installed from PyPI.
+  To be tested from PyPI and from github clone. (<code>#57 &lt;https://github.com/dthonon/Client_API_VN/issues/57&gt;</code>_)</li>
+<li>In table observations, update<em>date is correctly filled. (<code>#59 &lt;https://github.com/dthonon/Client_API_VN/issues/59&gt;</code></em>)</li>
+<li>Increments are correctly tracked. When using --update, only new or changed observations are downloaded. (<code>#60 &lt;https://github.com/dthonon/Client_API_VN/issues/60&gt;</code>_)</li>
+<li>
+<p>Fields are now dowloaded in 2 tables :</p>
+</li>
+<li>
+<p>field_groups, which lists all groups of fields</p>
+</li>
+<li>
+<p>field_details, which lists all values for each group</p>
+</li>
+</ul>
+<p>Column observations.behaviours is now a Postgresql ARRAY,
+  listing behaviours link<em>id code. (<code>#61 &lt;https://github.com/dthonon/Client_API_VN/issues/61&gt;</code></em>)</p>
+<h2 id="improved-documentation_7">Improved Documentation<a class="headerlink" href="#improved-documentation_7" title="Permanent link">&para;</a></h2>
+<ul>
+<li>README.rst updated to document --init option.
+  CONTRIBUTING.rst improved.
+  Updated french translations. (<code>#58 &lt;https://github.com/dthonon/Client_API_VN/issues/58&gt;</code>_)</li>
+</ul>
+<h1 id="client-api-vn-v232-2019-07-27">Client-API-VN v2.3.2 (2019-07-27)<a class="headerlink" href="#client-api-vn-v232-2019-07-27" title="Permanent link">&para;</a></h1>
+<h2 id="features_17">Features<a class="headerlink" href="#features_17" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Added --init option, that creates a draft YAML configuration file.
+  This file then needs to be edited before use. (<code>#37 &lt;https://github.com/dthonon/Client_API_VN/issues/37&gt;</code>_)</li>
+<li>The comment in download<em>log table is improved, displaying more information about observations download progress. (<code>#53 &lt;https://github.com/dthonon/Client_API_VN/issues/53&gt;</code></em>)</li>
+<li>Number of concurrent database insert/update and queue size are parameters
+  in YAML file, <code>[tuning]</code> section:</li>
+</ul>
+<p>.. code-block:: yaml</p>
+<div class="language-text highlight"><pre><span></span><code>  # Postgresql DB tuning parameters
+  db_worker_threads: 4
+  db_worker_queue: 100000
+</code></pre></div>
+<p>(<code>#54 &lt;https://github.com/dthonon/Client_API_VN/issues/54&gt;</code>_)</p>
+<h2 id="bugfixes_18">Bugfixes<a class="headerlink" href="#bugfixes_18" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Tentative correction of duplicate key exception. As this is not reproductible, bug fix is not certain.
+  Insert or update of records in Postgresql DB is now atomic (insert + on conflict). (<code>#55 &lt;https://github.com/dthonon/Client_API_VN/issues/55&gt;</code>_)</li>
+</ul>
+<h1 id="client-api-vn-v231-2019-07-23">Client-API-VN v2.3.1 (2019-07-23)<a class="headerlink" href="#client-api-vn-v231-2019-07-23" title="Permanent link">&para;</a></h1>
+<h2 id="features_18">Features<a class="headerlink" href="#features_18" title="Permanent link">&para;</a></h2>
+<ul>
+<li>HMAC encoding key is defined by YAML parameter db<em>secret_key (<code>#50 &lt;https://github.com/dthonon/Client_API_VN/issues/50&gt;</code></em>)</li>
+<li>A new field is added to src<em>vn.observers to anonymize observers:
+  pseudo_observer_uid. It should be used for data exchance to respect
+  user privacy. It is encoded by HMAC, using db_secret_key token. (<code>#51 &lt;https://github.com/dthonon/Client_API_VN/issues/51&gt;</code></em>)</li>
+</ul>
+<h2 id="misc_6">Misc<a class="headerlink" href="#misc_6" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>#52 &lt;https://github.com/dthonon/Client_API_VN/issues/52&gt;</code>_</li>
+</ul>
+<h1 id="client-api-vn-v230-2019-06-30">Client-API-VN v2.3.0 (2019-06-30)<a class="headerlink" href="#client-api-vn-v230-2019-06-30" title="Permanent link">&para;</a></h1>
+<h2 id="features_19">Features<a class="headerlink" href="#features_19" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Local coordinate system can now be modified.
+  The new YAML configuration parameter <code>db_out_proj</code> selects the
+  EPGS system for coordinate transformation. It defaults to 2154 (Lambert 93).
+  Local coordinates are available in columns coord_x_local and coord_y_local.</li>
+</ul>
+<p>(<code>#22 &lt;https://github.com/dthonon/Client_API_VN/issues/22&gt;</code>_)</p>
+<ul>
+<li>Forms are now available in the forms_json and forms tables.
+  Forms contain the following columns:</li>
+</ul>
+<p>+-------------------+-----------------+
+  | column | type |
+  +===================+=================+
+  | site | VARCHAR(50) |
+  +-------------------+-----------------+
+  | id | INTEGER |
+  +-------------------+-----------------+
+  | id_form_universal | VARCHAR(500) |
+  +-------------------+-----------------+
+  | time_start | VARCHAR(500) |
+  +-------------------+-----------------+
+  | time_stop | VARCHAR(500) |
+  +-------------------+-----------------+
+  | full_form | VARCHAR(500) |
+  +-------------------+-----------------+
+  | version | VARCHAR(500) |
+  +-------------------+-----------------+
+  | coord_lat | FLOAT |
+  +-------------------+-----------------+
+  | coord_lon | FLOAT |
+  +-------------------+-----------------+
+  | coord_x_local | FLOAT |
+  +-------------------+-----------------+
+  | coord_y_local | FLOAT |
+  +-------------------+-----------------+
+  | comments | VARCHAR(100000) |
+  +-------------------+-----------------+
+  | protocol | VARCHAR(100000) |
+  +-------------------+-----------------+</p>
+<p>(<code>#28 &lt;https://github.com/dthonon/Client_API_VN/issues/28&gt;</code>_)</p>
+<ul>
+<li>Added parameters to YAML configuration file.
+  See also Issue #43 and #44 for new or changed parameters.</li>
+</ul>
+<p>In <code>database:</code> section, the followng parameter defines the
+  geographic projection (EPGS code) used to create
+  <code>coord_x_local</code> and <code>coord_y_local</code>.</p>
+<p>Optional parameters are added in a new <code>tuning:</code> section, for expert use:</p>
+<p>.. code-block:: yaml</p>
+<p># Tuning parameters, for expert use.</p>
+<p>tuning: # Max chunks in a request before aborting.
+  max_chunks: 10 # Max retries of API calls before aborting.
+  max_retry: 5 # Maximum number of API requests, for debugging only. # - 0 means unlimited # - &gt;0 limit number of API requests
+  max_requests: 0 # LRU cache size for common requests (taxo_groups...)
+  lru_maxsize: 32 # Earliest year in the archive. Queries will not ge before this date.
+  min_year: 1901 # PID parameters, for throughput management.
+  pid_kp: 0.0
+  pid_ki: 0.003
+  pid_kd: 0.0
+  pid_setpoint: 10000
+  pid_limit_min: 10
+  pid_limit_max: 2000
+  pid_delta_days: 15</p>
+<p>Deprecated <code>local:</code> section and parameters must be removed.
+  An error is raised if not.</p>
+<p>(<code>#33 &lt;https://github.com/dthonon/Client_API_VN/issues/33&gt;</code>_)</p>
+<ul>
+<li>UUID are not (re)created during columns tables creation.
+  For observations, they are in a separate uui_xref table. They can be
+  obtained by joining observations and uui_xref on
+  (site=site and id=id_sighing).</li>
+</ul>
+<p>They are dropped for other tables.</p>
+<p>Table uuid_xref contains:</p>
+<p>+--------------+----------+
+  | column | type |
+  +==============+==========+
+  | site | String |
+  +--------------+----------+
+  | universal_id | String |
+  +--------------+----------+
+  | uuid | String |
+  +--------------+----------+
+  | alias | JSONB |
+  +--------------+----------+
+  | update_ts | DateTime |
+  +--------------+----------+</p>
+<p>(<code>#38 &lt;https://github.com/dthonon/Client_API_VN/issues/38&gt;</code>_)</p>
+<ul>
+<li>
+<p>Application is now tested with</p>
+</li>
+<li>
+<p>Python version 3.5, 3.6 and 3.7</p>
+</li>
+<li>Debian 9, Ubuntu 18.10</li>
+<li>Postgresql 10, 11</li>
+</ul>
+<p>(<code>#40 &lt;https://github.com/dthonon/Client_API_VN/issues/40&gt;</code>_)</p>
+<ul>
+<li>Implemented fields controler.
+  Fields data is dowloaded and stored in fields table:</li>
+</ul>
+<p>+--------------+---------------+
+  | column | type |
+  +==============+===============+
+  | site | VARCHAR(50) |
+  +--------------+---------------+
+  | id | INTEGER |
+  +--------------+---------------+
+  | default_v | VARCHAR(500) |
+  +--------------+---------------+
+  | empty_choice | VARCHAR(500) |
+  +--------------+---------------+
+  | mandatory | VARCHAR(500) |
+  +--------------+---------------+
+  | name | VARCHAR(1000) |
+  +--------------+---------------+</p>
+<p>(<code>#43 &lt;https://github.com/dthonon/Client_API_VN/issues/43&gt;</code>_)</p>
+<ul>
+<li>
+<p>The following columns are added:</p>
+<ul>
+<li>observations.behaviours</li>
+</ul>
+</li>
+</ul>
+<p>The following columns are now boolean:</p>
+<div class="language-text highlight"><pre><span></span><code>  * species.is_used
+  * observations.hidden
+  * observations.admin_hidden
+  * observations.mortality
+  * observers.anonymous
+  * observers.collectif
+  * observers.default_hidden
+  * places.is_private
+  * places.visible
+  * species.is_used
+
+  (`#46 &lt;https://github.com/dthonon/Client_API_VN/issues/46&gt;`_)
+</code></pre></div>
+<h2 id="bugfixes_19">Bugfixes<a class="headerlink" href="#bugfixes_19" title="Permanent link">&para;</a></h2>
+<ul>
+<li>
+<p>Database tables can now be created from any user, provided it is defined
+  in .yaml file::</p>
+<p># Postgresql user used to import data
+  db_user: <em>any_user</em>
+  # Postgresql user password
+  db_pw: <em>password</em></p>
+</li>
+</ul>
+<p>(<code>#39 &lt;https://github.com/dthonon/Client_API_VN/issues/39&gt;</code>_)</p>
+<ul>
+<li>Some columns were not filled correctly. This is corrected as described below:</li>
+</ul>
+<p>+--------------+---------------------------------+
+  | column | comment |
+  +==============+=================================+
+  | timing | Available in observations table |
+  +--------------+---------------------------------+
+  | update_date | Available in observations table |
+  +--------------+---------------------------------+
+  | project_code | Available in observations table |
+  +--------------+---------------------------------+
+  | details | Available in observations table |
+  +--------------+---------------------------------+</p>
+<p>The following parameters are not available in observations table and
+  need to be fetched from observers table.</p>
+<p>(<code>#41 &lt;https://github.com/dthonon/Client_API_VN/issues/41&gt;</code>_)</p>
+<ul>
+<li>
+<p>Incorrect parameters name in YAML configuration file.
+  Replace:</p>
+</li>
+<li>
+<p>taxo_group by taxo_groups</p>
+</li>
+<li>territorial_unit by territorial_units</li>
+</ul>
+<p>(<code>#44 &lt;https://github.com/dthonon/Client_API_VN/issues/44&gt;</code>_)</p>
+<ul>
+<li>update_date is extracted correctly and does raise an exception.</li>
+</ul>
+<p>(<code>#49 &lt;https://github.com/dthonon/Client_API_VN/issues/49&gt;</code>_)</p>
+<h1 id="client-api-vn-v222-2019-05-13">Client-API-VN v2.2.2 (2019-05-13)<a class="headerlink" href="#client-api-vn-v222-2019-05-13" title="Permanent link">&para;</a></h1>
+<h2 id="features_20">Features<a class="headerlink" href="#features_20" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Added VACUUM FULL ANALYZE after columns table (re)creation (option --col<em>tables_create)
+  to reclaim space left after mass UPDATE. (<code>#31 &lt;https://github.com/dthonon/Client_API_VN/issues/31&gt;</code></em>)</li>
+<li>YAML configuration is now checked for validity when loaded. This should improve error finding when typing configuration file. (<code>#35 &lt;https://github.com/dthonon/Client_API_VN/issues/35&gt;</code>_)</li>
+</ul>
+<h2 id="bugfixes_20">Bugfixes<a class="headerlink" href="#bugfixes_20" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Version is now correctly displayed in application installed from PyPI. (<code>#32 &lt;https://github.com/dthonon/Client_API_VN/issues/32&gt;</code>_)</li>
+</ul>
+<h2 id="improved-documentation_8">Improved Documentation<a class="headerlink" href="#improved-documentation_8" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Now using towncrier (https://github.com/hawkowl/towncrier) to update CHANGELOG.
+  Improved and corrected README.rst and CONTRIBUTING.rst (<code>#34 &lt;https://github.com/dthonon/Client_API_VN/issues/34&gt;</code>_)</li>
+</ul>
+<h1 id="client-api-vn-221-2019-05-09">Client-API-VN 2.2.1 (2019-05-09)<a class="headerlink" href="#client-api-vn-221-2019-05-09" title="Permanent link">&para;</a></h1>
+<h2 id="features_21">Features<a class="headerlink" href="#features_21" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Starting with this version, the application is packaged and distributed
+  in PyPI.
+  See https://pypi.org/project/Client-API-VN/ for more information.</li>
+</ul>
+<p>transfer<em>vn is now available as a shell script. (<code>#29 &lt;https://github.com/dthonon/Client_API_VN/issues/29&gt;</code></em>)</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Maintained by <a href="mailto:d.thonon9@outlook.com">Daniel Thonon</a>.
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/dthonon/Client_API_VN" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://pypi.org/project/Client_API_VN" target="_blank" rel="noopener" title="pypi.org" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.8 200.5c-7.7-30.9-22.3-54.2-53.4-54.2h-40.1v47.4c0 36.8-31.2 67.8-66.8 67.8H172.7c-29.2 0-53.4 25-53.4 54.3v101.8c0 29 25.2 46 53.4 54.3 33.8 9.9 66.3 11.7 106.8 0 26.9-7.8 53.4-23.5 53.4-54.3v-40.7H226.2v-13.6h160.2c31.1 0 42.6-21.7 53.4-54.2 11.2-33.5 10.7-65.7 0-108.6M286.2 404c11.1 0 20.1 9.1 20.1 20.3 0 11.3-9 20.4-20.1 20.4-11 0-20.1-9.2-20.1-20.4.1-11.3 9.1-20.3 20.1-20.3M167.8 248.1h106.8c29.7 0 53.4-24.5 53.4-54.3V91.9c0-29-24.4-50.7-53.4-55.6-35.8-5.9-74.7-5.6-106.8.1-45.2 8-53.4 24.7-53.4 55.6v40.7h106.9v13.6h-147c-31.1 0-58.3 18.7-66.8 54.2-9.8 40.7-10.2 66.1 0 108.6 7.6 31.6 25.7 54.2 56.8 54.2H101v-48.8c0-35.3 30.5-66.4 66.8-66.4m-6.7-142.6c-11.1 0-20.1-9.1-20.1-20.3.1-11.3 9-20.4 20.1-20.4 11 0 20.1 9.2 20.1 20.4s-9 20.3-20.1 20.3"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.83f73b43.min.js"></script>
+      
+    
+  </body>
+</html>
