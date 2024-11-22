@@ -205,8 +205,8 @@ class Entities(DownloadVn):
                 max_retry=config.tuning_max_retry,
                 max_requests=config.tuning_max_requests,
                 max_chunks=config.tuning_max_chunks,
-                tuning_unavailable_delay=config.tuning_unavailable_delay,
-                tuning_retry_delay=config.tuning_retry_delay,
+                unavailable_delay=config.tuning_unavailable_delay,
+                retry_delay=config.tuning_retry_delay,
             ),
             backend,
             max_retry,
@@ -236,8 +236,8 @@ class Families(DownloadVn):
                 max_retry=config.tuning_max_retry,
                 max_requests=config.tuning_max_requests,
                 max_chunks=config.tuning_max_chunks,
-                tuning_unavailable_delay=config.tuning_unavailable_delay,
-                tuning_retry_delay=config.tuning_retry_delay,
+                unavailable_delay=config.tuning_unavailable_delay,
+                retry_delay=config.tuning_retry_delay,
             ),
             backend,
             max_retry,
@@ -267,8 +267,8 @@ class Fields(DownloadVn):
                 max_retry=config.tuning_max_retry,
                 max_requests=config.tuning_max_requests,
                 max_chunks=config.tuning_max_chunks,
-                tuning_unavailable_delay=config.tuning_unavailable_delay,
-                tuning_retry_delay=config.tuning_retry_delay,
+                unavailable_delay=config.tuning_unavailable_delay,
+                retry_delay=config.tuning_retry_delay,
             ),
             backend,
             max_retry,
@@ -358,8 +358,8 @@ class LocalAdminUnits(DownloadVn):
                 max_retry=config.tuning_max_retry,
                 max_requests=config.tuning_max_requests,
                 max_chunks=config.tuning_max_chunks,
-                tuning_unavailable_delay=config.tuning_unavailable_delay,
-                tuning_retry_delay=config.tuning_retry_delay,
+                unavailable_delay=config.tuning_unavailable_delay,
+                retry_delay=config.tuning_retry_delay,
             ),
             backend,
             max_retry,
@@ -415,8 +415,8 @@ class Observations(DownloadVn):
                 max_retry=config.tuning_max_retry,
                 max_requests=config.tuning_max_requests,
                 max_chunks=config.tuning_max_chunks,
-                tuning_unavailable_delay=config.tuning_unavailable_delay,
-                tuning_retry_delay=config.tuning_retry_delay,
+                unavailable_delay=config.tuning_unavailable_delay,
+                retry_delay=config.tuning_retry_delay,
             ),
             backend,
             max_retry,
@@ -461,8 +461,8 @@ class Observations(DownloadVn):
                         max_retry=self._config.tuning_max_retry,
                         max_requests=self._config.tuning_max_requests,
                         max_chunks=self._config.tuning_max_chunks,
-                        tuning_unavailable_delay=self._config.tuning_unavailable_delay,
-                        tuning_retry_delay=self._config.tuning_retry_delay,
+                        unavailable_delay=self._config.tuning_unavailable_delay,
+                        retry_delay=self._config.tuning_retry_delay,
                     ).api_list()["data"]
                 ]
 
@@ -481,8 +481,8 @@ class Observations(DownloadVn):
                 max_retry=self._config.tuning_max_retry,
                 max_requests=self._config.tuning_max_requests,
                 max_chunks=self._config.tuning_max_chunks,
-                tuning_unavailable_delay=self._config.tuning_unavailable_delay,
-                tuning_retry_delay=self._config.tuning_retry_delay,
+                unavailable_delay=self._config.tuning_unavailable_delay,
+                retry_delay=self._config.tuning_retry_delay,
             ).api_list()["data"]
         else:
             taxo_groups = [{"id": id_taxo_group, "access_mode": "full"}]
@@ -505,8 +505,8 @@ class Observations(DownloadVn):
                             max_retry=self._config.tuning_max_retry,
                             max_requests=self._config.tuning_max_requests,
                             max_chunks=self._config.tuning_max_chunks,
-                            tuning_unavailable_delay=self._config.tuning_unavailable_delay,
-                            tuning_retry_delay=self._config.tuning_retry_delay,
+                            unavailable_delay=self._config.tuning_unavailable_delay,
+                            retry_delay=self._config.tuning_retry_delay,
                         ).api_list({"id_taxo_group": str(id_taxo_group)})["data"]
                         for specie in species:
                             if specie["is_used"] == "1":
@@ -609,8 +609,8 @@ class Observations(DownloadVn):
                         max_retry=self._config.tuning_max_retry,
                         max_requests=self._config.tuning_max_requests,
                         max_chunks=self._config.tuning_max_chunks,
-                        tuning_unavailable_delay=self._config.tuning_unavailable_delay,
-                        tuning_retry_delay=self._config.tuning_retry_delay,
+                        unavailable_delay=self._config.tuning_unavailable_delay,
+                        retry_delay=self._config.tuning_retry_delay,
                     ).api_list()["data"]
                 ]
 
@@ -629,8 +629,8 @@ class Observations(DownloadVn):
                 max_retry=self._config.tuning_max_retry,
                 max_requests=self._config.tuning_max_requests,
                 max_chunks=self._config.tuning_max_chunks,
-                tuning_unavailable_delay=self._config.tuning_unavailable_delay,
-                tuning_retry_delay=self._config.tuning_retry_delay,
+                unavailable_delay=self._config.tuning_unavailable_delay,
+                retry_delay=self._config.tuning_retry_delay,
             ).api_list()["data"]
         else:
             taxo_groups = [{"id": id_taxo_group, "access_mode": "full"}]
@@ -756,8 +756,8 @@ class Observations(DownloadVn):
                 max_retry=self._config.tuning_max_retry,
                 max_requests=self._config.tuning_max_requests,
                 max_chunks=self._config.tuning_max_chunks,
-                tuning_unavailable_delay=self._config.tuning_unavailable_delay,
-                tuning_retry_delay=self._config.tuning_retry_delay,
+                unavailable_delay=self._config.tuning_unavailable_delay,
+                retry_delay=self._config.tuning_retry_delay,
             ).api_list()
             taxo_list = []
             for taxo in taxo_groups["data"]:
@@ -973,8 +973,8 @@ class Observers(DownloadVn):
                 max_retry=config.tuning_max_retry,
                 max_requests=config.tuning_max_requests,
                 max_chunks=config.tuning_max_chunks,
-                tuning_unavailable_delay=config.tuning_unavailable_delay,
-                tuning_retry_delay=config.tuning_retry_delay,
+                unavailable_delay=config.tuning_unavailable_delay,
+                retry_delay=config.tuning_retry_delay,
             ),
             backend,
             max_retry,
@@ -1005,8 +1005,8 @@ class Places(DownloadVn):
                 max_retry=config.tuning_max_retry,
                 max_requests=config.tuning_max_requests,
                 max_chunks=config.tuning_max_chunks,
-                tuning_unavailable_delay=config.tuning_unavailable_delay,
-                tuning_retry_delay=config.tuning_retry_delay,
+                unavailable_delay=config.tuning_unavailable_delay,
+                retry_delay=config.tuning_retry_delay,
             ),
             backend,
             max_retry,
@@ -1048,8 +1048,8 @@ class Places(DownloadVn):
                         max_retry=self._config.tuning_max_retry,
                         max_requests=self._config.tuning_max_requests,
                         max_chunks=self._config.tuning_max_chunks,
-                        tuning_unavailable_delay=self._config.tuning_unavailable_delay,
-                        tuning_retry_delay=self._config.tuning_retry_delay,
+                        unavailable_delay=self._config.tuning_unavailable_delay,
+                        retry_delay=self._config.tuning_retry_delay,
                     ).api_list()["data"]
                 ]
 
@@ -1182,8 +1182,8 @@ class Species(DownloadVn):
                 max_retry=config.tuning_max_retry,
                 max_requests=config.tuning_max_requests,
                 max_chunks=config.tuning_max_chunks,
-                tuning_unavailable_delay=config.tuning_unavailable_delay,
-                tuning_retry_delay=config.tuning_retry_delay,
+                unavailable_delay=config.tuning_unavailable_delay,
+                retry_delay=config.tuning_retry_delay,
             ),
             backend,
             max_retry,
@@ -1203,8 +1203,8 @@ class Species(DownloadVn):
             max_retry=self._config.tuning_max_retry,
             max_requests=self._config.tuning_max_requests,
             max_chunks=self._config.tuning_max_chunks,
-            tuning_unavailable_delay=self._config.tuning_unavailable_delay,
-            tuning_retry_delay=self._config.tuning_retry_delay,
+            unavailable_delay=self._config.tuning_unavailable_delay,
+            retry_delay=self._config.tuning_retry_delay,
         ).api_list()
         taxo_list = []
         for taxo in taxo_groups["data"]:
@@ -1236,8 +1236,8 @@ class TaxoGroup(DownloadVn):
                 max_retry=config.tuning_max_retry,
                 max_requests=config.tuning_max_requests,
                 max_chunks=config.tuning_max_chunks,
-                tuning_unavailable_delay=config.tuning_unavailable_delay,
-                tuning_retry_delay=config.tuning_retry_delay,
+                unavailable_delay=config.tuning_unavailable_delay,
+                retry_delay=config.tuning_retry_delay,
             ),
             backend,
             max_retry,
@@ -1267,8 +1267,8 @@ class TerritorialUnits(DownloadVn):
                 max_retry=config.tuning_max_retry,
                 max_requests=config.tuning_max_requests,
                 max_chunks=config.tuning_max_chunks,
-                tuning_unavailable_delay=config.tuning_unavailable_delay,
-                tuning_retry_delay=config.tuning_retry_delay,
+                unavailable_delay=config.tuning_unavailable_delay,
+                retry_delay=config.tuning_retry_delay,
             ),
             backend,
             max_retry,
@@ -1298,8 +1298,8 @@ class Validations(DownloadVn):
                 max_retry=config.tuning_max_retry,
                 max_requests=config.tuning_max_requests,
                 max_chunks=config.tuning_max_chunks,
-                tuning_unavailable_delay=config.tuning_unavailable_delay,
-                tuning_retry_delay=config.tuning_retry_delay,
+                unavailable_delay=config.tuning_unavailable_delay,
+                retry_delay=config.tuning_retry_delay,
             ),
             backend,
             max_retry,

@@ -29,8 +29,8 @@ OBSERVATIONS_API = ObservationsAPI(
     max_retry=CFG.tuning_max_retry,
     max_requests=CFG.tuning_max_requests,
     max_chunks=CFG.tuning_max_chunks,
-    tuning_unavailable_delay=CFG.tuning_unavailable_delay,
-    tuning_retry_delay=CFG.tuning_retry_delay,
+    unavailable_delay=CFG.tuning_unavailable_delay,
+    retry_delay=CFG.tuning_retry_delay,
 )
 
 

@@ -1,46 +1,28 @@
-# Initialization file for python scripts
-# Needs to be customized for each site. See comments below for details
+# Default values file for python scripts
 
 # Message added to hidden_comment after update
 message = "Modification en masse, le {date}, opération {op}, attribut {path}, depuis {old} vers {new}"
-
-[sites]
-# Connection details for each Biolovision site
-
-[sites.tff]
-# Enable download from this site
-enabled = true
-# URL
-site = "https://www.faune-xxx.org/"
-# Username
-user_email = "nom.prenom@example.net"
-# User password
-user_pw = "user_pw"
-# Client key, obtained from Biolovision
-client_key = "client_key"
-# Client secret, obtained from Biolovision
-client_secret = "client_secret"
 
 # Optional tuning parameters, for expert use.
 # Uncomment and modify value if needed
 [tuning]
 # Max items in an API list request.
 # Longer lists are split by API in max_list_length chunks.
-# max_list_length = 100
+max_list_length = 100
 
 # Max chunks in a request before aborting.
-# max_chunks = 1000
+max_chunks = 1000
 
 # Max retries of API calls before aborting.
-# max_retry = 5
+max_retry = 5
 
 # Maximum number of API requests, for debugging only.
 # - 0 means unlimited
 # - >0 limit number of API requests
-# max_requests = 0
+max_requests = 0
 
 # Delay between retries after an error
-# retry_delay = 5
+retry_delay = 5
 
 # Delay between retries after an error HTTP 503 (service unavailable)
-# unavailable_delay = 600
+unavailable_delay = 600
