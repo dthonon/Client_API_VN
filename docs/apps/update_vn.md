@@ -12,12 +12,12 @@ an operation.
 
 ### Initial setup
 
-Initialize the sample YAML file in your HOME directory and edit with
-your local details. The YAML file is self documented:
+Initialize the sample TOML file in your HOME directory and edit with
+your local details. The TOML file is self documented:
 
 ```bash
-update_vn --init .evn_your_site.yaml
-editor $HOME/.evn_your_site.yaml
+update_vn init .evn_your_site.toml
+editor $HOME/.evn_your_site.toml
 ```
 
 ### CSV file content
@@ -30,7 +30,7 @@ site;id_universal;path;operation;value
 
 The next lines must contain the following columns:
 
-- site, as defined in YAML site section
+- site, as defined in TOML site section
 - id_universal of the sighting to be modified
 - path to the attribute to modify, in `JSONPath syntax <https://goessner.net/articles/JsonPath/>`\_,
   unused if operation is delete_observation
@@ -55,25 +55,33 @@ Isère;2246086;$['data']['sightings'][0]['observers'][0]['atlas_code'];delete_at
 Isère;2246086;;delete_observation;
 ```
 
-## Reference
-
+### Run application
 The application runs as:
 
 ```bash
-    update_vn options config input
+update_vn update .evn_your_site.toml modifications.csv
 ```
 
-where:
+## Reference
 
-    options  command line options described below
-    config   YAML file, located in $HOME directory, described in sample file
-    input    CSV file listing sightings to be updated
+```
+Usage: update_vn [OPTIONS] COMMAND [ARGS]...
 
-    -h, --help Prints help and exits
-    --version Print version number
-    --verbose Increase output verbosity
-    --quiet Reduce output verbosity
-    --init Initialize the YAML configuration file
+  Update biolovision database.
+
+  CONFIG: configuration filename
+
+  INPUT: CSV file listing modifications to be applied
+
+Options:
+  --verbose / --quiet  Increase or decrease output verbosity
+  --version            Show the version and exit.
+  --help               Show this message and exit.
+
+Commands:
+  init    Copy template TOML file to home directory.
+  update  Update Biolovision database.
+```
 
 ## Operations Templates
 
