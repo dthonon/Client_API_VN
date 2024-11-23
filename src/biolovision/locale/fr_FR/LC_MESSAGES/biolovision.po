@@ -1,0 +1,162 @@
+# French (France) translations for Client_API_VN.
+# Copyright (C) 2024 Daniel Thonon
+# This file is distributed under the same license as the Client_API_VN
+# project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2024.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Client_API_VN VERSION\n"
+"Report-Msgid-Bugs-To: d.thonon9@outlook.com\n"
+"POT-Creation-Date: 2024-11-23 22:55+0100\n"
+"PO-Revision-Date: 2024-11-22 22:40+0100\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: fr_FR\n"
+"Language-Team: fr_FR <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.16.0\n"
+
+#: src/biolovision/api.py:78
+msgid "controler must be defined"
+msgstr "controler doit être défini"
+
+#: src/biolovision/api.py:83
+msgid "user_email must be defined"
+msgstr "user_email doit être défini"
+
+#: src/biolovision/api.py:88
+msgid "user_pw must be defined"
+msgstr "user_pw doit être défini"
+
+#: src/biolovision/api.py:93
+msgid "base_url must be defined"
+msgstr "base_url doit être défini"
+
+#: src/biolovision/api.py:96
+msgid "client_key must be defined"
+msgstr "client_key doit être défini"
+
+#: src/biolovision/api.py:99
+msgid "client_secret must be defined"
+msgstr "client_secret doit être défini"
+
+#: src/biolovision/api.py:202
+#, python-format
+msgid "Params: %s"
+msgstr "Paramètres : %s"
+
+#: src/biolovision/api.py:243
+#, python-format
+msgid "%s status code = %s, for URL %s"
+msgstr "%s code statut = %s, pour l'URL %s"
+
+#: src/biolovision/api.py:253
+#, python-format
+msgid "%s status code: %s, text: %s, for URL %s"
+msgstr "%s code statut: %s, texte: %s, URL %s"
+
+#: src/biolovision/api.py:266
+#, python-format
+msgid "Unreceverable error %s, raising exception"
+msgstr "Erreur irrecupérable %s, exception levée"
+
+#: src/biolovision/api.py:283
+#, python-format
+msgid "Too many error %s, raising exception"
+msgstr "Trop d'erreur %s, exception levée"
+
+#: src/biolovision/api.py:296
+#, python-format
+msgid "Response content: %s, text: %s"
+msgstr "Contenu de la réponse : %s, texte : %s"
+
+#: src/biolovision/api.py:311
+#, python-format
+msgid "Incorrect response content: %s"
+msgstr "Contenu de la réponse incorrect : %s"
+
+#: src/biolovision/api.py:314
+#, python-format
+msgid "Response text causing exception: %s"
+msgstr "Texte de la réponse causant l'exception : %s"
+
+#: src/biolovision/api.py:324
+#, python-format
+msgid "Received %d sightings in chunk %d"
+msgstr "Reçu %d observations dans le morceau %d"
+
+#: src/biolovision/api.py:345
+#, python-format
+msgid "Received %d forms in chunk %d"
+msgstr "Reçu %d formulaires dans le morceau %d"
+
+#: src/biolovision/api.py:364
+#, python-format
+msgid "Received %d data items in chunk %d"
+msgstr "Reçu %d éléments avec données dans le morceau %d"
+
+#: src/biolovision/api.py:373
+#, python-format
+msgid "Received non-data response: %s"
+msgstr "Réception d'une réponse sans données : %s"
+
+#: src/biolovision/api.py:386
+#, python-format
+msgid "Chunked transfer => requesting for more, with key: %s"
+msgstr "Transfert par morceau => demande du suivant, avec la clé %s"
+
+#: src/biolovision/api.py:393
+msgid "Non-chunked transfer => finished requests"
+msgstr "Transfert sans morceau => fin de la requête"
+
+#: src/biolovision/api.py:398
+#, python-format
+msgid "Received %d chunks"
+msgstr "Reçu %d morceaux"
+
+#: src/biolovision/api.py:430
+#, python-format
+msgid "List from:%s, with options:%s, optional_headers:%s"
+msgstr "Liste depuis:%s, avec options:%s, optional_headers:%s"
+
+#: src/biolovision/api.py:439
+#, python-format
+msgid "Number of entities = %i"
+msgstr "Nombre d'entités = %i"
+
+#: src/biolovision/api.py:472
+#, python-format
+msgid "In api_get for controler:%s, entity: %s, with parameters:%s"
+msgstr "Dans api_get du controleur:%s, entité: %s, paramètres:%s"
+
+#: src/biolovision/api.py:757
+#, python-format
+msgid "In api_list, with parameters %s"
+msgstr "Dans api_list, avec les paramètres %s"
+
+#: src/biolovision/api.py:825
+#, python-format
+msgid "Search from %s, with option %s and body %s"
+msgstr "Dans api_search depuis %s, avec les options %s et le corps %s"
+
+#: src/biolovision/api.py:848
+#, python-format
+msgid "Create observation, with data %s"
+msgstr "Création d'une observation, avec data %s"
+
+#: src/biolovision/api.py:874
+#, python-format
+msgid "Update observation %s, with data %s"
+msgstr "Mise à jour de l'observation %s, avec data %s"
+
+#: src/biolovision/api.py:895 src/biolovision/api.py:914
+#, python-format
+msgid "Delete observation %s"
+msgstr "Suppression de l'observation %s"
+
+#: src/biolovision/api.py:921
+msgid "No parameter passed: call ignored"
+msgstr "Pas de paramètre transmis : appel ignoré"

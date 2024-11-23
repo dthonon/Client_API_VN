@@ -38,7 +38,7 @@ logger = logging.getLogger(APP_NAME)
 
 @click.version_option(package_name="Client_API_VN")
 @click.group()
-@click.option("--verbose/--quiet", default=False, help="Increase or decrease output verbosity")
+@click.option("--verbose/--quiet", default=False, help=_("Increase or decrease output verbosity"))
 def main(
     verbose: bool,
 ) -> None:
