@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Client_API_VN VERSION\n"
 "Report-Msgid-Bugs-To: d.thonon9@outlook.com\n"
-"POT-Creation-Date: 2024-11-23 22:55+0100\n"
+"POT-Creation-Date: 2024-11-23 23:09+0100\n"
 "PO-Revision-Date: 2024-11-22 22:40+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr_FR\n"
@@ -132,31 +132,35 @@ msgstr "Nombre d'entités = %i"
 msgid "In api_get for controler:%s, entity: %s, with parameters:%s"
 msgstr "Dans api_get du controleur:%s, entité: %s, paramètres:%s"
 
-#: src/biolovision/api.py:757
+#: src/biolovision/api.py:498
+msgid "Calling api_list is deprecated. Please use api_search only."
+msgstr "L'appel à api_list est obsolète. Utilisez api_search."
+
+#: src/biolovision/api.py:758
 #, python-format
 msgid "In api_list, with parameters %s"
 msgstr "Dans api_list, avec les paramètres %s"
 
-#: src/biolovision/api.py:825
+#: src/biolovision/api.py:826
 #, python-format
 msgid "Search from %s, with option %s and body %s"
 msgstr "Dans api_search depuis %s, avec les options %s et le corps %s"
 
-#: src/biolovision/api.py:848
+#: src/biolovision/api.py:849
 #, python-format
 msgid "Create observation, with data %s"
 msgstr "Création d'une observation, avec data %s"
 
-#: src/biolovision/api.py:874
+#: src/biolovision/api.py:875
 #, python-format
 msgid "Update observation %s, with data %s"
 msgstr "Mise à jour de l'observation %s, avec data %s"
 
-#: src/biolovision/api.py:895 src/biolovision/api.py:914
+#: src/biolovision/api.py:896 src/biolovision/api.py:915
 #, python-format
 msgid "Delete observation %s"
 msgstr "Suppression de l'observation %s"
 
-#: src/biolovision/api.py:921
+#: src/biolovision/api.py:922
 msgid "No parameter passed: call ignored"
 msgstr "Pas de paramètre transmis : appel ignoré"

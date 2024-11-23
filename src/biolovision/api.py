@@ -475,6 +475,7 @@ class BiolovisionAPI:
         json : dict or None
             dict decoded from json if status OK, else None
         """
+        logger.warning(_("Calling api_list is deprecated. Please use api_search only."))
         h_params = None if opt_params is None else HashableDict(opt_params)
         h_headers = None if optional_headers is None else HashableDict(optional_headers)
         return self._api_list(opt_params=h_params, optional_headers=h_headers)
