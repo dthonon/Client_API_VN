@@ -1,13 +1,14 @@
-# French (France) translations for PROJECT.
-# Copyright (C) 2024 ORGANIZATION
-# This file is distributed under the same license as the PROJECT project.
+# French (France) translations for Client_API_VN.
+# Copyright (C) 2024 Daniel Thonon
+# This file is distributed under the same license as the Client_API_VN
+# project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2024.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PROJECT VERSION\n"
-"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2024-11-20 23:05+0100\n"
+"Project-Id-Version: Client_API_VN VERSION\n"
+"Report-Msgid-Bugs-To: d.thonon9@outlook.com\n"
+"POT-Creation-Date: 2024-11-23 22:55+0100\n"
 "PO-Revision-Date: 2024-11-20 23:07+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr_FR\n"
@@ -18,66 +19,70 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.16.0\n"
 
-#: src/update_vn/update_vn.py:80
+#: src/update_vn/update_vn.py:41
+msgid "Increase or decrease output verbosity"
+msgstr ""
+
+#: src/update_vn/update_vn.py:79
 #, python-format
 msgid "update_vn version %s"
 msgstr ""
 
-#: src/update_vn/update_vn.py:94
+#: src/update_vn/update_vn.py:93
 #, python-format
 msgid "toml configuration file %s exists and is not overwritten"
 msgstr "Le fichier de configuration toml %s existe et n'est pas écrasé"
 
-#: src/update_vn/update_vn.py:96
+#: src/update_vn/update_vn.py:95
 msgid "Creating toml configuration file"
 msgstr "Création du fichier de configuration toml"
 
-#: src/update_vn/update_vn.py:99
+#: src/update_vn/update_vn.py:98
 #, python-format
 msgid "Creating toml configuration file %s, from %s"
 msgstr "Création du fichier de configuration toml %s à partir de %s"
 
-#: src/update_vn/update_vn.py:101
+#: src/update_vn/update_vn.py:100
 #, python-format
 msgid "Please edit %s before running the script"
 msgstr "Veuillez modifier %s avant de lancer le script"
 
-#: src/update_vn/update_vn.py:116
+#: src/update_vn/update_vn.py:115
 #, python-format
 msgid "Configuration file %s does not exist"
 msgstr "Le fichier de configuration %s n'existe pas"
 
-#: src/update_vn/update_vn.py:118
+#: src/update_vn/update_vn.py:117
 #, python-format
 msgid "Getting configuration data from %s"
 msgstr "Lecture de la configuration depuis %s"
 
-#: src/update_vn/update_vn.py:127
+#: src/update_vn/update_vn.py:125
 #, python-format
 msgid "Input file %s does not exist"
 msgstr "Le fichier d'entrée %s n'existe pas"
 
-#: src/update_vn/update_vn.py:132
+#: src/update_vn/update_vn.py:130
 #, python-format
 msgid "Preparing update for site %s"
 msgstr "Préparation de la mise à jour du site %s"
 
-#: src/update_vn/update_vn.py:154
+#: src/update_vn/update_vn.py:163
 #, python-format
 msgid "Site %s: updating sighting %s, operation %s"
 msgstr "Site %s : mise à jour observation %s, opération %s"
 
-#: src/update_vn/update_vn.py:164
+#: src/update_vn/update_vn.py:173
 #, python-format
 msgid "Unknown operation in row, ignored %s"
 msgstr "Opération inconnue ignorée en ligne %s"
 
-#: src/update_vn/update_vn.py:174
+#: src/update_vn/update_vn.py:183
 #, python-format
 msgid "Before: %s"
 msgstr "Avant : %s"
 
-#: src/update_vn/update_vn.py:213
+#: src/update_vn/update_vn.py:226
 #, python-format
 msgid "After: %s"
 msgstr "Après : %s"

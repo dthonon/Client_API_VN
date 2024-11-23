@@ -20,9 +20,36 @@ check: ## Run code quality tools.
 	@echo "🚀 Checking for obsolete dependencies: Running deptry"
 	@poetry run deptry .
 
-#
-# update_catalog: pybabel extract src/update_vn/ -o src/update_vn/locale/update_vn.pot
-# compile_catalog: pybabel compile -D update_vn -d src/update_vn/locale/
+update_catalog: ec_biolovision ec_export_vn ec_update_vn ## Compile translation catalogs
+
+ec_biolovision: src/biolovision/*.py
+	pybabel extract src/biolovision/ --output-file=src/biolovision/locale/biolovision.pot --no-wrap \
+	--msgid-bugs-address=d.thonon9@outlook.com --copyright-holder="Daniel Thonon" --project=Client_API_VN
+	pybabel update --input-file=src/biolovision/locale/biolovision.pot --domain=biolovision \
+	--output-dir=src/biolovision/locale/ --update-header-comment
+
+ec_export_vn: src/export_vn/*.py
+	pybabel extract src/export_vn/ --output-file=src/export_vn/locale/export_vn.pot --no-wrap \
+	--msgid-bugs-address=d.thonon9@outlook.com --copyright-holder="Daniel Thonon" --project=Client_API_VN
+	pybabel update --input-file=src/export_vn/locale/export_vn.pot --domain=export_vn \
+	--output-dir=src/export_vn/locale/ --update-header-comment
+
+ec_update_vn: src/update_vn/*.py
+	pybabel extract src/update_vn/ --output-file=src/update_vn/locale/update_vn.pot --no-wrap \
+	--msgid-bugs-address=d.thonon9@outlook.com --copyright-holder="Daniel Thonon" --project=Client_API_VN
+	pybabel update --input-file=src/update_vn/locale/update_vn.pot --domain=update_vn \
+	--output-dir=src/update_vn/locale/ --update-header-comment
+
+compile_catalog: cc_biolovision cc_export_vn cc_update_vn ## Compile translation catalogs
+
+cc_biolovision:
+	pybabel compile --domain=biolovision --directory=src/biolovision/locale/
+
+cc_export_vn:
+	pybabel compile --domain=export_vn --directory=src/export_vn/locale/
+
+cc_update_vn:
+	pybabel compile --domain=update_vn --directory=src/update_vn/locale/
 
 .PHONY: test
 test: ## Test the code with pytest

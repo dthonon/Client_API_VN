@@ -25,7 +25,7 @@ from urllib import parse
 import requests
 from requests_oauthlib import OAuth1
 
-from . import _, __version__
+from . import __version__
 
 logger = logging.getLogger("transfer_vn.biolovision_api")
 
@@ -130,17 +130,17 @@ class BiolovisionAPI:
         return __version__
 
     @property
-    def transfer_errors(self):
+    def transfer_errors(self) -> int:
         """Return the number of HTTP errors during this session."""
         return self._transfer_errors
 
     @property
-    def http_status(self):
+    def http_status(self) -> str:
         """Return the latest HTTP status code."""
         return self._http_status
 
     @property
-    def controler(self):
+    def controler(self) -> str:
         """Return the controler name."""
         return self._ctrl
 
