@@ -8,8 +8,6 @@ message = "Modification en masse, le {date}, opération {op}, attribut {path}, d
 # Connection details for each Biolovision site
 
 [sites.tff]
-# Enable download from this site
-enabled = true
 # URL
 site = "https://www.faune-xxx.org/"
 # Username
