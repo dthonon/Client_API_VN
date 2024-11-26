@@ -25,7 +25,7 @@ from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
 import click
-from dynaconf import Dynaconf
+from dynaconf import Dynaconf, ValidationError, Validator
 
 from biolovision.api import ObservationsAPI
 
@@ -116,9 +116,37 @@ def update(config: str, input: str) -> None:
         raise FileNotFoundError
     logger.info(_("Getting configuration data from %s"), config)
     ref = str(importlib.resources.files("update_vn") / "data/evn_default.toml")
-    settings = Dynaconf(preload=[ref], settings_files=[config])
+    settings = Dynaconf(
+        preload=[ref],
+        settings_files=[config],
+    )
 
+    # Validation de tous les paramètres
     cfg_site_list = settings.sites
+    assert len(cfg_site_list) == 1, _("Only one site can be defined in configuration file")
+    for site, cfg in cfg_site_list.items():
+        break
+    site_up = site.upper()
+    settings.validators.register(
+        Validator("MESSAGE", len_min=5),
+        Validator(f"SITES.{site_up}.SITE", len_min=10, startswith="https://"),
+        Validator("SITES.{site_up}.USER_EMAIL", len_min=5, cont="@"),
+        Validator("SITES.{site_up}.USER_PW", len_min=5),
+        Validator("SITES.{site_up}.CLIENT_KEY", len_min=20),
+        Validator("SITES.{site_up}.CLIENT_SECRET", len_min=5),
+        Validator("TUNING.MAX_LIST_LENGTH", gte=1),
+        Validator("TUNING.MAX_CHUNKS", gte=1),
+        Validator("TUNING.MAX_RETRY", gte=1),
+        Validator("TUNING.MAX_REQUESTS", gte=0),
+        Validator("TUNING.RETRY_DELAY", gte=1),
+        Validator("TUNING.UNAVAILABLE_DELAY", gte=1),
+    )
+    try:
+        settings.validators.validate_all()
+    except ValidationError as e:
+        accumulative_errors = e.details
+        logger.error(accumulative_errors)
+        raise
 
     # Update Biolovision site from update file
     if not Path(input).is_file():
@@ -126,20 +154,19 @@ def update(config: str, input: str) -> None:
         raise FileNotFoundError
 
     obs_api = dict()
-    for site, cfg in cfg_site_list.items():
-        logger.debug(_("Preparing update for site %s"), site)
-        obs_api[site] = ObservationsAPI(
-            user_email=cfg.user_email,
-            user_pw=cfg.user_pw,
-            base_url=cfg.site,
-            client_key=cfg.client_key,
-            client_secret=cfg.client_secret,
-            max_retry=settings.tuning.max_retry,
-            max_requests=settings.tuning.max_requests,
-            max_chunks=settings.tuning.max_chunks,
-            unavailable_delay=settings.tuning.unavailable_delay,
-            retry_delay=settings.tuning.retry_delay,
-        )
+    logger.debug(_("Preparing update for site %s"), site)
+    obs_api[site] = ObservationsAPI(
+        user_email=cfg.user_email,
+        user_pw=cfg.user_pw,
+        base_url=cfg.site,
+        client_key=cfg.client_key,
+        client_secret=cfg.client_secret,
+        max_retry=settings.tuning.max_retry,
+        max_requests=settings.tuning.max_requests,
+        max_chunks=settings.tuning.max_chunks,
+        unavailable_delay=settings.tuning.unavailable_delay,
+        retry_delay=settings.tuning.retry_delay,
+    )
 
     with open(input, newline="") as csvfile:
         reader = csv.reader(csvfile, delimiter=";")
@@ -165,12 +192,14 @@ def update(config: str, input: str) -> None:
                         row[1].strip(),
                         row[3].strip(),
                     )
-                    if row[3].strip() not in [
+                    if row[0].strip() != site:
+                        logger.error(_("Unknown site in row %d, ignored %s"), nb_row, row[0])
+                    elif row[3].strip() not in [
                         "delete_observation",
                         "delete_attribute",
                         "replace",
                     ]:
-                        logger.error(_("Unknown operation in row, ignored %s"), row)
+                        logger.error(_("Unknown operation in row %d, ignored %s"), nb_row, row)
                     elif row[3].strip() == "delete_observation":
                         obs_api[row[0].strip()].api_delete(row[1].strip())
                     else:
