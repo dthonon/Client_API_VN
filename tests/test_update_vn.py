@@ -112,7 +112,7 @@ def sighting_for_test():
                     "species": {"@id": "408"},
                     "observers": [
                         {
-                            "@id": "11675",
+                            "@id": "57107",
                             "altitude": "230",
                             "comment": "TEST API !!! à supprimer !!!",
                             "coord_lat": "45.188302192726",
