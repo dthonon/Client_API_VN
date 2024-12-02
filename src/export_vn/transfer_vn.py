@@ -351,8 +351,8 @@ def col_table_create(cfg, sql_quiet, client_min_message):
             check=True,
             shell=True,
         )
-    except subprocess.CalledProcessError as err:  # pragma: no cover
-        logger.error(err)
+    except subprocess.CalledProcessError:  # pragma: no cover
+        logger.exception()
 
     return None
 
@@ -382,8 +382,8 @@ def migrate(cfg, sql_quiet, client_min_message):
             check=True,
             shell=True,
         )
-    except subprocess.CalledProcessError as err:  # pragma: no cover
-        logger.error(err)
+    except subprocess.CalledProcessError:  # pragma: no cover
+        logger.exception()
 
     return None
 
@@ -660,7 +660,7 @@ def count_observations(cfg_ctrl):
                     )
                 )
         except Exception:  # pragma: no cover
-            logger.error(_("Can not retrieve informations from %s"), cfg.site)
+            logger.exception(_("Can not retrieve informations from %s"), cfg.site)
 
     return None
 

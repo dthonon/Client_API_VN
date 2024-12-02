@@ -145,7 +145,7 @@ def update(config: str, input: str) -> None:
         settings.validators.validate_all()
     except ValidationError as e:
         accumulative_errors = e.details
-        logger.error(accumulative_errors)
+        logger.exception(accumulative_errors)
         raise
 
     # Update Biolovision site from update file
@@ -171,8 +171,7 @@ def update(config: str, input: str) -> None:
     with open(input, newline="") as csvfile:
         reader = csv.reader(csvfile, delimiter=";")
         nb_row = 0
-        for row in reader:
-            nb_row += 1
+        for nb_row, row in enumerate(reader):
             logger.debug(row)
             if nb_row == 1:
                 # First row must be header

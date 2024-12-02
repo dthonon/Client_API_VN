@@ -258,13 +258,13 @@ class EvnCtrlConf:
 
     @staticmethod
     def _schedule_param(cfg: dict, param: str) -> str | int | None:
-        return None if ("schedule" not in cfg) else None if (param not in cfg["schedule"]) else cfg["schedule"][param]
+        return cfg["schedule"].get(param, None)
 
     def __init__(self, ctrl: str, config: _ConfType) -> None:
         self._ctrl = ctrl
 
         # Import parameters in properties
-        self._enabled = True if "enabled" not in config["controler"][ctrl] else config["controler"][ctrl]["enabled"]  # type: bool
+        self._enabled = config["controler"][ctrl].get("enabled", True)  # type: bool
 
         self._schedule_year = self._schedule_param(config["controler"][ctrl], "year")
         self._schedule_month = self._schedule_param(config["controler"][ctrl], "month")
@@ -327,110 +327,107 @@ class EvnSiteConf:
     def __init__(self, site: str, config: _ConfType) -> None:
         self._site = site
         # Import parameters in properties
-        try:
-            self._enabled = True if "enabled" not in config["site"][site] else config["site"][site]["enabled"]
-            self._client_key = config["site"][site]["client_key"]  # type: str
-            self._client_secret = config["site"][site]["client_secret"]  # type: str
-            self._user_email = config["site"][site]["user_email"]  # type: str
-            self._user_pw = config["site"][site]["user_pw"]  # type: str
-            self._base_url = config["site"][site]["site"]  # type: str
 
-            self._taxo_exclude = []  # type: List[str]
-            self._territorial_unit_ids = []  # type: List[str]
-            self._json_format = "short"  # type: str
-            self._start_date = None  # type: Union[datetime, None]
-            self._end_date = None  # type: Union[datetime, None]
-            self._type_date = None  # type: Union[str, None]
-            if "filter" in config:
-                if "taxo_exclude" in config["filter"]:
-                    self._taxo_exclude = config["filter"]["taxo_exclude"]
-                if "territorial_unit_ids" in config["filter"]:
-                    self._territorial_unit_ids = config["filter"]["territorial_unit_ids"]
-                if "json_format" in config["filter"]:
-                    self._json_format = config["filter"]["json_format"]
-                if "start_date" in config["filter"]:
-                    self._start_date = config["filter"]["start_date"]
-                if "end_date" in config["filter"]:
-                    self._end_date = config["filter"]["end_date"]
-                if "type_date" in config["filter"]:
-                    self._type_date = config["filter"]["type_date"]
-            if (self._start_date is not None) and (self._end_date is not None):
-                if self._start_date > self._end_date:
-                    logger.error(_("start_date must be before end_date"))
+        self._enabled = config["site"][site].get("enabled", True)
+        self._client_key = config["site"][site]["client_key"]  # type: str
+        self._client_secret = config["site"][site]["client_secret"]  # type: str
+        self._user_email = config["site"][site]["user_email"]  # type: str
+        self._user_pw = config["site"][site]["user_pw"]  # type: str
+        self._base_url = config["site"][site]["site"]  # type: str
+
+        self._taxo_exclude = []  # type: List[str]
+        self._territorial_unit_ids = []  # type: List[str]
+        self._json_format = "short"  # type: str
+        self._start_date = None  # type: Union[datetime, None]
+        self._end_date = None  # type: Union[datetime, None]
+        self._type_date = None  # type: Union[str, None]
+        if "filter" in config:
+            if "taxo_exclude" in config["filter"]:
+                self._taxo_exclude = config["filter"]["taxo_exclude"]
+            if "territorial_unit_ids" in config["filter"]:
+                self._territorial_unit_ids = config["filter"]["territorial_unit_ids"]
+            if "json_format" in config["filter"]:
+                self._json_format = config["filter"]["json_format"]
+            if "start_date" in config["filter"]:
+                self._start_date = config["filter"]["start_date"]
+            if "end_date" in config["filter"]:
+                self._end_date = config["filter"]["end_date"]
+            if "type_date" in config["filter"]:
+                self._type_date = config["filter"]["type_date"]
+        if (self._start_date is not None) and (self._end_date is not None):
+            if self._start_date > self._end_date:
+                logger.error(_("start_date must be before end_date"))
+                raise IncorrectParameter
+
+        self._file_enabled = False  # type: bool
+        self._file_store = ""  # type: str
+        if "file" in config:
+            self._file_enabled = config["file"].get("enabled", False)
+            if self._file_enabled:
+                if "file_store" in config["file"]:
+                    self._file_store = config["file"]["file_store"] + "/" + site + "/"
+                else:
+                    logger.error(_("file:file_store must be defined"))
                     raise IncorrectParameter
 
-            self._file_enabled = False  # type: bool
-            self._file_store = ""  # type: str
-            if "file" in config:
-                self._file_enabled = False if "enabled" not in config["file"] else config["file"]["enabled"]
-                if self._file_enabled:
-                    if "file_store" in config["file"]:
-                        self._file_store = config["file"]["file_store"] + "/" + site + "/"
-                    else:
-                        logger.error(_("file:file_store must be defined"))
-                        raise IncorrectParameter
+        self._database_enabled = False  # type: bool
+        self._db_host = ""  # type: str
+        self._db_port = ""  # type: str
+        self._db_name = ""  # type: str
+        self._db_schema_import = ""  # type: str
+        self._db_schema_vn = ""  # type: str
+        self._db_group = ""  # type: str
+        self._db_user = ""  # type: str
+        self._db_pw = ""  # type: str
+        self._db_secret_key = ""  # type: str
+        self._db_out_proj = ""  # type: str
+        if "database" in config:
+            self._database_enabled = config["database"].get("enabled", False)
+            self._db_host = config["database"]["db_host"]  # type: str
+            self._db_port = str(config["database"]["db_port"])  # type: str
+            self._db_name = config["database"]["db_name"]  # type: str
+            self._db_schema_import = config["database"]["db_schema_import"]  # type: str
+            self._db_schema_vn = config["database"]["db_schema_vn"]  # type: str
+            self._db_group = config["database"]["db_group"]  # type: str
+            self._db_user = config["database"]["db_user"]  # type: str
+            self._db_pw = config["database"]["db_pw"]  # type: str
+            self._db_secret_key = config["database"]["db_secret_key"]  # type: str
+            self._db_out_proj = config["database"]["db_out_proj"]  # type: str
 
-            self._database_enabled = False  # type: bool
-            self._db_host = ""  # type: str
-            self._db_port = ""  # type: str
-            self._db_name = ""  # type: str
-            self._db_schema_import = ""  # type: str
-            self._db_schema_vn = ""  # type: str
-            self._db_group = ""  # type: str
-            self._db_user = ""  # type: str
-            self._db_pw = ""  # type: str
-            self._db_secret_key = ""  # type: str
-            self._db_out_proj = ""  # type: str
-            if "database" in config:
-                self._database_enabled = False if "enabled" not in config["database"] else config["database"]["enabled"]
-                self._db_host = config["database"]["db_host"]  # type: str
-                self._db_port = str(config["database"]["db_port"])  # type: str
-                self._db_name = config["database"]["db_name"]  # type: str
-                self._db_schema_import = config["database"]["db_schema_import"]  # type: str
-                self._db_schema_vn = config["database"]["db_schema_vn"]  # type: str
-                self._db_group = config["database"]["db_group"]  # type: str
-                self._db_user = config["database"]["db_user"]  # type: str
-                self._db_pw = config["database"]["db_pw"]  # type: str
-                self._db_secret_key = config["database"]["db_secret_key"]  # type: str
-                self._db_out_proj = config["database"]["db_out_proj"]  # type: str
+        if "tuning" in config:
+            self._max_list_length = config["tuning"]["max_list_length"]  # type: int
+            self._max_chunks = config["tuning"]["max_chunks"]  # type: int
+            self._max_retry = config["tuning"]["max_retry"]  # type: int
+            self._max_requests = config["tuning"]["max_requests"]  # type: int
+            self._retry_delay = config["tuning"]["retry_delay"]  # type: int
+            self._unavailable_delay = config["tuning"]["unavailable_delay"]  # type: int
+            self._lru_maxsize = config["tuning"]["lru_maxsize"]  # type: int
+            self._pid_kp = config["tuning"]["pid_kp"]  # type: float
+            self._pid_ki = config["tuning"]["pid_ki"]  # type: float
+            self._pid_kd = config["tuning"]["pid_kd"]  # type: float
+            self._pid_setpoint = config["tuning"]["pid_setpoint"]  # type: float
+            self._pid_limit_min = config["tuning"]["pid_limit_min"]  # type: float
+            self._pid_limit_max = config["tuning"]["pid_limit_max"]  # type: float
+            self._pid_delta_days = config["tuning"]["pid_delta_days"]  # type: int
+            self._sched_executors = config["tuning"]["sched_executors"]  # type: int
+        else:
+            # Provide default values
+            self._max_list_length = 100  # type: int
+            self._max_chunks = 10  # type: int
+            self._max_retry = 5  # type: int
+            self._max_requests = 0  # type: int
+            self._retry_delay = 5  # type: int
+            self._unavailable_delay = 600  # type: int
+            self._lru_maxsize = 32  # type: int
+            self._pid_kp = 0.0  # type: float
+            self._pid_ki = 0.003  # type: float
+            self._pid_kd = 0.0  # type: float
+            self._pid_setpoint = 10000  # type: float
+            self._pid_limit_min = 1  # type: float
+            self._pid_limit_max = 2000  # type: float
+            self._pid_delta_days = 15  # type: int
+            self._sched_executors = 1  # type: int
 
-            if "tuning" in config:
-                self._max_list_length = config["tuning"]["max_list_length"]  # type: int
-                self._max_chunks = config["tuning"]["max_chunks"]  # type: int
-                self._max_retry = config["tuning"]["max_retry"]  # type: int
-                self._max_requests = config["tuning"]["max_requests"]  # type: int
-                self._retry_delay = config["tuning"]["retry_delay"]  # type: int
-                self._unavailable_delay = config["tuning"]["unavailable_delay"]  # type: int
-                self._lru_maxsize = config["tuning"]["lru_maxsize"]  # type: int
-                self._pid_kp = config["tuning"]["pid_kp"]  # type: float
-                self._pid_ki = config["tuning"]["pid_ki"]  # type: float
-                self._pid_kd = config["tuning"]["pid_kd"]  # type: float
-                self._pid_setpoint = config["tuning"]["pid_setpoint"]  # type: float
-                self._pid_limit_min = config["tuning"]["pid_limit_min"]  # type: float
-                self._pid_limit_max = config["tuning"]["pid_limit_max"]  # type: float
-                self._pid_delta_days = config["tuning"]["pid_delta_days"]  # type: int
-                self._sched_executors = config["tuning"]["sched_executors"]  # type: int
-            else:
-                # Provide default values
-                self._max_list_length = 100  # type: int
-                self._max_chunks = 10  # type: int
-                self._max_retry = 5  # type: int
-                self._max_requests = 0  # type: int
-                self._retry_delay = 5  # type: int
-                self._unavailable_delay = 600  # type: int
-                self._lru_maxsize = 32  # type: int
-                self._pid_kp = 0.0  # type: float
-                self._pid_ki = 0.003  # type: float
-                self._pid_kd = 0.0  # type: float
-                self._pid_setpoint = 10000  # type: float
-                self._pid_limit_min = 1  # type: float
-                self._pid_limit_max = 2000  # type: float
-                self._pid_delta_days = 15  # type: int
-                self._sched_executors = 1  # type: int
-
-        except Exception:  # pragma: no cover
-            logger.exception(_("Error creating %s configuration"), site)
-            raise
         return None
 
     @property

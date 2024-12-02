@@ -76,7 +76,7 @@ class StoreFile:
                 try:
                     os.makedirs(json_path)
                 except OSError:
-                    logger.error(_("Creation of the directory %s failed"), json_path)
+                    logger.exception(_("Creation of the directory %s failed"), json_path)
                     raise
                 else:
                     logger.info(_("Successfully created the directory %s"), json_path)

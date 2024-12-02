@@ -164,12 +164,7 @@ lint.ignore = [
   "SIM102",
   "SIM105",
   "SIM108",
-  "SIM113",
-  "SIM117",
-  "SIM401",
-  "TRY301",
-  "TRY400",
-  "UP031",
+  # "SIM113",
 ]
 
 [tool.ruff.format]

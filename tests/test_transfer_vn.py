@@ -13,9 +13,8 @@ from export_vn import transfer_vn
 @pytest.mark.order(index=500)
 def test_version():
     """Check if version is defined."""
-    with patch("sys.argv", ["py.test", "--version"]):
-        with pytest.raises(SystemExit):
-            transfer_vn.run()
+    with patch("sys.argv", ["py.test", "--version"]), pytest.raises(SystemExit):
+        transfer_vn.run()
 
 
 @pytest.mark.order(index=510)
