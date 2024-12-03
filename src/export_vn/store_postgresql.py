@@ -439,7 +439,7 @@ class PostgresqlUtils:
             FROM pg_stat_activity
             WHERE pg_stat_activity.datname = '{self._config.db_name}'
             AND {pid_column} <> pg_backend_pid();
-            """
+            """  # noqa: S608
             logger.debug(_("Dropping tables: %s"), text)
             conn.execute(text)
             text = f"DROP DATABASE IF EXISTS {self._config.db_name}"
@@ -568,7 +568,7 @@ class PostgresqlUtils:
             SELECT site, ((item->>0)::json->'species') ->> 'taxonomy' AS taxonomy, COUNT(id)
                 FROM {dbschema}.observations_json
                 GROUP BY site, ((item->>0)::json->'species') ->> 'taxonomy';
-            """
+            """  # noqa: S608
 
             result = conn.execute(text).fetchall()
 
@@ -609,7 +609,7 @@ class PostgresqlUtils:
                     LEFT JOIN {dbschema}.taxo_groups AS t
                         ON (o.taxonomy::integer = t.id AND o.site LIKE t.site)
                 GROUP BY o.site, o.taxonomy, t.name
-            """
+            """  # noqa: S608
 
             result = conn.execute(text).fetchall()
 

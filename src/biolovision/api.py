@@ -286,10 +286,7 @@ class BiolovisionAPI:
                         # TWEAK: remove extra text outside JSON response
                         if len(resp.text) > 1:
                             rsp = re.findall(r"([\[{].*[}\]])", resp.text)
-                            if len(rsp) > 0:
-                                resp_chunk = json.loads(rsp[0])
-                            else:
-                                resp_chunk = {}
+                            resp_chunk = json.loads(rsp[0]) if len(rsp) > 0 else {}
                         else:
                             resp_chunk = resp.json("{}")
                     except json.decoder.JSONDecodeError:  # pragma: no cover

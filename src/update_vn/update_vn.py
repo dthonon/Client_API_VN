@@ -15,12 +15,14 @@ Modification are tracked in hidden_comment.
 
 """
 
+import contextlib
 import csv
 import datetime
 import importlib.resources
 import logging
 import shutil
 import sys
+from ast import literal_eval
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
@@ -215,7 +217,7 @@ def update(config: str, input: str) -> None:
                         repl = row[2].strip().replace("$", "sighting")
                         # Get current value, if exists
                         try:
-                            old_attr = eval(repl)
+                            old_attr = literal_eval(repl)
                         except KeyError:
                             old_attr = None
                         # Get current hidden_comment, if exists
@@ -242,10 +244,9 @@ def update(config: str, input: str) -> None:
                         if row[3].strip() == "replace":
                             exec("{} = {}".format(repl, "row[4].strip()"))
                         else:  # delete_attribute
-                            try:
+                            with contextlib.suppress(KeyError):
                                 exec(f"del {repl}")
-                            except KeyError:  # pragma: no cover
-                                pass
+
                         exec(
                             """sighting['data']['sightings'][0]['observers'][0]['hidden_comment'] = '{}'""".format(
                                 msg.replace('"', '\\"').replace("'", "\\'")

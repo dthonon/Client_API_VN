@@ -644,10 +644,7 @@ class Observations(DownloadVn):
                     )
 
                     # Record end of download interval
-                    if self._config.end_date is None:
-                        end_date = datetime.now()
-                    else:
-                        end_date = self._config.end_date
+                    end_date = datetime.now() if self._config.end_date is None else self._config.end_date
                     since = self._backend.increment_get(self._config.site, id_taxo_group)
                     if since is None:
                         since = end_date
@@ -769,12 +766,8 @@ class Observations(DownloadVn):
                     )
                     taxo_list.append(taxo["id"])
         else:
-            if isinstance(id_taxo_group, list):
-                # A list of taxo_group given as parameter
-                taxo_list = id_taxo_group
-            else:
-                # Only 1 taxo_group given as parameter
-                taxo_list = [id_taxo_group]
+            # Select list of taxo_group or only 1 taxo_group given as parameter
+            taxo_list = id_taxo_group if isinstance(id_taxo_group, list) else [id_taxo_group]
 
         return taxo_list
 

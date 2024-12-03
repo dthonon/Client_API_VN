@@ -3,8 +3,10 @@
 Program managing VisioNature export to Postgresql database
 
 """
+# ruff: noqa: S602
 
 import argparse
+import contextlib
 import importlib.resources
 import logging
 import os
@@ -122,30 +124,24 @@ class Jobs:
 
     def __exit__(self, exc_type, exc_value, traceback):
         logger.info(_("Shutting down scheduler in __atexit__, if still running"))
-        try:
+        with contextlib.suppress(Exception):
             self._scheduler.shutdown(wait=False)
-        except Exception:
-            pass
 
     def shutdown(self):
         logger.info(_("Shutting down scheduler"))
-        try:
+        with contextlib.suppress(SchedulerNotRunningError):
             self._scheduler.shutdown()
-        except SchedulerNotRunningError:  # pragma: no cover
-            pass
 
     def _handler(self, signum, frame):  # pragma: no cover
         logger.error(_("Signal handler called with signal %s"), signum)
-        try:
+        with contextlib.suppress(SchedulerNotRunningError):
             self._scheduler.shutdown(wait=False)
-        except SchedulerNotRunningError:
-            pass
-        try:
+
+        with contextlib.suppress(SchedulerNotRunningError):
             parent_id = os.getpid()
             for child in psutil.Process(parent_id).children(recursive=True):
                 child.kill()
-        except Exception:
-            pass
+
         sys.exit(1)
 
     def start(self, paused=False):
@@ -325,6 +321,7 @@ def col_table_create(cfg, sql_quiet, client_min_message):
     env = Environment(
         loader=PackageLoader("export_vn", "sql"),
         keep_trailing_newline=True,
+        autoescape=True,
     )
     template = env.get_template("create-vn-tables.sql")
     cmd = template.render(cfg=db_config(cfg))
@@ -363,6 +360,7 @@ def migrate(cfg, sql_quiet, client_min_message):
     Environment(
         loader=PackageLoader("export_vn", "sql"),
         keep_trailing_newline=True,
+        autoescape=True,
     )
     try:
         subprocess.run(
