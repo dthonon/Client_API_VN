@@ -25,7 +25,9 @@ target_metadata = None
 
 def get_url():
     url = context.get_x_argument(as_dictionary=True).get("db_url")
-    assert url, "Database URL must be specified on command line with -x url=<DB_URL>"
+    if url is None:
+        print("Database URL must be specified on command line with -x url=<DB_URL>")
+        raise ValueError
     return url
 
 

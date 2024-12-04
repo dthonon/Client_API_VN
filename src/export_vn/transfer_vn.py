@@ -67,6 +67,7 @@ CTRL_DEFS = {
     "territorial_units": TerritorialUnits,
     "validations": Validations,
 }
+TIMEOUT = 30  # Requests.get timeout
 
 logger = logging.getLogger("transfer_vn")
 
@@ -427,7 +428,7 @@ def full_download(cfg_ctrl):
     based on configuration file."""
     cfg_crtl_list = cfg_ctrl.ctrl_list
     cfg_site_list = cfg_ctrl.site_list
-    cfg = list(cfg_site_list.values())[0]
+    cfg = next(iter(cfg_site_list.values()))
 
     logger.info(_("Defining full download jobs"))
     # db_url = {
@@ -514,7 +515,7 @@ def increment_download(cfg_ctrl):
     """Performs an incremental download of observations from all sites
     and controlers, based on configuration file."""
     cfg_site_list = cfg_ctrl.site_list
-    cfg = list(cfg_site_list.values())[0]
+    cfg = next(iter(cfg_site_list.values()))
 
     logger.info(_("Starting incremental download jobs"))
     # db_url = {
@@ -543,7 +544,7 @@ def increment_schedule(cfg_ctrl):
     based on YAML controler configuration."""
     cfg_crtl_list = cfg_ctrl.ctrl_list
     cfg_site_list = cfg_ctrl.site_list
-    cfg = list(cfg_site_list.values())[0]
+    cfg = next(iter(cfg_site_list.values()))
 
     logger.info(_("Defining incremental download jobs"))
     # db_url = {
@@ -589,7 +590,7 @@ def status(cfg_ctrl):
     """Print download status, using logger."""
     cfg_site_list = cfg_ctrl.site_list
     cfg_site_list = cfg_ctrl.site_list
-    cfg = list(cfg_site_list.values())[0]
+    cfg = next(iter(cfg_site_list.values()))
 
     logger.info(_("Download jobs status"))
     # db_url = {
@@ -626,7 +627,10 @@ def count_observations(cfg_ctrl):
                             site_counts.append([r[0], r[2], -1, r[3]])
                 else:
                     url = cfg.base_url + "index.php?m_id=23"
-                    page = requests.get(url)
+                    page = requests.get(
+                        url,
+                        timeout=TIMEOUT,
+                    )
                     soup = BeautifulSoup(page.text, "html.parser")
 
                     counts = soup.find_all("table")[2].contents[1].contents[3]
@@ -727,7 +731,7 @@ def main(args):
         logger.critical(_("Incorrect content in YAML configuration %s"), args.file)
         sys.exit(0)
     cfg_site_list = cfg_ctrl.site_list
-    cfg = list(cfg_site_list.values())[0]
+    cfg = next(iter(cfg_site_list.values()))
     # Check configuration consistency
     if cfg.db_enabled and cfg.json_format != "short":
         logger.critical(_("Storing to Postgresql cannot use long json_format."))

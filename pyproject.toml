@@ -139,6 +139,10 @@ lint.ignore = [
   "E501",
   # DoNotAssignLambda
   "E731",
+  # Using $HOME/tmp is safe
+  "S108",
+  # Using exec limited in update_vn
+  "S102",
   # Exclusions ruff temporaires
   "A001",
   "A002",
@@ -149,13 +153,6 @@ lint.ignore = [
   "C408",
   "C901",
   "F821",
-  "RUF015",
-  "S101",
-  "S102",
-  "S105",
-  "S108",
-  "S110",
-  "S113",
 ]
 
 [tool.ruff.format]

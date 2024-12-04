@@ -73,6 +73,7 @@ class BiolovisionAPI:
         max_chunks: int | None = None,
         unavailable_delay: int | None = None,
         retry_delay: int | None = None,
+        timeout: int | None = None,
     ) -> None:
         if controler == "":
             logger.fatal(_("controler must be defined"))
@@ -114,6 +115,7 @@ class BiolovisionAPI:
             "max_chunks": max_chunks,
             "unavailable_delay": unavailable_delay,
             "retry_delay": retry_delay,
+            "timeout": timeout,
         }
         self._transfer_errors = 0
         self._http_status = 0
@@ -211,7 +213,13 @@ class BiolovisionAPI:
                 headers.update(optional_headers)
             protected_url = self._api_url + scope
             if method == "GET":
-                resp = requests.get(url=protected_url, auth=self._oauth, params=payload, headers=headers)
+                resp = requests.get(
+                    url=protected_url,
+                    auth=self._oauth,
+                    params=payload,
+                    headers=headers,
+                    timeout=self._limits.timeout,
+                )
             elif method == "POST":
                 resp = requests.post(
                     url=protected_url,
@@ -219,6 +227,7 @@ class BiolovisionAPI:
                     params=payload,
                     headers=headers,
                     data=body,
+                    timeout=self._limits.timeout,
                 )
             elif method == "PUT":
                 resp = requests.put(
@@ -227,9 +236,16 @@ class BiolovisionAPI:
                     params=payload,
                     headers=headers,
                     data=body,
+                    timeout=self._limits.timeout,
                 )
             elif method == "DELETE":
-                resp = requests.delete(url=protected_url, auth=self._oauth, params=payload, headers=headers)
+                resp = requests.delete(
+                    url=protected_url,
+                    auth=self._oauth,
+                    params=payload,
+                    headers=headers,
+                    timeout=self._limits.timeout,
+                )
             else:
                 raise NotImplementedException
 

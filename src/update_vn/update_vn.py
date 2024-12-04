@@ -125,7 +125,8 @@ def update(config: str, input: str) -> None:
 
     # Validation de tous les paramètres
     cfg_site_list = settings.sites
-    assert len(cfg_site_list) == 1, _("Only one site can be defined in configuration file")
+    if len(cfg_site_list) > 1:
+        raise ValueError(_("Only one site can be defined in configuration file"))
     for site, cfg in cfg_site_list.items():
         break
     site_up = site.upper()
@@ -177,11 +178,21 @@ def update(config: str, input: str) -> None:
             logger.debug(row)
             if nb_row == 1:
                 # First row must be header
-                assert row[0].strip() == "site"
-                assert row[1].strip() == "id_universal"
-                assert row[2].strip() == "path"
-                assert row[3].strip() == "operation"
-                assert row[4].strip() == "value"
+                if row[0].strip() != "site":
+                    logger.critical(_("Column header 1 must be 'site'"))
+                    raise ValueError
+                if row[1].strip() != "id_universal":
+                    logger.critical(_("Column header 2 must be 'id_universal'"))
+                    raise ValueError
+                if row[2].strip() != "path":
+                    logger.critical(_("Column header 3 must be 'path'"))
+                    raise ValueError
+                if row[3].strip() != "operation":
+                    logger.critical(_("Column header 4 must be 'operation'"))
+                    raise ValueError
+                if row[4].strip() != "value":
+                    logger.critical(_("Column header 5 must be 'value'"))
+                    raise ValueError
             else:
                 # Next rows are update commands
                 if len(row) < 5:
