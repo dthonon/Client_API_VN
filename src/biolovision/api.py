@@ -218,7 +218,7 @@ class BiolovisionAPI:
                     auth=self._oauth,
                     params=payload,
                     headers=headers,
-                    timeout=self._limits.timeout,
+                    timeout=self._limits["timeout"],
                 )
             elif method == "POST":
                 resp = requests.post(
@@ -227,7 +227,7 @@ class BiolovisionAPI:
                     params=payload,
                     headers=headers,
                     data=body,
-                    timeout=self._limits.timeout,
+                    timeout=self._limits["timeout"],
                 )
             elif method == "PUT":
                 resp = requests.put(
@@ -236,7 +236,7 @@ class BiolovisionAPI:
                     params=payload,
                     headers=headers,
                     data=body,
-                    timeout=self._limits.timeout,
+                    timeout=self._limits["timeout"],
                 )
             elif method == "DELETE":
                 resp = requests.delete(
@@ -244,7 +244,7 @@ class BiolovisionAPI:
                     auth=self._oauth,
                     params=payload,
                     headers=headers,
-                    timeout=self._limits.timeout,
+                    timeout=self._limits["timeout"],
                 )
             else:
                 raise NotImplementedException
