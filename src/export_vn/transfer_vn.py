@@ -620,7 +620,7 @@ def count_observations(cfg_ctrl):
                     col_counts = manage_pg.count_col_obs()
 
                 logger.info(_("Getting counts from %s"), cfg.site)
-                site_counts = list()
+                site_counts = []
                 if cfg.site == "Haute-Savoie":
                     for r in col_counts:
                         if r[0] == "Haute-Savoie":

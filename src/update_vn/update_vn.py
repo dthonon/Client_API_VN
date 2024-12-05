@@ -156,7 +156,7 @@ def update(config: str, input: str) -> None:
         logger.critical(_("Input file %s does not exist"), str(Path(input)))
         raise FileNotFoundError
 
-    obs_api = dict()
+    obs_api = {}
     logger.debug(_("Preparing update for site %s"), site)
     obs_api[site] = ObservationsAPI(
         user_email=cfg.user_email,

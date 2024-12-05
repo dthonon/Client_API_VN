@@ -7,6 +7,7 @@ Generate property reports from schema.
 
 import argparse
 import gzip
+import importlib.resources
 import json
 import logging
 import pprint
@@ -18,7 +19,6 @@ from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 from typing import Any
 
-# import pkg_resources
 from jsonschema.validators import validator_for
 from strictyaml import YAMLValidationError
 
@@ -88,10 +88,10 @@ def validate_schema(cfg_site_list: Any, samples: float) -> None:
     """Validate schemas against downloaded files.
     Files are renamed *.done after successful processing."""
     # Iterate over schema list
-    js_list = [f for f in pkg_resources.resource_listdir(__name__, "") if re.match(r".*\.json", f)]
+    js_list = [f for f in importlib.resources.files(__name__, "").iterdir() if re.match(r".*\.json", f)]
     for js_f in js_list:
         schema = js_f.split(".")[0]
-        file = pkg_resources.resource_filename(__name__, js_f)
+        file = importlib.resources.files(__name__, js_f)
         logger.info(_("Validating schema %s, in file %s"), schema, file)
         with open(file) as f:
             schema_js = json.load(f)
@@ -99,7 +99,7 @@ def validate_schema(cfg_site_list: Any, samples: float) -> None:
         cls.check_schema(schema_js)
         instance = cls(schema_js)
         # Gathering files to validate
-        f_list = list()
+        f_list = []
         for site, cfg in cfg_site_list.items():
             p = Path.home() / cfg.file_store
             for tst_f in p.glob(f"{schema}*.gz"):
@@ -123,12 +123,12 @@ def validate_schema(cfg_site_list: Any, samples: float) -> None:
 def restore(cfg_site_list: Any) -> None:
     """Restore file names."""
     # Iterate over schema list
-    js_list = [f for f in pkg_resources.resource_listdir(__name__, "") if re.match(r".*\.json", f)]
+    js_list = [f for f in importlib.resources.files(__name__, "").iterdir() if re.match(r".*\.json", f)]
     for js_f in js_list:
         schema = js_f.split(".")[0]
         logger.info(_("Restoring files for schema %s"), schema)
         # Gathering files to rename
-        f_list = list()
+        f_list = []
         for site, cfg in cfg_site_list.items():
             p = Path.home() / cfg.file_store
             for tst_f in p.glob(f"{schema}*.gz.done"):
@@ -145,10 +145,10 @@ def report(cfg_site_list: Any) -> None:
     """Print of list of properties in the schemas."""
     pp = pprint.PrettyPrinter(indent=2)
     # Iterate over schema list
-    js_list = [f for f in pkg_resources.resource_listdir(__name__, "") if re.match(r".*\.json", f)]
+    js_list = [f for f in importlib.resources.files(__name__, "").iterdir() if re.match(r".*\.json", f)]
     for js_f in js_list:
         schema = js_f.split(".")[0]
-        file = pkg_resources.resource_filename(__name__, js_f)
+        file = importlib.resources.files(__name__, js_f)
         logger.info(_("Validating schema %s, in file %s"), schema, file)
         with open(file) as f:
             schema_js = json.load(f)

@@ -96,10 +96,17 @@ testpaths = ["tests"]
 pythonpath = ["src"]
 markers = ["slow: marks tests as slow (deselect with '-m \"not slow\"')"]
 
+[tool.flake8]
+builtins = ["_"]
+
+[tool.black]
+line-length = 119
+
 [tool.ruff]
 include = ["pyproject.toml", "src/*/*.py"]
 target-version = "py312"
-line-length = 120
+line-length = 119
+builtins = ["_"]
 fix = true
 lint.select = [
   # flake8-2020
@@ -143,16 +150,16 @@ lint.ignore = [
   "S108",
   # Using exec limited in update_vn
   "S102",
+  # Complexity: too much refactoring needed
+  "C901",
+  # lru_cache memory leak is not an issue on time limited scripts
+  "B019",
   # Exclusions ruff temporaires
   "A001",
   "A002",
   "B006",
   "B007",
-  "B015",
-  "B019",
-  "C408",
-  "C901",
-  "F821",
+  # "B015",
 ]
 
 [tool.ruff.format]

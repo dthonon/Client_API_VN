@@ -744,7 +744,7 @@ class ObservationsAPI(BiolovisionAPI):
         json : dict or None
             dict decoded from json if status OK, else None
         """
-        opt_params = dict()
+        opt_params = {}
         opt_params["id_taxo_group"] = str(id_taxo_group)
         for key, value in kwargs.items():
             opt_params[key] = value

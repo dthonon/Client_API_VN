@@ -699,7 +699,12 @@ class Observations(DownloadVn):
                             # Call backend to store results
                             nb_o = self._backend.store(
                                 self._api_instance.controler,
-                                str(id_taxo_group) + "_" + t_u[0]["id_country"] + t_u[0]["short_name"] + "_" + str(seq),
+                                str(id_taxo_group)
+                                + "_"
+                                + t_u[0]["id_country"]
+                                + t_u[0]["short_name"]
+                                + "_"
+                                + str(seq),
                                 items_dict,
                             )
                             # Throttle on max size downloaded during each interval
@@ -855,8 +860,8 @@ class Observations(DownloadVn):
         logger.info(_("Downloaded taxo_groups: %s"), taxo_list)
 
         for taxo in taxo_list:
-            updated = list()
-            deleted = list()
+            updated = []
+            deleted = []
             if since is None:
                 since = self._backend.increment_get(self._config.site, taxo)
             if since is not None:
@@ -1086,8 +1091,8 @@ class Places(DownloadVn):
             Or if provided, updates since that given date.
 
         """
-        updated = list()
-        deleted = list()
+        updated = []
+        deleted = []
         if since is None:
             since = self._backend.increment_get(self._config.site, self._place_id)
         if since is not None:

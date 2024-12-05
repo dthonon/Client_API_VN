@@ -315,9 +315,7 @@ class TestSpecies:
     def test_species_list_error(self):
         """Get a list of species from taxo_group 1, limited to 1 chunk."""
         with pytest.raises(MaxChunksError) as excinfo:  # noqa: F841
-            species_list = SPECIES_API_ERR.api_list(  # noqa: F841
-                {"id_taxo_group": "1"}
-            )
+            species_list = SPECIES_API_ERR.api_list({"id_taxo_group": "1"})  # noqa: F841
 
 
 # -----------------------------------
@@ -585,7 +583,7 @@ class TestEntities:
         """Get an entity."""
         entity = ENTITIES_API.api_get("2")
         assert ENTITIES_API.transfer_errors == 0
-        entity["data"][0]["short_name"] == "LPO ISERE"
+        assert entity["data"][0]["short_name"] == "LPO ISERE"
 
     def test_entities_list(self):
         """Get list of entities."""
@@ -1075,7 +1073,9 @@ class TestObservations:
         # Read created observation
         sighting = OBSERVATIONS_API.api_get(obs_1, short_version="1")
         assert sighting["data"]["forms"][0]["sightings"][0]["observers"][0]["id_sighting"] == obs_1
-        assert sighting["data"]["forms"][0]["sightings"][0]["observers"][0]["comment"] == "TEST API !!! à supprimer !!!"
+        assert (
+            sighting["data"]["forms"][0]["sightings"][0]["observers"][0]["comment"] == "TEST API !!! à supprimer !!!"
+        )
 
         # Update
         sighting["data"] = sighting["data"]["forms"][0]
