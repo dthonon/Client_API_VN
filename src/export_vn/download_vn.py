@@ -40,7 +40,7 @@ from . import _, __version__
 logger = logging.getLogger("transfer_vn.download_vn")
 
 
-def total_size(o, handlers={}):
+def total_size(o, handlers=None):
     """Returns the approximate memory footprint an object and all of its contents.
 
     Automatically finds the contents of the following builtin containers and
@@ -59,7 +59,8 @@ def total_size(o, handlers={}):
         set: iter,
         frozenset: iter,
     }
-    all_handlers.update(handlers)  # user handlers take precedence
+    if handlers is not None:
+        all_handlers.update(handlers)  # user handlers take precedence
     seen = set()  # track which object id's have already been seen
     default_size = getsizeof(0)  # estimate sizeof object without __sizeof__
 

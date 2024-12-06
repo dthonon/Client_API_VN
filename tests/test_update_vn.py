@@ -27,7 +27,7 @@ settings = Dynaconf(
 )
 cfg_site_list = settings.sites
 assert len(cfg_site_list) == 1, _("Only one site can be defined in configuration file")
-for site_, cfg in cfg_site_list.items():
+for site, cfg in cfg_site_list.items():  # noqa: B007
     break
 
 OBSERVATIONS_API = ObservationsAPI(

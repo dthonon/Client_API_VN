@@ -848,14 +848,14 @@ class ObservationsAPI(BiolovisionAPI):
         else:
             raise super().HTTPError(self._http_status)
 
-    def api_update(self, id: str, data: dict) -> None:
+    def api_update(self, obs_id: str, data: dict) -> None:
         """Update an observation.
 
         Calls PUT on /observations/%id% to update the observation.
 
         Parameters
         ----------
-        id: str
+        obs_id: str
             Id of observation to update
         data: json
             Body containing observation in JSON format
@@ -865,18 +865,18 @@ class ObservationsAPI(BiolovisionAPI):
             "user_email": self._user_email,
             "user_pw": self._user_pw,
         }
-        logger.debug(_("Update observation %s, with data %s"), id, data)
+        logger.debug(_("Update observation %s, with data %s"), obs_id, data)
         # PUT to API
-        return super()._url_get(params, "observations/" + id, "PUT", body=json.dumps(data))
+        return super()._url_get(params, "observations/" + obs_id, "PUT", body=json.dumps(data))
 
-    def api_delete(self, id: str) -> None:
+    def api_delete(self, obs_id: str) -> None:
         """Deleta an observation.
 
         Calls DELETE on /observations/%id% to delete the observation.
 
         Parameters
         ----------
-        id: str
+        obs_id: str
             Id of observation to delete
         """
         # Mandatory parameters.
@@ -884,9 +884,9 @@ class ObservationsAPI(BiolovisionAPI):
             "user_email": self._user_email,
             "user_pw": self._user_pw,
         }
-        logger.debug(_("Delete observation %s"), id)
+        logger.debug(_("Delete observation %s"), obs_id)
         # DELETE to API
-        return super()._url_get(params, "observations/" + id, "DELETE")
+        return super()._url_get(params, "observations/" + obs_id, "DELETE")
 
     def api_delete_list(self, data: dict | None = None) -> None:
         """Deleta a list/form.
@@ -903,7 +903,7 @@ class ObservationsAPI(BiolovisionAPI):
             "user_email": self._user_email,
             "user_pw": self._user_pw,
         }
-        logger.debug(_("Delete observation %s"), id)
+        logger.debug(_("Delete list/form %s"), json.dumps(data))
         # POST to API
         if data is not None:
             res = super()._url_get(params, "observations/delete_list", "POST", body=json.dumps(data))

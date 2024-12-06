@@ -154,12 +154,6 @@ lint.ignore = [
   "C901",
   # lru_cache memory leak is not an issue on time limited scripts
   "B019",
-  # Exclusions ruff temporaires
-  "A001",
-  "A002",
-  "B006",
-  "B007",
-  # "B015",
 ]
 
 [tool.ruff.format]

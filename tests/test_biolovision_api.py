@@ -583,7 +583,7 @@ class TestEntities:
         """Get an entity."""
         entity = ENTITIES_API.api_get("2")
         assert ENTITIES_API.transfer_errors == 0
-        assert entity["data"][0]["short_name"] == "LPO ISERE"
+        assert entity["data"][0]["short_name"] == "OPIE MP"
 
     def test_entities_list(self):
         """Get list of entities."""
@@ -739,36 +739,36 @@ class TestObservations:
 
     def test_observations_list_1(self):
         """Get the list of sightings, from taxo_group 18: Mantodea."""
-        list = OBSERVATIONS_API.api_list("18")
+        obs_list = OBSERVATIONS_API.api_list("18")
         assert OBSERVATIONS_API.transfer_errors == 0
-        assert len(list) > 0
+        assert len(obs_list) > 0
 
     @pytest.mark.slow
     def test_observations_list_2_1(self):
         """Get the list of sightings, from taxo_group 1, specie 218."""
-        list = OBSERVATIONS_API.api_list("1", id_species="218", short_version="1")
-        logging.debug(f"local test_observations_list_3_0 unit {len(list)} sightings/forms ")
+        obs_list = OBSERVATIONS_API.api_list("1", id_species="218", short_version="1")
+        logging.debug(f"local test_observations_list_3_0 unit {len(obs_list)} sightings/forms ")
         assert OBSERVATIONS_API.transfer_errors == 0
-        assert len(list["data"]) > 1
+        assert len(obs_list["data"]) > 1
 
     def test_observations_list_3_0(self):
         """Get the list of sightings, from taxo_group 1, specie 153."""
-        list = OBSERVATIONS_API.api_list("1", id_species="153")
-        logging.debug(f"local test_observations_list_3_0 unit {len(list)} sightings/forms ")
+        obs_list = OBSERVATIONS_API.api_list("1", id_species="153")
+        logging.debug(f"local test_observations_list_3_0 unit {len(obs_list)} sightings/forms ")
         assert OBSERVATIONS_API.transfer_errors == 0
-        assert len(list["data"]) > 1
+        assert len(obs_list["data"]) > 1
 
     def test_observations_list_3_1(self):
         """Get the list of sightings, from taxo_group 1, specie 153."""
-        list = OBSERVATIONS_API.api_list("1", id_species="153", short_version="1")
-        logging.debug(f"local test_observations_list_3_0 unit {len(list)} sightings/forms ")
+        obs_list = OBSERVATIONS_API.api_list("1", id_species="153", short_version="1")
+        logging.debug(f"local test_observations_list_3_0 unit {len(obs_list)} sightings/forms ")
         assert OBSERVATIONS_API.transfer_errors == 0
-        assert len(list["data"]) > 1
+        assert len(obs_list["data"]) > 1
 
     def test_observations_list_list(self):
         """Get the list of sightings, from taxo_group 1 523219."""
-        list = OBSERVATIONS_API.api_list("1", id_sightings_list="523219,523550", short_version="1")
-        logging.debug(json.dumps(list, sort_keys=True, indent=4))
+        obs_list = OBSERVATIONS_API.api_list("1", id_sightings_list="523219,523550", short_version="1")
+        logging.debug(json.dumps(obs_list, sort_keys=True, indent=4))
 
     def test_observations_get(self):
         """Get a specific sighting."""
@@ -908,7 +908,7 @@ class TestObservations:
         # Testing incorrect parameter
         q_param = None
         with pytest.raises(IncorrectParameter) as excinfo:  # noqa: F841
-            list = OBSERVATIONS_API.api_search(q_param)
+            obs_list = OBSERVATIONS_API.api_search(q_param)
         # Testing real search
         q_param = {
             "period_choice": "range",
@@ -917,9 +917,9 @@ class TestObservations:
             "species_choice": "all",
             "taxonomic_group": "18",
         }
-        list = OBSERVATIONS_API.api_search(q_param)
+        obs_list = OBSERVATIONS_API.api_search(q_param)
         assert OBSERVATIONS_API.transfer_errors == 0
-        assert len(list["data"]["sightings"]) >= 400
+        assert len(obs_list["data"]["sightings"]) >= 400
 
     def test_observations_search_2(self):
         """Query sightings, from taxo_group 18: Mantodea and date range."""
@@ -930,9 +930,9 @@ class TestObservations:
             "species_choice": "all",
             "taxonomic_group": "18",
         }
-        list = OBSERVATIONS_API.api_search(q_param, short_version="1")
+        obs_list = OBSERVATIONS_API.api_search(q_param, short_version="1")
         assert OBSERVATIONS_API.transfer_errors == 0
-        assert len(list["data"]["sightings"]) >= 400
+        assert len(obs_list["data"]["sightings"]) >= 400
 
     def test_observations_update(self):
         """Update a specific sighting."""

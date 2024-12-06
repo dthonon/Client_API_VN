@@ -48,7 +48,7 @@ def main(
 
     CONFIG: configuration filename
 
-    INPUT: CSV file listing modifications to be applied
+    INPUT_FILE: CSV file listing modifications to be applied
     """
     # Create $HOME/tmp directory if it does not exist
     (Path.home() / "tmp").mkdir(exist_ok=True)
@@ -107,9 +107,9 @@ def init(config: str):
     "config",
 )
 @click.argument(
-    "input",
+    "input_file",
 )
-def update(config: str, input: str) -> None:
+def update(config: str, input_file: str) -> None:
     """Update Biolovision database."""
     logger = logging.getLogger(APP_NAME + ".update")
     # Get configuration from file
@@ -127,7 +127,7 @@ def update(config: str, input: str) -> None:
     cfg_site_list = settings.sites
     if len(cfg_site_list) > 1:
         raise ValueError(_("Only one site can be defined in configuration file"))
-    for site, cfg in cfg_site_list.items():
+    for site, cfg in cfg_site_list.items():  # noqa: B007
         break
     site_up = site.upper()
     settings.validators.register(
@@ -152,8 +152,8 @@ def update(config: str, input: str) -> None:
         raise
 
     # Update Biolovision site from update file
-    if not Path(input).is_file():
-        logger.critical(_("Input file %s does not exist"), str(Path(input)))
+    if not Path(input_file).is_file():
+        logger.critical(_("Input file %s does not exist"), str(Path(input_file)))
         raise FileNotFoundError
 
     obs_api = {}
@@ -171,7 +171,7 @@ def update(config: str, input: str) -> None:
         retry_delay=settings.tuning.retry_delay,
     )
 
-    with open(input, newline="") as csvfile:
+    with open(input_file, newline="") as csvfile:
         reader = csv.reader(csvfile, delimiter=";")
         nb_row = 0
         for nb_row, row in enumerate(reader):

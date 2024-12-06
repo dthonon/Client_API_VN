@@ -100,7 +100,7 @@ def validate_schema(cfg_site_list: Any, samples: float) -> None:
         instance = cls(schema_js)
         # Gathering files to validate
         f_list = []
-        for site, cfg in cfg_site_list.items():
+        for _site, cfg in cfg_site_list.items():
             p = Path.home() / cfg.file_store
             for tst_f in p.glob(f"{schema}*.gz"):
                 f_list.append(tst_f)
@@ -129,7 +129,7 @@ def restore(cfg_site_list: Any) -> None:
         logger.info(_("Restoring files for schema %s"), schema)
         # Gathering files to rename
         f_list = []
-        for site, cfg in cfg_site_list.items():
+        for _site, cfg in cfg_site_list.items():
             p = Path.home() / cfg.file_store
             for tst_f in p.glob(f"{schema}*.gz.done"):
                 f_list.append(tst_f)
@@ -154,7 +154,7 @@ def report(cfg_site_list: Any) -> None:
             schema_js = json.load(f)
         for defs in schema_js["definitions"]:
             if "properties" in schema_js["definitions"][defs]:
-                for key, props in schema_js["definitions"][defs]["properties"].items():
+                for _key, props in schema_js["definitions"][defs]["properties"].items():
                     if "title" in props:
                         pp.pprint(props)
 
