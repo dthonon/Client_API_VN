@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Client_API_VN VERSION\n"
 "Report-Msgid-Bugs-To: d.thonon9@outlook.com\n"
-"POT-Creation-Date: 2024-11-23 23:09+0100\n"
+"POT-Creation-Date: 2024-12-06 23:49+0100\n"
 "PO-Revision-Date: 2024-11-20 23:07+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr_FR\n"
@@ -19,70 +19,99 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.16.0\n"
 
-#: src/update_vn/update_vn.py:41
+#: src/update_vn/update_vn.py:43
 msgid "Increase or decrease output verbosity"
-msgstr ""
+msgstr "Augmente ou diminue la verbosité en sortie"
 
-#: src/update_vn/update_vn.py:79
+#: src/update_vn/update_vn.py:81
 #, python-format
 msgid "update_vn version %s"
-msgstr ""
+msgstr "update_vn version %s"
 
-#: src/update_vn/update_vn.py:93
+#: src/update_vn/update_vn.py:95
 #, python-format
 msgid "toml configuration file %s exists and is not overwritten"
 msgstr "Le fichier de configuration toml %s existe et n'est pas écrasé"
 
-#: src/update_vn/update_vn.py:95
+#: src/update_vn/update_vn.py:97
 msgid "Creating toml configuration file"
 msgstr "Création du fichier de configuration toml"
 
-#: src/update_vn/update_vn.py:98
+#: src/update_vn/update_vn.py:100
 #, python-format
 msgid "Creating toml configuration file %s, from %s"
 msgstr "Création du fichier de configuration toml %s à partir de %s"
 
-#: src/update_vn/update_vn.py:100
+#: src/update_vn/update_vn.py:102
 #, python-format
 msgid "Please edit %s before running the script"
 msgstr "Veuillez modifier %s avant de lancer le script"
 
-#: src/update_vn/update_vn.py:115
+#: src/update_vn/update_vn.py:117
 #, python-format
 msgid "Configuration file %s does not exist"
 msgstr "Le fichier de configuration %s n'existe pas"
 
-#: src/update_vn/update_vn.py:117
+#: src/update_vn/update_vn.py:119
 #, python-format
 msgid "Getting configuration data from %s"
 msgstr "Lecture de la configuration depuis %s"
 
-#: src/update_vn/update_vn.py:125
+#: src/update_vn/update_vn.py:129
+msgid "Only one site can be defined in configuration file"
+msgstr "Un seul site peut être défini dans le fichier de configuration"
+
+#: src/update_vn/update_vn.py:156
 #, python-format
 msgid "Input file %s does not exist"
 msgstr "Le fichier d'entrée %s n'existe pas"
 
-#: src/update_vn/update_vn.py:130
+#: src/update_vn/update_vn.py:160
 #, python-format
 msgid "Preparing update for site %s"
 msgstr "Préparation de la mise à jour du site %s"
 
-#: src/update_vn/update_vn.py:163
+#: src/update_vn/update_vn.py:182
+msgid "Column header 1 must be 'site'"
+msgstr "L'entête de colonne 1 doit être 'site'"
+
+#: src/update_vn/update_vn.py:185
+msgid "Column header 2 must be 'id_universal'"
+msgstr "L'entête de colonne 2 doit être 'id_universal'"
+
+#: src/update_vn/update_vn.py:188
+msgid "Column header 3 must be 'path'"
+msgstr "L'entête de colonne 3 doit être 'path'"
+
+#: src/update_vn/update_vn.py:191
+msgid "Column header 4 must be 'operation'"
+msgstr "L'entête de colonne 4 doit être 'operation'"
+
+#: src/update_vn/update_vn.py:194
+msgid "Column header 5 must be 'value'"
+msgstr "L'entête de colonne 5 doit être 'value'"
+
+#: src/update_vn/update_vn.py:202
 #, python-format
 msgid "Site %s: updating sighting %s, operation %s"
 msgstr "Site %s : mise à jour observation %s, opération %s"
 
-#: src/update_vn/update_vn.py:173
+#: src/update_vn/update_vn.py:208
 #, python-format
-msgid "Unknown operation in row, ignored %s"
-msgstr "Opération inconnue ignorée en ligne %s"
+msgid "Unknown site in row %d, ignored %s"
+msgstr "Site inconnu ignoré en ligne %d : %s"
 
-#: src/update_vn/update_vn.py:183
+#: src/update_vn/update_vn.py:214
+#, python-format
+msgid "Unknown operation in row %d, ignored %s"
+msgstr "Opération inconnue ignorée en ligne %d : %s"
+
+#: src/update_vn/update_vn.py:224
 #, python-format
 msgid "Before: %s"
 msgstr "Avant : %s"
 
-#: src/update_vn/update_vn.py:226
+#: src/update_vn/update_vn.py:266
 #, python-format
 msgid "After: %s"
 msgstr "Après : %s"
