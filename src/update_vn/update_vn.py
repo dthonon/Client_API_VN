@@ -118,9 +118,9 @@ def update(config: str, input_file: str) -> None:
         raise FileNotFoundError
     logger.info(_("Getting configuration data from %s"), config)
     ref = str(importlib.resources.files("update_vn") / "data/evn_default.toml")
+    logger.debug(_("Getting configuration defaults from %s"), ref)
     settings = Dynaconf(
-        preload=[ref],
-        settings_files=[config],
+        settings_files=[ref, config],
     )
 
     # Validation de tous les paramètres
@@ -176,7 +176,7 @@ def update(config: str, input_file: str) -> None:
         nb_row = 0
         for nb_row, row in enumerate(reader):
             logger.debug(row)
-            if nb_row == 1:
+            if nb_row == 0:
                 # First row must be header
                 if row[0].strip() != "site":
                     logger.critical(_("Column header 1 must be 'site'"))
@@ -229,7 +229,7 @@ def update(config: str, input_file: str) -> None:
                         # Get current value, if exists
                         try:
                             old_attr = literal_eval(repl)
-                        except KeyError:
+                        except ValueError:
                             old_attr = None
                         # Get current hidden_comment, if exists
                         try:
