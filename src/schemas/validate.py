@@ -10,9 +10,7 @@ import gzip
 import importlib.resources
 import json
 import logging
-import pprint
 import random
-import re
 import shutil
 import sys
 from logging.handlers import TimedRotatingFileHandler
@@ -103,7 +101,6 @@ def validate_schema(cfg_site_list: Any, samples: float) -> None:
                 f_list = []
                 for site, cfg in cfg_site_list.items():
                     p = Path.home() / cfg.file_store
-                    print(p)
                     for tst_f in p.glob(f"{schema}*.gz"):
                         f_list.append(tst_f)
                 sample_schema = samples
@@ -125,40 +122,42 @@ def validate_schema(cfg_site_list: Any, samples: float) -> None:
 def restore(cfg_site_list: Any) -> None:
     """Restore file names."""
     # Iterate over schema list
-    js_list = [f for f in pkg_resources.resource_listdir(__name__, "") if re.match(r".*\.json", f)]
-    for js_f in js_list:
-        schema = js_f.split(".")[0]
-        logger.info(_("Restoring files for schema %s"), schema)
-        # Gathering files to rename
-        f_list = list()
-        for site, cfg in cfg_site_list.items():
-            p = Path.home() / cfg.file_store
-            for tst_f in p.glob(f"{schema}*.gz.done"):
-                f_list.append(tst_f)
-        for fj in f_list:
-            fjr = str(fj)[:-5]
-            logger.debug(_("Renaming %s to %s"), fj, fjr)
-            shutil.move(fj, fjr)
+    for js_f in importlib.resources.files("schemas").iterdir():
+        if js_f.suffix == ".json":
+            schema = js_f.stem
+            logger.info(_("Restoring files for schema %s"), schema)
+            # Gathering files to rename
+            f_list = list()
+            for site, cfg in cfg_site_list.items():
+                p = Path.home() / cfg.file_store
+                for tst_f in p.glob(f"{schema}*.gz.done"):
+                    f_list.append(tst_f)
+            for fj in f_list:
+                fjr = str(fj)[:-5]
+                logger.debug(_("Renaming %s to %s"), fj, fjr)
+                shutil.move(fj, fjr)
 
     return None
 
 
-def report(cfg_site_list: Any) -> None:
-    """Print of list of properties in the schemas."""
-    pp = pprint.PrettyPrinter(indent=2)
-    # Iterate over schema list
-    js_list = [f for f in pkg_resources.resource_listdir(__name__, "") if re.match(r".*\.json", f)]
-    for js_f in js_list:
-        schema = js_f.split(".")[0]
-        file = pkg_resources.resource_filename(__name__, js_f)
-        logger.info(_("Validating schema %s, in file %s"), schema, file)
-        with open(file) as f:
-            schema_js = json.load(f)
-        for defs in schema_js["definitions"]:
-            if "properties" in schema_js["definitions"][defs]:
-                for key, props in schema_js["definitions"][defs]["properties"].items():
-                    if "title" in props:
-                        pp.pprint(props)
+# def report(cfg_site_list: Any) -> None:
+#     """Print of list of properties in the schemas."""
+#     pp = pprint.PrettyPrinter(indent=2)
+#     # Iterate over schema list
+#     for js_f in importlib.resources.files("schemas").iterdir():
+#         with importlib.resources.as_file(js_f) as file:
+#             if js_f.suffix == ".json":
+#                 schema = js_f.stem
+#                 logger.info(_("Validating schema %s, in file %s"), schema, file)
+#                 with open(file) as f:
+#                     schema_js = json.load(f)
+#                 for defs in schema_js["definitions"]:
+#                     if "properties" in schema_js["definitions"][defs]:
+#                         for key, props in schema_js["definitions"][defs][
+#                             "properties"
+#                         ].items():
+#                             if "title" in props:
+#                                 pp.pprint(props)
 
 
 def main(args):
@@ -237,10 +236,10 @@ def main(args):
         logger.info(_("Restoring file names"))
         restore(cfg_site_list)
 
-    # Schema reporting
-    if args.report:
-        logger.info(_("Reporting on schemas"))
-        report(cfg_site_list)
+    # # Schema reporting
+    # if args.report:
+    #     logger.info(_("Reporting on schemas"))
+    #     report(cfg_site_list)
 
     return None
 
