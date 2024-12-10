@@ -1,0 +1,7 @@
+# Initialization file for validate_vn script
+# Needs to be customized for each site. See comments below for details
+
+# File storage backend parameters
+[file]
+# Top level path name for downloaded file storage, relative to $HOME
+file_store = "VN_files"
