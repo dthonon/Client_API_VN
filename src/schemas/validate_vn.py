@@ -17,12 +17,8 @@ from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
 import click
-
-# import pkg_resources
+from dynaconf import Dynaconf, ValidationError, Validator
 from jsonschema.validators import validator_for
-from strictyaml import YAMLValidationError
-
-from export_vn.evnconf import EvnConf
 
 from . import __version__
 
@@ -72,6 +68,24 @@ def main(
     return None
 
 
+@main.command()
+@click.argument(
+    "config",
+)
+def init(config: str):
+    """Copy template TOML file to home directory."""
+    toml_dst = Path.home() / config
+    if toml_dst.is_file():
+        logger.warning(_("toml configuration file %s exists and is not overwritten"), toml_dst)
+    else:
+        logger.info(_("Creating toml configuration file"))
+        ref = importlib.resources.files(__name__.split(".")[0]) / "data/evn_template.toml"
+        with importlib.resources.as_file(ref) as toml_src:
+            logger.info(_("Creating toml configuration file %s, from %s"), toml_dst, toml_src)
+            shutil.copyfile(toml_src, toml_dst)
+            logger.info(_("Please edit %s before running the script"), toml_dst)
+
+
 def _get_int_or_float(v):
     """Convert str to int or float."""
     number_as_float = float(v)
@@ -95,17 +109,26 @@ def validate(config: str, samples: float) -> None:
     Files are renamed *.done after successful processing."""
     # Get configuration from file
     if not (Path.home() / config).is_file():
-        logger.critical(_("File %s does not exist"), str(Path.home() / config))
-        return None
+        logger.critical(_("Configuration file %s does not exist"), str(Path.home() / config))
+        raise FileNotFoundError
     logger.info(_("Getting configuration data from %s"), config)
-    try:
-        cfg_ctrl = EvnConf(config)
-    except YAMLValidationError:
-        logger.critical(_("Incorrect content in YAML configuration %s"), config)
-        sys.exit(0)
-    cfg_site_list = cfg_ctrl.site_list
+    settings = Dynaconf(
+        settings_files=[config],
+    )
 
-    logger.info(_("Validating schemas"))
+    # Validation de tous les paramètres
+    settings.validators.register(
+        Validator("FILE.FILE_STORE", len_min=1),
+    )
+    try:
+        settings.validators.validate_all()
+    except ValidationError as e:
+        accumulative_errors = e.details
+        logger.error(accumulative_errors)
+        raise
+
+    val_path = Path.home() / settings.file.file_store
+    logger.info(_("Validating schemas with %s"), val_path)
     samples = _get_int_or_float(samples)
     if isinstance(samples, float) and (samples < 0 or samples > 1):
         logger.error(
@@ -132,10 +155,9 @@ def validate(config: str, samples: float) -> None:
                 instance = cls(schema_js)
                 # Gathering files to validate
                 f_list = []
-                for site, cfg in cfg_site_list.items():
-                    p = Path.home() / cfg.file_store
-                    for tst_f in p.glob(f"{schema}*.gz"):
-                        f_list.append(tst_f)
+                p = Path.home() / settings.file.file_store
+                for tst_f in p.glob(f"*/{schema}*.gz"):
+                    f_list.append(tst_f)
                 sample_schema = samples
                 if isinstance(sample_schema, float):
                     sample_schema = round(sample_schema * len(f_list))
@@ -160,15 +182,24 @@ def restore(config: str) -> None:
     """Restore file names."""
     # Get configuration from file
     if not (Path.home() / config).is_file():
-        logger.critical(_("File %s does not exist"), str(Path.home() / config))
-        return None
+        logger.critical(_("Configuration file %s does not exist"), str(Path.home() / config))
+        raise FileNotFoundError
     logger.info(_("Getting configuration data from %s"), config)
+    settings = Dynaconf(
+        settings_files=[config],
+    )
+
+    # Validation de tous les paramètres
+    settings.validators.register(
+        Validator("FILE.FILE_STORE", len_min=1),
+    )
     try:
-        cfg_ctrl = EvnConf(config)
-    except YAMLValidationError:
-        logger.critical(_("Incorrect content in YAML configuration %s"), config)
-        sys.exit(0)
-    cfg_site_list = cfg_ctrl.site_list
+        settings.validators.validate_all()
+    except ValidationError as e:
+        accumulative_errors = e.details
+        logger.error(accumulative_errors)
+        raise
+
     # Iterate over schema list
     for js_f in importlib.resources.files("schemas").iterdir():
         if js_f.suffix == ".json":
@@ -176,10 +207,9 @@ def restore(config: str) -> None:
             logger.info(_("Restoring files for schema %s"), schema)
             # Gathering files to rename
             f_list = list()
-            for site, cfg in cfg_site_list.items():
-                p = Path.home() / cfg.file_store
-                for tst_f in p.glob(f"{schema}*.gz.done"):
-                    f_list.append(tst_f)
+            p = Path.home() / settings.file.file_store
+            for tst_f in p.glob(f"*/{schema}*.gz.done"):
+                f_list.append(tst_f)
             for fj in f_list:
                 fjr = str(fj)[:-5]
                 logger.debug(_("Renaming %s to %s"), fj, fjr)
