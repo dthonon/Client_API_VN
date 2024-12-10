@@ -5,7 +5,7 @@ Generate property reports from schema.
 
 """
 
-import argparse
+# import argparse
 import gzip
 import importlib.resources
 import json
@@ -15,7 +15,8 @@ import shutil
 import sys
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
-from typing import Any
+
+import click
 
 # import pkg_resources
 from jsonschema.validators import validator_for
@@ -28,52 +29,47 @@ from . import __version__
 logger = logging.getLogger(__name__)
 
 
-def arguments(args):
-    """Define and parse command arguments.
+@click.version_option(package_name="Client_API_VN")
+@click.group()
+@click.option("--verbose/--quiet", default=False, help=_("Increase or decrease output verbosity"))
+def main(
+    verbose: bool,
+) -> None:
+    """Update biolovision database.
 
-    Args:
-        args ([str]): command line parameters as list of strings
+    CONFIG: configuration filename
 
-    Returns:
-        :obj:`argparse.Namespace`: command line parameters namespace
+    INPUT: CSV file listing modifications to be applied
     """
-    # Get options
-    parser = argparse.ArgumentParser(description="JSON schemas validation and reporting.")
-    parser.add_argument(
-        "--version",
-        help=_("Print version number"),
-        action="version",
-        version=f"%(prog)s {__version__}",
-    )
-    out_group = parser.add_mutually_exclusive_group()
-    out_group.add_argument("--verbose", help=_("Increase output verbosity"), action="store_true")
-    out_group.add_argument("--quiet", help=_("Reduce output verbosity"), action="store_true")
-    parser.add_argument(
-        "--validate",
-        help=_("Validate the schemas against downloaded JSON files"),
-        action="store_true",
-    )
-    parser.add_argument(
-        "--report",
-        help=_("Report of the properties in the schemas"),
-        action="store_true",
-    )
-    parser.add_argument(
-        "--restore",
-        help=_("Rename processed files back to their original name"),
-        action="store_true",
-    )
-    parser.add_argument(
-        "--samples",
-        help=_(
-            "If float in range [0.0, 1.0], the parameter represents a "
-            "proportion of files, else integer absolute counts."
-        ),
-        default="0.1",
-    )
-    parser.add_argument("config", help=_("Configuration file name"))
+    # Create $HOME/tmp directory if it does not exist
+    (Path.home() / "tmp").mkdir(exist_ok=True)
 
-    return parser.parse_args(args)
+    # create file handler which logs even debug messages
+    fh = TimedRotatingFileHandler(
+        str(Path.home()) + "/tmp/" + __name__ + ".log",
+        when="midnight",
+        interval=1,
+        backupCount=100,
+    )
+    # create console handler with a higher log level
+    ch = logging.StreamHandler()
+    # create formatter and add it to the handlers
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(module)s:%(funcName)s - %(message)s")
+    fh.setFormatter(formatter)
+    ch.setFormatter(formatter)
+    # add the handlers to the logger
+    logger.addHandler(fh)
+    logger.addHandler(ch)
+
+    # Define verbosity
+    if verbose:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
+
+    logger.info(_("%s, version %s"), sys.argv[0], __version__)
+
+    return None
 
 
 def _get_int_or_float(v):
@@ -83,9 +79,46 @@ def _get_int_or_float(v):
     return number_as_int if number_as_float == number_as_int else number_as_float
 
 
-def validate_schema(cfg_site_list: Any, samples: float) -> None:
+@main.command()
+@click.option(
+    "--samples",
+    default="0.1",
+    help=_(
+        "If float in range [0.0, 1.0], the parameter represents a proportion of files, else integer absolute counts."
+    ),
+)
+@click.argument(
+    "config",
+)
+def validate(config: str, samples: float) -> None:
     """Validate schemas against downloaded files.
     Files are renamed *.done after successful processing."""
+    # Get configuration from file
+    if not (Path.home() / config).is_file():
+        logger.critical(_("File %s does not exist"), str(Path.home() / config))
+        return None
+    logger.info(_("Getting configuration data from %s"), config)
+    try:
+        cfg_ctrl = EvnConf(config)
+    except YAMLValidationError:
+        logger.critical(_("Incorrect content in YAML configuration %s"), config)
+        sys.exit(0)
+    cfg_site_list = cfg_ctrl.site_list
+
+    logger.info(_("Validating schemas"))
+    samples = _get_int_or_float(samples)
+    if isinstance(samples, float) and (samples < 0 or samples > 1):
+        logger.error(
+            _("--samples float parameter: %s must be between 0.0 and 1.0. Coerced to 0.1"),
+            samples,
+        )
+        samples = 0.1
+    if isinstance(samples, int) and (samples < 0):
+        logger.error(
+            _("--samples int parameter: %s must be positive. Coerced to 0.1"),
+            samples,
+        )
+        samples = 0.1
 
     for js_f in importlib.resources.files("schemas").iterdir():
         with importlib.resources.as_file(js_f) as file:
@@ -119,8 +152,23 @@ def validate_schema(cfg_site_list: Any, samples: float) -> None:
     return None
 
 
-def restore(cfg_site_list: Any) -> None:
+@main.command()
+@click.argument(
+    "config",
+)
+def restore(config: str) -> None:
     """Restore file names."""
+    # Get configuration from file
+    if not (Path.home() / config).is_file():
+        logger.critical(_("File %s does not exist"), str(Path.home() / config))
+        return None
+    logger.info(_("Getting configuration data from %s"), config)
+    try:
+        cfg_ctrl = EvnConf(config)
+    except YAMLValidationError:
+        logger.critical(_("Incorrect content in YAML configuration %s"), config)
+        sys.exit(0)
+    cfg_site_list = cfg_ctrl.site_list
     # Iterate over schema list
     for js_f in importlib.resources.files("schemas").iterdir():
         if js_f.suffix == ".json":
@@ -158,90 +206,6 @@ def restore(cfg_site_list: Any) -> None:
 #                         ].items():
 #                             if "title" in props:
 #                                 pp.pprint(props)
-
-
-def main(args):
-    """Main entry point allowing external calls
-
-    Args:
-      args ([str]): command line parameter list
-    """
-    # Create $HOME/tmp directory if it does not exist
-    (Path.home() / "tmp").mkdir(exist_ok=True)
-
-    # create file handler which logs even debug messages
-    fh = TimedRotatingFileHandler(
-        str(Path.home()) + "/tmp/" + __name__ + ".log",
-        when="midnight",
-        interval=1,
-        backupCount=100,
-    )
-    # create console handler with a higher log level
-    ch = logging.StreamHandler()
-    # create formatter and add it to the handlers
-    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(module)s:%(funcName)s - %(message)s")
-    fh.setFormatter(formatter)
-    ch.setFormatter(formatter)
-    # add the handlers to the logger
-    logger.addHandler(fh)
-    logger.addHandler(ch)
-
-    # Get command line arguments
-    args = arguments(args)
-
-    # Define verbosity
-    if args.verbose:
-        logger.setLevel(logging.DEBUG)
-    elif args.quiet:
-        logger.setLevel(logging.WARNING)
-    else:
-        logger.setLevel(logging.INFO)
-
-    logger.info(_("%s, version %s"), sys.argv[0], __version__)
-    logger.info(_("Arguments: %s"), sys.argv[1:])
-
-    # Get configuration from file
-    if not (Path.home() / args.config).is_file():
-        logger.critical(_("File %s does not exist"), str(Path.home() / args.config))
-        return None
-    logger.info(_("Getting configuration data from %s"), args.config)
-    try:
-        cfg_ctrl = EvnConf(args.config)
-    except YAMLValidationError:
-        logger.critical(_("Incorrect content in YAML configuration %s"), args.config)
-        sys.exit(0)
-    cfg_site_list = cfg_ctrl.site_list
-
-    # Schema validation
-    if args.validate:
-        logger.info(_("Validating schemas"))
-        samples = _get_int_or_float(args.samples)
-        if isinstance(samples, float) and (samples < 0 or samples > 1):
-            logger.error(
-                _("--samples float parameter: %s must be between 0.0 and 1.0. Coerced to 0.1"),
-                samples,
-            )
-            samples = 0.1
-        if isinstance(samples, int) and (samples < 0):
-            logger.error(
-                _("--samples int parameter: %s must be positive. Coerced to 0.1"),
-                samples,
-            )
-            samples = 0.1
-        validate_schema(cfg_site_list, samples)
-        return None
-
-    # Restoring file names
-    if args.restore:
-        logger.info(_("Restoring file names"))
-        restore(cfg_site_list)
-
-    # # Schema reporting
-    # if args.report:
-    #     logger.info(_("Reporting on schemas"))
-    #     report(cfg_site_list)
-
-    return None
 
 
 def run():
