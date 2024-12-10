@@ -95,7 +95,7 @@ def init(config: str):
         logger.warning(_("toml configuration file %s exists and is not overwritten"), toml_dst)
     else:
         logger.info(_("Creating toml configuration file"))
-        ref = importlib.resources.files("update_vn") / "data/evn_template.toml"
+        ref = importlib.resources.files(__name__.split(".")[0]) / "data/evn_template.toml"
         with importlib.resources.as_file(ref) as toml_src:
             logger.info(_("Creating toml configuration file %s, from %s"), toml_dst, toml_src)
             shutil.copyfile(toml_src, toml_dst)
@@ -117,8 +117,7 @@ def update(config: str, input_file: str) -> None:
         logger.critical(_("Configuration file %s does not exist"), str(Path.home() / config))
         raise FileNotFoundError
     logger.info(_("Getting configuration data from %s"), config)
-    ref = str(importlib.resources.files("update_vn") / "data/evn_default.toml")
-    logger.debug(_("Getting configuration defaults from %s"), ref)
+    ref = str(importlib.resources.files(__name__.split(".")[0]) / "data/evn_default.toml")
     settings = Dynaconf(
         settings_files=[ref, config],
     )
