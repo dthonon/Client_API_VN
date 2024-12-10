@@ -7,6 +7,7 @@ Generate property reports from schema.
 
 import argparse
 import gzip
+import importlib.resources
 import json
 import logging
 import pprint
@@ -24,7 +25,7 @@ from strictyaml import YAMLValidationError
 
 from export_vn.evnconf import EvnConf
 
-from . import _, __version__
+from . import __version__
 
 logger = logging.getLogger(__name__)
 
@@ -87,35 +88,36 @@ def _get_int_or_float(v):
 def validate_schema(cfg_site_list: Any, samples: float) -> None:
     """Validate schemas against downloaded files.
     Files are renamed *.done after successful processing."""
-    # Iterate over schema list
-    js_list = [f for f in pkg_resources.resource_listdir(__name__, "") if re.match(r".*\.json", f)]
-    for js_f in js_list:
-        schema = js_f.split(".")[0]
-        file = pkg_resources.resource_filename(__name__, js_f)
-        logger.info(_("Validating schema %s, in file %s"), schema, file)
-        with open(file) as f:
-            schema_js = json.load(f)
-        cls = validator_for(schema_js)
-        cls.check_schema(schema_js)
-        instance = cls(schema_js)
-        # Gathering files to validate
-        f_list = list()
-        for site, cfg in cfg_site_list.items():
-            p = Path.home() / cfg.file_store
-            for tst_f in p.glob(f"{schema}*.gz"):
-                f_list.append(tst_f)
-        sample_schema = samples
-        if isinstance(sample_schema, float):
-            sample_schema = round(sample_schema * len(f_list))
-        sample_schema = min(sample_schema, len(f_list))
-        logger.debug(_("Sampling %s out of %i files"), sample_schema, len(f_list))
-        f_list = random.sample(f_list, sample_schema)
-        for fj in f_list:
-            logger.debug(_("Validating %s schema with %s"), schema, fj)
-            with gzip.open(fj) as f:
-                js = json.load(f)
-            instance.validate(js)
-            shutil.move(fj, str(fj) + ".done")
+
+    for js_f in importlib.resources.files("schemas").iterdir():
+        with importlib.resources.as_file(js_f) as file:
+            if js_f.suffix == ".json":
+                schema = js_f.stem
+                logger.info(_("Validating schema %s, in file %s"), schema, file)
+                with open(file) as f:
+                    schema_js = json.load(f)
+                cls = validator_for(schema_js)
+                cls.check_schema(schema_js)
+                instance = cls(schema_js)
+                # Gathering files to validate
+                f_list = []
+                for site, cfg in cfg_site_list.items():
+                    p = Path.home() / cfg.file_store
+                    print(p)
+                    for tst_f in p.glob(f"{schema}*.gz"):
+                        f_list.append(tst_f)
+                sample_schema = samples
+                if isinstance(sample_schema, float):
+                    sample_schema = round(sample_schema * len(f_list))
+                sample_schema = min(sample_schema, len(f_list))
+                logger.debug(_("Sampling %s out of %i files"), sample_schema, len(f_list))
+                f_list = random.sample(f_list, sample_schema)
+                for fj in f_list:
+                    logger.debug(_("Validating %s schema with %s"), schema, fj)
+                    with gzip.open(fj) as f:
+                        js = json.load(f)
+                    instance.validate(js)
+                    shutil.move(fj, str(fj) + ".done")
 
     return None
 

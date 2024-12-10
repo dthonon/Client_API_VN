@@ -22,8 +22,7 @@ FILE = ".evn_test.toml"
 # Get configuration for test site
 ref = str(importlib.resources.files("update_vn") / "data/evn_default.toml")
 settings = Dynaconf(
-    preload=[ref],
-    settings_files=[FILE],
+    settings_files=[ref, FILE],
 )
 cfg_site_list = settings.sites
 assert len(cfg_site_list) == 1, _("Only one site can be defined in configuration file")

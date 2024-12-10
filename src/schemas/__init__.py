@@ -8,7 +8,5 @@ except importlib.metadata.PackageNotFoundError:
     __version__ = "unknown"
 
 # Install gettext for any file in the application
-localedir = Path(__file__).resolve().parent / "locale"
-gettext.bindtextdomain("export_vn", str(localedir))
-gettext.textdomain("export_vn")
-_ = gettext.gettext
+localedir = str(Path(__file__).resolve().parent / "locale")
+gettext.install("schemas", localedir=localedir)
