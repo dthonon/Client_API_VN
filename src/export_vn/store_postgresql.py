@@ -36,9 +36,6 @@ from sqlalchemy.sql import and_
 
 from . import _, __version__
 
-# from uuid import uuid4
-
-
 logger = logging.getLogger("transfer_vn.store_postgresql")
 
 
@@ -149,7 +146,7 @@ def store_1_observation(item):
     )
     do_update_stmt = insert_stmt.on_conflict_do_update(
         constraint=metadata.primary_key,
-        set_=dict(update_ts=update_date, item=elem, id_form_universal=item.form),
+        set_={"update_ts": update_date, "item": elem, "id_form_universal": item.form},
         where=(metadata.c.update_ts < update_date),
     )
 
@@ -277,20 +274,6 @@ class PostgresqlUtils:
             PrimaryKeyConstraint("id", "site", name="local_admin_units_json_pk"),
         )
         return None
-
-    # def _create_uuid_xref(self):
-    #     """Create uuid_xref table if it does not exist."""
-    #     self._create_table(
-    #         "uuid_xref",
-    #         Column("id", Integer, nullable=False, index=True),
-    #         Column("site", String, nullable=False, index=True),
-    #         Column("universal_id", String, nullable=False, index=True),
-    #         Column("uuid", String, nullable=False, index=True),
-    #         Column("alias", ARRAY(String), nullable=True),
-    #         Column("update_ts", DateTime, server_default=func.now(), nullable=False),
-    #         PrimaryKeyConstraint("id", "site", name="uuid_xref_json_pk"),
-    #     )
-    #     return None
 
     def _create_observations_json(self):
         """Create observations_json table if it does not exist."""
@@ -451,15 +434,12 @@ class PostgresqlUtils:
             version = conn.dialect.server_version_info
             pid_column = "pid" if (version >= (9, 2)) else "procpid"
 
-            text = """
-            SELECT pg_terminate_backend(pg_stat_activity.%(pid_column)s)
+            text = f"""
+            SELECT pg_terminate_backend(pg_stat_activity.{pid_column})
             FROM pg_stat_activity
-            WHERE pg_stat_activity.datname = '%(database)s'
-            AND %(pid_column)s <> pg_backend_pid();
-            """ % {
-                "pid_column": pid_column,
-                "database": self._config.db_name,
-            }
+            WHERE pg_stat_activity.datname = '{self._config.db_name}'
+            AND {pid_column} <> pg_backend_pid();
+            """  # noqa: S608
             logger.debug(_("Dropping tables: %s"), text)
             conn.execute(text)
             text = f"DROP DATABASE IF EXISTS {self._config.db_name}"
@@ -542,7 +522,6 @@ class PostgresqlUtils:
             self._create_field_details_json()
             self._create_forms_json()
             self._create_local_admin_units_json()
-            # self._create_uuid_xref()
             self._create_observations_json()
             self._create_observers_json()
             self._create_places_json()
@@ -589,7 +568,7 @@ class PostgresqlUtils:
             SELECT site, ((item->>0)::json->'species') ->> 'taxonomy' AS taxonomy, COUNT(id)
                 FROM {dbschema}.observations_json
                 GROUP BY site, ((item->>0)::json->'species') ->> 'taxonomy';
-            """
+            """  # noqa: S608
 
             result = conn.execute(text).fetchall()
 
@@ -630,7 +609,7 @@ class PostgresqlUtils:
                     LEFT JOIN {dbschema}.taxo_groups AS t
                         ON (o.taxonomy::integer = t.id AND o.site LIKE t.site)
                 GROUP BY o.site, o.taxonomy, t.name
-            """
+            """  # noqa: S608
 
             result = conn.execute(text).fetchall()
 
@@ -673,7 +652,6 @@ class Postgresql:
                 "field_details": {"type": "fields", "metadata": None},
                 "forms": {"type": "others", "metadata": None},
                 "local_admin_units": {"type": "geometry", "metadata": None},
-                # "uuid_xref": {"type": "others", "metadata": None},
                 "observations": {"type": "observation", "metadata": None},
                 "observers": {"type": "observers", "metadata": None},
                 "places": {"type": "geometry", "metadata": None},
@@ -690,9 +668,7 @@ class Postgresql:
             self._table_defs["local_admin_units"]["metadata"] = self._metadata.tables[
                 dbschema + ".local_admin_units_json"
             ]
-            # self._table_defs["uuid_xref"]["metadata"] = self._metadata.tables[
-            #     dbschema + ".uuid_xref"
-            # ]
+
             self._table_defs["observations"]["metadata"] = self._metadata.tables[dbschema + ".observations_json"]
             self._table_defs["observers"]["metadata"] = self._metadata.tables[dbschema + ".observers_json"]
             self._table_defs["places"]["metadata"] = self._metadata.tables[dbschema + ".places_json"]
@@ -791,7 +767,7 @@ class StorePostgresql(Postgresql):
             # Convert to json
             logger.debug(_("Storing element %s"), elem)
             insert_stmt = insert(metadata).values(id=elem["id"], site=self._config.site, item=elem)
-            do_update_stmt = insert_stmt.on_conflict_do_update(constraint=metadata.primary_key, set_=dict(item=elem))
+            do_update_stmt = insert_stmt.on_conflict_do_update(constraint=metadata.primary_key, set_={"item": elem})
             self._conn.execute(do_update_stmt)
 
         return len(items_dict["data"])
@@ -847,7 +823,7 @@ class StorePostgresql(Postgresql):
         for elem in items_dict["data"]:
             logger.debug(_("Storing element %s"), elem)
             insert_stmt = insert(metadata).values(id=elem["id"], item=elem)
-            do_update_stmt = insert_stmt.on_conflict_do_update(constraint=metadata.primary_key, set_=dict(item=elem))
+            do_update_stmt = insert_stmt.on_conflict_do_update(constraint=metadata.primary_key, set_={"item": elem})
             self._conn.execute(do_update_stmt)
 
         return len(items_dict["data"])
@@ -880,52 +856,18 @@ class StorePostgresql(Postgresql):
 
         # Add local coordinates
         if ("lon" in items_dict) and ("lat" in items_dict):
-            items_dict["coord_x_local"], items_dict["coord_y_local"] = transformer(items_dict["lon"], items_dict["lat"])
+            items_dict["coord_x_local"], items_dict["coord_y_local"] = transformer(
+                items_dict["lon"], items_dict["lat"]
+            )
 
         # Convert to json
         logger.debug(_("Storing element %s"), items_dict)
         metadata = self._table_defs[controler]["metadata"]
         insert_stmt = insert(metadata).values(id=items_dict["@id"], site=self._config.site, item=items_dict)
-        do_update_stmt = insert_stmt.on_conflict_do_update(constraint=metadata.primary_key, set_=dict(item=items_dict))
+        do_update_stmt = insert_stmt.on_conflict_do_update(constraint=metadata.primary_key, set_={"item", items_dict})
         self._conn.execute(do_update_stmt)
 
         return len(items_dict)
-
-    # def _store_uuid(self, obs_id, universal_id=""):
-    #     """Creates UUID and store along id and site.
-
-    #     If (id, site) does not exist:
-    #     - creates an UID
-    #     - store it, along with id, site, universal_id to table.
-
-    #     Parameters
-    #     ----------
-    #     obs_id : str
-    #         Observations id.
-    #     universal_id : str
-    #         Observations universal id.
-
-    #     Returns
-    #     -------
-    #     int
-    #         Count of items stored.
-    #     """
-
-    #     controler = "uuid_xref"
-    #     metadata = self._table_defs[controler]["metadata"]
-    #     insert_stmt = insert(metadata).values(
-    #         id=obs_id,
-    #         site=self._config.site,
-    #         universal_id=universal_id,
-    #         uuid=uuid4(),
-    #         update_ts=datetime.now(),
-    #     )
-    #     do_nothing_stmt = insert_stmt.on_conflict_do_nothing(
-    #         constraint=metadata.primary_key
-    #     )
-    #     self._conn.execute(do_nothing_stmt)
-
-    #     return 1
 
     def _store_observation(self, controler, items_dict):
         """Iterate through observations or forms and store.
@@ -954,11 +896,6 @@ class StorePostgresql(Postgresql):
         logger.debug(_("Storing %d single observations"), len(items_dict["data"]["sightings"]))
         for i in range(0, len(items_dict["data"]["sightings"])):
             elem = items_dict["data"]["sightings"][i]
-            # # Create UUID
-            # self._store_uuid(
-            #     elem["observers"][0]["id_sighting"],
-            #     elem["observers"][0]["id_universal"],
-            # )
             # Write observation to database
             store_1_observation(
                 ObservationItem(
@@ -976,10 +913,7 @@ class StorePostgresql(Postgresql):
                 if "@id" in items_dict["data"]["forms"][f]:
                     # It's a real form
                     forms_data = {}
-                    if "id_form_universal" in items_dict["data"]["forms"][f]:
-                        id_form_universal = items_dict["data"]["forms"][f]["id_form_universal"]
-                    else:
-                        id_form_universal = None
+                    id_form_universal = items_dict["data"]["forms"][f].get("id_form_universal", None)
 
                     # First loop to prepare forms_data
                     for k, v in items_dict["data"]["forms"][f].items():
@@ -1071,7 +1005,7 @@ class StorePostgresql(Postgresql):
             )
             do_update_stmt = insert_stmt.on_conflict_do_update(
                 constraint=metadata.primary_key,
-                set_=dict(id_universal=elem["id_universal"], item=elem),
+                set_={"id_universal": elem["id_universal"], "item": elem},
             )
             self._conn.execute(do_update_stmt)
 
@@ -1249,7 +1183,7 @@ class StorePostgresql(Postgresql):
 
             insert_stmt = insert(metadata).values(taxo_group=taxo_group, site=site, last_ts=last_ts)
             do_update_stmt = insert_stmt.on_conflict_do_update(
-                constraint=metadata.primary_key, set_=dict(last_ts=last_ts)
+                constraint=metadata.primary_key, set_={"last_ts": last_ts}
             )
             self._conn.execute(do_update_stmt)
 

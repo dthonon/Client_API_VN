@@ -40,7 +40,7 @@ from . import _, __version__
 logger = logging.getLogger("transfer_vn.download_vn")
 
 
-def total_size(o, handlers={}):
+def total_size(o, handlers=None):
     """Returns the approximate memory footprint an object and all of its contents.
 
     Automatically finds the contents of the following builtin containers and
@@ -59,7 +59,8 @@ def total_size(o, handlers={}):
         set: iter,
         frozenset: iter,
     }
-    all_handlers.update(handlers)  # user handlers take precedence
+    if handlers is not None:
+        all_handlers.update(handlers)  # user handlers take precedence
     seen = set()  # track which object id's have already been seen
     default_size = getsizeof(0)  # estimate sizeof object without __sizeof__
 
@@ -644,10 +645,7 @@ class Observations(DownloadVn):
                     )
 
                     # Record end of download interval
-                    if self._config.end_date is None:
-                        end_date = datetime.now()
-                    else:
-                        end_date = self._config.end_date
+                    end_date = datetime.now() if self._config.end_date is None else self._config.end_date
                     since = self._backend.increment_get(self._config.site, id_taxo_group)
                     if since is None:
                         since = end_date
@@ -702,7 +700,12 @@ class Observations(DownloadVn):
                             # Call backend to store results
                             nb_o = self._backend.store(
                                 self._api_instance.controler,
-                                str(id_taxo_group) + "_" + t_u[0]["id_country"] + t_u[0]["short_name"] + "_" + str(seq),
+                                str(id_taxo_group)
+                                + "_"
+                                + t_u[0]["id_country"]
+                                + t_u[0]["short_name"]
+                                + "_"
+                                + str(seq),
                                 items_dict,
                             )
                             # Throttle on max size downloaded during each interval
@@ -769,12 +772,8 @@ class Observations(DownloadVn):
                     )
                     taxo_list.append(taxo["id"])
         else:
-            if isinstance(id_taxo_group, list):
-                # A list of taxo_group given as parameter
-                taxo_list = id_taxo_group
-            else:
-                # Only 1 taxo_group given as parameter
-                taxo_list = [id_taxo_group]
+            # Select list of taxo_group or only 1 taxo_group given as parameter
+            taxo_list = id_taxo_group if isinstance(id_taxo_group, list) else [id_taxo_group]
 
         return taxo_list
 
@@ -862,8 +861,8 @@ class Observations(DownloadVn):
         logger.info(_("Downloaded taxo_groups: %s"), taxo_list)
 
         for taxo in taxo_list:
-            updated = list()
-            deleted = list()
+            updated = []
+            deleted = []
             if since is None:
                 since = self._backend.increment_get(self._config.site, taxo)
             if since is not None:
@@ -1093,8 +1092,8 @@ class Places(DownloadVn):
             Or if provided, updates since that given date.
 
         """
-        updated = list()
-        deleted = list()
+        updated = []
+        deleted = []
         if since is None:
             since = self._backend.increment_get(self._config.site, self._place_id)
         if since is not None:

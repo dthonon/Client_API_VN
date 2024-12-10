@@ -270,7 +270,7 @@ class TestParams:
     def test_client_secret(self, create_file):
         """Test property."""
         cfg, c_cfg, s_cfg, cfg_file, params = create_file
-        assert s_cfg.client_secret == "client_secret"
+        assert s_cfg.client_secret == "client_secret"  # noqa: S105
 
     def test_file_enabled(self, create_file):
         """Test property."""
@@ -333,7 +333,7 @@ class TestParams:
     def test_db_secret_key(self, create_file):
         """Test property."""
         cfg, c_cfg, s_cfg, cfg_file, params = create_file
-        assert s_cfg.db_secret_key == "mySecretKey"
+        assert s_cfg.db_secret_key == "mySecretKey"  # noqa: S105
 
     def test_tuning_max_list_length(self, create_file):
         """Test property."""

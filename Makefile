@@ -20,7 +20,7 @@ check: ## Run code quality tools.
 	@echo "🚀 Checking for obsolete dependencies: Running deptry"
 	@poetry run deptry .
 
-update_catalog: ec_biolovision ec_export_vn ec_update_vn ## Compile translation catalogs
+update_catalog: ec_biolovision ec_export_vn ec_schemas ec_update_vn ## Compile translation catalogs
 
 ec_biolovision: src/biolovision/*.py
 	pybabel extract src/biolovision/ --output-file=src/biolovision/locale/biolovision.pot --no-wrap \
@@ -33,6 +33,12 @@ ec_export_vn: src/export_vn/*.py
 	--msgid-bugs-address=d.thonon9@outlook.com --copyright-holder="Daniel Thonon" --project=Client_API_VN
 	pybabel update --input-file=src/export_vn/locale/export_vn.pot --domain=export_vn \
 	--output-dir=src/export_vn/locale/ --update-header-comment
+
+ec_schemas: src/schemas/*.py
+	pybabel extract src/schemas/ --output-file=src/schemas/locale/schemas.pot --no-wrap \
+	--msgid-bugs-address=d.thonon9@outlook.com --copyright-holder="Daniel Thonon" --project=Client_API_VN
+	pybabel update --input-file=src/schemas/locale/schemas.pot --domain=schemas \
+	--output-dir=src/schemas/locale/ --update-header-comment
 
 ec_update_vn: src/update_vn/*.py
 	pybabel extract src/update_vn/ --output-file=src/update_vn/locale/update_vn.pot --no-wrap \

@@ -73,6 +73,7 @@ class BiolovisionAPI:
         max_chunks: int | None = None,
         unavailable_delay: int | None = None,
         retry_delay: int | None = None,
+        timeout: int | None = None,
     ) -> None:
         if controler == "":
             logger.fatal(_("controler must be defined"))
@@ -114,6 +115,7 @@ class BiolovisionAPI:
             "max_chunks": max_chunks,
             "unavailable_delay": unavailable_delay,
             "retry_delay": retry_delay,
+            "timeout": timeout,
         }
         self._transfer_errors = 0
         self._http_status = 0
@@ -211,7 +213,13 @@ class BiolovisionAPI:
                 headers.update(optional_headers)
             protected_url = self._api_url + scope
             if method == "GET":
-                resp = requests.get(url=protected_url, auth=self._oauth, params=payload, headers=headers)
+                resp = requests.get(
+                    url=protected_url,
+                    auth=self._oauth,
+                    params=payload,
+                    headers=headers,
+                    timeout=self._limits["timeout"],
+                )
             elif method == "POST":
                 resp = requests.post(
                     url=protected_url,
@@ -219,6 +227,7 @@ class BiolovisionAPI:
                     params=payload,
                     headers=headers,
                     data=body,
+                    timeout=self._limits["timeout"],
                 )
             elif method == "PUT":
                 resp = requests.put(
@@ -227,9 +236,16 @@ class BiolovisionAPI:
                     params=payload,
                     headers=headers,
                     data=body,
+                    timeout=self._limits["timeout"],
                 )
             elif method == "DELETE":
-                resp = requests.delete(url=protected_url, auth=self._oauth, params=payload, headers=headers)
+                resp = requests.delete(
+                    url=protected_url,
+                    auth=self._oauth,
+                    params=payload,
+                    headers=headers,
+                    timeout=self._limits["timeout"],
+                )
             else:
                 raise NotImplementedException
 
@@ -286,17 +302,14 @@ class BiolovisionAPI:
                         # TWEAK: remove extra text outside JSON response
                         if len(resp.text) > 1:
                             rsp = re.findall(r"([\[{].*[}\]])", resp.text)
-                            if len(rsp) > 0:
-                                resp_chunk = json.loads(rsp[0])
-                            else:
-                                resp_chunk = {}
+                            resp_chunk = json.loads(rsp[0]) if len(rsp) > 0 else {}
                         else:
                             resp_chunk = resp.json("{}")
                     except json.decoder.JSONDecodeError:  # pragma: no cover
                         # Error during JSON decoding =>
                         # Logging error and no further processing of empty chunk
                         resp_chunk = json.loads("{}")
-                        logger.error(_("Incorrect response content: %s"), resp)
+                        logger.exception(_("Incorrect response content: %s"), resp)
                     except Exception:
                         logger.exception(_("Response text causing exception: %s"), resp.text)
                         raise
@@ -731,7 +744,7 @@ class ObservationsAPI(BiolovisionAPI):
         json : dict or None
             dict decoded from json if status OK, else None
         """
-        opt_params = dict()
+        opt_params = {}
         opt_params["id_taxo_group"] = str(id_taxo_group)
         for key, value in kwargs.items():
             opt_params[key] = value
@@ -835,14 +848,14 @@ class ObservationsAPI(BiolovisionAPI):
         else:
             raise super().HTTPError(self._http_status)
 
-    def api_update(self, id: str, data: dict) -> None:
+    def api_update(self, obs_id: str, data: dict) -> None:
         """Update an observation.
 
         Calls PUT on /observations/%id% to update the observation.
 
         Parameters
         ----------
-        id: str
+        obs_id: str
             Id of observation to update
         data: json
             Body containing observation in JSON format
@@ -852,18 +865,18 @@ class ObservationsAPI(BiolovisionAPI):
             "user_email": self._user_email,
             "user_pw": self._user_pw,
         }
-        logger.debug(_("Update observation %s, with data %s"), id, data)
+        logger.debug(_("Update observation %s, with data %s"), obs_id, data)
         # PUT to API
-        return super()._url_get(params, "observations/" + id, "PUT", body=json.dumps(data))
+        return super()._url_get(params, "observations/" + obs_id, "PUT", body=json.dumps(data))
 
-    def api_delete(self, id: str) -> None:
+    def api_delete(self, obs_id: str) -> None:
         """Deleta an observation.
 
         Calls DELETE on /observations/%id% to delete the observation.
 
         Parameters
         ----------
-        id: str
+        obs_id: str
             Id of observation to delete
         """
         # Mandatory parameters.
@@ -871,9 +884,9 @@ class ObservationsAPI(BiolovisionAPI):
             "user_email": self._user_email,
             "user_pw": self._user_pw,
         }
-        logger.debug(_("Delete observation %s"), id)
+        logger.debug(_("Delete observation %s"), obs_id)
         # DELETE to API
-        return super()._url_get(params, "observations/" + id, "DELETE")
+        return super()._url_get(params, "observations/" + obs_id, "DELETE")
 
     def api_delete_list(self, data: dict | None = None) -> None:
         """Deleta a list/form.
@@ -890,7 +903,7 @@ class ObservationsAPI(BiolovisionAPI):
             "user_email": self._user_email,
             "user_pw": self._user_pw,
         }
-        logger.debug(_("Delete observation %s"), id)
+        logger.debug(_("Delete list/form %s"), json.dumps(data))
         # POST to API
         if data is not None:
             res = super()._url_get(params, "observations/delete_list", "POST", body=json.dumps(data))
