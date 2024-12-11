@@ -124,7 +124,7 @@ def validate(config: str, samples: float) -> None:
         settings.validators.validate_all()
     except ValidationError as e:
         accumulative_errors = e.details
-        logger.error(accumulative_errors)
+        logger.exception(accumulative_errors)
         raise
 
     val_path = Path.home() / settings.file.file_store
@@ -197,7 +197,7 @@ def restore(config: str) -> None:
         settings.validators.validate_all()
     except ValidationError as e:
         accumulative_errors = e.details
-        logger.error(accumulative_errors)
+        logger.exception(accumulative_errors)
         raise
 
     # Iterate over schema list
@@ -206,7 +206,7 @@ def restore(config: str) -> None:
             schema = js_f.stem
             logger.info(_("Restoring files for schema %s"), schema)
             # Gathering files to rename
-            f_list = list()
+            f_list = []
             p = Path.home() / settings.file.file_store
             for tst_f in p.glob(f"*/{schema}*.gz.done"):
                 f_list.append(tst_f)
