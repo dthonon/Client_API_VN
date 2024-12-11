@@ -315,9 +315,7 @@ class TestSpecies:
     def test_species_list_error(self):
         """Get a list of species from taxo_group 1, limited to 1 chunk."""
         with pytest.raises(MaxChunksError) as excinfo:  # noqa: F841
-            species_list = SPECIES_API_ERR.api_list(  # noqa: F841
-                {"id_taxo_group": "1"}
-            )
+            species_list = SPECIES_API_ERR.api_list({"id_taxo_group": "1"})  # noqa: F841
 
 
 # -----------------------------------
@@ -585,7 +583,7 @@ class TestEntities:
         """Get an entity."""
         entity = ENTITIES_API.api_get("2")
         assert ENTITIES_API.transfer_errors == 0
-        entity["data"][0]["short_name"] == "LPO ISERE"
+        assert entity["data"][0]["short_name"] == "OPIE MP"
 
     def test_entities_list(self):
         """Get list of entities."""
@@ -741,36 +739,36 @@ class TestObservations:
 
     def test_observations_list_1(self):
         """Get the list of sightings, from taxo_group 18: Mantodea."""
-        list = OBSERVATIONS_API.api_list("18")
+        obs_list = OBSERVATIONS_API.api_list("18")
         assert OBSERVATIONS_API.transfer_errors == 0
-        assert len(list) > 0
+        assert len(obs_list) > 0
 
     @pytest.mark.slow
     def test_observations_list_2_1(self):
         """Get the list of sightings, from taxo_group 1, specie 218."""
-        list = OBSERVATIONS_API.api_list("1", id_species="218", short_version="1")
-        logging.debug(f"local test_observations_list_3_0 unit {len(list)} sightings/forms ")
+        obs_list = OBSERVATIONS_API.api_list("1", id_species="218", short_version="1")
+        logging.debug(f"local test_observations_list_3_0 unit {len(obs_list)} sightings/forms ")
         assert OBSERVATIONS_API.transfer_errors == 0
-        assert len(list["data"]) > 1
+        assert len(obs_list["data"]) > 1
 
     def test_observations_list_3_0(self):
         """Get the list of sightings, from taxo_group 1, specie 153."""
-        list = OBSERVATIONS_API.api_list("1", id_species="153")
-        logging.debug(f"local test_observations_list_3_0 unit {len(list)} sightings/forms ")
+        obs_list = OBSERVATIONS_API.api_list("1", id_species="153")
+        logging.debug(f"local test_observations_list_3_0 unit {len(obs_list)} sightings/forms ")
         assert OBSERVATIONS_API.transfer_errors == 0
-        assert len(list["data"]) > 1
+        assert len(obs_list["data"]) > 1
 
     def test_observations_list_3_1(self):
         """Get the list of sightings, from taxo_group 1, specie 153."""
-        list = OBSERVATIONS_API.api_list("1", id_species="153", short_version="1")
-        logging.debug(f"local test_observations_list_3_0 unit {len(list)} sightings/forms ")
+        obs_list = OBSERVATIONS_API.api_list("1", id_species="153", short_version="1")
+        logging.debug(f"local test_observations_list_3_0 unit {len(obs_list)} sightings/forms ")
         assert OBSERVATIONS_API.transfer_errors == 0
-        assert len(list["data"]) > 1
+        assert len(obs_list["data"]) > 1
 
     def test_observations_list_list(self):
         """Get the list of sightings, from taxo_group 1 523219."""
-        list = OBSERVATIONS_API.api_list("1", id_sightings_list="523219,523550", short_version="1")
-        logging.debug(json.dumps(list, sort_keys=True, indent=4))
+        obs_list = OBSERVATIONS_API.api_list("1", id_sightings_list="523219,523550", short_version="1")
+        logging.debug(json.dumps(obs_list, sort_keys=True, indent=4))
 
     def test_observations_get(self):
         """Get a specific sighting."""
@@ -910,7 +908,7 @@ class TestObservations:
         # Testing incorrect parameter
         q_param = None
         with pytest.raises(IncorrectParameter) as excinfo:  # noqa: F841
-            list = OBSERVATIONS_API.api_search(q_param)
+            obs_list = OBSERVATIONS_API.api_search(q_param)
         # Testing real search
         q_param = {
             "period_choice": "range",
@@ -919,9 +917,9 @@ class TestObservations:
             "species_choice": "all",
             "taxonomic_group": "18",
         }
-        list = OBSERVATIONS_API.api_search(q_param)
+        obs_list = OBSERVATIONS_API.api_search(q_param)
         assert OBSERVATIONS_API.transfer_errors == 0
-        assert len(list["data"]["sightings"]) >= 400
+        assert len(obs_list["data"]["sightings"]) >= 400
 
     def test_observations_search_2(self):
         """Query sightings, from taxo_group 18: Mantodea and date range."""
@@ -932,9 +930,9 @@ class TestObservations:
             "species_choice": "all",
             "taxonomic_group": "18",
         }
-        list = OBSERVATIONS_API.api_search(q_param, short_version="1")
+        obs_list = OBSERVATIONS_API.api_search(q_param, short_version="1")
         assert OBSERVATIONS_API.transfer_errors == 0
-        assert len(list["data"]["sightings"]) >= 400
+        assert len(obs_list["data"]["sightings"]) >= 400
 
     def test_observations_update(self):
         """Update a specific sighting."""
@@ -953,74 +951,6 @@ class TestObservations:
         assert sighting["data"]["sightings"][0]["observers"][0]["id_sighting"] == obs
         assert sighting["data"]["sightings"][0]["observers"][0]["id_universal"] == "65_138181516"
         assert int(sighting["data"]["sightings"][0]["observers"][0]["update_date"]) > time.time() - 60
-
-    # @pytest.mark.skipif(SITE == "t07", reason="SITE t07 not supported")
-    # def test_observations_crud_s(self):
-    #     """Create, read, update, delete a standalone sighting."""
-    #     data = {
-    #         "data": {
-    #             "sightings": [
-    #                 {
-    #                     "date": {"@timestamp": "1616753200"},  # 26/03/2021 - 11:06:40
-    #                     "species": {"@id": "408"},  # Merle noir
-    #                     "observers": [
-    #                         {
-    #                             "@id": "38",
-    #                             "altitude": "230",
-    #                             "comment": "TEST API !!! à supprimer !!!",
-    #                             "coord_lat": "45.188302192726",
-    #                             "coord_lon": "5.7364289068356",
-    #                             "precision": "precise",
-    #                             "count": "1",
-    #                             "estimation_code": "MINIMUM",
-    #                         }
-    #                     ],
-    #                 }
-    #             ]
-    #         }
-    #     }
-    #     # First creation should succeed
-    #     sighting = OBSERVATIONS_API.api_create(data)
-    #     logging.debug(sighting)
-    #     assert sighting["status"] == "saved"
-    #     obs_1 = sighting["id"][0]
-    #     assert isinstance(obs_1, int)
-    #     obs_1 = str(obs_1)
-
-    #     # Second creation should fail
-    #     with pytest.raises(HTTPError):
-    #         sighting = OBSERVATIONS_API.api_create(data)
-    #         logging.debug(sighting)
-
-    #     # Read created observation
-    #     sighting = OBSERVATIONS_API.api_get(obs_1, short_version="1")
-    #     assert sighting["data"]["sightings"][0]["observers"][0]["id_sighting"] == obs_1
-    #     assert (
-    #         sighting["data"]["sightings"][0]["observers"][0]["comment"]
-    #         == "TEST API !!! à supprimer !!!"
-    #     )
-
-    #     # Update
-    #     sighting["data"]["sightings"][0]["observers"][0][
-    #         "hidden_comment"
-    #     ] = "API update test"
-    #     OBSERVATIONS_API.api_update(obs_1, sighting)
-    #     # Check
-    #     sighting = OBSERVATIONS_API.api_get(obs_1, short_version="1")
-    #     assert (
-    #         sighting["data"]["sightings"][0]["observers"][0]["hidden_comment"]
-    #         == "API update test"
-    #     )
-
-    #     # Delete test observation and form
-    #     logging.debug(sighting)
-    #     id_form_universal = sighting["data"]["sightings"][0]["observers"][0][
-    #         "id_form_universal"
-    #     ]
-    #     res = OBSERVATIONS_API.api_delete(obs_1)
-    #     logging.debug(res)
-    #     res = OBSERVATIONS_API.api_delete_list(id=id_form_universal)
-    #     logging.debug(res)
 
     def test_observations_crud_f(self):
         """Create, read, update, delete a forms sighting."""
@@ -1075,7 +1005,9 @@ class TestObservations:
         # Read created observation
         sighting = OBSERVATIONS_API.api_get(obs_1, short_version="1")
         assert sighting["data"]["forms"][0]["sightings"][0]["observers"][0]["id_sighting"] == obs_1
-        assert sighting["data"]["forms"][0]["sightings"][0]["observers"][0]["comment"] == "TEST API !!! à supprimer !!!"
+        assert (
+            sighting["data"]["forms"][0]["sightings"][0]["observers"][0]["comment"] == "TEST API !!! à supprimer !!!"
+        )
 
         # Update
         sighting["data"] = sighting["data"]["forms"][0]

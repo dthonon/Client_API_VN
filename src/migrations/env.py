@@ -25,7 +25,9 @@ target_metadata = None
 
 def get_url():
     url = context.get_x_argument(as_dictionary=True).get("db_url")
-    assert url, "Database URL must be specified on command line with -x url=<DB_URL>"
+    if url is None:
+        print("Database URL must be specified on command line with -x url=<DB_URL>")
+        raise ValueError
     return url
 
 
@@ -67,7 +69,7 @@ def run_migrations_online():
         # Set search path on the connection, which ensures that
         # PostgreSQL will emit all CREATE / ALTER / DROP statements
         # in terms of this schema by default
-        connection.execute("set search_path to %s" % db_schema_import)
+        connection.execute(f"set search_path to {db_schema_import}")
 
         # make use of non-supported SQLAlchemy attribute to ensure
         # the dialect reflects tables in terms of the current tenant name

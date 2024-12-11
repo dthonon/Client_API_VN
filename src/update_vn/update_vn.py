@@ -15,12 +15,14 @@ Modification are tracked in hidden_comment.
 
 """
 
+import contextlib
 import csv
 import datetime
 import importlib.resources
 import logging
 import shutil
 import sys
+from ast import literal_eval
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
@@ -46,7 +48,7 @@ def main(
 
     CONFIG: configuration filename
 
-    INPUT: CSV file listing modifications to be applied
+    INPUT_FILE: CSV file listing modifications to be applied
     """
     # Create $HOME/tmp directory if it does not exist
     (Path.home() / "tmp").mkdir(exist_ok=True)
@@ -105,9 +107,9 @@ def init(config: str):
     "config",
 )
 @click.argument(
-    "input",
+    "input_file",
 )
-def update(config: str, input: str) -> None:
+def update(config: str, input_file: str) -> None:
     """Update Biolovision database."""
     logger = logging.getLogger(APP_NAME + ".update")
     # Get configuration from file
@@ -117,14 +119,14 @@ def update(config: str, input: str) -> None:
     logger.info(_("Getting configuration data from %s"), config)
     ref = str(importlib.resources.files(__name__.split(".")[0]) / "data/evn_default.toml")
     settings = Dynaconf(
-        preload=[ref],
-        settings_files=[config],
+        settings_files=[ref, config],
     )
 
     # Validation de tous les paramètres
     cfg_site_list = settings.sites
-    assert len(cfg_site_list) == 1, _("Only one site can be defined in configuration file")
-    for site, cfg in cfg_site_list.items():
+    if len(cfg_site_list) > 1:
+        raise ValueError(_("Only one site can be defined in configuration file"))
+    for site, cfg in cfg_site_list.items():  # noqa: B007
         break
     site_up = site.upper()
     settings.validators.register(
@@ -145,15 +147,15 @@ def update(config: str, input: str) -> None:
         settings.validators.validate_all()
     except ValidationError as e:
         accumulative_errors = e.details
-        logger.error(accumulative_errors)
+        logger.exception(accumulative_errors)
         raise
 
     # Update Biolovision site from update file
-    if not Path(input).is_file():
-        logger.critical(_("Input file %s does not exist"), str(Path(input)))
+    if not Path(input_file).is_file():
+        logger.critical(_("Input file %s does not exist"), str(Path(input_file)))
         raise FileNotFoundError
 
-    obs_api = dict()
+    obs_api = {}
     logger.debug(_("Preparing update for site %s"), site)
     obs_api[site] = ObservationsAPI(
         user_email=cfg.user_email,
@@ -168,19 +170,28 @@ def update(config: str, input: str) -> None:
         retry_delay=settings.tuning.retry_delay,
     )
 
-    with open(input, newline="") as csvfile:
+    with open(input_file, newline="") as csvfile:
         reader = csv.reader(csvfile, delimiter=";")
         nb_row = 0
-        for row in reader:
-            nb_row += 1
+        for nb_row, row in enumerate(reader):
             logger.debug(row)
-            if nb_row == 1:
+            if nb_row == 0:
                 # First row must be header
-                assert row[0].strip() == "site"
-                assert row[1].strip() == "id_universal"
-                assert row[2].strip() == "path"
-                assert row[3].strip() == "operation"
-                assert row[4].strip() == "value"
+                if row[0].strip() != "site":
+                    logger.critical(_("Column header 1 must be 'site'"))
+                    raise ValueError
+                if row[1].strip() != "id_universal":
+                    logger.critical(_("Column header 2 must be 'id_universal'"))
+                    raise ValueError
+                if row[2].strip() != "path":
+                    logger.critical(_("Column header 3 must be 'path'"))
+                    raise ValueError
+                if row[3].strip() != "operation":
+                    logger.critical(_("Column header 4 must be 'operation'"))
+                    raise ValueError
+                if row[4].strip() != "value":
+                    logger.critical(_("Column header 5 must be 'value'"))
+                    raise ValueError
             else:
                 # Next rows are update commands
                 if len(row) < 5:
@@ -216,8 +227,8 @@ def update(config: str, input: str) -> None:
                         repl = row[2].strip().replace("$", "sighting")
                         # Get current value, if exists
                         try:
-                            old_attr = eval(repl)
-                        except KeyError:
+                            old_attr = literal_eval(repl)
+                        except ValueError:
                             old_attr = None
                         # Get current hidden_comment, if exists
                         try:
@@ -243,10 +254,9 @@ def update(config: str, input: str) -> None:
                         if row[3].strip() == "replace":
                             exec("{} = {}".format(repl, "row[4].strip()"))
                         else:  # delete_attribute
-                            try:
+                            with contextlib.suppress(KeyError):
                                 exec(f"del {repl}")
-                            except KeyError:  # pragma: no cover
-                                pass
+
                         exec(
                             """sighting['data']['sightings'][0]['observers'][0]['hidden_comment'] = '{}'""".format(
                                 msg.replace('"', '\\"').replace("'", "\\'")

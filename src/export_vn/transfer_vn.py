@@ -3,8 +3,10 @@
 Program managing VisioNature export to Postgresql database
 
 """
+# ruff: noqa: S602
 
 import argparse
+import contextlib
 import importlib.resources
 import logging
 import os
@@ -65,6 +67,7 @@ CTRL_DEFS = {
     "territorial_units": TerritorialUnits,
     "validations": Validations,
 }
+TIMEOUT = 30  # Requests.get timeout
 
 logger = logging.getLogger("transfer_vn")
 
@@ -122,30 +125,24 @@ class Jobs:
 
     def __exit__(self, exc_type, exc_value, traceback):
         logger.info(_("Shutting down scheduler in __atexit__, if still running"))
-        try:
+        with contextlib.suppress(Exception):
             self._scheduler.shutdown(wait=False)
-        except Exception:
-            pass
 
     def shutdown(self):
         logger.info(_("Shutting down scheduler"))
-        try:
+        with contextlib.suppress(SchedulerNotRunningError):
             self._scheduler.shutdown()
-        except SchedulerNotRunningError:  # pragma: no cover
-            pass
 
     def _handler(self, signum, frame):  # pragma: no cover
         logger.error(_("Signal handler called with signal %s"), signum)
-        try:
+        with contextlib.suppress(SchedulerNotRunningError):
             self._scheduler.shutdown(wait=False)
-        except SchedulerNotRunningError:
-            pass
-        try:
+
+        with contextlib.suppress(SchedulerNotRunningError):
             parent_id = os.getpid()
             for child in psutil.Process(parent_id).children(recursive=True):
                 child.kill()
-        except Exception:
-            pass
+
         sys.exit(1)
 
     def start(self, paused=False):
@@ -325,6 +322,7 @@ def col_table_create(cfg, sql_quiet, client_min_message):
     env = Environment(
         loader=PackageLoader("export_vn", "sql"),
         keep_trailing_newline=True,
+        autoescape=True,
     )
     template = env.get_template("create-vn-tables.sql")
     cmd = template.render(cfg=db_config(cfg))
@@ -351,8 +349,8 @@ def col_table_create(cfg, sql_quiet, client_min_message):
             check=True,
             shell=True,
         )
-    except subprocess.CalledProcessError as err:  # pragma: no cover
-        logger.error(err)
+    except subprocess.CalledProcessError:  # pragma: no cover
+        logger.exception()
 
     return None
 
@@ -363,6 +361,7 @@ def migrate(cfg, sql_quiet, client_min_message):
     Environment(
         loader=PackageLoader("export_vn", "sql"),
         keep_trailing_newline=True,
+        autoescape=True,
     )
     try:
         subprocess.run(
@@ -382,8 +381,8 @@ def migrate(cfg, sql_quiet, client_min_message):
             check=True,
             shell=True,
         )
-    except subprocess.CalledProcessError as err:  # pragma: no cover
-        logger.error(err)
+    except subprocess.CalledProcessError:  # pragma: no cover
+        logger.exception()
 
     return None
 
@@ -429,7 +428,7 @@ def full_download(cfg_ctrl):
     based on configuration file."""
     cfg_crtl_list = cfg_ctrl.ctrl_list
     cfg_site_list = cfg_ctrl.site_list
-    cfg = list(cfg_site_list.values())[0]
+    cfg = next(iter(cfg_site_list.values()))
 
     logger.info(_("Defining full download jobs"))
     # db_url = {
@@ -516,7 +515,7 @@ def increment_download(cfg_ctrl):
     """Performs an incremental download of observations from all sites
     and controlers, based on configuration file."""
     cfg_site_list = cfg_ctrl.site_list
-    cfg = list(cfg_site_list.values())[0]
+    cfg = next(iter(cfg_site_list.values()))
 
     logger.info(_("Starting incremental download jobs"))
     # db_url = {
@@ -545,7 +544,7 @@ def increment_schedule(cfg_ctrl):
     based on YAML controler configuration."""
     cfg_crtl_list = cfg_ctrl.ctrl_list
     cfg_site_list = cfg_ctrl.site_list
-    cfg = list(cfg_site_list.values())[0]
+    cfg = next(iter(cfg_site_list.values()))
 
     logger.info(_("Defining incremental download jobs"))
     # db_url = {
@@ -591,7 +590,7 @@ def status(cfg_ctrl):
     """Print download status, using logger."""
     cfg_site_list = cfg_ctrl.site_list
     cfg_site_list = cfg_ctrl.site_list
-    cfg = list(cfg_site_list.values())[0]
+    cfg = next(iter(cfg_site_list.values()))
 
     logger.info(_("Download jobs status"))
     # db_url = {
@@ -621,14 +620,17 @@ def count_observations(cfg_ctrl):
                     col_counts = manage_pg.count_col_obs()
 
                 logger.info(_("Getting counts from %s"), cfg.site)
-                site_counts = list()
+                site_counts = []
                 if cfg.site == "Haute-Savoie":
                     for r in col_counts:
                         if r[0] == "Haute-Savoie":
                             site_counts.append([r[0], r[2], -1, r[3]])
                 else:
                     url = cfg.base_url + "index.php?m_id=23"
-                    page = requests.get(url)
+                    page = requests.get(
+                        url,
+                        timeout=TIMEOUT,
+                    )
                     soup = BeautifulSoup(page.text, "html.parser")
 
                     counts = soup.find_all("table")[2].contents[1].contents[3]
@@ -660,7 +662,7 @@ def count_observations(cfg_ctrl):
                     )
                 )
         except Exception:  # pragma: no cover
-            logger.error(_("Can not retrieve informations from %s"), cfg.site)
+            logger.exception(_("Can not retrieve informations from %s"), cfg.site)
 
     return None
 
@@ -729,7 +731,7 @@ def main(args):
         logger.critical(_("Incorrect content in YAML configuration %s"), args.file)
         sys.exit(0)
     cfg_site_list = cfg_ctrl.site_list
-    cfg = list(cfg_site_list.values())[0]
+    cfg = next(iter(cfg_site_list.values()))
     # Check configuration consistency
     if cfg.db_enabled and cfg.json_format != "short":
         logger.critical(_("Storing to Postgresql cannot use long json_format."))
