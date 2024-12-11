@@ -113,9 +113,9 @@ def sighting_for_test():
                         {
                             "@id": "57107",
                             "altitude": "230",
-                            "comment": "TEST API !!! à supprimer !!!",
-                            "coord_lat": "45.188302192726",
-                            "coord_lon": "5.7364289068356",
+                            "comment": "TEST API update !!! à supprimer !!!",
+                            "coord_lat": "45.18724",
+                            "coord_lon": "5.735458",
                             "precision": "precise",
                             "count": "1",
                             "estimation_code": "MINIMUM",
