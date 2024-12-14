@@ -960,6 +960,8 @@ class TestObservations:
                     {
                         "time_start": "06:45:00",
                         "time_stop": "07:00:00",
+                        "lat": "45.18724",
+                        "lon": "5.735458",
                         "full_form": "1",
                         "sightings": [
                             {

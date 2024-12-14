@@ -146,7 +146,7 @@ def store_1_observation(item):
     )
     do_update_stmt = insert_stmt.on_conflict_do_update(
         constraint=metadata.primary_key,
-        set_={"update_ts": update_date, "item": elem, "id_form_universal": item.form},
+        set_=dict(update_ts=update_date, item=elem, id_form_universal=item.form),  # noqa: C408
         where=(metadata.c.update_ts < update_date),
     )
 
@@ -771,7 +771,10 @@ class StorePostgresql(Postgresql):
             # Convert to json
             logger.debug(_("Storing element %s"), elem)
             insert_stmt = insert(metadata).values(id=elem["id"], site=self._config.site, item=elem)
-            do_update_stmt = insert_stmt.on_conflict_do_update(constraint=metadata.primary_key, set_={"item": elem})
+            do_update_stmt = insert_stmt.on_conflict_do_update(
+                constraint=metadata.primary_key,
+                set_=dict(item=elem),  # noqa: C408
+            )
             self._conn.execute(do_update_stmt)
 
         return len(items_dict["data"])
@@ -827,7 +830,10 @@ class StorePostgresql(Postgresql):
         for elem in items_dict["data"]:
             logger.debug(_("Storing element %s"), elem)
             insert_stmt = insert(metadata).values(id=elem["id"], item=elem)
-            do_update_stmt = insert_stmt.on_conflict_do_update(constraint=metadata.primary_key, set_={"item": elem})
+            do_update_stmt = insert_stmt.on_conflict_do_update(
+                constraint=metadata.primary_key,
+                set_=dict(item=elem),  # noqa: C408
+            )
             self._conn.execute(do_update_stmt)
 
         return len(items_dict["data"])
@@ -868,7 +874,10 @@ class StorePostgresql(Postgresql):
         logger.debug(_("Storing element %s"), items_dict)
         metadata = self._table_defs[controler]["metadata"]
         insert_stmt = insert(metadata).values(id=items_dict["@id"], site=self._config.site, item=items_dict)
-        do_update_stmt = insert_stmt.on_conflict_do_update(constraint=metadata.primary_key, set_={"item", items_dict})
+        do_update_stmt = insert_stmt.on_conflict_do_update(
+            constraint=metadata.primary_key,
+            set_=dict(item=items_dict),  # noqa: C408
+        )
         self._conn.execute(do_update_stmt)
 
         return len(items_dict)
@@ -1009,7 +1018,7 @@ class StorePostgresql(Postgresql):
             )
             do_update_stmt = insert_stmt.on_conflict_do_update(
                 constraint=metadata.primary_key,
-                set_={"id_universal": elem["id_universal"], "item": elem},
+                set_=dict(id_universal=elem["id_universal"], item=elem),  # noqa: C408
             )
             self._conn.execute(do_update_stmt)
 
@@ -1187,7 +1196,8 @@ class StorePostgresql(Postgresql):
 
             insert_stmt = insert(metadata).values(taxo_group=taxo_group, site=site, last_ts=last_ts)
             do_update_stmt = insert_stmt.on_conflict_do_update(
-                constraint=metadata.primary_key, set_={"last_ts": last_ts}
+                constraint=metadata.primary_key,
+                set_=dict(last_ts=last_ts),  # noqa: C408
             )
             self._conn.execute(do_update_stmt)
 

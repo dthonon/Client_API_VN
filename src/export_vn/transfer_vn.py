@@ -698,7 +698,7 @@ def main(args):
     fh.setFormatter(formatter)
     ch.setFormatter(formatter)
     # add the handlers to the root logger
-    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO, handlers=[fh, ch])
+    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO, handlers=[fh, ch], force=True)
 
     # Define SQL verbosity
     if args.verbose:
