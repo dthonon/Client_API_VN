@@ -35,9 +35,9 @@ from biolovision.api import (
 from export_vn.regulator import PID
 from export_vn.store_postgresql import ReadPostgresql
 
-from . import _, __version__
+from . import __version__
 
-logger = logging.getLogger("transfer_vn.download_vn")
+logger = logging.getLogger(__name__)
 
 
 def total_size(o, handlers=None):

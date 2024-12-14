@@ -499,7 +499,7 @@ msgstr "Détruit la base de données et les rôles"
 
 #: src/export_vn/transfer_vn.py:269 src/export_vn/transfer_vn.py:748
 msgid "Create database and roles"
-msgstr "Crée la base de données et les rôle"
+msgstr "Crée la base de données et les rôles"
 
 #: src/export_vn/transfer_vn.py:272
 msgid "Migrate database to current version"
@@ -515,7 +515,7 @@ msgstr "Crée ou recrée les tables en colonne"
 
 #: src/export_vn/transfer_vn.py:286
 msgid "Perform a full download"
-msgstr "Réalise un téléchargement complèt"
+msgstr "Réalise un téléchargement complet"
 
 #: src/export_vn/transfer_vn.py:287
 msgid "Perform an incremental download"
@@ -698,7 +698,7 @@ msgstr "Creation ou recréation des tables vn basées sur des colonnes"
 
 #: src/export_vn/transfer_vn.py:764
 msgid "Performing a full download"
-msgstr "Lancement du téléchargement complèt"
+msgstr "Lancement du téléchargement complet"
 
 #: src/export_vn/transfer_vn.py:768
 msgid "Creating or modifying incremental download schedule"

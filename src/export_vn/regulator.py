@@ -9,9 +9,9 @@ Derived from https://github.com/m-lundberg/simple-pid
 
 import logging
 
-from . import _, __version__
+from . import __version__
 
-logger = logging.getLogger("transfer_vn.regulator")
+logger = logging.getLogger(__name__)
 
 
 class PID:

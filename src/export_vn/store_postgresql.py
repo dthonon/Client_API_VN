@@ -34,9 +34,9 @@ from sqlalchemy.dialects.postgresql import JSONB, insert
 from sqlalchemy.engine.url import URL
 from sqlalchemy.sql import and_
 
-from . import _, __version__
+from . import __version__
 
-logger = logging.getLogger("transfer_vn.store_postgresql")
+logger = logging.getLogger(__name__)
 
 
 class StorePostgresqlException(Exception):
@@ -380,6 +380,7 @@ class PostgresqlUtils:
             conn.connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
 
             # Group role:
+            logger.debug(_("Creating roles"))
             text = f"""
                 SELECT FROM pg_catalog.pg_roles WHERE rolname = '{self._config.db_group}'
                 """
@@ -402,6 +403,7 @@ class PostgresqlUtils:
             conn.execute(text)
 
             # Create database:
+            logger.debug(_("Creating database"))
             text = f"CREATE DATABASE {self._config.db_name} WITH OWNER = {self._config.db_group}"
             conn.execute(text)
             text = f"GRANT ALL ON DATABASE {self._config.db_name} TO {self._config.db_group}"
@@ -480,6 +482,7 @@ class PostgresqlUtils:
             conn = self._db.connect()
 
             # Add extensions
+            logger.debug(_("Creating extensions"))
             text = "CREATE EXTENSION IF NOT EXISTS pgcrypto"
             conn.execute(text)
             text = "CREATE EXTENSION IF NOT EXISTS adminpack"
@@ -492,6 +495,7 @@ class PostgresqlUtils:
             conn.execute(text)
 
             # Create import schema
+            logger.debug(_("Creating import schema"))
             text = f"CREATE SCHEMA IF NOT EXISTS {self._config.db_schema_import} AUTHORIZATION {self._config.db_group}"
             conn.execute(text)
 
@@ -513,9 +517,9 @@ class PostgresqlUtils:
             self._metadata.reflect(self._db)
 
             # Check if tables exist or else create them
+            logger.debug(_("Creating tables"))
             self._create_download_log()
             self._create_increment_log()
-
             self._create_entities_json()
             self._create_families_json()
             self._create_field_groups_json()

@@ -33,9 +33,7 @@ from biolovision.api import ObservationsAPI
 
 from . import __version__
 
-APP_NAME = "update_vn"
-
-logger = logging.getLogger(APP_NAME)
+logger = logging.getLogger(__name__)
 
 
 @click.version_option(package_name="Client_API_VN")
@@ -53,11 +51,11 @@ def main(
     # Create $HOME/tmp directory if it does not exist
     (Path.home() / "tmp").mkdir(exist_ok=True)
 
-    # Define logger format and handlers
-    logger = logging.getLogger(APP_NAME)
+    # # Define logger format and handlers
+    # logger = logging.getLogger(APP_NAME)
     # create file handler which logs even debug messages
     fh = TimedRotatingFileHandler(
-        str(Path.home()) + "/tmp/" + APP_NAME + ".log",
+        str(Path.home()) + "/tmp/" + __name__.split(".")[0] + ".log",
         when="midnight",
         interval=1,
         backupCount=100,
@@ -69,14 +67,7 @@ def main(
     fh.setFormatter(formatter)
     ch.setFormatter(formatter)
     # Add the handlers to the logger
-    logger.addHandler(fh)
-    logger.addHandler(ch)
-
-    # Define verbosity
-    if verbose:
-        logger.setLevel(logging.DEBUG)
-    else:
-        logger.setLevel(logging.INFO)
+    logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO, handlers=[fh, ch])
 
     logger.info(_("update_vn version %s"), __version__)
 
@@ -89,7 +80,6 @@ def main(
 )
 def init(config: str):
     """Copy template TOML file to home directory."""
-    logger = logging.getLogger(APP_NAME + ".init")
     toml_dst = Path.home() / config
     if toml_dst.is_file():
         logger.warning(_("toml configuration file %s exists and is not overwritten"), toml_dst)
@@ -111,7 +101,6 @@ def init(config: str):
 )
 def update(config: str, input_file: str) -> None:
     """Update Biolovision database."""
-    logger = logging.getLogger(APP_NAME + ".update")
     # Get configuration from file
     if not (Path.home() / config).is_file():
         logger.critical(_("Configuration file %s does not exist"), str(Path.home() / config))

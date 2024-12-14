@@ -17,9 +17,9 @@ import logging
 import os
 from pathlib import Path
 
-from . import _, __version__
+from . import __version__
 
-logger = logging.getLogger("transfer_vn.store_file")
+logger = logging.getLogger(__name__)
 
 
 class StoreFileException(Exception):

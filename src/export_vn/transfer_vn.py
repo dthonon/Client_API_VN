@@ -52,7 +52,7 @@ from export_vn.store_all import StoreAll
 from export_vn.store_file import StoreFile
 from export_vn.store_postgresql import PostgresqlUtils, StorePostgresql
 
-from . import _, __version__
+from . import __version__
 
 CTRL_DEFS = {
     "entities": Entities,
@@ -69,7 +69,7 @@ CTRL_DEFS = {
 }
 TIMEOUT = 30  # Requests.get timeout
 
-logger = logging.getLogger("transfer_vn")
+logger = logging.getLogger(__name__)
 
 
 class Jobs:
@@ -673,6 +673,14 @@ def main(args):
     Args:
       args ([str]): command line parameter list
     """
+    # Get command line arguments
+    args = arguments(args)
+
+    # Start profiling if required
+    if args.profile:
+        yappi.start()
+        logger.info(_("Started yappi"))
+
     # Create $HOME/tmp directory if it does not exist
     (Path.home() / "tmp").mkdir(exist_ok=True)
 
@@ -689,30 +697,19 @@ def main(args):
     formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(name)s - %(message)s")
     fh.setFormatter(formatter)
     ch.setFormatter(formatter)
-    # add the handlers to the logger
-    logger.addHandler(fh)
-    logger.addHandler(ch)
+    # add the handlers to the root logger
+    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO, handlers=[fh, ch])
 
-    # Get command line arguments
-    args = arguments(args)
-
-    # Start profiling if required
-    if args.profile:
-        yappi.start()
-        logger.info(_("Started yappi"))
-
-    # Define verbosity
+    # Define SQL verbosity
     if args.verbose:
-        logger.setLevel(logging.DEBUG)
         sql_quiet = ""
         client_min_message = "debug1"
     else:
-        logger.setLevel(logging.INFO)
         sql_quiet = "--quiet"
         client_min_message = "warning"
 
     logger.info(_("%s, version %s"), sys.argv[0], __version__)
-    logger.info(_("Arguments: %s"), sys.argv[1:])
+    logger.debug(_("Arguments: %s"), sys.argv[1:])
 
     # If required, first create YAML file
     if args.init:
