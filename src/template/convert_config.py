@@ -9,6 +9,7 @@ from pathlib import Path
 
 import click
 import yaml
+from dynaconf import Dynaconf, ValidationError, Validator, inspect_settings
 from tomlkit import array, boolean, comment, document, dump, nl, table
 
 from . import __version__
@@ -403,6 +404,58 @@ def convert(in_config: str, out_config: str) -> None:
 
     with open(Path.home() / out_config, "w") as fp:
         dump(cfg, fp)
+
+
+@main.command()
+@click.argument(
+    "in_config",
+)
+def prints(in_config: str) -> None:
+    """Print TOML configuration, with defaults."""
+    logger = logging.getLogger(__name__ + ".update")
+    # Check file existence
+    if not (Path.home() / in_config).is_file():
+        logger.critical(_("Input configuration file %s does not exist"), str(Path.home() / in_config))
+        raise FileNotFoundError
+
+    settings = Dynaconf(
+        settings_files=[in_config],
+    )
+    # Validation de tous les paramètres
+    cfg_site_list = settings.site
+    for site, cfg in cfg_site_list.items():  # noqa: B007
+        site_up = site.upper()
+        settings.validators.register(
+            Validator(f"SITE.{site_up}.SITE", len_min=10, startswith="https://"),
+            Validator("SITE.{site_up}.USER_EMAIL", len_min=5, cont="@"),
+            Validator("SITE.{site_up}.USER_PW", len_min=5),
+            Validator("SITE.{site_up}.CLIENT_KEY", len_min=30),
+            Validator("SITE.{site_up}.CLIENT_SECRET", len_min=30),
+        )
+    settings.validators.register(
+        Validator("TUNING.MAX_LIST_LENGTH", gte=1, default=100),
+        Validator("TUNING.MAX_CHUNKS", gte=1, default=1000),
+        Validator("TUNING.MAX_RETRY", gte=1, default=5),
+        Validator("TUNING.MAX_REQUESTS", gte=0, default=0),
+        Validator("TUNING.RETRY_DELAY", gte=1, default=5),
+        Validator("TUNING.UNAVAILABLE_DELAY", gte=1, default=600),
+        Validator("TUNING.LRU_MAXSIZE", gte=1, default=32),
+        Validator("TUNING.PID_KP", gte=0, default=0.0),
+        Validator("TUNING.PID_KI", gte=0, default=0.003),
+        Validator("TUNING.PID_KD", gte=0, default=0.0),
+        Validator("TUNING.PID_SETPOINT", gte=1, default=10000),
+        Validator("TUNING.PID_LIMIT_MIN", gte=1, default=5),
+        Validator("TUNING.PID_LIMIT_MAX", gte=1, default=2000),
+        Validator("TUNING.PID_DELTA_DAYS", gte=1, default=10),
+        Validator("TUNING.SCHED_EXECUTORS", gte=1, default=2),
+    )
+    try:
+        settings.validators.validate_all()
+    except ValidationError as e:
+        accumulative_errors = e.details
+        logger.exception(accumulative_errors)
+        raise
+    inspect_settings(settings, print_report=True)
 
 
 def run():

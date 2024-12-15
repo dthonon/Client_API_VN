@@ -106,9 +106,8 @@ def update(config: str, input_file: str) -> None:
         logger.critical(_("Configuration file %s does not exist"), str(Path.home() / config))
         raise FileNotFoundError
     logger.info(_("Getting configuration data from %s"), config)
-    ref = str(importlib.resources.files(__name__.split(".")[0]) / "data/evn_default.toml")
     settings = Dynaconf(
-        settings_files=[ref, config],
+        settings_files=[config],
     )
 
     # Validation de tous les paramètres
@@ -119,18 +118,22 @@ def update(config: str, input_file: str) -> None:
         break
     site_up = site.upper()
     settings.validators.register(
-        Validator("MESSAGE", len_min=5),
+        Validator(
+            "MESSAGE",
+            len_min=5,
+            default="Modification en masse, le {date}, opération {op}, attribut {path}, depuis {old} vers {new}",
+        ),
         Validator(f"SITES.{site_up}.SITE", len_min=10, startswith="https://"),
         Validator("SITES.{site_up}.USER_EMAIL", len_min=5, cont="@"),
         Validator("SITES.{site_up}.USER_PW", len_min=5),
         Validator("SITES.{site_up}.CLIENT_KEY", len_min=20),
         Validator("SITES.{site_up}.CLIENT_SECRET", len_min=5),
-        Validator("TUNING.MAX_LIST_LENGTH", gte=1),
-        Validator("TUNING.MAX_CHUNKS", gte=1),
-        Validator("TUNING.MAX_RETRY", gte=1),
-        Validator("TUNING.MAX_REQUESTS", gte=0),
-        Validator("TUNING.RETRY_DELAY", gte=1),
-        Validator("TUNING.UNAVAILABLE_DELAY", gte=1),
+        Validator("TUNING.MAX_LIST_LENGTH", gte=1, default=100),
+        Validator("TUNING.MAX_CHUNKS", gte=1, default=1000),
+        Validator("TUNING.MAX_RETRY", gte=1, default=5),
+        Validator("TUNING.MAX_REQUESTS", gte=0, default=0),
+        Validator("TUNING.RETRY_DELAY", gte=1, default=5),
+        Validator("TUNING.UNAVAILABLE_DELAY", gte=1, default=600),
     )
     try:
         settings.validators.validate_all()
