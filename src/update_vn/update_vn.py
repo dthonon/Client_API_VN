@@ -111,7 +111,7 @@ def update(config: str, input_file: str) -> None:
     )
 
     # Validation de tous les paramètres
-    cfg_site_list = settings.sites
+    cfg_site_list = settings.site
     if len(cfg_site_list) > 1:
         raise ValueError(_("Only one site can be defined in configuration file"))
     for site, cfg in cfg_site_list.items():  # noqa: B007
@@ -123,11 +123,11 @@ def update(config: str, input_file: str) -> None:
             len_min=5,
             default="Modification en masse, le {date}, opération {op}, attribut {path}, depuis {old} vers {new}",
         ),
-        Validator(f"SITES.{site_up}.SITE", len_min=10, startswith="https://"),
-        Validator("SITES.{site_up}.USER_EMAIL", len_min=5, cont="@"),
-        Validator("SITES.{site_up}.USER_PW", len_min=5),
-        Validator("SITES.{site_up}.CLIENT_KEY", len_min=20),
-        Validator("SITES.{site_up}.CLIENT_SECRET", len_min=5),
+        Validator(f"SITE.{site_up}.SITE", len_min=10, startswith="https://"),
+        Validator("SITE.{site_up}.USER_EMAIL", len_min=5, cont="@"),
+        Validator("SITE.{site_up}.USER_PW", len_min=5),
+        Validator("SITE.{site_up}.CLIENT_KEY", len_min=20),
+        Validator("SITE.{site_up}.CLIENT_SECRET", len_min=5),
         Validator("TUNING.MAX_LIST_LENGTH", gte=1, default=100),
         Validator("TUNING.MAX_CHUNKS", gte=1, default=1000),
         Validator("TUNING.MAX_RETRY", gte=1, default=5),

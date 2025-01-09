@@ -75,7 +75,7 @@ class BiolovisionAPI:
     ) -> None:
         logger = logging.getLogger(__name__)
         self._logger = logger
-        logger.warning(_("Initializing API"))
+        logger.info(_("Initializing API"))
         if controler == "":
             logger.fatal(_("controler must be defined"))
             raise BiolovisionApiException
