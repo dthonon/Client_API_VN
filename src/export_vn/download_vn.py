@@ -445,6 +445,15 @@ class Observations(DownloadVn):
         client_key: str,
         client_secret: str,
         db_enabled: bool,
+        db_user: str,
+        db_pw: str,
+        db_host: str,
+        db_port: str,
+        db_name: str,
+        db_schema_import: str,
+        db_schema_vn: str,
+        db_group: str,
+        db_out_proj: str,
         backend: Callable[..., None],
         start_date: datetime | None = None,
         end_date: datetime | None = None,
@@ -470,6 +479,15 @@ class Observations(DownloadVn):
         self._client_key = client_key
         self._client_secret = client_secret
         self._db_enabled = db_enabled
+        self._db_user = db_user
+        self._db_pw = db_pw
+        self._db_host = db_host
+        self._db_port = db_port
+        self._db_name = db_name
+        self._db_schema_import = db_schema_import
+        self._db_schema_vn = db_schema_vn
+        self._db_group = db_group
+        self._db_out_proj = db_out_proj
         self._start_date = start_date
         self._end_date = end_date
         self._type_date = type_date
@@ -507,8 +525,6 @@ class Observations(DownloadVn):
             backend,
         )
 
-        return None
-
     def _store_list(self, id_taxo_group, by_specie, short_version="1"):
         """Download from VN by API list and store json to file.
 
@@ -531,7 +547,19 @@ class Observations(DownloadVn):
         if self._t_units is None:
             if self._db_enabled:
                 # Try to read from local database
-                self._t_units = ReadPostgresql(self._config).read("territorial_units")
+                self._t_units = ReadPostgresql(
+                    self._site,
+                    self._db_enabled,
+                    self._db_user,
+                    self._db_pw,
+                    self._db_host,
+                    self._db_port,
+                    self._db_name,
+                    self._db_schema_import,
+                    self._db_schema_vn,
+                    self._db_group,
+                    self._db_out_proj,
+                ).read("territorial_units")
             if (self._t_units is None) or (len(self._t_units) == 0):
                 # No territorial_units available, read from API
                 self._t_units = [
@@ -678,7 +706,19 @@ class Observations(DownloadVn):
         if self._t_units is None:
             if self._db_enabled:
                 # Try to read from local database
-                self._t_units = ReadPostgresql(self._config).read("territorial_units")
+                self._t_units = ReadPostgresql(
+                    self._site,
+                    self._db_enabled,
+                    self._db_user,
+                    self._db_pw,
+                    self._db_host,
+                    self._db_port,
+                    self._db_name,
+                    self._db_schema_import,
+                    self._db_schema_vn,
+                    self._db_group,
+                    self._db_out_proj,
+                ).read("territorial_units")
             if (self._t_units is None) or (len(self._t_units) == 0):
                 # No territorial_units available, read from API
                 self._t_units = [
@@ -1144,7 +1184,19 @@ class Places(DownloadVn):
         if self._l_a_units is None:
             if self._db_enabled:
                 # Try to read from local database
-                self._l_a_units = ReadPostgresql(self._config).read("local_admin_units")
+                self._l_a_units = ReadPostgresql(
+                    self._site,
+                    self._db_enabled,
+                    self._db_user,
+                    self._db_pw,
+                    self._db_host,
+                    self._db_port,
+                    self._db_name,
+                    self._db_schema_import,
+                    self._db_schema_vn,
+                    self._db_group,
+                    self._db_out_proj,
+                ).read("local_admin_units")
             if (self._l_a_units is None) or (len(self._l_a_units) == 0):
                 # No local_admin_units available, read from API
                 self._l_a_units = [

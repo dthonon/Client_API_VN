@@ -103,6 +103,15 @@ def test_init():
         cfg.client_key,
         cfg.client_secret,
         settings.database.enabled,
+        settings.database.db_user,
+        settings.database.db_pw,
+        settings.database.db_host,
+        settings.database.db_port,
+        settings.database.db_name,
+        settings.database.db_schema_import,
+        settings.database.db_schema_vn,
+        settings.database.db_group,
+        settings.database.db_out_proj,
         STORE_PG,
     )
     OBSERVERS = Observers(SITE, cfg.user_email, cfg.user_pw, cfg.site, cfg.client_key, cfg.client_secret, STORE_PG)
