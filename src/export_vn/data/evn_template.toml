@@ -1,11 +1,6 @@
 # Configuration file for export_vn.
 # Needs to be customized for each site. See comments below for details.
 
-[main]
-# General parameters.
-# Mail address for the execution report.
-admin_mail = "nom.prenom2@example.net"
-
 # ------------------- Controler section -------------------
 
 [controler]

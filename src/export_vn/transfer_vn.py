@@ -29,9 +29,9 @@ from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers import SchedulerNotRunningError
 from apscheduler.schedulers.background import BackgroundScheduler
 from bs4 import BeautifulSoup
+from dynaconf import Dynaconf, ValidationError, Validator
 from jinja2 import Environment, PackageLoader
 from pytz import utc
-from strictyaml import YAMLValidationError
 from tabulate import tabulate
 
 from export_vn.download_vn import (
@@ -47,7 +47,6 @@ from export_vn.download_vn import (
     TerritorialUnits,
     Validations,
 )
-from export_vn.evnconf import EvnConf
 from export_vn.store_all import StoreAll
 from export_vn.store_file import StoreFile
 from export_vn.store_postgresql import PostgresqlUtils, StorePostgresql
@@ -226,22 +225,6 @@ class Jobs:
             logger.info(_("Job %s, scheduled: %s"), j.id, j.trigger)
 
 
-def db_config(cfg):
-    """Return database related parameters."""
-    return {
-        "db_host": cfg.db_host,
-        "db_port": cfg.db_port,
-        "db_name": cfg.db_name,
-        "db_schema_import": cfg.db_schema_import,
-        "db_schema_vn": cfg.db_schema_vn,
-        "db_group": cfg.db_group,
-        "db_user": cfg.db_user,
-        "db_pw": cfg.db_pw,
-        "db_secret_key": cfg.db_secret_key,
-        "proj": cfg.db_out_proj,
-    }
-
-
 def arguments(args):
     """Define and parse command arguments.
 
@@ -316,8 +299,52 @@ def init(file: str):
         logger.info(_("Please edit %s before running the script"), yaml_dst)
 
 
-def col_table_create(cfg, sql_quiet, client_min_message):
-    """Create the column based tables, by running psql script."""
+def col_table_create(
+    db_host: str,
+    db_port: str,
+    db_name: str,
+    db_user: str,
+    db_pw: str,
+    db_schema_import: str,
+    db_schema_vn: str,
+    db_group: str,
+    db_secret_key: str,
+    db_out_proj: str,
+    sql_quiet: str,
+    client_min_message: str,
+) -> None:
+    """Create the column based tables, by running psql script.
+
+    Parameters
+    ----------
+    db_host: str
+        Hostname of the database.
+    db_port: str
+        Port number of the database.
+    db_name: str
+        Name of the database.
+    db_user: str
+        User name for the database.
+    db_pw: str
+        Password for the database.
+    db_schema_import: str
+        Schema for import tables.
+    db_schema_vn: str
+        Schema for VN tables.
+    db_group: str
+        Group for the database.
+    db_secret_key: str
+        Secret key for the database.
+    db_out_proj: str
+        Output projection for the database.
+    sql_quiet: str
+        SQL quiet option.
+    client_min_message: str
+        Client minimum message level.
+    Return:
+        None
+
+    """
     logger.debug(_("Creating SQL file from template"))
     env = Environment(
         loader=PackageLoader("export_vn", "sql"),
@@ -325,25 +352,37 @@ def col_table_create(cfg, sql_quiet, client_min_message):
         autoescape=True,
     )
     template = env.get_template("create-vn-tables.sql")
-    cmd = template.render(cfg=db_config(cfg))
+    cmd = template.render({
+        "db_host": db_host,
+        "db_port": db_port,
+        "db_name": db_name,
+        "db_schema_import": db_schema_import,
+        "db_schema_vn": db_schema_vn,
+        "db_group": db_group,
+        "db_user": db_user,
+        "db_pw": db_pw,
+        "db_secret_key": db_secret_key,
+        "proj": db_out_proj,
+    })
     tmp_sql = Path.home() / "tmp/create-vn-tables.sql"
     with tmp_sql.open(mode="w") as myfile:
         myfile.write(cmd)
     try:
         subprocess.run(
-            ' PGPASSWORD="' + cfg.db_pw + '" '
-            'env PGOPTIONS="-c client-min-messages='
+            ' PGPASSWORD="'
+            + db_pw
+            + '" PGOPTIONS="-c client-min-messages='
             + client_min_message
             + '" psql '
             + sql_quiet
             + " --host="
-            + cfg.db_host
+            + db_host
             + " --port="
-            + cfg.db_port
+            + db_port
             + " --dbname="
-            + cfg.db_name
+            + db_name
             + " --user="
-            + cfg.db_user
+            + db_user
             + " --file="
             + str(tmp_sql),
             check=True,
@@ -667,8 +706,8 @@ def count_observations(cfg_ctrl):
     return None
 
 
-def main(args):
-    """Main entry point allowing external calls
+def main(args) -> None:
+    """Main entry point calling commands.
 
     Args:
       args ([str]): command line parameter list
@@ -686,7 +725,7 @@ def main(args):
 
     # create file handler which logs even debug messages
     fh = TimedRotatingFileHandler(
-        str(Path.home()) + "/tmp/transfer_vn.log",
+        Path.home() / "tmp/transfer_vn.log",
         when="midnight",
         interval=1,
         backupCount=100,
@@ -722,20 +761,80 @@ def main(args):
         logger.critical(_("File %s does not exist"), str(Path.home() / args.file))
         return None
     logger.info(_("Getting configuration data from %s"), args.file)
+    settings = Dynaconf(
+        settings_files=[args.file],
+    )
+
+    # Validation de tous les paramètres
+    cfg_site_list = settings.site
+    # if len(cfg_site_list) > 1:
+    #     raise ValueError(_("Only one site can be defined in configuration file"))
+    for site, cfg in cfg_site_list.items():  # noqa: B007
+        site_up = site.upper()
+        settings.validators.register(
+            Validator(f"SITE.{site_up}.ENABLED", default=True, cast=bool),
+            Validator(f"SITE.{site_up}.SITE", len_min=10, startswith="https://", cast=str),
+            Validator(f"SITE.{site_up}.USER_EMAIL", len_min=5, cont="@", cast=str),
+            Validator(f"SITE.{site_up}.USER_PW", len_min=5, cast=str),
+            Validator(f"SITE.{site_up}.CLIENT_KEY", len_min=20, cast=str),
+            Validator(f"SITE.{site_up}.CLIENT_SECRET", len_min=5, cast=str),
+        )
+    settings.validators.register(
+        Validator("FILE.ENABLED", default=True, cast=bool),
+        Validator("FILE.FILE_STORE", len_min=1, cast=str),
+        Validator("DATABASE.ENABLED", default=True, cast=bool),
+        Validator("DATABASE.DB_HOST", len_min=1, cast=str),
+        Validator("DATABASE.DB_PORT", len_min=1, cast=str),
+        Validator("DATABASE.DB_NAME", len_min=1, cast=str),
+        Validator("DATABASE.DB_USER", len_min=1, cast=str),
+        Validator("DATABASE.DB_PW", len_min=6, cast=str),
+        Validator("DATABASE.DB_SCHEMA_IMPORT", len_min=1, cast=str),
+        Validator("DATABASE.DB_SCHEMA_VN", len_min=1, cast=str),
+        Validator("DATABASE.DB_GROUP", len_min=1, cast=str),
+        Validator("DATABASE.DB_SECRET_KEY", len_min=6, cast=str),
+        Validator("DATABASE.DB_OUT_PROJ", len_min=1, cast=str),
+        Validator("TUNING.MAX_LIST_LENGTH", gte=1, default=100, cast=int),
+        Validator("TUNING.MAX_CHUNKS", gte=1, default=1000, cast=int),
+        Validator("TUNING.MAX_RETRY", gte=1, default=5, cast=int),
+        Validator("TUNING.MAX_REQUESTS", gte=0, default=0, cast=int),
+        Validator("TUNING.RETRY_DELAY", gte=1, default=5, cast=int),
+        Validator("TUNING.UNAVAILABLE_DELAY", gte=1, default=600, cast=int),
+        Validator("TUNING.LRU_MAXSIZE", gte=1, default=32, cast=int),
+        Validator("TUNING.PID_KP", gte=0, default=0.0, cast=float),
+        Validator("TUNING.PID_KI", gte=0, default=0.003, cast=float),
+        Validator("TUNING.PID_KD", gte=0, default=0.0, cast=float),
+        Validator("TUNING.SETPOINT", gte=0, default=10000, cast=int),
+        Validator("TUNING.PID_LIMIT_MIN", gte=0, default=5, cast=int),
+        Validator("TUNING.PID_LIMIT_MAX", gte=0, default=2000, cast=int),
+        Validator("TUNING.PID_DELTA_DAYS", gte=0, default=10, cast=int),
+        Validator("TUNING.SCHED_EXECUTORS", gte=1, default=1, cast=int),
+    )
     try:
-        cfg_ctrl = EvnConf(args.file)
-    except YAMLValidationError:
-        logger.critical(_("Incorrect content in YAML configuration %s"), args.file)
-        sys.exit(0)
-    cfg_site_list = cfg_ctrl.site_list
+        settings.validators.validate_all()
+    except ValidationError as e:
+        accumulative_errors = e.details
+        logger.exception(accumulative_errors)
+        raise ValueError(_("Incorrect configuration file")) from e
+
+    cfg_site_list = settings.site
     cfg = next(iter(cfg_site_list.values()))
     # Check configuration consistency
-    if cfg.db_enabled and cfg.json_format != "short":
+    if settings.database.enabled and settings.filter.json_format != "short":
         logger.critical(_("Storing to Postgresql cannot use long json_format."))
         logger.critical(_("Please modify YAML configuration and restart."))
         sys.exit(0)
 
-    manage_pg = PostgresqlUtils(cfg)
+    manage_pg = PostgresqlUtils(
+        settings.database.enabled,
+        settings.database.db_user,
+        settings.database.db_pw,
+        settings.database.db_host,
+        settings.database.db_port,
+        settings.database.db_name,
+        settings.database.db_schema_import,
+        settings.database.db_schema_vn,
+        settings.database.db_group,
+    )
 
     if args.db_drop:
         logger.info(_("Delete if exists database and roles"))
@@ -755,27 +854,40 @@ def main(args):
 
     if args.col_tables_create:
         logger.info(_("Creating or recreating vn columns based tables"))
-        col_table_create(cfg, sql_quiet, client_min_message)
+        col_table_create(
+            db_host=settings.database.db_host,
+            db_port=settings.database.db_port,
+            db_name=settings.database.db_name,
+            db_user=settings.database.db_user,
+            db_pw=settings.database.db_pw,
+            db_schema_import=settings.database.db_schema_import,
+            db_schema_vn=settings.database.db_schema_vn,
+            db_group=settings.database.db_group,
+            db_secret_key=settings.database.db_secret_key,
+            db_out_proj=settings.database.db_out_proj,
+            sql_quiet=sql_quiet,
+            client_min_message=client_min_message,
+        )
 
-    if args.full:
-        logger.info(_("Performing a full download"))
-        full_download(cfg_ctrl)
+    # if args.full:
+    #     logger.info(_("Performing a full download"))
+    #     full_download(cfg_ctrl)
 
-    if args.schedule:
-        logger.info(_("Creating or modifying incremental download schedule"))
-        increment_schedule(cfg_ctrl)
+    # if args.schedule:
+    #     logger.info(_("Creating or modifying incremental download schedule"))
+    #     increment_schedule(cfg_ctrl)
 
-    if args.update:
-        logger.info(_("Performing an incremental download"))
-        increment_download(cfg_ctrl)
+    # if args.update:
+    #     logger.info(_("Performing an incremental download"))
+    #     increment_download(cfg_ctrl)
 
-    if args.status:
-        logger.info(_("Printing download status"))
-        status(cfg_ctrl)
+    # if args.status:
+    #     logger.info(_("Printing download status"))
+    #     status(cfg_ctrl)
 
-    if args.count:
-        logger.info(_("Counting observations"))
-        count_observations(cfg_ctrl)
+    # if args.count:
+    #     logger.info(_("Counting observations"))
+    #     count_observations(cfg_ctrl)
 
     # Stop and output profiling if required
     if args.profile:
@@ -787,8 +899,8 @@ def main(args):
     return None
 
 
-def run():
-    """Entry point for console_scripts"""
+def run() -> None:
+    """Entry point for console_scripts."""
     main(sys.argv[1:])
 
 

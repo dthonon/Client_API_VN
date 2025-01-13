@@ -15,16 +15,16 @@
 --  6) Execute trigger by performing dummy update (site=site) on JSON table
 
 -- Cleanup and create
-DROP SCHEMA IF EXISTS {{ cfg.db_schema_vn }} CASCADE;
-CREATE SCHEMA {{ cfg.db_schema_vn }} AUTHORIZATION {{ cfg.db_group }};
+DROP SCHEMA IF EXISTS {{ db_schema_vn }} CASCADE;
+CREATE SCHEMA {{ db_schema_vn }} AUTHORIZATION {{ db_group }};
 
-SET search_path TO {{ cfg.db_schema_vn }},public;
+SET search_path TO {{ db_schema_vn }},public;
 
 -- Trigger function to add or update geometry
 CREATE OR REPLACE FUNCTION update_geom_triggerfn()
 RETURNS trigger AS $body$
     BEGIN
-    NEW.geom := ST_SetSRID(ST_MakePoint(NEW.coord_x_local, NEW.coord_y_local), {{ cfg.proj }});
+    NEW.geom := ST_SetSRID(ST_MakePoint(NEW.coord_x_local, NEW.coord_y_local), {{ proj }});
     RETURN NEW;
     END;
 $body$
@@ -33,7 +33,7 @@ LANGUAGE plpgsql;
 -----------
 -- Entities
 -----------
-CREATE TABLE {{ cfg.db_schema_vn }}.entities(
+CREATE TABLE {{ db_schema_vn }}.entities(
     site                TEXT,
     id                  INTEGER,
     short_name          TEXT,
@@ -46,16 +46,16 @@ CREATE TABLE {{ cfg.db_schema_vn }}.entities(
 
 DROP INDEX IF EXISTS entities_idx_site;
 CREATE INDEX entities_idx_site
-    ON {{ cfg.db_schema_vn }}.entities USING btree(site);
+    ON {{ db_schema_vn }}.entities USING btree(site);
 DROP INDEX IF EXISTS entities_idx_id;
 CREATE INDEX entities_idx_id
-    ON {{ cfg.db_schema_vn }}.entities USING btree(id);
+    ON {{ db_schema_vn }}.entities USING btree(id);
 
 CREATE OR REPLACE FUNCTION update_entities() RETURNS TRIGGER AS $$
     BEGIN
     IF (TG_OP = 'DELETE') THEN
         -- Deleting data when JSON data is deleted
-        DELETE FROM {{ cfg.db_schema_vn }}.entities
+        DELETE FROM {{ db_schema_vn }}.entities
             WHERE id = OLD.id AND site = OLD.site;
         IF NOT FOUND THEN
             RETURN NULL;
@@ -64,7 +64,7 @@ CREATE OR REPLACE FUNCTION update_entities() RETURNS TRIGGER AS $$
 
     ELSIF (TG_OP = 'UPDATE') THEN
         -- Updating or inserting data when JSON data is updated
-        UPDATE {{ cfg.db_schema_vn }}.entities SET
+        UPDATE {{ db_schema_vn }}.entities SET
             short_name         = NEW.item->>'short_name',
             full_name_french   = NEW.item->>'full_name_french',
             description_french = NEW.item->>'description_french',
@@ -73,7 +73,7 @@ CREATE OR REPLACE FUNCTION update_entities() RETURNS TRIGGER AS $$
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
-            INSERT INTO {{ cfg.db_schema_vn }}.entities(site, id, short_name, full_name_french, description_french,
+            INSERT INTO {{ db_schema_vn }}.entities(site, id, short_name, full_name_french, description_french,
                                                      url, address)
             VALUES (
                 NEW.site,
@@ -89,7 +89,7 @@ CREATE OR REPLACE FUNCTION update_entities() RETURNS TRIGGER AS $$
 
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting row when raw data is inserted
-        INSERT INTO {{ cfg.db_schema_vn }}.entities(site, id, short_name, full_name_french, description_french,
+        INSERT INTO {{ db_schema_vn }}.entities(site, id, short_name, full_name_french, description_french,
                                                  url, address)
         VALUES (
             NEW.site,
@@ -106,15 +106,15 @@ END;
 $$
 LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS entities_trigger ON {{ cfg.db_schema_import }}.entities_json;
+DROP TRIGGER IF EXISTS entities_trigger ON {{ db_schema_import }}.entities_json;
 CREATE TRIGGER entities_trigger
-AFTER INSERT OR UPDATE OR DELETE ON {{ cfg.db_schema_import }}.entities_json
-    FOR EACH ROW EXECUTE PROCEDURE {{ cfg.db_schema_vn }}.update_entities();
+AFTER INSERT OR UPDATE OR DELETE ON {{ db_schema_import }}.entities_json
+    FOR EACH ROW EXECUTE PROCEDURE {{ db_schema_vn }}.update_entities();
 
 -----------
 -- Families
 -----------
-CREATE TABLE {{ cfg.db_schema_vn }}.families(
+CREATE TABLE {{ db_schema_vn }}.families(
     site                TEXT,
     id                  INTEGER,
     id_taxo_group       INTEGER,
@@ -126,16 +126,16 @@ CREATE TABLE {{ cfg.db_schema_vn }}.families(
 
 DROP INDEX IF EXISTS families_idx_site;
 CREATE INDEX families_idx_site
-    ON {{ cfg.db_schema_vn }}.families USING btree(site);
+    ON {{ db_schema_vn }}.families USING btree(site);
 DROP INDEX IF EXISTS families_idx_id;
 CREATE INDEX families_idx_id
-    ON {{ cfg.db_schema_vn }}.families USING btree(id);
+    ON {{ db_schema_vn }}.families USING btree(id);
 
 CREATE OR REPLACE FUNCTION update_families() RETURNS TRIGGER AS $$
     BEGIN
     IF (TG_OP = 'DELETE') THEN
         -- Deleting data when JSON data is deleted
-        DELETE FROM {{ cfg.db_schema_vn }}.families
+        DELETE FROM {{ db_schema_vn }}.families
             WHERE id = OLD.id AND site = OLD.site;
         IF NOT FOUND THEN
             RETURN NULL;
@@ -144,7 +144,7 @@ CREATE OR REPLACE FUNCTION update_families() RETURNS TRIGGER AS $$
 
     ELSIF (TG_OP = 'UPDATE') THEN
         -- Updating or inserting data when JSON data is updated
-        UPDATE {{ cfg.db_schema_vn }}.families SET
+        UPDATE {{ db_schema_vn }}.families SET
             id_taxo_group = CAST(NEW.item->>'id_taxo_group' AS INTEGER),
             latin_name    = NEW.item->>'latin_name',
             name          = NEW.item->>'name',
@@ -152,7 +152,7 @@ CREATE OR REPLACE FUNCTION update_families() RETURNS TRIGGER AS $$
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
-            INSERT INTO {{ cfg.db_schema_vn }}.families(site, id, id_taxo_group, latin_name, name,
+            INSERT INTO {{ db_schema_vn }}.families(site, id, id_taxo_group, latin_name, name,
                                                         generic)
             VALUES (
                 NEW.site,
@@ -167,7 +167,7 @@ CREATE OR REPLACE FUNCTION update_families() RETURNS TRIGGER AS $$
 
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting row when raw data is inserted
-        INSERT INTO {{ cfg.db_schema_vn }}.families(site, id, id_taxo_group, latin_name, name,
+        INSERT INTO {{ db_schema_vn }}.families(site, id, id_taxo_group, latin_name, name,
                                                     generic)
         VALUES (
             NEW.site,
@@ -183,16 +183,16 @@ END;
 $$
 LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS families_trigger ON {{ cfg.db_schema_import }}.families_json;
+DROP TRIGGER IF EXISTS families_trigger ON {{ db_schema_import }}.families_json;
 CREATE TRIGGER families_trigger
-AFTER INSERT OR UPDATE OR DELETE ON {{ cfg.db_schema_import }}.families_json
-    FOR EACH ROW EXECUTE PROCEDURE {{ cfg.db_schema_vn }}.update_families();
+AFTER INSERT OR UPDATE OR DELETE ON {{ db_schema_import }}.families_json
+    FOR EACH ROW EXECUTE PROCEDURE {{ db_schema_vn }}.update_families();
 
 
 ----------------
 -- Field_details
 ----------------
-CREATE TABLE {{ cfg.db_schema_vn }}.field_details(
+CREATE TABLE {{ db_schema_vn }}.field_details(
     id                  TEXT,
     group_id            INTEGER,
     value_id            INTEGER,
@@ -204,13 +204,13 @@ CREATE TABLE {{ cfg.db_schema_vn }}.field_details(
 
 DROP INDEX IF EXISTS field_details_idx_group_id;
 CREATE INDEX field_details_idx_group_id
-    ON {{ cfg.db_schema_vn }}.field_details USING btree(group_id);
+    ON {{ db_schema_vn }}.field_details USING btree(group_id);
 
 CREATE OR REPLACE FUNCTION update_field_details() RETURNS TRIGGER AS $$
     BEGIN
     IF (TG_OP = 'DELETE') THEN
         -- Deleting data when JSON data is deleted
-        DELETE FROM {{ cfg.db_schema_vn }}.field_details
+        DELETE FROM {{ db_schema_vn }}.field_details
             WHERE id = OLD.id;
         IF NOT FOUND THEN
             RETURN NULL;
@@ -219,7 +219,7 @@ CREATE OR REPLACE FUNCTION update_field_details() RETURNS TRIGGER AS $$
 
     ELSIF (TG_OP = 'UPDATE') THEN
         -- Updating or inserting data when JSON data is updated
-        UPDATE {{ cfg.db_schema_vn }}.field_details SET
+        UPDATE {{ db_schema_vn }}.field_details SET
             group_id = CAST(NEW.item->>'group' AS INTEGER),
             value_id = CAST(NEW.item->>'value' AS INTEGER),
             order_id = CAST(NEW.item->>'order_id' AS INTEGER),
@@ -228,7 +228,7 @@ CREATE OR REPLACE FUNCTION update_field_details() RETURNS TRIGGER AS $$
         WHERE id = OLD.id;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
-            INSERT INTO {{ cfg.db_schema_vn }}.field_details(id, group_id, value_id, order_id, name, text_v)
+            INSERT INTO {{ db_schema_vn }}.field_details(id, group_id, value_id, order_id, name, text_v)
             VALUES (
                 NEW.id,
                 CAST(NEW.item->>'group' AS INTEGER),
@@ -242,7 +242,7 @@ CREATE OR REPLACE FUNCTION update_field_details() RETURNS TRIGGER AS $$
 
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting row when raw data is inserted
-        INSERT INTO {{ cfg.db_schema_vn }}.field_details(id, group_id, value_id, order_id, name, text_v)
+        INSERT INTO {{ db_schema_vn }}.field_details(id, group_id, value_id, order_id, name, text_v)
         VALUES (
             NEW.id,
             CAST(NEW.item->>'group' AS INTEGER),
@@ -257,16 +257,16 @@ END;
 $$
 LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS field_details_trigger ON {{ cfg.db_schema_import }}.field_details_json;
+DROP TRIGGER IF EXISTS field_details_trigger ON {{ db_schema_import }}.field_details_json;
 CREATE TRIGGER field_details_trigger
-AFTER INSERT OR UPDATE OR DELETE ON {{ cfg.db_schema_import }}.field_details_json
-    FOR EACH ROW EXECUTE PROCEDURE {{ cfg.db_schema_vn }}.update_field_details();
+AFTER INSERT OR UPDATE OR DELETE ON {{ db_schema_import }}.field_details_json
+    FOR EACH ROW EXECUTE PROCEDURE {{ db_schema_vn }}.update_field_details();
 
 
 ---------------
 -- Field_groups
 ---------------
-CREATE TABLE {{ cfg.db_schema_vn }}.field_groups(
+CREATE TABLE {{ db_schema_vn }}.field_groups(
     id                  INTEGER,
     default_v           TEXT,
     empty_choice        TEXT,
@@ -281,7 +281,7 @@ CREATE OR REPLACE FUNCTION update_field_groups() RETURNS TRIGGER AS $$
     BEGIN
     IF (TG_OP = 'DELETE') THEN
         -- Deleting data when JSON data is deleted
-        DELETE FROM {{ cfg.db_schema_vn }}.field_groups
+        DELETE FROM {{ db_schema_vn }}.field_groups
             WHERE id = OLD.id;
         IF NOT FOUND THEN
             RETURN NULL;
@@ -290,7 +290,7 @@ CREATE OR REPLACE FUNCTION update_field_groups() RETURNS TRIGGER AS $$
 
     ELSIF (TG_OP = 'UPDATE') THEN
         -- Updating or inserting data when JSON data is updated
-        UPDATE {{ cfg.db_schema_vn }}.field_groups SET
+        UPDATE {{ db_schema_vn }}.field_groups SET
             default_v    = NEW.item->>'default',
             empty_choice = NEW.item->>'empty_choice',
             mandatory    = NEW.item->>'mandatory',
@@ -300,7 +300,7 @@ CREATE OR REPLACE FUNCTION update_field_groups() RETURNS TRIGGER AS $$
         WHERE id = OLD.id;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
-            INSERT INTO {{ cfg.db_schema_vn }}.field_groups(id, default_v, empty_choice, mandatory, name, text_v, group_v)
+            INSERT INTO {{ db_schema_vn }}.field_groups(id, default_v, empty_choice, mandatory, name, text_v, group_v)
             VALUES (
                 NEW.id,
                 NEW.item->>'default',
@@ -315,7 +315,7 @@ CREATE OR REPLACE FUNCTION update_field_groups() RETURNS TRIGGER AS $$
 
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting row when raw data is inserted
-        INSERT INTO {{ cfg.db_schema_vn }}.field_groups(id, default_v, empty_choice, mandatory, name, text_v, group_v)
+        INSERT INTO {{ db_schema_vn }}.field_groups(id, default_v, empty_choice, mandatory, name, text_v, group_v)
         VALUES (
             NEW.id,
             NEW.item->>'default',
@@ -331,16 +331,16 @@ END;
 $$
 LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS field_groups_trigger ON {{ cfg.db_schema_import }}.field_groups_json;
+DROP TRIGGER IF EXISTS field_groups_trigger ON {{ db_schema_import }}.field_groups_json;
 CREATE TRIGGER field_groups_trigger
-AFTER INSERT OR UPDATE OR DELETE ON {{ cfg.db_schema_import }}.field_groups_json
-    FOR EACH ROW EXECUTE PROCEDURE {{ cfg.db_schema_vn }}.update_field_groups();
+AFTER INSERT OR UPDATE OR DELETE ON {{ db_schema_import }}.field_groups_json
+    FOR EACH ROW EXECUTE PROCEDURE {{ db_schema_vn }}.update_field_groups();
 
 
 --------
 -- Forms
 --------
-CREATE TABLE {{ cfg.db_schema_vn }}.forms(
+CREATE TABLE {{ db_schema_vn }}.forms(
     site                TEXT,
     id                  INTEGER,
     id_form_universal   TEXT,
@@ -358,41 +358,41 @@ CREATE TABLE {{ cfg.db_schema_vn }}.forms(
     comments            TEXT,
     protocol_name       TEXT,
     protocol            JSONB,
-    geom                GEOMETRY(Point, {{ cfg.proj }}),
+    geom                GEOMETRY(Point, {{ proj }}),
     PRIMARY KEY (site, id)
 );
 
 
 DROP INDEX IF EXISTS forms_idx_site;
 CREATE INDEX forms_idx_site
-    ON {{ cfg.db_schema_vn }}.forms USING btree(site);
+    ON {{ db_schema_vn }}.forms USING btree(site);
 DROP INDEX IF EXISTS forms_idx_id;
 CREATE INDEX forms_idx_id
-    ON {{ cfg.db_schema_vn }}.forms USING btree(id);
+    ON {{ db_schema_vn }}.forms USING btree(id);
 DROP INDEX IF EXISTS forms_idx_id_form_universal;
 CREATE INDEX forms_idx_id_form_universal
-    ON {{ cfg.db_schema_vn }}.forms USING btree(id_form_universal);
+    ON {{ db_schema_vn }}.forms USING btree(id_form_universal);
 DROP INDEX IF EXISTS forms_gidx_protocol_name;
 CREATE INDEX forms_gidx_protocol_name
-    ON {{ cfg.db_schema_vn }}.forms USING btree(protocol_name);
+    ON {{ db_schema_vn }}.forms USING btree(protocol_name);
 DROP INDEX IF EXISTS forms_gidx_protocol;
 CREATE INDEX forms_gidx_protocol
-    ON {{ cfg.db_schema_vn }}.forms USING GIN(protocol);
+    ON {{ db_schema_vn }}.forms USING GIN(protocol);
 DROP INDEX IF EXISTS forms_gidx_geom;
 CREATE INDEX forms_gidx_geom
-    ON {{ cfg.db_schema_vn }}.forms USING gist(geom);
+    ON {{ db_schema_vn }}.forms USING gist(geom);
 
 -- Add trigger for postgis geometry update
-DROP TRIGGER IF EXISTS trg_geom ON {{ cfg.db_schema_vn }}.forms;
+DROP TRIGGER IF EXISTS trg_geom ON {{ db_schema_vn }}.forms;
 CREATE TRIGGER trg_geom BEFORE INSERT or UPDATE
-    ON {{ cfg.db_schema_vn }}.forms FOR EACH ROW
+    ON {{ db_schema_vn }}.forms FOR EACH ROW
     EXECUTE PROCEDURE update_geom_triggerfn();
 
 CREATE OR REPLACE FUNCTION update_forms() RETURNS TRIGGER AS $$
     BEGIN
     IF (TG_OP = 'DELETE') THEN
         -- Deleting data when JSON data is deleted
-        DELETE FROM {{ cfg.db_schema_vn }}.forms
+        DELETE FROM {{ db_schema_vn }}.forms
             WHERE id = OLD.id AND site = OLD.site;
         IF NOT FOUND THEN
             RETURN NULL;
@@ -401,7 +401,7 @@ CREATE OR REPLACE FUNCTION update_forms() RETURNS TRIGGER AS $$
 
     ELSIF (TG_OP = 'UPDATE') THEN
         -- Updating or inserting data when JSON data is updated
-        UPDATE {{ cfg.db_schema_vn }}.forms SET
+        UPDATE {{ db_schema_vn }}.forms SET
             id_form_universal = NEW.item->>'id_form_universal',
             observer_uid      = CAST(NEW.item->>'@uid' as INT),
             date_start        = CAST(NEW.item->>'date_start' AS DATE),
@@ -420,7 +420,7 @@ CREATE OR REPLACE FUNCTION update_forms() RETURNS TRIGGER AS $$
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
-            INSERT INTO {{ cfg.db_schema_vn }}.forms(site, id, id_form_universal, observer_uid, date_start,
+            INSERT INTO {{ db_schema_vn }}.forms(site, id, id_form_universal, observer_uid, date_start,
                                               date_stop, time_start, time_stop, full_form, version,
                                               coord_lat, coord_lon, coord_x_local, coord_y_local,
                                               comments, protocol_name, protocol)
@@ -448,7 +448,7 @@ CREATE OR REPLACE FUNCTION update_forms() RETURNS TRIGGER AS $$
 
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting row when raw data is inserted
-        INSERT INTO {{ cfg.db_schema_vn }}.forms(site, id, id_form_universal, observer_uid, date_start,
+        INSERT INTO {{ db_schema_vn }}.forms(site, id, id_form_universal, observer_uid, date_start,
                                           date_stop, time_start, time_stop, full_form, version,
                                           coord_lat, coord_lon, coord_x_local, coord_y_local,
                                           comments, protocol_name, protocol)
@@ -477,16 +477,16 @@ END;
 $$
 LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS forms_trigger ON {{ cfg.db_schema_import }}.forms_json;
+DROP TRIGGER IF EXISTS forms_trigger ON {{ db_schema_import }}.forms_json;
 CREATE TRIGGER forms_trigger
-AFTER INSERT OR UPDATE OR DELETE ON {{ cfg.db_schema_import }}.forms_json
-    FOR EACH ROW EXECUTE PROCEDURE {{ cfg.db_schema_vn }}.update_forms();
+AFTER INSERT OR UPDATE OR DELETE ON {{ db_schema_import }}.forms_json
+    FOR EACH ROW EXECUTE PROCEDURE {{ db_schema_vn }}.update_forms();
 
 
 --------------------
 -- local_admin_units
 --------------------
-CREATE TABLE {{ cfg.db_schema_vn }}.local_admin_units(
+CREATE TABLE {{ db_schema_vn }}.local_admin_units(
     site                TEXT,
     id                  INTEGER,
     id_canton           INTEGER,
@@ -496,34 +496,34 @@ CREATE TABLE {{ cfg.db_schema_vn }}.local_admin_units(
     coord_lon           FLOAT,
     coord_x_local       FLOAT,
     coord_y_local       FLOAT,
-    geom                GEOMETRY(Point, {{ cfg.proj }}),
+    geom                GEOMETRY(Point, {{ proj }}),
     PRIMARY KEY (site, id)
 );
 
 DROP INDEX IF EXISTS local_admin_units_idx_site;
 CREATE INDEX local_admin_units_idx_site
-    ON {{ cfg.db_schema_vn }}.local_admin_units USING btree(site);
+    ON {{ db_schema_vn }}.local_admin_units USING btree(site);
 DROP INDEX IF EXISTS local_admin_units_idx_id;
 CREATE INDEX local_admin_units_idx_id
-    ON {{ cfg.db_schema_vn }}.local_admin_units USING btree(id);
+    ON {{ db_schema_vn }}.local_admin_units USING btree(id);
 DROP INDEX IF EXISTS local_admin_units_idx_id_canton;
 CREATE INDEX local_admin_units_idx_id_canton
-    ON {{ cfg.db_schema_vn }}.local_admin_units USING btree(id_canton);
+    ON {{ db_schema_vn }}.local_admin_units USING btree(id_canton);
 DROP INDEX IF EXISTS local_admin_units_gidx_geom;
 CREATE INDEX local_admin_units_gidx_geom
-    ON {{ cfg.db_schema_vn }}.local_admin_units USING gist(geom);
+    ON {{ db_schema_vn }}.local_admin_units USING gist(geom);
 
 -- Add trigger for postgis geometry update
-DROP TRIGGER IF EXISTS trg_geom ON {{ cfg.db_schema_vn }}.local_admin_units;
+DROP TRIGGER IF EXISTS trg_geom ON {{ db_schema_vn }}.local_admin_units;
 CREATE TRIGGER trg_geom BEFORE INSERT or UPDATE
-    ON {{ cfg.db_schema_vn }}.local_admin_units FOR EACH ROW
+    ON {{ db_schema_vn }}.local_admin_units FOR EACH ROW
     EXECUTE PROCEDURE update_geom_triggerfn();
 
 CREATE OR REPLACE FUNCTION update_local_admin_units() RETURNS TRIGGER AS $$
     BEGIN
     IF (TG_OP = 'DELETE') THEN
         -- Deleting data when JSON data is deleted
-        DELETE FROM {{ cfg.db_schema_vn }}.local_admin_units
+        DELETE FROM {{ db_schema_vn }}.local_admin_units
             WHERE id = OLD.id AND site = OLD.site;
         IF NOT FOUND THEN
             RETURN NULL;
@@ -532,7 +532,7 @@ CREATE OR REPLACE FUNCTION update_local_admin_units() RETURNS TRIGGER AS $$
 
     ELSIF (TG_OP = 'UPDATE') THEN
         -- Updating or inserting data when JSON data is updated
-        UPDATE {{ cfg.db_schema_vn }}.local_admin_units SET
+        UPDATE {{ db_schema_vn }}.local_admin_units SET
             id_canton     = CAST(NEW.item->>'id_canton' AS INTEGER),
             name          = NEW.item->>'name',
             insee         = NEW.item->>'insee',
@@ -543,7 +543,7 @@ CREATE OR REPLACE FUNCTION update_local_admin_units() RETURNS TRIGGER AS $$
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
-            INSERT INTO {{ cfg.db_schema_vn }}.local_admin_units(site, id, id_canton, name, insee,
+            INSERT INTO {{ db_schema_vn }}.local_admin_units(site, id, id_canton, name, insee,
                                                           coord_lat, coord_lon, coord_x_local, coord_y_local)
             VALUES (
                 NEW.site,
@@ -561,7 +561,7 @@ CREATE OR REPLACE FUNCTION update_local_admin_units() RETURNS TRIGGER AS $$
 
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting row when raw data is inserted
-        INSERT INTO {{ cfg.db_schema_vn }}.local_admin_units(site, id, id_canton, name, insee,
+        INSERT INTO {{ db_schema_vn }}.local_admin_units(site, id, id_canton, name, insee,
                                                       coord_lat, coord_lon, coord_x_local, coord_y_local)
         VALUES (
             NEW.site,
@@ -580,16 +580,16 @@ END;
 $$
 LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS local_admin_units_trigger ON {{ cfg.db_schema_import }}.local_admin_units_json;
+DROP TRIGGER IF EXISTS local_admin_units_trigger ON {{ db_schema_import }}.local_admin_units_json;
 CREATE TRIGGER local_admin_units_trigger
-AFTER INSERT OR UPDATE OR DELETE ON {{ cfg.db_schema_import }}.local_admin_units_json
-    FOR EACH ROW EXECUTE PROCEDURE {{ cfg.db_schema_vn }}.update_local_admin_units();
+AFTER INSERT OR UPDATE OR DELETE ON {{ db_schema_import }}.local_admin_units_json
+    FOR EACH ROW EXECUTE PROCEDURE {{ db_schema_vn }}.update_local_admin_units();
 
 
 ---------------
 -- Observations
 ---------------
-CREATE TABLE {{ cfg.db_schema_vn }}.observations (
+CREATE TABLE {{ db_schema_vn }}.observations (
     site                TEXT,
     id_sighting         INTEGER,
     pseudo_id_sighting  TEXT,
@@ -626,42 +626,42 @@ CREATE TABLE {{ cfg.db_schema_vn }}.observations (
     death_cause2        TEXT,
     insert_date         TIMESTAMP,
     update_date         TIMESTAMP,
-    geom                GEOMETRY(Point, {{ cfg.proj }}),
+    geom                GEOMETRY(Point, {{ proj }}),
     PRIMARY KEY (site, id_sighting)
 );
 
 DROP INDEX IF EXISTS observations_idx_site;
 CREATE INDEX observations_idx_site
-    ON {{ cfg.db_schema_vn }}.observations USING btree(site);
+    ON {{ db_schema_vn }}.observations USING btree(site);
 DROP INDEX IF EXISTS observations_idx_id_sighting;
 CREATE INDEX observations_idx_id_sighting
-    ON {{ cfg.db_schema_vn }}.observations USING btree(id_sighting);
+    ON {{ db_schema_vn }}.observations USING btree(id_sighting);
 DROP INDEX IF EXISTS observations_idx_id_species;
 CREATE INDEX observations_idx_id_species
-    ON {{ cfg.db_schema_vn }}.observations USING btree(id_species);
+    ON {{ db_schema_vn }}.observations USING btree(id_species);
 DROP INDEX IF EXISTS observations_idx_taxonomy;
 CREATE INDEX observations_idx_taxonomy
-    ON {{ cfg.db_schema_vn }}.observations USING btree(taxonomy);
+    ON {{ db_schema_vn }}.observations USING btree(taxonomy);
 DROP INDEX IF EXISTS observations_idx_id_universal;
 CREATE INDEX observations_idx_id_universal
-    ON {{ cfg.db_schema_vn }}.observations USING btree(id_universal);
+    ON {{ db_schema_vn }}.observations USING btree(id_universal);
 DROP INDEX IF EXISTS observations_idx_id_form_universal;
 CREATE INDEX observations_idx_id_form_universal
-    ON {{ cfg.db_schema_vn }}.observations USING btree(id_form_universal);
+    ON {{ db_schema_vn }}.observations USING btree(id_form_universal);
 DROP INDEX IF EXISTS observations_idx_observer_uid;
 CREATE INDEX observations_idx_observer_uid
-    ON {{ cfg.db_schema_vn }}.observations USING btree(observer_uid);
+    ON {{ db_schema_vn }}.observations USING btree(observer_uid);
 DROP INDEX IF EXISTS observations_idx_project_code;
 CREATE INDEX observations_idx_project_code
-    ON {{ cfg.db_schema_vn }}.observations USING btree(project_code);
+    ON {{ db_schema_vn }}.observations USING btree(project_code);
 DROP INDEX IF EXISTS observations_gidx_geom;
 CREATE INDEX observations_gidx_geom
-    ON {{ cfg.db_schema_vn }}.observations USING gist(geom);
+    ON {{ db_schema_vn }}.observations USING gist(geom);
 
 -- Add trigger for postgis geometry update
-DROP TRIGGER IF EXISTS trg_geom ON {{ cfg.db_schema_vn }}.observations;
+DROP TRIGGER IF EXISTS trg_geom ON {{ db_schema_vn }}.observations;
 CREATE TRIGGER trg_geom BEFORE INSERT or UPDATE
-    ON {{ cfg.db_schema_vn }}.observations FOR EACH ROW
+    ON {{ db_schema_vn }}.observations FOR EACH ROW
     EXECUTE PROCEDURE update_geom_triggerfn();
 
 -- Transform behaviours JSON array in PG ARRAY
@@ -685,7 +685,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
     BEGIN
     IF (TG_OP = 'DELETE') THEN
         -- Deleting data on src_vn.observations when raw data is deleted
-        DELETE FROM {{ cfg.db_schema_vn }}.observations
+        DELETE FROM {{ db_schema_vn }}.observations
             WHERE id_sighting = OLD.id AND site = OLD.site;
         IF NOT FOUND THEN
             RETURN NULL;
@@ -694,7 +694,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
 
     ELSIF (TG_OP = 'UPDATE') THEN
         -- Updating data on src_vn.observations when raw data is updated
-        UPDATE {{ cfg.db_schema_vn }}.observations SET
+        UPDATE {{ db_schema_vn }}.observations SET
             id_universal      = ((NEW.item -> 'observers') -> 0) ->> 'id_universal',
             uuid              = ((NEW.item -> 'observers') -> 0) ->> 'uuid',
             id_form_universal = NEW.id_form_universal,
@@ -720,7 +720,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
             admin_hidden      = CAST(((NEW.item -> 'observers') -> 0) ->> 'admin_hidden' AS BOOLEAN),
             observer_uid      = CAST(((NEW.item -> 'observers') -> 0) ->> '@uid' AS INTEGER),
             details           = ((NEW.item -> 'observers') -> 0) ->> 'details',
-            behaviours        = {{ cfg.db_schema_vn }}.behaviour_array(((NEW.item -> 'observers') -> 0) -> 'behaviours'),
+            behaviours        = {{ db_schema_vn }}.behaviour_array(((NEW.item -> 'observers') -> 0) -> 'behaviours'),
             comment           = ((NEW.item -> 'observers') -> 0) ->> 'comment',
             hidden_comment    = ((NEW.item -> 'observers') -> 0) ->> 'hidden_comment',
             confirmed_by      = ((NEW.item -> 'observers') -> 0) ->> 'confirmed_by',
@@ -732,7 +732,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
 
         IF NOT FOUND THEN
             -- Inserting data on src_vn.observations when raw data is inserted
-            INSERT INTO {{ cfg.db_schema_vn }}.observations (site, id_sighting, pseudo_id_sighting, id_universal, uuid, id_form_universal,
+            INSERT INTO {{ db_schema_vn }}.observations (site, id_sighting, pseudo_id_sighting, id_universal, uuid, id_form_universal,
                                              id_species, taxonomy, date, date_year, timing, id_place, place,
                                              coord_lat, coord_lon, coord_x_local, coord_y_local, precision, source, estimation_code,
                                              count, atlas_code, altitude, project_code, hidden, admin_hidden, observer_uid, details,
@@ -740,7 +740,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
             VALUES (
                 NEW.site,
                 NEW.id,
-                encode(hmac(NEW.id::text, '{{ cfg.db_secret_key }}', 'sha1'), 'hex'),
+                encode(hmac(NEW.id::text, '{{ db_secret_key }}', 'sha1'), 'hex'),
                 ((NEW.item -> 'observers') -> 0) ->> 'id_universal',
                 ((NEW.item -> 'observers') -> 0) ->> 'uuid',
                 NEW.id_form_universal,
@@ -767,7 +767,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
                 CAST(((NEW.item -> 'observers') -> 0) ->> 'admin_hidden' AS BOOLEAN),
                 CAST(((NEW.item -> 'observers') -> 0) ->> '@uid' AS INTEGER),
                 ((NEW.item -> 'observers') -> 0) ->> 'details',
-                {{ cfg.db_schema_vn }}.behaviour_array(((NEW.item -> 'observers') -> 0) -> 'behaviours'),
+                {{ db_schema_vn }}.behaviour_array(((NEW.item -> 'observers') -> 0) -> 'behaviours'),
                 ((NEW.item -> 'observers') -> 0) ->> 'comment',
                 ((NEW.item -> 'observers') -> 0) ->> 'hidden_comment',
                 ((NEW.item -> 'observers') -> 0) ->> 'confirmed_by',
@@ -780,7 +780,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
 
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting data on src_vn.observations when raw data is inserted
-        INSERT INTO {{ cfg.db_schema_vn }}.observations (site, id_sighting, pseudo_id_sighting, id_universal, uuid, id_form_universal,
+        INSERT INTO {{ db_schema_vn }}.observations (site, id_sighting, pseudo_id_sighting, id_universal, uuid, id_form_universal,
                                          id_species, taxonomy, date, date_year, timing, id_place, place,
                                          coord_lat, coord_lon, coord_x_local, coord_y_local, source, precision, estimation_code,
                                          count, atlas_code, altitude, project_code, hidden, admin_hidden, observer_uid, details,
@@ -788,7 +788,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
         VALUES (
             NEW.site,
             NEW.id,
-            encode(hmac(NEW.id::text, '{{ cfg.db_secret_key }}', 'sha1'), 'hex'),
+            encode(hmac(NEW.id::text, '{{ db_secret_key }}', 'sha1'), 'hex'),
             ((NEW.item -> 'observers') -> 0) ->> 'id_universal',
             ((NEW.item -> 'observers') -> 0) ->> 'uuid',
             NEW.id_form_universal,
@@ -815,7 +815,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
             CAST(((NEW.item -> 'observers') -> 0) ->> 'admin_hidden' AS BOOLEAN),
             CAST(((NEW.item -> 'observers') -> 0) ->> '@uid' AS INTEGER),
             ((NEW.item -> 'observers') -> 0) ->> 'details',
-            {{ cfg.db_schema_vn }}.behaviour_array(((NEW.item -> 'observers') -> 0) -> 'behaviours'),
+            {{ db_schema_vn }}.behaviour_array(((NEW.item -> 'observers') -> 0) -> 'behaviours'),
             ((NEW.item -> 'observers') -> 0) ->> 'comment',
             ((NEW.item -> 'observers') -> 0) ->> 'hidden_comment',
             ((NEW.item -> 'observers') -> 0) ->> 'confirmed_by',
@@ -829,16 +829,16 @@ END;
 $$
 LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS observations_trigger ON {{ cfg.db_schema_import }}.observations_json;
+DROP TRIGGER IF EXISTS observations_trigger ON {{ db_schema_import }}.observations_json;
 CREATE TRIGGER observations_trigger
-AFTER INSERT OR UPDATE OR DELETE ON {{ cfg.db_schema_import }}.observations_json
+AFTER INSERT OR UPDATE OR DELETE ON {{ db_schema_import }}.observations_json
     FOR EACH ROW EXECUTE PROCEDURE update_observations();
 
 
 ------------
 -- Observers
 ------------
-CREATE TABLE {{ cfg.db_schema_vn }}.observers(
+CREATE TABLE {{ db_schema_vn }}.observers(
     site                TEXT,
     id                  INTEGER,
     id_universal        INTEGER,
@@ -854,19 +854,19 @@ CREATE TABLE {{ cfg.db_schema_vn }}.observers(
 
 DROP INDEX IF EXISTS observers_idx_site;
 CREATE INDEX observers_idx_site
-    ON {{ cfg.db_schema_vn }}.observers USING btree(site);
+    ON {{ db_schema_vn }}.observers USING btree(site);
 DROP INDEX IF EXISTS observers_idx_id;
 CREATE INDEX observers_idx_id
-    ON {{ cfg.db_schema_vn }}.observers USING btree(id);
+    ON {{ db_schema_vn }}.observers USING btree(id);
 DROP INDEX IF EXISTS observers_idx_id_universal;
 CREATE INDEX observers_idx_id_universal
-    ON {{ cfg.db_schema_vn }}.observers USING btree(id_universal);
+    ON {{ db_schema_vn }}.observers USING btree(id_universal);
 
 CREATE OR REPLACE FUNCTION update_observers() RETURNS TRIGGER AS $$
     BEGIN
     IF (TG_OP = 'DELETE') THEN
         -- Deleting data when JSON data is deleted
-        DELETE FROM {{ cfg.db_schema_vn }}.observers
+        DELETE FROM {{ db_schema_vn }}.observers
             WHERE id = OLD.id AND site = OLD.site;
         IF NOT FOUND THEN
             RETURN NULL;
@@ -875,7 +875,7 @@ CREATE OR REPLACE FUNCTION update_observers() RETURNS TRIGGER AS $$
 
     ELSIF (TG_OP = 'UPDATE') THEN
         -- Updating or inserting data when JSON data is updated
-        UPDATE {{ cfg.db_schema_vn }}.observers SET
+        UPDATE {{ db_schema_vn }}.observers SET
             id_universal   = NEW.id_universal,
             id_entity      = CAST(NEW.item->>'id_entity' AS INTEGER),
             anonymous      = CAST(NEW.item->>'anonymous' AS BOOLEAN),
@@ -886,13 +886,13 @@ CREATE OR REPLACE FUNCTION update_observers() RETURNS TRIGGER AS $$
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
-            INSERT INTO {{ cfg.db_schema_vn }}.observers(site, id, id_universal, pseudo_observer_uid, id_entity, anonymous,
+            INSERT INTO {{ db_schema_vn }}.observers(site, id, id_universal, pseudo_observer_uid, id_entity, anonymous,
                                                   collectif, default_hidden, name, surname)
             VALUES (
                 NEW.site,
                 NEW.id,
                 NEW.id_universal,
-                encode(hmac(CAST(NEW.id_universal AS TEXT), '{{ cfg.db_secret_key }}', 'sha1'), 'hex'),
+                encode(hmac(CAST(NEW.id_universal AS TEXT), '{{ db_secret_key }}', 'sha1'), 'hex'),
                 CAST(NEW.item->>'id_entity' AS INTEGER),
                 CAST(NEW.item->>'anonymous' AS BOOLEAN),
                 CAST(NEW.item->>'collectif' AS BOOLEAN),
@@ -905,13 +905,13 @@ CREATE OR REPLACE FUNCTION update_observers() RETURNS TRIGGER AS $$
 
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting data on src_vn.observations when raw data is inserted
-        INSERT INTO {{ cfg.db_schema_vn }}.observers(site, id, id_universal, pseudo_observer_uid, id_entity, anonymous,
+        INSERT INTO {{ db_schema_vn }}.observers(site, id, id_universal, pseudo_observer_uid, id_entity, anonymous,
                                               collectif, default_hidden, name, surname)
         VALUES (
             NEW.site,
             NEW.id,
             NEW.id_universal,
-            encode(hmac(CAST(NEW.id_universal AS TEXT), '{{ cfg.db_secret_key }}', 'sha1'), 'hex'),
+            encode(hmac(CAST(NEW.id_universal AS TEXT), '{{ db_secret_key }}', 'sha1'), 'hex'),
             CAST(NEW.item->>'id_entity' AS INTEGER),
             CAST(NEW.item->>'anonymous' AS BOOLEAN),
             CAST(NEW.item->>'collectif' AS BOOLEAN),
@@ -925,16 +925,16 @@ END;
 $$
 LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS observers_trigger ON {{ cfg.db_schema_import }}.observers_json;
+DROP TRIGGER IF EXISTS observers_trigger ON {{ db_schema_import }}.observers_json;
 CREATE TRIGGER observers_trigger
-AFTER INSERT OR UPDATE OR DELETE ON {{ cfg.db_schema_import }}.observers_json
-    FOR EACH ROW EXECUTE PROCEDURE {{ cfg.db_schema_vn }}.update_observers();
+AFTER INSERT OR UPDATE OR DELETE ON {{ db_schema_import }}.observers_json
+    FOR EACH ROW EXECUTE PROCEDURE {{ db_schema_vn }}.update_observers();
 
 
 ---------
 -- Places
 ---------
-CREATE TABLE {{ cfg.db_schema_vn }}.places(
+CREATE TABLE {{ db_schema_vn }}.places(
     site                TEXT,
     id                  INTEGER,
     id_commune          INTEGER,
@@ -950,35 +950,35 @@ CREATE TABLE {{ cfg.db_schema_vn }}.places(
     coord_lon           FLOAT,
     coord_x_local       FLOAT,
     coord_y_local       FLOAT,
-    geom                GEOMETRY(Point, {{ cfg.proj }}),
+    geom                GEOMETRY(Point, {{ proj }}),
     PRIMARY KEY (site, id)
 );
 
 
 DROP INDEX IF EXISTS places_idx_site;
 CREATE INDEX places_idx_site
-    ON {{ cfg.db_schema_vn }}.places USING btree(site);
+    ON {{ db_schema_vn }}.places USING btree(site);
 DROP INDEX IF EXISTS places_idx_id;
 CREATE INDEX places_idx_id
-    ON {{ cfg.db_schema_vn }}.places USING btree(id);
+    ON {{ db_schema_vn }}.places USING btree(id);
 DROP INDEX IF EXISTS places_idx_id_commune;
 CREATE INDEX places_idx_id_commune
-    ON {{ cfg.db_schema_vn }}.places USING btree(id_commune);
+    ON {{ db_schema_vn }}.places USING btree(id_commune);
 DROP INDEX IF EXISTS places_gidx_geom;
 CREATE INDEX places_gidx_geom
-    ON {{ cfg.db_schema_vn }}.places USING gist(geom);
+    ON {{ db_schema_vn }}.places USING gist(geom);
 
 -- Add trigger for postgis geometry update
-DROP TRIGGER IF EXISTS trg_geom ON {{ cfg.db_schema_vn }}.places;
+DROP TRIGGER IF EXISTS trg_geom ON {{ db_schema_vn }}.places;
 CREATE TRIGGER trg_geom BEFORE INSERT or UPDATE
-    ON {{ cfg.db_schema_vn }}.places FOR EACH ROW
+    ON {{ db_schema_vn }}.places FOR EACH ROW
     EXECUTE PROCEDURE update_geom_triggerfn();
 
 CREATE OR REPLACE FUNCTION update_places() RETURNS TRIGGER AS $$
     BEGIN
     IF (TG_OP = 'DELETE') THEN
         -- Deleting data when JSON data is deleted
-        DELETE FROM {{ cfg.db_schema_vn }}.places
+        DELETE FROM {{ db_schema_vn }}.places
             WHERE id = OLD.id AND site = OLD.site;
         IF NOT FOUND THEN
             RETURN NULL;
@@ -987,7 +987,7 @@ CREATE OR REPLACE FUNCTION update_places() RETURNS TRIGGER AS $$
 
     ELSIF (TG_OP = 'UPDATE') THEN
         -- Updating or inserting data when JSON data is updated
-        UPDATE {{ cfg.db_schema_vn }}.places SET
+        UPDATE {{ db_schema_vn }}.places SET
             id_commune    = CAST(NEW.item->>'id_commune' AS INTEGER),
             id_region     = CAST(NEW.item->>'id_region' AS INTEGER),
             name          = NEW.item->>'name',
@@ -1004,7 +1004,7 @@ CREATE OR REPLACE FUNCTION update_places() RETURNS TRIGGER AS $$
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
-            INSERT INTO {{ cfg.db_schema_vn }}.places(site, id, id_commune, id_region, name, is_private,
+            INSERT INTO {{ db_schema_vn }}.places(site, id, id_commune, id_region, name, is_private,
                                                loc_precision, altitude, place_type, wkt, visible,
                                                coord_lat, coord_lon, coord_x_local, coord_y_local)
             VALUES (
@@ -1029,7 +1029,7 @@ CREATE OR REPLACE FUNCTION update_places() RETURNS TRIGGER AS $$
 
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting data on src_vn.observations when raw data is inserted
-        INSERT INTO {{ cfg.db_schema_vn }}.places(site, id, id_commune, id_region, name, is_private,
+        INSERT INTO {{ db_schema_vn }}.places(site, id, id_commune, id_region, name, is_private,
                                            loc_precision, altitude, place_type, wkt, visible,
                                            coord_lat, coord_lon, coord_x_local, coord_y_local)
         VALUES (
@@ -1055,16 +1055,16 @@ END;
 $$
 LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS places_trigger ON {{ cfg.db_schema_import }}.places_json;
+DROP TRIGGER IF EXISTS places_trigger ON {{ db_schema_import }}.places_json;
 CREATE TRIGGER places_trigger
-AFTER INSERT OR UPDATE OR DELETE ON {{ cfg.db_schema_import }}.places_json
-    FOR EACH ROW EXECUTE PROCEDURE {{ cfg.db_schema_vn }}.update_places();
+AFTER INSERT OR UPDATE OR DELETE ON {{ db_schema_import }}.places_json
+    FOR EACH ROW EXECUTE PROCEDURE {{ db_schema_vn }}.update_places();
 
 
 ----------
 -- Species
 ----------
-CREATE TABLE {{ cfg.db_schema_vn }}.species(
+CREATE TABLE {{ db_schema_vn }}.species(
     site                TEXT,
     id                  INTEGER,
     id_taxo_group       INTEGER,
@@ -1082,19 +1082,19 @@ CREATE TABLE {{ cfg.db_schema_vn }}.species(
 
 DROP INDEX IF EXISTS species_idx_site;
 CREATE INDEX species_idx_site
-    ON {{ cfg.db_schema_vn }}.species USING btree(site);
+    ON {{ db_schema_vn }}.species USING btree(site);
 DROP INDEX IF EXISTS species_idx_id;
 CREATE INDEX species_idx_id
-    ON {{ cfg.db_schema_vn }}.species USING btree(id);
+    ON {{ db_schema_vn }}.species USING btree(id);
 DROP INDEX IF EXISTS species_idx_id_taxo_group;
 CREATE INDEX species_idx_id_taxo_group
-    ON {{ cfg.db_schema_vn }}.species USING btree(id_taxo_group);
+    ON {{ db_schema_vn }}.species USING btree(id_taxo_group);
 
 CREATE OR REPLACE FUNCTION update_species() RETURNS TRIGGER AS $$
     BEGIN
     IF (TG_OP = 'DELETE') THEN
         -- Deleting data when JSON data is deleted
-        DELETE FROM {{ cfg.db_schema_vn }}.species
+        DELETE FROM {{ db_schema_vn }}.species
             WHERE id = OLD.id AND site = OLD.site;
         IF NOT FOUND THEN
             RETURN NULL;
@@ -1103,7 +1103,7 @@ CREATE OR REPLACE FUNCTION update_species() RETURNS TRIGGER AS $$
 
     ELSIF (TG_OP = 'UPDATE') THEN
         -- Updating or inserting data when JSON data is updated
-        UPDATE {{ cfg.db_schema_vn }}.species SET
+        UPDATE {{ db_schema_vn }}.species SET
             id_taxo_group = CAST(NEW.item->>'id_taxo_group' AS INTEGER),
             is_used       = CAST(NEW.item->>'is_used' AS BOOLEAN),
             french_name   = NEW.item->>'french_name',
@@ -1117,7 +1117,7 @@ CREATE OR REPLACE FUNCTION update_species() RETURNS TRIGGER AS $$
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
-            INSERT INTO {{ cfg.db_schema_vn }}.species(site, id, id_taxo_group, is_used, french_name, latin_name, rarity,
+            INSERT INTO {{ db_schema_vn }}.species(site, id, id_taxo_group, is_used, french_name, latin_name, rarity,
                                                          category_1, sys_order, sempach_id_family, atlas_start, atlas_end)
             VALUES (
                 NEW.site,
@@ -1138,7 +1138,7 @@ CREATE OR REPLACE FUNCTION update_species() RETURNS TRIGGER AS $$
 
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting data on src_vn.observations when raw data is inserted
-        INSERT INTO {{ cfg.db_schema_vn }}.species(site, id, id_taxo_group, is_used, french_name, latin_name, rarity,
+        INSERT INTO {{ db_schema_vn }}.species(site, id, id_taxo_group, is_used, french_name, latin_name, rarity,
                                                 category_1, sys_order, sempach_id_family, atlas_start, atlas_end)
         VALUES (
             NEW.site,
@@ -1160,16 +1160,16 @@ END;
 $$
 LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS species_trigger ON {{ cfg.db_schema_import }}.species_json;
+DROP TRIGGER IF EXISTS species_trigger ON {{ db_schema_import }}.species_json;
 CREATE TRIGGER species_trigger
-AFTER INSERT OR UPDATE OR DELETE ON {{ cfg.db_schema_import }}.species_json
-    FOR EACH ROW EXECUTE PROCEDURE {{ cfg.db_schema_vn }}.update_species();
+AFTER INSERT OR UPDATE OR DELETE ON {{ db_schema_import }}.species_json
+    FOR EACH ROW EXECUTE PROCEDURE {{ db_schema_vn }}.update_species();
 
 
 --------------
 -- Taxo_groups
 --------------
-CREATE TABLE {{ cfg.db_schema_vn }}.taxo_groups(
+CREATE TABLE {{ db_schema_vn }}.taxo_groups(
     site                TEXT,
     id                  INTEGER,
     name                TEXT,
@@ -1181,16 +1181,16 @@ CREATE TABLE {{ cfg.db_schema_vn }}.taxo_groups(
 
 DROP INDEX IF EXISTS taxo_groups_idx_site;
 CREATE INDEX taxo_groups_idx_site
-    ON {{ cfg.db_schema_vn }}.taxo_groups USING btree(site);
+    ON {{ db_schema_vn }}.taxo_groups USING btree(site);
 DROP INDEX IF EXISTS taxo_groups_idx_id;
 CREATE INDEX taxo_groups_idx_id
-    ON {{ cfg.db_schema_vn }}.taxo_groups USING btree(id);
+    ON {{ db_schema_vn }}.taxo_groups USING btree(id);
 
 CREATE OR REPLACE FUNCTION update_taxo_groups() RETURNS TRIGGER AS $$
     BEGIN
     IF (TG_OP = 'DELETE') THEN
         -- Deleting data when JSON data is deleted
-        DELETE FROM {{ cfg.db_schema_vn }}.taxo_groups
+        DELETE FROM {{ db_schema_vn }}.taxo_groups
             WHERE id = OLD.id AND site = OLD.site;
         IF NOT FOUND THEN
             RETURN NULL;
@@ -1199,7 +1199,7 @@ CREATE OR REPLACE FUNCTION update_taxo_groups() RETURNS TRIGGER AS $$
 
     ELSIF (TG_OP = 'UPDATE') THEN
         -- Updating or inserting data when JSON data is updated
-        UPDATE {{ cfg.db_schema_vn }}.taxo_groups SET
+        UPDATE {{ db_schema_vn }}.taxo_groups SET
             name          = NEW.item->>'name',
             latin_name    = NEW.item->>'latin_name',
             name_constant = NEW.item->>'name_constant',
@@ -1207,7 +1207,7 @@ CREATE OR REPLACE FUNCTION update_taxo_groups() RETURNS TRIGGER AS $$
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
-            INSERT INTO {{ cfg.db_schema_vn }}.taxo_groups(site, id, name, latin_name, name_constant,
+            INSERT INTO {{ db_schema_vn }}.taxo_groups(site, id, name, latin_name, name_constant,
                                                     access_mode)
             VALUES (
                 NEW.site,
@@ -1222,7 +1222,7 @@ CREATE OR REPLACE FUNCTION update_taxo_groups() RETURNS TRIGGER AS $$
 
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting data on src_vn.observations when raw data is inserted
-        INSERT INTO {{ cfg.db_schema_vn }}.taxo_groups(site, id, name, latin_name, name_constant,
+        INSERT INTO {{ db_schema_vn }}.taxo_groups(site, id, name, latin_name, name_constant,
                                                 access_mode)
         VALUES (
             NEW.site,
@@ -1238,15 +1238,15 @@ END;
 $$
 LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS taxo_groups_trigger ON {{ cfg.db_schema_import }}.taxo_groups_json;
+DROP TRIGGER IF EXISTS taxo_groups_trigger ON {{ db_schema_import }}.taxo_groups_json;
 CREATE TRIGGER taxo_groups_trigger
-AFTER INSERT OR UPDATE OR DELETE ON {{ cfg.db_schema_import }}.taxo_groups_json
-    FOR EACH ROW EXECUTE PROCEDURE {{ cfg.db_schema_vn }}.update_taxo_groups();
+AFTER INSERT OR UPDATE OR DELETE ON {{ db_schema_import }}.taxo_groups_json
+    FOR EACH ROW EXECUTE PROCEDURE {{ db_schema_vn }}.update_taxo_groups();
 
 --------------------
 -- Territorial_units
 --------------------
-CREATE TABLE {{ cfg.db_schema_vn }}.territorial_units(
+CREATE TABLE {{ db_schema_vn }}.territorial_units(
     site                TEXT,
     id                  INTEGER,
     id_country          INTEGER,
@@ -1257,16 +1257,16 @@ CREATE TABLE {{ cfg.db_schema_vn }}.territorial_units(
 
 DROP INDEX IF EXISTS territorial_units_idx_site;
 CREATE INDEX territorial_units_idx_site
-    ON {{ cfg.db_schema_vn }}.territorial_units USING btree(site);
+    ON {{ db_schema_vn }}.territorial_units USING btree(site);
 DROP INDEX IF EXISTS territorial_units_idx_id;
 CREATE INDEX territorial_units_idx_id
-    ON {{ cfg.db_schema_vn }}.territorial_units USING btree(id);
+    ON {{ db_schema_vn }}.territorial_units USING btree(id);
 
 CREATE OR REPLACE FUNCTION update_territorial_units() RETURNS TRIGGER AS $$
     BEGIN
     IF (TG_OP = 'DELETE') THEN
         -- Deleting data when JSON data is deleted
-        DELETE FROM {{ cfg.db_schema_vn }}.territorial_units
+        DELETE FROM {{ db_schema_vn }}.territorial_units
             WHERE id = OLD.id AND site = OLD.site;
         IF NOT FOUND THEN
             RETURN NULL;
@@ -1275,14 +1275,14 @@ CREATE OR REPLACE FUNCTION update_territorial_units() RETURNS TRIGGER AS $$
 
     ELSIF (TG_OP = 'UPDATE') THEN
         -- Updating or inserting data when JSON data is updated
-        UPDATE {{ cfg.db_schema_vn }}.territorial_units SET
+        UPDATE {{ db_schema_vn }}.territorial_units SET
             id_country   = CAST(NEW.item->>'id_country' AS INTEGER),
             name         = NEW.item->>'name',
             short_name   = NEW.item->>'short_name'
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
-            INSERT INTO {{ cfg.db_schema_vn }}.territorial_units(site, id, id_country, name, short_name)
+            INSERT INTO {{ db_schema_vn }}.territorial_units(site, id, id_country, name, short_name)
             VALUES (
                 NEW.site,
                 NEW.id,
@@ -1295,7 +1295,7 @@ CREATE OR REPLACE FUNCTION update_territorial_units() RETURNS TRIGGER AS $$
 
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting data on src_vn.observations when raw data is inserted
-        INSERT INTO {{ cfg.db_schema_vn }}.territorial_units(site, id, id_country, name, short_name)
+        INSERT INTO {{ db_schema_vn }}.territorial_units(site, id, id_country, name, short_name)
         VALUES (
             NEW.site,
             NEW.id,
@@ -1309,16 +1309,16 @@ END;
 $$
 LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS territorial_units_trigger ON {{ cfg.db_schema_import }}.territorial_units_json;
+DROP TRIGGER IF EXISTS territorial_units_trigger ON {{ db_schema_import }}.territorial_units_json;
 CREATE TRIGGER territorial_units_trigger
-AFTER INSERT OR UPDATE OR DELETE ON {{ cfg.db_schema_import }}.territorial_units_json
-    FOR EACH ROW EXECUTE PROCEDURE {{ cfg.db_schema_vn }}.update_territorial_units();
+AFTER INSERT OR UPDATE OR DELETE ON {{ db_schema_import }}.territorial_units_json
+    FOR EACH ROW EXECUTE PROCEDURE {{ db_schema_vn }}.update_territorial_units();
 
 
 --------------
 -- Validations
 --------------
-CREATE TABLE {{ cfg.db_schema_vn }}.validations(
+CREATE TABLE {{ db_schema_vn }}.validations(
     site                TEXT,
     id                  INTEGER,
     committee           TEXT,
@@ -1330,16 +1330,16 @@ CREATE TABLE {{ cfg.db_schema_vn }}.validations(
 
 DROP INDEX IF EXISTS validations_idx_site;
 CREATE INDEX validations_idx_site
-    ON {{ cfg.db_schema_vn }}.validations USING btree(site);
+    ON {{ db_schema_vn }}.validations USING btree(site);
 DROP INDEX IF EXISTS validations_idx_id;
 CREATE INDEX validations_idx_id
-    ON {{ cfg.db_schema_vn }}.validations USING btree(id);
+    ON {{ db_schema_vn }}.validations USING btree(id);
 
 CREATE OR REPLACE FUNCTION validations_units() RETURNS TRIGGER AS $$
     BEGIN
     IF (TG_OP = 'DELETE') THEN
         -- Deleting data when JSON data is deleted
-        DELETE FROM {{ cfg.db_schema_vn }}.validations
+        DELETE FROM {{ db_schema_vn }}.validations
             WHERE id = OLD.id AND site = OLD.site;
         IF NOT FOUND THEN
             RETURN NULL;
@@ -1348,7 +1348,7 @@ CREATE OR REPLACE FUNCTION validations_units() RETURNS TRIGGER AS $$
 
     ELSIF (TG_OP = 'UPDATE') THEN
         -- Updating or inserting data when JSON data is updated
-        UPDATE {{ cfg.db_schema_vn }}.validations SET
+        UPDATE {{ db_schema_vn }}.validations SET
             committee    = NEW.item->>'name',
             date_start   = CAST(NEW.item->>'id_country' AS INTEGER),
             date_stop    = CAST(NEW.item->>'id_country' AS INTEGER),
@@ -1356,7 +1356,7 @@ CREATE OR REPLACE FUNCTION validations_units() RETURNS TRIGGER AS $$
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
-            INSERT INTO {{ cfg.db_schema_vn }}.validations(site, id, committee, date_start, date_stop, id_species)
+            INSERT INTO {{ db_schema_vn }}.validations(site, id, committee, date_start, date_stop, id_species)
             VALUES (
                 NEW.site,
                 NEW.id,
@@ -1370,7 +1370,7 @@ CREATE OR REPLACE FUNCTION validations_units() RETURNS TRIGGER AS $$
 
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting data on src_vn.observations when raw data is inserted
-        INSERT INTO {{ cfg.db_schema_vn }}.validations(site, id, committee, date_start, date_stop, id_species)
+        INSERT INTO {{ db_schema_vn }}.validations(site, id, committee, date_start, date_stop, id_species)
         VALUES (
             NEW.site,
             NEW.id,
@@ -1385,39 +1385,39 @@ END;
 $$
 LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS validations_trigger ON {{ cfg.db_schema_import }}.validations_json;
+DROP TRIGGER IF EXISTS validations_trigger ON {{ db_schema_import }}.validations_json;
 CREATE TRIGGER validations_trigger
-AFTER INSERT OR UPDATE OR DELETE ON {{ cfg.db_schema_import }}.validations_json
-    FOR EACH ROW EXECUTE PROCEDURE {{ cfg.db_schema_vn }}.validations_units();
+AFTER INSERT OR UPDATE OR DELETE ON {{ db_schema_import }}.validations_json
+    FOR EACH ROW EXECUTE PROCEDURE {{ db_schema_vn }}.validations_units();
 
 
 -- Dummy update of all rows to trigger new FUNCTION
-UPDATE {{ cfg.db_schema_import }}.entities_json SET site=site;
-UPDATE {{ cfg.db_schema_import }}.families_json SET site=site;
-UPDATE {{ cfg.db_schema_import }}.field_details_json SET id=id;
-UPDATE {{ cfg.db_schema_import }}.field_groups_json SET id=id;
-UPDATE {{ cfg.db_schema_import }}.forms_json SET site=site;
-UPDATE {{ cfg.db_schema_import }}.local_admin_units_json SET site=site;
-UPDATE {{ cfg.db_schema_import }}.places_json SET site=site;
-UPDATE {{ cfg.db_schema_import }}.observers_json SET site=site;
-UPDATE {{ cfg.db_schema_import }}.observations_json SET site=site;
-UPDATE {{ cfg.db_schema_import }}.species_json SET site=site;
-UPDATE {{ cfg.db_schema_import }}.taxo_groups_json SET site=site;
-UPDATE {{ cfg.db_schema_import }}.territorial_units_json SET site=site;
-UPDATE {{ cfg.db_schema_import }}.validations_json SET site=site;
+UPDATE {{ db_schema_import }}.entities_json SET site=site;
+UPDATE {{ db_schema_import }}.families_json SET site=site;
+UPDATE {{ db_schema_import }}.field_details_json SET id=id;
+UPDATE {{ db_schema_import }}.field_groups_json SET id=id;
+UPDATE {{ db_schema_import }}.forms_json SET site=site;
+UPDATE {{ db_schema_import }}.local_admin_units_json SET site=site;
+UPDATE {{ db_schema_import }}.places_json SET site=site;
+UPDATE {{ db_schema_import }}.observers_json SET site=site;
+UPDATE {{ db_schema_import }}.observations_json SET site=site;
+UPDATE {{ db_schema_import }}.species_json SET site=site;
+UPDATE {{ db_schema_import }}.taxo_groups_json SET site=site;
+UPDATE {{ db_schema_import }}.territorial_units_json SET site=site;
+UPDATE {{ db_schema_import }}.validations_json SET site=site;
 
 -- Final cleanup
-VACUUM FULL ANALYZE {{ cfg.db_schema_import }}.entities_json, {{ cfg.db_schema_vn }}.entities;
-VACUUM FULL ANALYZE {{ cfg.db_schema_import }}.families_json, {{ cfg.db_schema_vn }}.families;
-VACUUM FULL ANALYZE {{ cfg.db_schema_import }}.field_details_json, {{ cfg.db_schema_vn }}.field_details;
-VACUUM FULL ANALYZE {{ cfg.db_schema_import }}.field_groups_json, {{ cfg.db_schema_vn }}.field_groups;
-VACUUM FULL ANALYZE {{ cfg.db_schema_import }}.forms_json, {{ cfg.db_schema_vn }}.forms;
-VACUUM FULL ANALYZE {{ cfg.db_schema_import }}.local_admin_units_json, {{ cfg.db_schema_vn }}.local_admin_units;
-VACUUM FULL ANALYZE {{ cfg.db_schema_import }}.observations_json, {{ cfg.db_schema_vn }}.observations;
-VACUUM FULL ANALYZE {{ cfg.db_schema_import }}.observers_json, {{ cfg.db_schema_vn }}.observers;
-VACUUM FULL ANALYZE {{ cfg.db_schema_import }}.places_json, {{ cfg.db_schema_vn }}.places;
-VACUUM FULL ANALYZE {{ cfg.db_schema_import }}.species_json, {{ cfg.db_schema_vn }}.species;
-VACUUM FULL ANALYZE {{ cfg.db_schema_import }}.taxo_groups_json, {{ cfg.db_schema_vn }}.taxo_groups;
-VACUUM FULL ANALYZE {{ cfg.db_schema_import }}.territorial_units_json, {{ cfg.db_schema_vn }}.territorial_units;
--- VACUUM FULL ANALYZE {{ cfg.db_schema_import }}.uuid_xref;
-VACUUM FULL ANALYZE {{ cfg.db_schema_import }}.validations_json, {{ cfg.db_schema_vn }}.validations;
+VACUUM FULL ANALYZE {{ db_schema_import }}.entities_json, {{ db_schema_vn }}.entities;
+VACUUM FULL ANALYZE {{ db_schema_import }}.families_json, {{ db_schema_vn }}.families;
+VACUUM FULL ANALYZE {{ db_schema_import }}.field_details_json, {{ db_schema_vn }}.field_details;
+VACUUM FULL ANALYZE {{ db_schema_import }}.field_groups_json, {{ db_schema_vn }}.field_groups;
+VACUUM FULL ANALYZE {{ db_schema_import }}.forms_json, {{ db_schema_vn }}.forms;
+VACUUM FULL ANALYZE {{ db_schema_import }}.local_admin_units_json, {{ db_schema_vn }}.local_admin_units;
+VACUUM FULL ANALYZE {{ db_schema_import }}.observations_json, {{ db_schema_vn }}.observations;
+VACUUM FULL ANALYZE {{ db_schema_import }}.observers_json, {{ db_schema_vn }}.observers;
+VACUUM FULL ANALYZE {{ db_schema_import }}.places_json, {{ db_schema_vn }}.places;
+VACUUM FULL ANALYZE {{ db_schema_import }}.species_json, {{ db_schema_vn }}.species;
+VACUUM FULL ANALYZE {{ db_schema_import }}.taxo_groups_json, {{ db_schema_vn }}.taxo_groups;
+VACUUM FULL ANALYZE {{ db_schema_import }}.territorial_units_json, {{ db_schema_vn }}.territorial_units;
+-- VACUUM FULL ANALYZE {{ db_schema_import }}.uuid_xref;
+VACUUM FULL ANALYZE {{ db_schema_import }}.validations_json, {{ db_schema_vn }}.validations;

@@ -104,14 +104,6 @@ def convert(in_config: str, out_config: str) -> None:
     cfg = document()
     cfg.add(comment("Configuration file for export_vn."))
     cfg.add(comment("Needs to be customized for each site. See comments below for details."))
-    mains = table(is_super_table=False)
-    mains.add(comment("General parameters."))
-    mains.add(comment("Mail address for the execution report."))
-    if in_settings["main"] is not None and "admin_mail" in in_settings["main"]:
-        mains.append("admin_mail", in_settings["main"]["admin_mail"])
-    else:
-        mains.append("admin_mail", "nom.prenom@example.net")
-    cfg.append("main", mains)
 
     cfg.add(nl())
     cfg.add(comment("------------------- Controler section -------------------"))

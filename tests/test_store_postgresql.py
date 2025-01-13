@@ -34,7 +34,8 @@ settings = Dynaconf(
     settings_files=[FILE],
 )
 cfg_site_list = settings.site
-assert len(cfg_site_list) == 1, _("Only one site can be defined in configuration file")
+if len(cfg_site_list) > 1:
+    raise ValueError(_("Only one site can be defined in configuration file"))
 for site, cfg in cfg_site_list.items():  # noqa: B007
     break
 MANAGE_PG = PostgresqlUtils(
