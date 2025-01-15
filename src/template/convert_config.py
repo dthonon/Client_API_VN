@@ -137,7 +137,7 @@ def convert(in_config: str, out_config: str) -> None:
     territorial_unit_ids = array()
     filters.add(comment("List of territorial_unit_ids to download."))
     filters.add(comment("Note : use the territory short_name, not the territory id."))
-    filters.add(comment('Example: territorial_units_ids = ["07", "38"]'))
+    filters.add(comment('Example: territorial_units_ids = ["7", "38"]'))
     filters.add(comment("Leave empty to download all territorial_units."))
     filters.append("territorial_unit_ids", territorial_unit_ids)
 

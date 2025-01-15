@@ -125,8 +125,6 @@ class BiolovisionAPI:
         self._api_url = base_url + "api/"  # URL of API
         self._oauth = OAuth1(client_key, client_secret=client_secret)
 
-        return None
-
     @property
     def version(self) -> str:
         """Return version."""
@@ -423,7 +421,7 @@ class BiolovisionAPI:
         if opt_params is not None:
             params.update(opt_params)
         self._logger.debug(
-            _("List from:%s, with options:%s, optional_headers:%s"),
+            _("List from: %s, with options:%s, optional_headers:%s"),
             self._ctrl,
             self._clean_params(params),
             optional_headers,
@@ -463,7 +461,7 @@ class BiolovisionAPI:
         for key, value in kwargs.items():
             params[key] = value
         self._logger.debug(
-            _("In api_get for controler:%s, entity: %s, with parameters:%s"),
+            _("In api_get for controler: %s, entity: %s, with parameters:%s"),
             self._ctrl,
             id_entity,
             self._clean_params(params),
@@ -489,9 +487,14 @@ class BiolovisionAPI:
         json : dict or None
             dict decoded from json if status OK, else None
         """
-        self._logger.warning(_("Calling api_list is deprecated. Please use api_search only."))
         h_params = None if opt_params is None else HashableDict(opt_params)
         h_headers = None if optional_headers is None else HashableDict(optional_headers)
+        self._logger.debug(
+            _("In api_list for controler: %s, header: %s, with parameters:%s"),
+            self._ctrl,
+            h_headers,
+            h_params,
+        )
         return self._api_list(opt_params=h_params, optional_headers=h_headers)
 
     # -------------------------
@@ -565,7 +568,6 @@ class FamiliesAPI(BiolovisionAPI):
 
     def __init__(
         self,
-        config: dict | None = None,
         user_email: str | None = None,
         user_pw: str | None = None,
         base_url: str | None = None,
@@ -606,7 +608,6 @@ class FieldsAPI(BiolovisionAPI):
 
     def __init__(
         self,
-        config: dict | None = None,
         user_email: str | None = None,
         user_pw: str | None = None,
         base_url: str | None = None,
@@ -647,7 +648,6 @@ class LocalAdminUnitsAPI(BiolovisionAPI):
 
     def __init__(
         self,
-        config: dict | None = None,
         user_email: str | None = None,
         user_pw: str | None = None,
         base_url: str | None = None,
@@ -672,7 +672,6 @@ class LocalAdminUnitsAPI(BiolovisionAPI):
             unavailable_delay=unavailable_delay,
             retry_delay=retry_delay,
         )
-        return None
 
 
 class ObservationsAPI(BiolovisionAPI):
@@ -700,7 +699,6 @@ class ObservationsAPI(BiolovisionAPI):
 
     def __init__(
         self,
-        config: dict | None = None,
         user_email: str | None = None,
         user_pw: str | None = None,
         base_url: str | None = None,
@@ -927,7 +925,6 @@ class ObserversAPI(BiolovisionAPI):
 
     def __init__(
         self,
-        config: dict | None = None,
         user_email: str | None = None,
         user_pw: str | None = None,
         base_url: str | None = None,
@@ -970,7 +967,6 @@ class PlacesAPI(BiolovisionAPI):
 
     def __init__(
         self,
-        config: dict | None = None,
         user_email: str | None = None,
         user_pw: str | None = None,
         base_url: str | None = None,
@@ -1041,7 +1037,6 @@ class SpeciesAPI(BiolovisionAPI):
 
     def __init__(
         self,
-        config: dict | None = None,
         user_email: str | None = None,
         user_pw: str | None = None,
         base_url: str | None = None,
@@ -1082,7 +1077,6 @@ class TaxoGroupsAPI(BiolovisionAPI):
 
     def __init__(
         self,
-        config: dict | None = None,
         user_email: str | None = None,
         user_pw: str | None = None,
         base_url: str | None = None,
@@ -1128,7 +1122,6 @@ class TerritorialUnitsAPI(BiolovisionAPI):
 
     def __init__(
         self,
-        config: dict | None = None,
         user_email: str | None = None,
         user_pw: str | None = None,
         base_url: str | None = None,
@@ -1174,7 +1167,6 @@ class ValidationsAPI(BiolovisionAPI):
 
     def __init__(
         self,
-        config: dict | None = None,
         user_email: str | None = None,
         user_pw: str | None = None,
         base_url: str | None = None,

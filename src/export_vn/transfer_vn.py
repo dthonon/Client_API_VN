@@ -35,7 +35,6 @@ from pytz import utc
 from tabulate import tabulate
 
 from export_vn.download_vn import (
-    DownloadVn,
     Entities,
     Families,
     Fields,
@@ -67,12 +66,16 @@ CTRL_DEFS = {
     "territorial_units": TerritorialUnits,
     "validations": Validations,
 }
+DEFS_CTRL = {value: key for key, value in CTRL_DEFS.items()}
+
 TIMEOUT = 30  # Requests.get timeout
 
 logger = logging.getLogger(__name__)
 
 
 class Jobs:
+    """Class to manage jobs scheduling."""
+
     def _listener(self, event):
         if event.code == EVENT_JOB_SUBMITTED:
             logger.debug(_("The job %s started"), event.job_id)
@@ -164,7 +167,7 @@ class Jobs:
         self._scheduler.remove_all_jobs()
 
     def add_job_once(self, job_fn, args=None, kwargs=None):
-        job_name = args[0].__name__
+        job_name = args[0]
         logger.debug(_("Adding immediate job %s"), job_name)
         self._scheduler.add_job(
             job_fn,
@@ -437,9 +440,9 @@ def migrate(cfg, sql_quiet, client_min_message):
     return None
 
 
-def full_download_1(ctrl: type[DownloadVn], settings) -> None:
+def full_download_1(ctrl: str, settings) -> None:
     """Downloads from a single controler."""
-    logger.debug(_("Enter full_download_1: %s"), ctrl.__name__)
+    logger.debug(_("Enter full_download_1: %s"), ctrl)
     with (
         StorePostgresql(
             settings.site.name,
@@ -459,14 +462,52 @@ def full_download_1(ctrl: type[DownloadVn], settings) -> None:
         store_all = StoreAll(
             settings.database.enabled, settings.file.enabled, db_backend=store_pg, file_backend=store_f
         )
-        downloader = ctrl(settings, store_all)
-        print(downloader.name)
-        if settings.controler[ctrl.__name__.lower()]["enabled"]:
+        if settings.controler[ctrl]["enabled"]:
             logger.info(
                 _("%s => Starting download using controler %s"),
                 settings.site.name,
-                ctrl.__name__.lower(),
+                ctrl,
             )
+        if ctrl == "observations":
+            logger.info(_("%s => Excluded taxo_groups: %s"), settings.site.name, settings.taxo_exclude)
+            CTRL_DEFS[ctrl](
+                site=settings.site.name,
+                user_email=settings.site.user_email,
+                user_pw=settings.site.user_pw,
+                base_url=settings.site.URL,
+                client_key=settings.site.client_key,
+                client_secret=settings.site.client_secret,
+                backend=store_all,
+            ).store()
+        elif (ctrl == "local_admin_units") or (ctrl == "places"):
+            logger.info(
+                _("%s => Included territorial_unit_ids: %s"),
+                settings.site.name,
+                settings.filter.territorial_unit_ids,
+            )
+            CTRL_DEFS[ctrl](
+                site=settings.site.name,
+                user_email=settings.site.user_email,
+                user_pw=settings.site.user_pw,
+                base_url=settings.site.URL,
+                client_key=settings.site.client_key,
+                client_secret=settings.site.client_secret,
+                backend=store_all,
+            ).store(
+                territorial_unit_ids=settings.filter.territorial_unit_ids,
+            )
+        else:
+            CTRL_DEFS[ctrl](
+                site=settings.site.name,
+                user_email=settings.site.user_email,
+                user_pw=settings.site.user_pw,
+                base_url=settings.site.URL,
+                client_key=settings.site.client_key,
+                client_secret=settings.site.client_secret,
+                backend=store_all,
+            ).store()
+        logger.info(_("%s => Ending download using controler %s"), settings.site.name, ctrl)
+
         #     if downloader.name == "observations":
         #         logger.info(_("%s => Excluded taxo_groups: %s"), cfg.site, cfg.taxo_exclude)
         #         downloader.store(
@@ -478,17 +519,9 @@ def full_download_1(ctrl: type[DownloadVn], settings) -> None:
         #             short_version=(1 if cfg.json_format == "short" else 0),
         #         )
         #     elif (downloader.name == "local_admin_units") or (downloader.name == "places"):
-        #         logger.info(
-        #             _("%s => Included territorial_unit_ids: %s"),
-        #             cfg.site,
-        #             cfg.territorial_unit_ids,
-        #         )
-        #         downloader.store(
-        #             territorial_unit_ids=cfg.territorial_unit_ids,
-        #         )
+
         #     else:
         #         downloader.store()
-        #     logger.info(_("%s => Ending download using controler %s"), cfg.site, downloader.name)
     return None
 
 
@@ -502,39 +535,33 @@ def full_download(settings: Dynaconf) -> None:
     """
 
     logger.info(_("Defining full download jobs"))
-    # db_url = {
-    #     "drivername": "postgresql+psycopg2",
-    #     "username": cfg.db_user,
-    #     "password": cfg.db_pw,
-    #     "host": cfg.db_host,
-    #     "port": cfg.db_port,
-    #     "database": "postgres",
-    # }
     jobs_o = Jobs(url="sqlite:///" + settings.tuning.sched_sqllite_file, nb_executors=settings.tuning.sched_executors)
     with jobs_o as jobs:
         # Cleanup any existing job
         jobs.start(paused=True)
         jobs.remove_all_jobs()
         jobs.resume()
-        # Download fields only once
-        # jobs.add_job_once(job_fn=tick, args=[Fields, settings])
-        jobs.add_job_once(job_fn=full_download_1, args=[Fields, settings])
-        # Looping on sites for other controlers
-        # for site, cfg in cfg_site_list.items():
-        #     if cfg.enabled:
-        #         logger.info(_("Scheduling work for site %s"), cfg.site)
-        #         jobs.add_job_once(job_fn=full_download_1, args=[Entities, cfg_crtl_list, cfg])
-        #         jobs.add_job_once(job_fn=full_download_1, args=[Families, cfg_crtl_list, cfg])
-        #         jobs.add_job_once(job_fn=full_download_1, args=[LocalAdminUnits, cfg_crtl_list, cfg])
-        #         jobs.add_job_once(job_fn=full_download_1, args=[Observations, cfg_crtl_list, cfg])
-        #         jobs.add_job_once(job_fn=full_download_1, args=[Observers, cfg_crtl_list, cfg])
-        #         jobs.add_job_once(job_fn=full_download_1, args=[Places, cfg_crtl_list, cfg])
-        #         jobs.add_job_once(job_fn=full_download_1, args=[Species, cfg_crtl_list, cfg])
-        #         jobs.add_job_once(job_fn=full_download_1, args=[TaxoGroup, cfg_crtl_list, cfg])
-        #         jobs.add_job_once(job_fn=full_download_1, args=[TerritorialUnits, cfg_crtl_list, cfg])
-        #         jobs.add_job_once(job_fn=full_download_1, args=[Validations, cfg_crtl_list, cfg])
-        #     else:
-        #         logger.info(_("Skipping site %s"), site)
+        # Schedule enabled jobs for immediate execution
+        if settings.controler.entities.enabled:
+            jobs.add_job_once(job_fn=full_download_1, args=["entities", settings])
+        if settings.controler.families.enabled:
+            jobs.add_job_once(job_fn=full_download_1, args=["families", settings])
+        if settings.controler.fields.enabled:
+            jobs.add_job_once(job_fn=full_download_1, args=["fields", settings])
+        if settings.controler.local_admin_units.enabled:
+            jobs.add_job_once(job_fn=full_download_1, args=["local_admin_units", settings])
+        # jobs.add_job_once(job_fn=full_download_1, args=[Observations, settings])
+        # jobs.add_job_once(job_fn=full_download_1, args=[Observers, settings])
+        if settings.controler.places.enabled:
+            jobs.add_job_once(job_fn=full_download_1, args=["places", settings])
+        if settings.controler.species.enabled:
+            jobs.add_job_once(job_fn=full_download_1, args=["species", settings])
+        if settings.controler.taxo_groups.enabled:
+            jobs.add_job_once(job_fn=full_download_1, args=["taxo_groups", settings])
+        if settings.controler.territorial_units.enabled:
+            jobs.add_job_once(job_fn=full_download_1, args=["territorial_units", settings])
+        if settings.controler.validations.enabled:
+            jobs.add_job_once(job_fn=full_download_1, args=["validations", settings])
 
         # Wait for jobs to finish
         time.sleep(2)

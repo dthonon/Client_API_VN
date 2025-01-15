@@ -102,8 +102,6 @@ class DownloadVn:
         self._api_instance = api_instance
         self._backend = backend
 
-        return None
-
     @property
     def version(self):
         """Return version."""
@@ -297,7 +295,6 @@ class Fields(DownloadVn):
             ),
             backend,
         )
-        return None
 
     def store(self, opt_params_iter=None):
         """Download from VN by API and store json to file.
@@ -399,7 +396,6 @@ class LocalAdminUnits(DownloadVn):
             ),
             backend,
         )
-        return None
 
     def store(
         self,
@@ -1164,7 +1160,6 @@ class Places(DownloadVn):
             ),
             backend,
         )
-        return None
 
     def store(
         self,
@@ -1219,14 +1214,14 @@ class Places(DownloadVn):
             # Get local_admin_units
             for id_canton in territorial_unit_ids:
                 # Loop on local_admin_units of the territorial_unit
-                for l_a_u in self._l_a_units:
-                    if l_a_u[0]["id_canton"] == id_canton:
+                for l_a_u in self._l_a_units[0]:
+                    if l_a_u["id_canton"] == id_canton:
                         logger.info(
                             _("Getting places from id_canton %s, id_commune %s, using API list"),
                             id_canton,
-                            l_a_u[0]["id"],
+                            l_a_u["id"],
                         )
-                        q_param = {"id_commune": l_a_u[0]["id"], "get_hidden": "1"}
+                        q_param = {"id_commune": l_a_u["id"], "get_hidden": "1"}
                         super().store([q_param])
         else:
             for l_a_u in self._l_a_units:
