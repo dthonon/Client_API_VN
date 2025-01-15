@@ -9,7 +9,7 @@ from pathlib import Path
 
 import click
 import yaml
-from dynaconf import Dynaconf, ValidationError, Validator, inspect_settings
+from dynaconf import Dynaconf, inspect_settings
 from tomlkit import array, boolean, comment, document, dump, nl, table
 
 from . import __version__
@@ -116,10 +116,12 @@ def convert(in_config: str, out_config: str) -> None:
 
     controlers.append("entities", _controler(in_settings=in_settings, controler="entities"))
     controlers.append("families", _controler(in_settings=in_settings, controler="families"))
+    controlers.append("fields", _controler(in_settings=in_settings, controler="families"))
     controlers.append("local_admin_units", _controler(in_settings=in_settings, controler="local_admin_units"))
     controlers.append("observations", _controler(in_settings=in_settings, controler="observations"))
     controlers.append("observers", _controler(in_settings=in_settings, controler="observers"))
     controlers.append("places", _controler(in_settings=in_settings, controler="places"))
+    controlers.append("species", _controler(in_settings=in_settings, controler="places"))
     controlers.append("taxo_groups", _controler(in_settings=in_settings, controler="taxo_groups"))
     controlers.append("territorial_units", _controler(in_settings=in_settings, controler="territorial_units"))
     controlers.append("validations", _controler(in_settings=in_settings, controler="validations"))
@@ -299,26 +301,29 @@ def convert(in_config: str, out_config: str) -> None:
 
     cfg.add(nl())
     cfg.add(comment("------------------- Site section -------------------"))
-    sites = table(is_super_table=True)
-    sites.add(comment("VisioNature site access parameters."))
-    sites.add(nl())
-    for k, s in in_settings["site"].items():
-        sitess = table()
-        sitess.add(comment(f"Sites parameters for {k}."))
-        sitess.add(comment("Enable download from this site."))
-        sitess.append("enabled", boolean("true" if s["enabled"] else "false"))
-        sitess.add(comment("Site URL."))
-        sitess.append("site", s["site"])
-        sitess.add(comment("Username."))
-        sitess.append("user_email", s["user_email"])
-        sitess.add(comment("User password."))
-        sitess.append("user_pw", s["user_pw"])
-        sitess.add(comment("Client key, obtained from Biolovision."))
-        sitess.append("client_key", s["client_key"])
-        sitess.add(comment("Client secret, obtained from Biolovision."))
-        sitess.append("client_secret", s["client_secret"])
-        sites.append(k, sitess)
-    cfg.append("site", sites)
+    site = table(is_super_table=True)
+    if len(in_settings["site"]) > 1:
+        logger.warning(_("Multiple sites are not supported. Only the first site will be used."))
+    else:
+        k = next(iter(in_settings["site"].keys()))
+        s = in_settings["site"][k]
+        site.add(comment(f"Sites parameters for {k}."))
+        site.add(nl())
+        site.add(comment("Enable download from this site."))
+        site.append("enabled", boolean("true" if s["enabled"] else "false"))
+        site.add(comment("Site name, used as key in database tables."))
+        site.append("name", k)
+        site.add(comment("Site URL."))
+        site.append("URL", s["site"])
+        site.add(comment("Username."))
+        site.append("user_email", s["user_email"])
+        site.add(comment("User password."))
+        site.append("user_pw", s["user_pw"])
+        site.add(comment("Client key, obtained from Biolovision."))
+        site.append("client_key", s["client_key"])
+        site.add(comment("Client secret, obtained from Biolovision."))
+        site.append("client_secret", s["client_secret"])
+    cfg.append("site", site)
 
     cfg.add(nl())
     cfg.add(comment("------------------- File section -------------------"))
@@ -391,6 +396,7 @@ def convert(in_config: str, out_config: str) -> None:
     tunings.append("pid_limit_max", in_settings["tuning"]["pid_limit_max"])
     tunings.append("pid_delta_days", in_settings["tuning"]["pid_delta_days"])
     tunings.add(comment("Scheduler tuning parameters."))
+    tunings.append("sched_sqllite_file", "jobstore.sqlite")
     tunings.append("sched_executors", in_settings["tuning"]["sched_executors"])
     cfg.append("tuning", tunings)
 
@@ -413,40 +419,7 @@ def prints(in_config: str) -> None:
     settings = Dynaconf(
         settings_files=[in_config],
     )
-    # Validation de tous les paramètres
-    cfg_site_list = settings.site
-    for site, cfg in cfg_site_list.items():  # noqa: B007
-        site_up = site.upper()
-        settings.validators.register(
-            Validator(f"SITE.{site_up}.SITE", len_min=10, startswith="https://"),
-            Validator("SITE.{site_up}.USER_EMAIL", len_min=5, cont="@"),
-            Validator("SITE.{site_up}.USER_PW", len_min=5),
-            Validator("SITE.{site_up}.CLIENT_KEY", len_min=30),
-            Validator("SITE.{site_up}.CLIENT_SECRET", len_min=30),
-        )
-    settings.validators.register(
-        Validator("TUNING.MAX_LIST_LENGTH", gte=1, default=100),
-        Validator("TUNING.MAX_CHUNKS", gte=1, default=1000),
-        Validator("TUNING.MAX_RETRY", gte=1, default=5),
-        Validator("TUNING.MAX_REQUESTS", gte=0, default=0),
-        Validator("TUNING.RETRY_DELAY", gte=1, default=5),
-        Validator("TUNING.UNAVAILABLE_DELAY", gte=1, default=600),
-        Validator("TUNING.LRU_MAXSIZE", gte=1, default=32),
-        Validator("TUNING.PID_KP", gte=0, default=0.0),
-        Validator("TUNING.PID_KI", gte=0, default=0.003),
-        Validator("TUNING.PID_KD", gte=0, default=0.0),
-        Validator("TUNING.PID_SETPOINT", gte=1, default=10000),
-        Validator("TUNING.PID_LIMIT_MIN", gte=1, default=5),
-        Validator("TUNING.PID_LIMIT_MAX", gte=1, default=2000),
-        Validator("TUNING.PID_DELTA_DAYS", gte=1, default=10),
-        Validator("TUNING.SCHED_EXECUTORS", gte=1, default=2),
-    )
-    try:
-        settings.validators.validate_all()
-    except ValidationError as e:
-        accumulative_errors = e.details
-        logger.exception(accumulative_errors)
-        raise
+
     inspect_settings(settings, print_report=True)
 
 
