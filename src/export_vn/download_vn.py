@@ -211,7 +211,6 @@ class Entities(DownloadVn):
             ),
             backend,
         )
-        return None
 
 
 class Families(DownloadVn):
@@ -253,7 +252,6 @@ class Families(DownloadVn):
             ),
             backend,
         )
-        return None
 
 
 class Fields(DownloadVn):
@@ -1103,7 +1101,6 @@ class Observers(DownloadVn):
             ),
             backend,
         )
-        return None
 
 
 class Places(DownloadVn):
@@ -1368,7 +1365,6 @@ class Species(DownloadVn):
             ),
             backend,
         )
-        return None
 
     def store(self):
         """Store species, iterating over taxo_groups"""
@@ -1433,7 +1429,6 @@ class TaxoGroup(DownloadVn):
             ),
             backend,
         )
-        return None
 
 
 class TerritorialUnits(DownloadVn):
@@ -1475,7 +1470,6 @@ class TerritorialUnits(DownloadVn):
             ),
             backend,
         )
-        return None
 
 
 class Validations(DownloadVn):
@@ -1517,4 +1511,3 @@ class Validations(DownloadVn):
             ),
             backend,
         )
-        return None
