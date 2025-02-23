@@ -153,6 +153,8 @@ lint.ignore = [
   "S108",
   # Using exec limited in update_vn
   "S102",
+  # List required
+  "C400",
   # Complexity: too much refactoring needed
   "C901",
   # lru_cache memory leak is not an issue on time limited scripts
