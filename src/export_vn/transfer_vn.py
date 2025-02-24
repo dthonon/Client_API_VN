@@ -84,7 +84,7 @@ class Jobs:
             if event.job_id in self._job_set:
                 self._job_set.remove(event.job_id)
             else:
-                logger.error(_("Job %s not found in job_set"), event.job_id)  # pragma: no cover
+                logger.error(_("The job %s is not in job_set"), event.job_id)  # pragma: no cover
             if event.exception:
                 logger.error(_("The job %s crashed"), event.job_id)  # pragma: no cover
             else:
@@ -465,13 +465,12 @@ def full_download_1(ctrl: str, settings: dict) -> None:
         )
         if settings["CONTROLER"][ctrl]["enabled"]:
             logger.info(
-                _("%s => Starting download using controler %s"),
-                settings["SITE"]["name"],
+                _("Starting download using controler %s"),
                 ctrl,
             )
         if ctrl == "observations":
             taxo_exclude = list(key for key, value in settings["FILTER"]["taxo_download"].items() if value is False)
-            logger.info(_("%s => Excluded taxo_groups: %s"), settings["SITE"]["name"], taxo_exclude)
+            logger.info(_("Excluded taxo_groups: %s"), taxo_exclude)
             CTRL_DEFS[ctrl](
                 site=settings["SITE"]["name"],
                 user_email=settings["SITE"]["user_email"],
@@ -512,8 +511,7 @@ def full_download_1(ctrl: str, settings: dict) -> None:
             )
         elif (ctrl == "local_admin_units") or (ctrl == "places"):
             logger.info(
-                _("%s => Included territorial_unit_ids: %s"),
-                settings["SITE"]["name"],
+                _("Included territorial_unit_ids: %s"),
                 settings["FILTER"]["territorial_unit_ids"],
             )
             CTRL_DEFS[ctrl](
@@ -537,7 +535,7 @@ def full_download_1(ctrl: str, settings: dict) -> None:
                 client_secret=settings["SITE"]["client_secret"],
                 backend=store_all,
             ).store()
-        logger.info(_("%s => Ending download using controler %s"), settings["SITE"]["name"], ctrl)
+        logger.info(_("Ending download using controler %s"), ctrl)
 
     return None
 
@@ -618,32 +616,82 @@ def increment_download_1(ctrl: str, settings: dict) -> None:
                 settings["SITE"]["name"],
                 ctrl,
             )
-        print(store_all)
 
-    #         if downloader.name == "observations":
-    #             logger.info(_("%s => Excluded taxo_groups: %s"), cfg.site, cfg.taxo_exclude)
-    #             downloader.update(taxo_groups_ex=cfg.taxo_exclude)
-    #         elif downloader.name == "places":
-    #             logger.info(
-    #                 _("%s => Included territorial_unit_ids: %s"),
-    #                 cfg.site,
-    #                 cfg.territorial_unit_ids,
-    #             )
-    #             downloader.update(
-    #                 territorial_unit_ids=cfg.territorial_unit_ids,
-    #             )
-    #         elif downloader.name == "local_admin_units":
-    #             logger.info(
-    #                 _("%s => Included territorial_unit_ids: %s"),
-    #                 cfg.site,
-    #                 cfg.territorial_unit_ids,
-    #             )
-    #             downloader.store(
-    #                 territorial_unit_ids=cfg.territorial_unit_ids,
-    #             )
-    #         else:
-    #             downloader.store()
-    # logger.info(_("%s => Ending download using controler %s"), cfg.site, downloader.name)
+        if ctrl == "observations":
+            taxo_exclude = list(key for key, value in settings["FILTER"]["taxo_download"].items() if value is False)
+            logger.info(_("Excluded taxo_groups: %s"), taxo_exclude)
+            CTRL_DEFS[ctrl](
+                site=settings["SITE"]["name"],
+                user_email=settings["SITE"]["user_email"],
+                user_pw=settings["SITE"]["user_pw"],
+                base_url=settings["SITE"]["URL"],
+                client_key=settings["SITE"]["client_key"],
+                client_secret=settings["SITE"]["client_secret"],
+                db_enabled=settings["DATABASE"]["enabled"],
+                db_user=settings["DATABASE"]["db_user"],
+                db_pw=settings["DATABASE"]["db_pw"],
+                db_host=settings["DATABASE"]["db_host"],
+                db_port=settings["DATABASE"]["db_port"],
+                db_name=settings["DATABASE"]["db_name"],
+                db_schema_import=settings["DATABASE"]["db_schema_import"],
+                db_schema_vn=settings["DATABASE"]["db_schema_vn"],
+                db_group=settings["DATABASE"]["db_group"],
+                db_out_proj=settings["DATABASE"]["db_out_proj"],
+                backend=store_all,
+                start_date=settings["FILTER"].get("start_date", None),
+                end_date=settings["FILTER"].get("end_date", None),
+                type_date=settings["FILTER"].get("type_date", "sighting"),
+                max_list_length=settings["TUNING"]["max_list_length"],
+                max_retry=settings["TUNING"]["max_retry"],
+                max_requests=settings["TUNING"]["max_requests"],
+                max_chunks=settings["TUNING"]["max_chunks"],
+                unavailable_delay=settings["TUNING"]["unavailable_delay"],
+                retry_delay=settings["TUNING"]["retry_delay"],
+                pid_kp=settings["TUNING"]["pid_kp"],
+                pid_ki=settings["TUNING"]["pid_ki"],
+                pid_kd=settings["TUNING"]["pid_kd"],
+                pid_setpoint=settings["TUNING"]["pid_setpoint"],
+                pid_limit_min=settings["TUNING"]["pid_limit_min"],
+                pid_limit_max=settings["TUNING"]["pid_limit_max"],
+                pid_delta_days=settings["TUNING"]["pid_delta_days"],
+            ).update(
+                taxo_groups_ex=taxo_exclude,
+            )
+        elif ctrl == "places":
+            CTRL_DEFS[ctrl](
+                site=settings["SITE"]["name"],
+                user_email=settings["SITE"]["user_email"],
+                user_pw=settings["SITE"]["user_pw"],
+                base_url=settings["SITE"]["URL"],
+                client_key=settings["SITE"]["client_key"],
+                client_secret=settings["SITE"]["client_secret"],
+                backend=store_all,
+            ).update(
+                territorial_unit_ids=settings["FILTER"]["territorial_unit_ids"],
+            )
+        elif ctrl == "local_admin_units":
+            CTRL_DEFS[ctrl](
+                site=settings["SITE"]["name"],
+                user_email=settings["SITE"]["user_email"],
+                user_pw=settings["SITE"]["user_pw"],
+                base_url=settings["SITE"]["URL"],
+                client_key=settings["SITE"]["client_key"],
+                client_secret=settings["SITE"]["client_secret"],
+                backend=store_all,
+            ).store(
+                territorial_unit_ids=settings["FILTER"]["territorial_unit_ids"],
+            )
+        else:
+            CTRL_DEFS[ctrl](
+                site=settings["SITE"]["name"],
+                user_email=settings["SITE"]["user_email"],
+                user_pw=settings["SITE"]["user_pw"],
+                base_url=settings["SITE"]["URL"],
+                client_key=settings["SITE"]["client_key"],
+                client_secret=settings["SITE"]["client_secret"],
+                backend=store_all,
+            ).store()
+    logger.info(_("Ending download using controler %s"), ctrl)
     return None
 
 
@@ -719,7 +767,6 @@ def count_observations(cfg_ctrl):
             if cfg.enabled:
                 if col_counts is None:
                     manage_pg = PostgresqlUtils(cfg)
-                    # print(tabulate(manage_pg.count_json_obs()))
                     col_counts = manage_pg.count_col_obs()
 
                 logger.info(_("Getting counts from %s"), cfg.site)

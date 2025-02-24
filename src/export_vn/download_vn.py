@@ -787,7 +787,6 @@ class Observations(DownloadVn):
                         if self._start_date is None
                         else datetime.combine(self._start_date, time.min)
                     )
-                    print(min_date, type(min_date), type(start_date), type(end_date))
                     seq = 1
                     pid = PID(
                         kp=self._pid_kp,
