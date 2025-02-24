@@ -14,7 +14,7 @@ Properties
 import logging
 from collections import deque
 from collections.abc import Callable
-from datetime import datetime, timedelta
+from datetime import datetime, time, timedelta
 from itertools import chain
 from sys import getsizeof
 from time import perf_counter_ns
@@ -214,11 +214,24 @@ class Entities(DownloadVn):
 
 
 class Families(DownloadVn):
-    """Implement store from families controler.
+    """Implement store from families controller.
 
-    Methods
-    - store               - Download and store to json
+    Methods:
+        store: Download and store to JSON.
 
+    Args:
+        site (str): The site URL.
+        user_email (str): The user's email address.
+        user_pw (str): The user's password.
+        base_url (str): The base URL for the API.
+        client_key (str): The client key for authentication.
+        client_secret (str): The client secret for authentication.
+        backend (Callable[..., None]): The backend callable for processing.
+        max_retry (int, optional): The maximum number of retries for requests. Defaults to 5.
+        max_requests (int, optional): The maximum number of requests. Defaults to 0.
+        max_chunks (int, optional): The maximum number of chunks for data. Defaults to 100.
+        unavailable_delay (int, optional): The delay in seconds when the service is unavailable. Defaults to 600.
+        retry_delay (int, optional): The delay in seconds between retries. Defaults to 5.
     """
 
     def __init__(
@@ -769,7 +782,12 @@ class Observations(DownloadVn):
 
                     # When to start download interval
                     start_date = end_date
-                    min_date = datetime(1900, 1, 1) if self._start_date is None else self._start_date
+                    min_date = (
+                        datetime(1900, 1, 1)
+                        if self._start_date is None
+                        else datetime.combine(self._start_date, time.min)
+                    )
+                    print(min_date, type(min_date), type(start_date), type(end_date))
                     seq = 1
                     pid = PID(
                         kp=self._pid_kp,
@@ -928,7 +946,7 @@ class Observations(DownloadVn):
         # Get the list of taxo groups to process
         taxo_list = self._list_taxo_groups(id_taxo_group, taxo_groups_ex)
         logger.info(
-            _("%s => Downloading taxo_groups: %s, territorial_units: %s"),
+            _("%s => Downloading observations of taxo_groups: %s, territorial_units: %s"),
             self._site,
             taxo_list,
             territorial_unit_ids,
