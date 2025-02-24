@@ -27,8 +27,6 @@ from requests_oauthlib import OAuth1
 
 from . import __version__
 
-logger = logging.getLogger("transfer_vn.biolovision_api")
-
 
 class HashableDict(dict):
     """Provide hashable dict type, to enable @lru_cache."""
@@ -75,6 +73,9 @@ class BiolovisionAPI:
         retry_delay: int | None = None,
         timeout: int | None = None,
     ) -> None:
+        logger = logging.getLogger(__name__)
+        self._logger = logger
+        logger.info(_("Initializing API"))
         if controler == "":
             logger.fatal(_("controler must be defined"))
             raise BiolovisionApiException
@@ -123,8 +124,6 @@ class BiolovisionAPI:
         # Using OAuth1 auth helper to get access
         self._api_url = base_url + "api/"  # URL of API
         self._oauth = OAuth1(client_key, client_secret=client_secret)
-
-        return None
 
     @property
     def version(self) -> str:
@@ -200,7 +199,7 @@ class BiolovisionAPI:
 
             # Prepare call to API
             payload = parse.urlencode(params, quote_via=parse.quote)
-            logger.debug(
+            self._logger.debug(
                 _("Params: %s"),
                 re.sub(
                     r"user_pw=.*?(&|$)(.*)",
@@ -249,9 +248,9 @@ class BiolovisionAPI:
             else:
                 raise NotImplementedException
 
-            logger.debug(resp.headers)
+            self._logger.debug(resp.headers)
             logging.getLogger().setLevel(level)
-            logger.debug(
+            self._logger.debug(
                 _("%s status code = %s, for URL %s"),
                 method,
                 resp.status_code,
@@ -261,7 +260,7 @@ class BiolovisionAPI:
             if self._http_status >= 300:
                 # Request returned an error.
                 # Logging and checking if not too many errors to continue
-                logger.error(
+                self._logger.error(
                     _("%s status code: %s, text: %s, for URL %s"),
                     method,
                     resp.status_code,
@@ -271,8 +270,8 @@ class BiolovisionAPI:
 
                 if (self._http_status >= 400) and (self._http_status <= 499):  # pragma: no cover
                     # Unreceverable error
-                    logger.error(resp)
-                    logger.critical(
+                    self._logger.error(resp)
+                    self._logger.critical(
                         _("Unreceverable error %s, raising exception"),
                         self._http_status,
                     )
@@ -287,7 +286,7 @@ class BiolovisionAPI:
 
                 if self._transfer_errors > self._limits["max_retry"]:  # pragma: no cover
                     # Too many retries. Raising exception
-                    logger.critical(_("Too many error %s, raising exception"), self._transfer_errors)
+                    self._logger.critical(_("Too many error %s, raising exception"), self._transfer_errors)
                     raise HTTPError(resp.status_code)
             else:
                 # No error from request: processing response if needed
@@ -298,7 +297,7 @@ class BiolovisionAPI:
                     resp_chunk = json.loads("{}")
                 else:
                     try:
-                        logger.debug(_("Response content: %s, text: %s"), resp, resp.text[:1000])
+                        self._logger.debug(_("Response content: %s, text: %s"), resp, resp.text[:1000])
                         # TWEAK: remove extra text outside JSON response
                         if len(resp.text) > 1:
                             rsp = re.findall(r"([\[{].*[}\]])", resp.text)
@@ -309,9 +308,9 @@ class BiolovisionAPI:
                         # Error during JSON decoding =>
                         # Logging error and no further processing of empty chunk
                         resp_chunk = json.loads("{}")
-                        logger.exception(_("Incorrect response content: %s"), resp)
+                        self._logger.exception(_("Incorrect response content: %s"), resp)
                     except Exception:
-                        logger.exception(_("Response text causing exception: %s"), resp.text)
+                        self._logger.exception(_("Response text causing exception: %s"), resp.text)
                         raise
 
                 # Initialize or append to response dict, depending on content
@@ -319,7 +318,7 @@ class BiolovisionAPI:
                     observations = False
                     if "sightings" in resp_chunk["data"]:
                         observations = True
-                        logger.debug(
+                        self._logger.debug(
                             _("Received %d sightings in chunk %d"),
                             len(resp_chunk["data"]["sightings"]),
                             nb_chunks,
@@ -330,13 +329,13 @@ class BiolovisionAPI:
                             if "sightings" in data_rec["data"]:
                                 data_rec["data"]["sightings"] += resp_chunk["data"]["sightings"]
                             else:
-                                # logger.error(_("No 'sightings' in previous data"))
-                                # logger.error(data_rec)
-                                # logger.error(resp_chunk)
+                                # self._logger.error(_("No 'sightings' in previous data"))
+                                # self._logger.error(data_rec)
+                                # self._logger.error(resp_chunk)
                                 data_rec["data"]["sightings"] = resp_chunk["data"]["sightings"]
                     if "forms" in resp_chunk["data"]:
                         observations = True
-                        logger.debug(
+                        self._logger.debug(
                             _("Received %d forms in chunk %d"),
                             len(resp_chunk["data"]["forms"]),
                             nb_chunks,
@@ -347,15 +346,15 @@ class BiolovisionAPI:
                             if "forms" in data_rec["data"]:
                                 data_rec["data"]["forms"] += resp_chunk["data"]["forms"]
                             else:  # pragma: no cover
-                                # logger.error(
+                                # self._logger.error(
                                 #     _("Trying to add 'forms' to another data stream")
                                 # )
-                                # logger.error(data_rec)
-                                # logger.error(resp_chunk)
+                                # self._logger.error(data_rec)
+                                # self._logger.error(resp_chunk)
                                 data_rec["data"]["forms"] = resp_chunk["data"]["forms"]
 
                     if not observations:
-                        logger.debug(
+                        self._logger.debug(
                             _("Received %d data items in chunk %d"),
                             len(resp_chunk),
                             nb_chunks,
@@ -365,7 +364,7 @@ class BiolovisionAPI:
                         else:
                             data_rec["data"] += resp_chunk["data"]
                 else:
-                    logger.debug(_("Received non-data response: %s"), resp_chunk)
+                    self._logger.debug(_("Received non-data response: %s"), resp_chunk)
                     if nb_chunks == 0:
                         data_rec = resp_chunk
                     else:
@@ -377,7 +376,7 @@ class BiolovisionAPI:
                     and (resp.headers["transfer-encoding"] == "chunked")
                     and ("pagination_key" in resp.headers)
                 ):
-                    logger.debug(
+                    self._logger.debug(
                         _("Chunked transfer => requesting for more, with key: %s"),
                         resp.headers["pagination_key"],
                     )
@@ -385,12 +384,12 @@ class BiolovisionAPI:
                     params["pagination_key"] = resp.headers["pagination_key"]
                     nb_chunks += 1
                 else:
-                    logger.debug(_("Non-chunked transfer => finished requests"))
+                    self._logger.debug(_("Non-chunked transfer => finished requests"))
                     if "pagination_key" in params:
                         del params["pagination_key"]
                     break
 
-        logger.debug(_("Received %d chunks"), nb_chunks)
+        self._logger.debug(_("Received %d chunks"), nb_chunks)
         if nb_chunks >= self._limits["max_chunks"]:
             raise MaxChunksError
 
@@ -421,15 +420,15 @@ class BiolovisionAPI:
         }
         if opt_params is not None:
             params.update(opt_params)
-        logger.debug(
-            _("List from:%s, with options:%s, optional_headers:%s"),
+        self._logger.debug(
+            _("List from: %s, with options:%s, optional_headers:%s"),
             self._ctrl,
             self._clean_params(params),
             optional_headers,
         )
         # GET from API
         entities = self._url_get(params, self._ctrl, optional_headers=optional_headers)["data"]
-        logger.debug(_("Number of entities = %i"), len(entities))
+        self._logger.debug(_("Number of entities = %i"), len(entities))
         return {"data": entities}
 
     # -----------------------------------------
@@ -461,8 +460,8 @@ class BiolovisionAPI:
         }
         for key, value in kwargs.items():
             params[key] = value
-        logger.debug(
-            _("In api_get for controler:%s, entity: %s, with parameters:%s"),
+        self._logger.debug(
+            _("In api_get for controler: %s, entity: %s, with parameters:%s"),
             self._ctrl,
             id_entity,
             self._clean_params(params),
@@ -488,9 +487,14 @@ class BiolovisionAPI:
         json : dict or None
             dict decoded from json if status OK, else None
         """
-        logger.warning(_("Calling api_list is deprecated. Please use api_search only."))
         h_params = None if opt_params is None else HashableDict(opt_params)
         h_headers = None if optional_headers is None else HashableDict(optional_headers)
+        self._logger.debug(
+            _("In api_list for controler: %s, header: %s, with parameters:%s"),
+            self._ctrl,
+            h_headers,
+            h_params,
+        )
         return self._api_list(opt_params=h_params, optional_headers=h_headers)
 
     # -------------------------
@@ -564,7 +568,6 @@ class FamiliesAPI(BiolovisionAPI):
 
     def __init__(
         self,
-        config: dict | None = None,
         user_email: str | None = None,
         user_pw: str | None = None,
         base_url: str | None = None,
@@ -605,7 +608,6 @@ class FieldsAPI(BiolovisionAPI):
 
     def __init__(
         self,
-        config: dict | None = None,
         user_email: str | None = None,
         user_pw: str | None = None,
         base_url: str | None = None,
@@ -646,7 +648,6 @@ class LocalAdminUnitsAPI(BiolovisionAPI):
 
     def __init__(
         self,
-        config: dict | None = None,
         user_email: str | None = None,
         user_pw: str | None = None,
         base_url: str | None = None,
@@ -671,7 +672,6 @@ class LocalAdminUnitsAPI(BiolovisionAPI):
             unavailable_delay=unavailable_delay,
             retry_delay=retry_delay,
         )
-        return None
 
 
 class ObservationsAPI(BiolovisionAPI):
@@ -699,7 +699,6 @@ class ObservationsAPI(BiolovisionAPI):
 
     def __init__(
         self,
-        config: dict | None = None,
         user_email: str | None = None,
         user_pw: str | None = None,
         base_url: str | None = None,
@@ -748,7 +747,7 @@ class ObservationsAPI(BiolovisionAPI):
         opt_params["id_taxo_group"] = str(id_taxo_group)
         for key, value in kwargs.items():
             opt_params[key] = value
-        logger.debug(_("In api_list, with parameters %s"), opt_params)
+        self._logger.debug(_("In api_list, with parameters %s"), opt_params)
         return super().api_list(opt_params)
 
     def api_diff(self, id_taxo_group, delta_time, modification_type="all"):
@@ -815,7 +814,7 @@ class ObservationsAPI(BiolovisionAPI):
             body = json.dumps(q_params)
         else:
             raise IncorrectParameter
-        logger.debug(
+        self._logger.debug(
             _("Search from %s, with option %s and body %s"),
             self._ctrl,
             self._clean_params(params),
@@ -839,7 +838,7 @@ class ObservationsAPI(BiolovisionAPI):
             "user_email": self._user_email,
             "user_pw": self._user_pw,
         }
-        logger.debug(_("Create observation, with data %s"), data)
+        self._logger.debug(_("Create observation, with data %s"), data)
         # POST to API
         resp = super()._url_get(params, "observations/", "POST", body=json.dumps(data))
         if self._http_status == 201:
@@ -865,7 +864,7 @@ class ObservationsAPI(BiolovisionAPI):
             "user_email": self._user_email,
             "user_pw": self._user_pw,
         }
-        logger.debug(_("Update observation %s, with data %s"), obs_id, data)
+        self._logger.debug(_("Update observation %s, with data %s"), obs_id, data)
         # PUT to API
         return super()._url_get(params, "observations/" + obs_id, "PUT", body=json.dumps(data))
 
@@ -884,7 +883,7 @@ class ObservationsAPI(BiolovisionAPI):
             "user_email": self._user_email,
             "user_pw": self._user_pw,
         }
-        logger.debug(_("Delete observation %s"), obs_id)
+        self._logger.debug(_("Delete observation %s"), obs_id)
         # DELETE to API
         return super()._url_get(params, "observations/" + obs_id, "DELETE")
 
@@ -903,12 +902,12 @@ class ObservationsAPI(BiolovisionAPI):
             "user_email": self._user_email,
             "user_pw": self._user_pw,
         }
-        logger.debug(_("Delete list/form %s"), json.dumps(data))
+        self._logger.debug(_("Delete list/form %s"), json.dumps(data))
         # POST to API
         if data is not None:
             res = super()._url_get(params, "observations/delete_list", "POST", body=json.dumps(data))
         else:
-            logger.warning(_("No parameter passed: call ignored"))
+            self._logger.warning(_("No parameter passed: call ignored"))
             res = None
         return res
 
@@ -926,7 +925,6 @@ class ObserversAPI(BiolovisionAPI):
 
     def __init__(
         self,
-        config: dict | None = None,
         user_email: str | None = None,
         user_pw: str | None = None,
         base_url: str | None = None,
@@ -969,7 +967,6 @@ class PlacesAPI(BiolovisionAPI):
 
     def __init__(
         self,
-        config: dict | None = None,
         user_email: str | None = None,
         user_pw: str | None = None,
         base_url: str | None = None,
@@ -1040,7 +1037,6 @@ class SpeciesAPI(BiolovisionAPI):
 
     def __init__(
         self,
-        config: dict | None = None,
         user_email: str | None = None,
         user_pw: str | None = None,
         base_url: str | None = None,
@@ -1081,7 +1077,6 @@ class TaxoGroupsAPI(BiolovisionAPI):
 
     def __init__(
         self,
-        config: dict | None = None,
         user_email: str | None = None,
         user_pw: str | None = None,
         base_url: str | None = None,
@@ -1127,7 +1122,6 @@ class TerritorialUnitsAPI(BiolovisionAPI):
 
     def __init__(
         self,
-        config: dict | None = None,
         user_email: str | None = None,
         user_pw: str | None = None,
         base_url: str | None = None,
@@ -1173,7 +1167,6 @@ class ValidationsAPI(BiolovisionAPI):
 
     def __init__(
         self,
-        config: dict | None = None,
         user_email: str | None = None,
         user_pw: str | None = None,
         base_url: str | None = None,

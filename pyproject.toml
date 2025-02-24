@@ -47,6 +47,8 @@ strictyaml = ">=1.7"
 tabulate = ">=0.9"
 yappi = ">=1.6"
 babel = ">=2.16"
+tomlkit = ">=0.13"
+pyyaml = ">=6.0"
 
 [tool.poetry.group.dev.dependencies]
 deptry = ">=0.20"
@@ -72,6 +74,7 @@ mkdocstrings = { extras = ["python"], version = ">=0.26" }
 Pygments = ">=2.18"
 
 [tool.poetry.scripts]
+config_file = "template.convert_config:run"
 transfer_vn = "export_vn.transfer_vn:run"
 update_vn = "update_vn.update_vn:run"
 validate_vn = "schemas.validate_vn:run"
@@ -150,6 +153,8 @@ lint.ignore = [
   "S108",
   # Using exec limited in update_vn
   "S102",
+  # List required
+  "C400",
   # Complexity: too much refactoring needed
   "C901",
   # lru_cache memory leak is not an issue on time limited scripts

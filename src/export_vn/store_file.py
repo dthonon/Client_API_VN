@@ -17,9 +17,9 @@ import logging
 import os
 from pathlib import Path
 
-from . import _, __version__
+from . import __version__
 
-logger = logging.getLogger("transfer_vn.store_file")
+logger = logging.getLogger(__name__)
 
 
 class StoreFileException(Exception):
@@ -29,8 +29,9 @@ class StoreFileException(Exception):
 class StoreFile:
     """Provides store to file method."""
 
-    def __init__(self, config):
-        self._config = config
+    def __init__(self, file_enabled: bool, file_store: str):
+        self._file_enabled = file_enabled
+        self._file_store = file_store
 
     def __enter__(self):
         logger.debug(_("Entry into StoreFile"))
@@ -70,9 +71,9 @@ class StoreFile:
             Count of items stored (not exact for observations, due to forms).
         """
         # Store to file, if enabled
-        if self._config.file_enabled:
-            json_path = str(Path.home()) + "/" + self._config.file_store
-            if not Path(json_path).is_dir():
+        if self._file_enabled:
+            json_path = Path.home() / self._file_store
+            if not json_path.is_dir():
                 try:
                     os.makedirs(json_path)
                 except OSError:
@@ -85,7 +86,7 @@ class StoreFile:
                 # Convert to json
                 logger.debug(_("Converting to json %d items"), len(items_dict["data"]))
                 items_json = json.dumps(items_dict, sort_keys=True, indent=4, separators=(",", ": "))
-                file_json_gz = json_path + controler + "_" + seq + ".json.gz"
+                file_json_gz = json_path / (controler + "_" + seq + ".json.gz")
                 logger.debug(_("Received data, storing json to %s"), file_json_gz)
                 with gzip.open(file_json_gz, "wb", 9) as g:
                     g.write(items_json.encode())

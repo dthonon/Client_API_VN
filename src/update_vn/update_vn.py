@@ -33,9 +33,7 @@ from biolovision.api import ObservationsAPI
 
 from . import __version__
 
-APP_NAME = "update_vn"
-
-logger = logging.getLogger(APP_NAME)
+logger = logging.getLogger(__name__)
 
 
 @click.version_option(package_name="Client_API_VN")
@@ -53,11 +51,11 @@ def main(
     # Create $HOME/tmp directory if it does not exist
     (Path.home() / "tmp").mkdir(exist_ok=True)
 
-    # Define logger format and handlers
-    logger = logging.getLogger(APP_NAME)
+    # # Define logger format and handlers
+    # logger = logging.getLogger(APP_NAME)
     # create file handler which logs even debug messages
     fh = TimedRotatingFileHandler(
-        str(Path.home()) + "/tmp/" + APP_NAME + ".log",
+        str(Path.home()) + "/tmp/" + __name__.split(".")[0] + ".log",
         when="midnight",
         interval=1,
         backupCount=100,
@@ -69,14 +67,7 @@ def main(
     fh.setFormatter(formatter)
     ch.setFormatter(formatter)
     # Add the handlers to the logger
-    logger.addHandler(fh)
-    logger.addHandler(ch)
-
-    # Define verbosity
-    if verbose:
-        logger.setLevel(logging.DEBUG)
-    else:
-        logger.setLevel(logging.INFO)
+    logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO, handlers=[fh, ch])
 
     logger.info(_("update_vn version %s"), __version__)
 
@@ -89,7 +80,6 @@ def main(
 )
 def init(config: str):
     """Copy template TOML file to home directory."""
-    logger = logging.getLogger(APP_NAME + ".init")
     toml_dst = Path.home() / config
     if toml_dst.is_file():
         logger.warning(_("toml configuration file %s exists and is not overwritten"), toml_dst)
@@ -111,37 +101,39 @@ def init(config: str):
 )
 def update(config: str, input_file: str) -> None:
     """Update Biolovision database."""
-    logger = logging.getLogger(APP_NAME + ".update")
     # Get configuration from file
     if not (Path.home() / config).is_file():
         logger.critical(_("Configuration file %s does not exist"), str(Path.home() / config))
         raise FileNotFoundError
     logger.info(_("Getting configuration data from %s"), config)
-    ref = str(importlib.resources.files(__name__.split(".")[0]) / "data/evn_default.toml")
     settings = Dynaconf(
-        settings_files=[ref, config],
+        settings_files=[config],
     )
 
     # Validation de tous les paramètres
-    cfg_site_list = settings.sites
+    cfg_site_list = settings.site
     if len(cfg_site_list) > 1:
         raise ValueError(_("Only one site can be defined in configuration file"))
     for site, cfg in cfg_site_list.items():  # noqa: B007
         break
     site_up = site.upper()
     settings.validators.register(
-        Validator("MESSAGE", len_min=5),
-        Validator(f"SITES.{site_up}.SITE", len_min=10, startswith="https://"),
-        Validator("SITES.{site_up}.USER_EMAIL", len_min=5, cont="@"),
-        Validator("SITES.{site_up}.USER_PW", len_min=5),
-        Validator("SITES.{site_up}.CLIENT_KEY", len_min=20),
-        Validator("SITES.{site_up}.CLIENT_SECRET", len_min=5),
-        Validator("TUNING.MAX_LIST_LENGTH", gte=1),
-        Validator("TUNING.MAX_CHUNKS", gte=1),
-        Validator("TUNING.MAX_RETRY", gte=1),
-        Validator("TUNING.MAX_REQUESTS", gte=0),
-        Validator("TUNING.RETRY_DELAY", gte=1),
-        Validator("TUNING.UNAVAILABLE_DELAY", gte=1),
+        Validator(
+            "MESSAGE",
+            len_min=5,
+            default="Modification en masse, le {date}, opération {op}, attribut {path}, depuis {old} vers {new}",
+        ),
+        Validator(f"SITE.{site_up}.SITE", len_min=10, startswith="https://"),
+        Validator("SITE.{site_up}.USER_EMAIL", len_min=5, cont="@"),
+        Validator("SITE.{site_up}.USER_PW", len_min=5),
+        Validator("SITE.{site_up}.CLIENT_KEY", len_min=20),
+        Validator("SITE.{site_up}.CLIENT_SECRET", len_min=5),
+        Validator("TUNING.MAX_LIST_LENGTH", gte=1, default=100),
+        Validator("TUNING.MAX_CHUNKS", gte=1, default=1000),
+        Validator("TUNING.MAX_RETRY", gte=1, default=5),
+        Validator("TUNING.MAX_REQUESTS", gte=0, default=0),
+        Validator("TUNING.RETRY_DELAY", gte=1, default=5),
+        Validator("TUNING.UNAVAILABLE_DELAY", gte=1, default=600),
     )
     try:
         settings.validators.validate_all()

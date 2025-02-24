@@ -34,9 +34,9 @@ from sqlalchemy.dialects.postgresql import JSONB, insert
 from sqlalchemy.engine.url import URL
 from sqlalchemy.sql import and_
 
-from . import _, __version__
+from . import __version__
 
-logger = logging.getLogger("transfer_vn.store_postgresql")
+logger = logging.getLogger(__name__)
 
 
 class StorePostgresqlException(Exception):
@@ -146,7 +146,7 @@ def store_1_observation(item):
     )
     do_update_stmt = insert_stmt.on_conflict_do_update(
         constraint=metadata.primary_key,
-        set_={"update_ts": update_date, "item": elem, "id_form_universal": item.form},
+        set_=dict(update_ts=update_date, item=elem, id_form_universal=item.form),  # noqa: C408
         where=(metadata.c.update_ts < update_date),
     )
 
@@ -157,8 +157,27 @@ def store_1_observation(item):
 class PostgresqlUtils:
     """Provides create and delete Postgresql database method."""
 
-    def __init__(self, config):
-        self._config = config
+    def __init__(
+        self,
+        db_enabled: bool,
+        db_user: str,
+        db_pw: str,
+        db_host: str,
+        db_port: str,
+        db_name: str,
+        db_schema_import: str,
+        db_schema_vn: str,
+        db_group: str,
+    ):
+        self._db_enabled = db_enabled
+        self._db_user = db_user
+        self._db_pw = db_pw
+        self._db_host = db_host
+        self._db_port = db_port
+        self._db_name = db_name
+        self._db_schema_import = db_schema_import
+        self._db_schema_vn = db_schema_vn
+        self._db_group = db_group
 
     # ----------------
     # Internal methods
@@ -175,8 +194,8 @@ class PostgresqlUtils:
 
         """
         # Store to database, if enabled
-        if self._config.db_enabled:
-            if (self._config.db_schema_import + "." + name) not in self._metadata.tables:
+        if self._db_enabled:
+            if (self._db_schema_import + "." + name) not in self._metadata.tables:
                 logger.info(_("Table %s not found => Creating it"), name)
                 table = Table(name, self._metadata, *cols)
                 table.create(self._db)
@@ -361,18 +380,18 @@ class PostgresqlUtils:
     def create_database(self):
         """Create database, roles..."""
         # Store to database, if enabled
-        if self._config.db_enabled:
+        if self._db_enabled:
             # Connect first using postgres database, that always exists
             logger.info(
                 _("Connecting to postgres database, to create %s database"),
-                self._config.db_name,
+                self._db_name,
             )
             db_url = {
                 "drivername": "postgresql+psycopg2",
-                "username": self._config.db_user,
-                "password": self._config.db_pw,
-                "host": self._config.db_host,
-                "port": self._config.db_port,
+                "username": self._db_user,
+                "password": self._db_pw,
+                "host": self._db_host,
+                "port": self._db_port,
                 "database": "postgres",
             }
             db = create_engine(URL.create(**db_url), echo=False)
@@ -380,31 +399,33 @@ class PostgresqlUtils:
             conn.connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
 
             # Group role:
+            logger.debug(_("Creating roles"))
             text = f"""
-                SELECT FROM pg_catalog.pg_roles WHERE rolname = '{self._config.db_group}'
+                SELECT FROM pg_catalog.pg_roles WHERE rolname = '{self._db_group}'
                 """
             result = conn.execute(text)
             row = result.fetchone()
             if row is None:
                 text = f"""
-                    CREATE ROLE {self._config.db_group} NOLOGIN NOSUPERUSER INHERIT NOCREATEDB
+                    CREATE ROLE {self._db_group} NOLOGIN NOSUPERUSER INHERIT NOCREATEDB
                     NOCREATEROLE NOREPLICATION
                     """
             else:
                 text = f"""
-                    ALTER ROLE {self._config.db_group} NOLOGIN NOSUPERUSER INHERIT NOCREATEDB
+                    ALTER ROLE {self._db_group} NOLOGIN NOSUPERUSER INHERIT NOCREATEDB
                     NOCREATEROLE NOREPLICATION
                     """
             conn.execute(text)
 
             # Import role:
-            text = f"GRANT {self._config.db_group} TO {self._config.db_user}"
+            text = f"GRANT {self._db_group} TO {self._db_user}"
             conn.execute(text)
 
             # Create database:
-            text = f"CREATE DATABASE {self._config.db_name} WITH OWNER = {self._config.db_group}"
+            logger.debug(_("Creating database"))
+            text = f"CREATE DATABASE {self._db_name} WITH OWNER = {self._db_group}"
             conn.execute(text)
-            text = f"GRANT ALL ON DATABASE {self._config.db_name} TO {self._config.db_group}"
+            text = f"GRANT ALL ON DATABASE {self._db_name} TO {self._db_group}"
             conn.execute(text)
             conn.close()
             db.dispose()
@@ -414,17 +435,17 @@ class PostgresqlUtils:
     def drop_database(self):
         """Force session deconnection and drop database, roles..."""
         # Store to database, if enabled
-        if self._config.db_enabled:
+        if self._db_enabled:
             logger.info(
                 _("Connecting to postgres database, to delete %s database"),
-                self._config.db_name,
+                self._db_name,
             )
             db_url = {
                 "drivername": "postgresql+psycopg2",
-                "username": self._config.db_user,
-                "password": self._config.db_pw,
-                "host": self._config.db_host,
-                "port": self._config.db_port,
+                "username": self._db_user,
+                "password": self._db_pw,
+                "host": self._db_host,
+                "port": self._db_port,
                 "database": "postgres",
             }
             db = create_engine(URL.create(**db_url), echo=False)
@@ -437,16 +458,16 @@ class PostgresqlUtils:
             text = f"""
             SELECT pg_terminate_backend(pg_stat_activity.{pid_column})
             FROM pg_stat_activity
-            WHERE pg_stat_activity.datname = '{self._config.db_name}'
+            WHERE pg_stat_activity.datname = '{self._db_name}'
             AND {pid_column} <> pg_backend_pid();
             """  # noqa: S608
             logger.debug(_("Dropping tables: %s"), text)
             conn.execute(text)
-            text = f"DROP DATABASE IF EXISTS {self._config.db_name}"
+            text = f"DROP DATABASE IF EXISTS {self._db_name}"
             logger.debug(_("Dropping database: %s"), text)
             conn.execute(text)
             try:
-                text = f"DROP ROLE IF EXISTS {self._config.db_group}"
+                text = f"DROP ROLE IF EXISTS {self._db_group}"
                 logger.debug(_("Dropping role: %s"), text)
                 conn.execute(text)
             except exc.SQLAlchemyError as e:
@@ -460,26 +481,27 @@ class PostgresqlUtils:
     def create_json_tables(self):
         """Create all internal and jsonb tables."""
         # Store to database, if enabled
-        if self._config.db_enabled:
+        if self._db_enabled:
             # Initialize interface to Postgresql DB
             db_url = {
                 "drivername": "postgresql+psycopg2",
-                "username": self._config.db_user,
-                "password": self._config.db_pw,
-                "host": self._config.db_host,
-                "port": self._config.db_port,
-                "database": self._config.db_name,
+                "username": self._db_user,
+                "password": self._db_pw,
+                "host": self._db_host,
+                "port": self._db_port,
+                "database": self._db_name,
             }
 
             # Connect to database
             logger.info(
                 _("Connecting to %s database, to finalize creation"),
-                self._config.db_name,
+                self._db_name,
             )
             self._db = create_engine(URL.create(**db_url), echo=False)
             conn = self._db.connect()
 
             # Add extensions
+            logger.debug(_("Creating extensions"))
             text = "CREATE EXTENSION IF NOT EXISTS pgcrypto"
             conn.execute(text)
             text = "CREATE EXTENSION IF NOT EXISTS adminpack"
@@ -492,7 +514,8 @@ class PostgresqlUtils:
             conn.execute(text)
 
             # Create import schema
-            text = f"CREATE SCHEMA IF NOT EXISTS {self._config.db_schema_import} AUTHORIZATION {self._config.db_group}"
+            logger.debug(_("Creating import schema"))
+            text = f"CREATE SCHEMA IF NOT EXISTS {self._db_schema_import} AUTHORIZATION {self._db_group}"
             conn.execute(text)
 
             # Enable privileges
@@ -504,18 +527,18 @@ class PostgresqlUtils:
             text = f"""
             ALTER DEFAULT PRIVILEGES
             GRANT INSERT, SELECT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON TABLES
-            TO {self._config.db_group}"""
+            TO {self._db_group}"""
             conn.execute(text)
 
             # Set path to include VN import schema
-            dbschema = self._config.db_schema_import
+            dbschema = self._db_schema_import
             self._metadata = MetaData(schema=dbschema)
             self._metadata.reflect(self._db)
 
             # Check if tables exist or else create them
+            logger.debug(_("Creating tables"))
             self._create_download_log()
             self._create_increment_log()
-
             self._create_entities_json()
             self._create_families_json()
             self._create_field_groups_json()
@@ -545,22 +568,22 @@ class PostgresqlUtils:
         """
         result = None
         # Store to database, if enabled
-        if self._config.db_enabled:
+        if self._db_enabled:
             logger.info(_("Counting observations in database for all sites"))
             db_url = {
                 "drivername": "postgresql+psycopg2",
-                "username": self._config.db_user,
-                "password": self._config.db_pw,
-                "host": self._config.db_host,
-                "port": self._config.db_port,
-                "database": self._config.db_name,
+                "username": self._db_user,
+                "password": self._db_pw,
+                "host": self._db_host,
+                "port": self._db_port,
+                "database": self._db_name,
             }
 
             # Connect and set path to include VN import schema
-            logger.info(_("Connecting to database %s"), self._config.db_name)
+            logger.info(_("Connecting to database %s"), self._db_name)
             self._db = create_engine(URL.create(**db_url), echo=False)
             conn = self._db.connect()
-            dbschema = self._config.db_schema_import
+            dbschema = self._db_schema_import
             self._metadata = MetaData(schema=dbschema)
             # self._metadata.reflect(self._db)
 
@@ -584,22 +607,22 @@ class PostgresqlUtils:
         """
         result = None
         # Store to database, if enabled
-        if self._config.db_enabled:
+        if self._db_enabled:
             logger.info(_("Counting observations in database for all sites"))
             db_url = {
                 "drivername": "postgresql+psycopg2",
-                "username": self._config.db_user,
-                "password": self._config.db_pw,
-                "host": self._config.db_host,
-                "port": self._config.db_port,
-                "database": self._config.db_name,
+                "username": self._db_user,
+                "password": self._db_pw,
+                "host": self._db_host,
+                "port": self._db_port,
+                "database": self._db_name,
             }
 
             # Connect and set path to include VN import schema
-            logger.info(_("Connecting to database %s"), self._config.db_name)
+            logger.info(_("Connecting to database %s"), self._db_name)
             self._db = create_engine(URL.create(**db_url), echo=False)
             conn = self._db.connect()
-            dbschema = self._config.db_schema_vn
+            dbschema = self._db_schema_vn
             self._metadata = MetaData(schema=dbschema)
             # self._metadata.reflect(self._db)
 
@@ -619,23 +642,46 @@ class PostgresqlUtils:
 class Postgresql:
     """Provides common access Postgresql database."""
 
-    def __init__(self, config):
-        self._config = config
+    def __init__(
+        self,
+        site: str,
+        db_enabled: bool,
+        db_user: str,
+        db_pw: str,
+        db_host: str,
+        db_port: str,
+        db_name: str,
+        db_schema_import: str,
+        db_schema_vn: str,
+        db_group: str,
+        db_out_proj: str,
+    ):
+        self._site = site
+        self._db_enabled = db_enabled
+        self._db_user = db_user
+        self._db_pw = db_pw
+        self._db_host = db_host
+        self._db_port = db_port
+        self._db_name = db_name
+        self._db_schema_import = db_schema_import
+        self._db_schema_vn = db_schema_vn
+        self._db_group = db_group
+        self._db_out_proj = db_out_proj
 
-        if self._config.db_enabled:
+        if self._db_enabled:
             # Initialize interface to Postgresql DB
             db_url = {
                 "drivername": "postgresql+psycopg2",
-                "username": self._config.db_user,
-                "password": self._config.db_pw,
-                "host": self._config.db_host,
-                "port": self._config.db_port,
-                "database": self._config.db_name,
+                "username": self._db_user,
+                "password": self._db_pw,
+                "host": self._db_host,
+                "port": self._db_port,
+                "database": self._db_name,
             }
 
-            dbschema = self._config.db_schema_import
+            dbschema = self._db_schema_import
             self._metadata = MetaData(schema=dbschema)
-            logger.info(_("Connecting to database %s"), self._config.db_name)
+            logger.info(_("Connecting to database %s"), self._db_name)
 
             # Connect and set path to include VN import schema
             self._db = create_engine(URL.create(**db_url), echo=False)
@@ -680,7 +726,7 @@ class Postgresql:
             self._table_defs["validations"]["metadata"] = self._metadata.tables[dbschema + ".validations_json"]
 
             # Create transformation
-            self._transformer = Transformer.from_proj(4326, int(self._config.db_out_proj), always_xy=True)
+            self._transformer = Transformer.from_proj(4326, int(self._db_out_proj), always_xy=True)
 
         return None
 
@@ -690,8 +736,8 @@ class Postgresql:
 
     def __exit__(self, exc_type, exc_value, traceback):
         """Finalize connections."""
-        if self._config.db_enabled:
-            logger.info(_("Closing connection to database %s"), self._config.db_name)
+        if self._db_enabled:
+            logger.info(_("Closing connection to database %s"), self._db_name)
             self._conn.close()
 
     @property
@@ -723,10 +769,10 @@ class ReadPostgresql(Postgresql):
         logger.info(
             _("Reading from %s of site %s"),
             controler,
-            self._config.site,
+            self._site,
         )
         metadata = self._table_defs[controler]["metadata"]
-        stmt = select([metadata.c.item]).where(metadata.c.site == self._config.site)
+        stmt = select([metadata.c.item]).where(metadata.c.site == self._site)
         return self._conn.execute(stmt).fetchall()
 
 
@@ -760,14 +806,17 @@ class StorePostgresql(Postgresql):
             _("Storing %d items from %s of site %s"),
             len(items_dict["data"]),
             controler,
-            self._config.site,
+            self._site,
         )
         metadata = self._table_defs[controler]["metadata"]
         for elem in items_dict["data"]:
             # Convert to json
             logger.debug(_("Storing element %s"), elem)
-            insert_stmt = insert(metadata).values(id=elem["id"], site=self._config.site, item=elem)
-            do_update_stmt = insert_stmt.on_conflict_do_update(constraint=metadata.primary_key, set_={"item": elem})
+            insert_stmt = insert(metadata).values(id=elem["id"], site=self._site, item=elem)
+            do_update_stmt = insert_stmt.on_conflict_do_update(
+                constraint=metadata.primary_key,
+                set_=dict(item=elem),  # noqa: C408
+            )
             self._conn.execute(do_update_stmt)
 
         return len(items_dict["data"])
@@ -823,7 +872,10 @@ class StorePostgresql(Postgresql):
         for elem in items_dict["data"]:
             logger.debug(_("Storing element %s"), elem)
             insert_stmt = insert(metadata).values(id=elem["id"], item=elem)
-            do_update_stmt = insert_stmt.on_conflict_do_update(constraint=metadata.primary_key, set_={"item": elem})
+            do_update_stmt = insert_stmt.on_conflict_do_update(
+                constraint=metadata.primary_key,
+                set_=dict(item=elem),  # noqa: C408
+            )
             self._conn.execute(do_update_stmt)
 
         return len(items_dict["data"])
@@ -851,7 +903,7 @@ class StorePostgresql(Postgresql):
             _("Storing %d items from %s of site %s"),
             len(items_dict),
             controler,
-            self._config.site,
+            self._site,
         )
 
         # Add local coordinates
@@ -863,8 +915,11 @@ class StorePostgresql(Postgresql):
         # Convert to json
         logger.debug(_("Storing element %s"), items_dict)
         metadata = self._table_defs[controler]["metadata"]
-        insert_stmt = insert(metadata).values(id=items_dict["@id"], site=self._config.site, item=items_dict)
-        do_update_stmt = insert_stmt.on_conflict_do_update(constraint=metadata.primary_key, set_={"item", items_dict})
+        insert_stmt = insert(metadata).values(id=items_dict["@id"], site=self._site, item=items_dict)
+        do_update_stmt = insert_stmt.on_conflict_do_update(
+            constraint=metadata.primary_key,
+            set_=dict(item=items_dict),  # noqa: C408
+        )
         self._conn.execute(do_update_stmt)
 
         return len(items_dict)
@@ -899,7 +954,7 @@ class StorePostgresql(Postgresql):
             # Write observation to database
             store_1_observation(
                 ObservationItem(
-                    self._config.site,
+                    self._site,
                     self._table_defs[controler]["metadata"],
                     self._conn,
                     self._transformer.transform,
@@ -942,7 +997,7 @@ class StorePostgresql(Postgresql):
                             for i in range(0, nb_s):
                                 store_1_observation(
                                     ObservationItem(
-                                        self._config.site,
+                                        self._site,
                                         self._table_defs[controler]["metadata"],
                                         self._conn,
                                         self._transformer.transform,
@@ -956,7 +1011,7 @@ class StorePostgresql(Postgresql):
                     # It's not a form, store it as a sighting
                     store_1_observation(
                         ObservationItem(
-                            self._config.site,
+                            self._site,
                             self._table_defs[controler]["metadata"],
                             self._conn,
                             self._transformer.transform,
@@ -991,7 +1046,7 @@ class StorePostgresql(Postgresql):
         logger.info(
             _("Storing %d observers from site %s"),
             len(items_dict["data"]),
-            self._config.site,
+            self._site,
         )
         metadata = self._table_defs[controler]["metadata"]
         for elem in items_dict["data"]:
@@ -1000,12 +1055,12 @@ class StorePostgresql(Postgresql):
             insert_stmt = insert(metadata).values(
                 id=elem["id"],
                 id_universal=elem["id_universal"],
-                site=self._config.site,
+                site=self._site,
                 item=elem,
             )
             do_update_stmt = insert_stmt.on_conflict_do_update(
                 constraint=metadata.primary_key,
-                set_={"id_universal": elem["id_universal"], "item": elem},
+                set_=dict(id_universal=elem["id_universal"], item=elem),  # noqa: C408
             )
             self._conn.execute(do_update_stmt)
 
@@ -1037,7 +1092,7 @@ class StorePostgresql(Postgresql):
         """
         nb_item = 0
         # Store to database, if enabled
-        if self._config.db_enabled:
+        if self._db_enabled:
             if self._table_defs[controler]["type"] == "observation":
                 nb_item = self._store_observation(controler, items_dict)
             elif self._table_defs[controler]["type"] == "simple":
@@ -1069,7 +1124,7 @@ class StorePostgresql(Postgresql):
         """
         nb_delete = 0
         # Store to database, if enabled
-        if self._config.db_enabled:
+        if self._db_enabled:
             logger.info(_("Deleting %d observations from database"), len(obs_list))
             nb_delete = 0
             for obs in obs_list:
@@ -1079,7 +1134,7 @@ class StorePostgresql(Postgresql):
                     .where(
                         and_(
                             self._table_defs["observations"]["metadata"].c.id == obs,
-                            self._table_defs["observations"]["metadata"].c.site == self._config.site,
+                            self._table_defs["observations"]["metadata"].c.site == self._site,
                         )
                     )
                 )
@@ -1102,7 +1157,7 @@ class StorePostgresql(Postgresql):
         """
         nb_delete = 0
         # Store to database, if enabled
-        if self._config.db_enabled:
+        if self._db_enabled:
             logger.info(_("Deleting %d places from database"), len(place_list))
             nb_delete = 0
             for obs in place_list:
@@ -1112,7 +1167,7 @@ class StorePostgresql(Postgresql):
                     .where(
                         and_(
                             self._table_defs["places"]["metadata"].c.id == obs,
-                            self._table_defs["places"]["metadata"].c.site == self._config.site,
+                            self._table_defs["places"]["metadata"].c.site == self._site,
                         )
                     )
                 )
@@ -1150,8 +1205,8 @@ class StorePostgresql(Postgresql):
             Optional duration of data transfer, in ms
         """
         # Store to database, if enabled
-        if self._config.db_enabled:
-            metadata = self._metadata.tables[self._config.db_schema_import + "." + "download_log"]
+        if self._db_enabled:
+            metadata = self._metadata.tables[self._db_schema_import + "." + "download_log"]
             stmt = metadata.insert().values(
                 site=site,
                 controler=controler,
@@ -1178,12 +1233,13 @@ class StorePostgresql(Postgresql):
             Timestamp of last update of this taxo_group.
         """
         # Store to database, if enabled
-        if self._config.db_enabled:
-            metadata = self._metadata.tables[self._config.db_schema_import + "." + "increment_log"]
+        if self._db_enabled:
+            metadata = self._metadata.tables[self._db_schema_import + "." + "increment_log"]
 
             insert_stmt = insert(metadata).values(taxo_group=taxo_group, site=site, last_ts=last_ts)
             do_update_stmt = insert_stmt.on_conflict_do_update(
-                constraint=metadata.primary_key, set_={"last_ts": last_ts}
+                constraint=metadata.primary_key,
+                set_=dict(last_ts=last_ts),  # noqa: C408
             )
             self._conn.execute(do_update_stmt)
 
@@ -1206,8 +1262,8 @@ class StorePostgresql(Postgresql):
         """
         row = None
         # Store to database, if enabled
-        if self._config.db_enabled:
-            metadata = self._metadata.tables[self._config.db_schema_import + "." + "increment_log"]
+        if self._db_enabled:
+            metadata = self._metadata.tables[self._db_schema_import + "." + "increment_log"]
             stmt = select([metadata.c.last_ts]).where(
                 and_(metadata.c.taxo_group == taxo_group, metadata.c.site == site)
             )

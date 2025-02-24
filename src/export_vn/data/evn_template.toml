@@ -1,0 +1,260 @@
+# Configuration file for export_vn.
+# Needs to be customized for each site. See comments below for details.
+
+# ------------------- Controler section -------------------
+
+[controler]
+# Biolovision API controlers parameters.
+# Enables or disables download from each Biolovision API.
+# Also defines scheduling (cron-like) parameters, in UTC.
+# See https://apscheduler.readthedocs.io/en/stable/modules/triggers/cron.html.
+
+[controler.entities]
+# Enable/disable download from this controler.
+enabled = false
+
+[controler.entities.schedule]
+# Schedule in year/month/day/week/day_of_week/hour/minute.
+day_of_week = 4
+hour = 22
+
+[controler.families]
+# Enable/disable download from this controler.
+enabled = false
+
+[controler.families.schedule]
+# Schedule in year/month/day/week/day_of_week/hour/minute.
+day_of_week = 4
+hour = 23
+
+[controler.local_admin_units]
+# Enable/disable download from this controler.
+enabled = false
+
+[controler.local_admin_units.schedule]
+# Schedule in year/month/day/week/day_of_week/hour/minute.
+day_of_week = 0
+hour = 5
+
+[controler.observations]
+# Enable/disable download from this controler.
+enabled = false
+
+[controler.observations.schedule]
+# Schedule in year/month/day/week/day_of_week/hour/minute.
+year = "*"
+month = "*"
+day = "*"
+week = "*"
+day_of_week = "*"
+hour = "*"
+minute = 0
+
+[controler.observers]
+# Enable/disable download from this controler.
+enabled = false
+
+[controler.observers.schedule]
+# Schedule in year/month/day/week/day_of_week/hour/minute.
+hour = 6
+
+[controler.places]
+# Enable/disable download from this controler.
+enabled = false
+
+[controler.places.schedule]
+# Schedule in year/month/day/week/day_of_week/hour/minute.
+day_of_week = 3
+hour = 23
+
+[controler.taxo_groups]
+# Enable/disable download from this controler.
+enabled = false
+
+[controler.taxo_groups.schedule]
+# Schedule in year/month/day/week/day_of_week/hour/minute.
+day_of_week = 2
+hour = 22
+
+[controler.territorial_units]
+# Enable/disable download from this controler.
+enabled = false
+
+[controler.territorial_units.schedule]
+# Schedule in year/month/day/week/day_of_week/hour/minute.
+day_of_week = 3
+hour = 23
+
+[controler.validations]
+# Enable/disable download from this controler.
+enabled = false
+
+[controler.validations.schedule]
+# Schedule in year/month/day/week/day_of_week/hour/minute.
+day_of_week = 4
+hour = 23
+
+# ------------------- Filter section -------------------
+
+[filter]
+# Observations filter, to limit download scope.
+
+# List of territorial_unit_ids to download.
+# Note : use the territory short_name, not the territory id.
+# Example: territorial_units_ids = ["07", "38"]
+# Leave empty to download all territorial_units.
+territorial_unit_ids = []
+
+# Optional start and end dates.
+# start_date = 2019-08-01
+# end_date = 2019-09-01
+type_date = "entry"
+
+# Use short (recommended) or long JSON data.
+json_format = "short"
+
+[filter.taxo_download]
+# List of taxo_groups, flagged for download.
+#  - true: enable download
+#  - false: disable download
+# Taxo_groups with limited access must be excluded, if no access right is granted to the account.
+TAXO_GROUP_BIRD = true
+TAXO_GROUP_BAT = true
+TAXO_GROUP_MAMMAL = true
+TAXO_GROUP_SEA_MAMMAL = true
+TAXO_GROUP_REPTILIAN = true
+TAXO_GROUP_AMPHIBIAN = true
+TAXO_GROUP_ODONATA = true
+TAXO_GROUP_BUTTERFLY = true
+TAXO_GROUP_MOTH = true
+TAXO_GROUP_ORTHOPTERA = true
+TAXO_GROUP_HYMENOPTERA = true
+TAXO_GROUP_ORCHIDACEAE = false
+TAXO_GROUP_TRASH = false
+TAXO_GROUP_EPHEMEROPTERA = true
+TAXO_GROUP_PLECOPTERA = true
+TAXO_GROUP_MANTODEA = true
+TAXO_GROUP_AUCHENORRHYNCHA = true
+TAXO_GROUP_HETEROPTERA = true
+TAXO_GROUP_COLEOPTERA = true
+TAXO_GROUP_NEVROPTERA = true
+TAXO_GROUP_TRICHOPTERA = true
+TAXO_GROUP_MECOPTERA = true
+TAXO_GROUP_DIPTERA = true
+TAXO_GROUP_PHASMATODEA = true
+TAXO_GROUP_ARACHNIDA = true
+TAXO_GROUP_SCORPIONES = true
+TAXO_GROUP_FISH = true
+TAXO_GROUP_MALACOSTRACA = true
+TAXO_GROUP_GASTROPODA = true
+TAXO_GROUP_BIVALVIA = true
+TAXO_GROUP_BRANCHIOPODA = true
+TAXO_GROUP_SPERMATOPHYTA = false
+TAXO_GROUP_BRYOPHYTA = false
+TAXO_GROUP_LICHEN = false
+TAXO_GROUP_FUNGI = false
+TAXO_GROUP_ALGAE = false
+TAXO_GROUP_PTERIDOPHYTA = false
+TAXO_GROUP_STERNORRHYNCHA = false
+TAXO_GROUP_MYRIAPODA = false
+TAXO_GROUP_ANNELIDA = false
+TAXO_GROUP_DERMAPTERA = false
+TAXO_GROUP_MEDUSOZOA = false
+TAXO_GROUP_PORIFERA = false
+TAXO_GROUP_BACTERIA = false
+TAXO_GROUP_MYXOGASTRIA = false
+TAXO_GROUP_BLATTARIA = false
+TAXO_GROUP_ARTHROPODA = false
+TAXO_GROUP_IGNOTUS = false
+TAXO_GROUP_FORMICOIDEA = false
+
+# ------------------- Site section -------------------
+
+[site]
+# VisioNature site access parameters.
+
+[site.tff]
+# Sites parameters for tff.
+# Enable download from this site.
+enabled = true
+# Site URL.
+site = "https://www.faune-xxx.org/"
+# Username.
+user_email = "nom.prenom@example.net"
+# User password.
+user_pw = "user_pw"
+# Client key, obtained from Biolovision.
+client_key = "client_key"
+# Client secret, obtained from Biolovision.
+client_secret = "client_secret"
+
+# ------------------- File section -------------------
+
+[file]
+# File storage backend parameters.
+
+# Enable storing to file.
+enabled = true
+# Top level path name for downloaded file storage, relative to $HOME.
+file_store = "VN_files"
+
+# ------------------- Database section -------------------
+
+[database]
+# Postgresql backend related parameters.
+
+# Enable storing to file.
+enabled = true
+# Database host.
+db_host = "localhost"
+# Database IP port.
+db_port = 5432
+# Database name.
+db_name = "faune_xxx"
+# Database schema inside db_name database, for imported JSON data.
+db_schema_import = "import"
+# Database schema inside db_name database, for columns extracted from JSON.
+db_schema_vn = "src_vn"
+# Postgresql user group accessing imported data.
+db_group = "lpo_xxx"
+# Postgresql user used to import data.
+db_user = "xferxx"
+# Postgresql user password.
+db_pw = "db_pw"
+# PostgreSQL SecretKey for pseudonymization.
+db_secret_key = "mySecretKey"
+# Coordinates systems for local projection, see EPSG.
+# db_out_proj = 2154
+
+# ------------------- Tuning section -------------------
+
+[tuning]
+# Optional tuning parameters, for expert use.
+
+# Max items in an API list request.
+# Longer lists are split by API in max_list_length chunks.
+# max_list_length = 100
+# Max chunks in a request before aborting.
+# max_chunks = 1000
+# Max retries of API calls before aborting.
+# max_retry = 5
+# Maximum number of API requests, for debugging only.
+# - 0 means unlimited
+# - >0 limit number of API requests
+# max_requests = 0
+# Delay between retries after an error.
+# retry_delay = 5
+# Delay between retries after an error HTTP 503 (service unavailable).
+# unavailable_delay = 600
+# LRU cache size for common requests (taxo_groups...).
+# lru_maxsize = 32
+# PID parameters, for throughput management.
+# pid_kp = 0.0
+# pid_ki = 0.003
+# pid_kd = 0.0
+# pid_setpoint = 10000
+# pid_limit_min = 5
+# pid_limit_max = 2000
+# pid_delta_days = 10
+# Scheduler tuning parameters.
+# sched_executors = 2

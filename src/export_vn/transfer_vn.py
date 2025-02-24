@@ -23,15 +23,15 @@ import psutil
 import requests
 import yappi
 from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED, EVENT_JOB_SUBMITTED
-from apscheduler.executors.pool import ProcessPoolExecutor
+from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers import SchedulerNotRunningError
 from apscheduler.schedulers.background import BackgroundScheduler
 from bs4 import BeautifulSoup
+from dynaconf import Dynaconf, ValidationError, Validator
 from jinja2 import Environment, PackageLoader
 from pytz import utc
-from strictyaml import YAMLValidationError
 from tabulate import tabulate
 
 from export_vn.download_vn import (
@@ -47,12 +47,11 @@ from export_vn.download_vn import (
     TerritorialUnits,
     Validations,
 )
-from export_vn.evnconf import EvnConf
 from export_vn.store_all import StoreAll
 from export_vn.store_file import StoreFile
 from export_vn.store_postgresql import PostgresqlUtils, StorePostgresql
 
-from . import _, __version__
+from . import __version__
 
 CTRL_DEFS = {
     "entities": Entities,
@@ -67,12 +66,16 @@ CTRL_DEFS = {
     "territorial_units": TerritorialUnits,
     "validations": Validations,
 }
+DEFS_CTRL = {value: key for key, value in CTRL_DEFS.items()}
+
 TIMEOUT = 30  # Requests.get timeout
 
-logger = logging.getLogger("transfer_vn")
+logger = logging.getLogger(__name__)
 
 
 class Jobs:
+    """Class to manage jobs scheduling."""
+
     def _listener(self, event):
         if event.code == EVENT_JOB_SUBMITTED:
             logger.debug(_("The job %s started"), event.job_id)
@@ -81,7 +84,7 @@ class Jobs:
             if event.job_id in self._job_set:
                 self._job_set.remove(event.job_id)
             else:
-                logger.error(_("Job %s not found in job_set"), event.job_id)  # pragma: no cover
+                logger.error(_("The job %s is not in job_set"), event.job_id)  # pragma: no cover
             if event.exception:
                 logger.error(_("The job %s crashed"), event.job_id)  # pragma: no cover
             else:
@@ -106,7 +109,7 @@ class Jobs:
             str(url)[0 : str(url).find(":")],
         )
         jobstores = {"once": MemoryJobStore(), "default": SQLAlchemyJobStore(url=url)}
-        executors = {"default": ProcessPoolExecutor(nb_executors)}
+        executors = {"default": ThreadPoolExecutor(nb_executors)}
         job_defaults = {
             "coalesce": True,
             "max_instances": 1,
@@ -164,14 +167,20 @@ class Jobs:
         self._scheduler.remove_all_jobs()
 
     def add_job_once(self, job_fn, args=None, kwargs=None):
-        logger.debug(_("Adding immediate job %s"), args[0].__name__ + "_" + args[2].site)
+        job_name = args[0]
+        logger.debug(_("Adding immediate job %s"), job_name)
         self._scheduler.add_job(
             job_fn,
             args=args,
             kwargs=kwargs,
-            id=args[0].__name__ + "_" + args[2].site,
+            id=job_name,
             jobstore="once",
         )
+        jobs = self._scheduler.get_jobs()
+        logger.info(_("Number of jobs scheduled, %s"), len(jobs))
+        for j in jobs:
+            logger.info(_("Job %s, scheduled: %s"), j.id, j.trigger)
+        return None
 
     def add_job_schedule(
         self,
@@ -187,12 +196,13 @@ class Jobs:
         minute=None,
         second=None,
     ):
-        logger.debug(_("Adding scheduled job %s"), args[0].__name__ + "_" + args[2].site)
+        job_name = args[0]
+        logger.debug(_("Adding scheduled job %s"), job_name)
         self._scheduler.add_job(
             job_fn,
             args=args,
             kwargs=kwargs,
-            id=args[0].__name__ + "_" + args[2].site,
+            id=job_name,
             jobstore="default",
             trigger="cron",
             year=year,
@@ -224,22 +234,6 @@ class Jobs:
         logger.info(_("Number of jobs scheduled, %s"), len(jobs))
         for j in jobs:
             logger.info(_("Job %s, scheduled: %s"), j.id, j.trigger)
-
-
-def db_config(cfg):
-    """Return database related parameters."""
-    return {
-        "db_host": cfg.db_host,
-        "db_port": cfg.db_port,
-        "db_name": cfg.db_name,
-        "db_schema_import": cfg.db_schema_import,
-        "db_schema_vn": cfg.db_schema_vn,
-        "db_group": cfg.db_group,
-        "db_user": cfg.db_user,
-        "db_pw": cfg.db_pw,
-        "db_secret_key": cfg.db_secret_key,
-        "proj": cfg.db_out_proj,
-    }
 
 
 def arguments(args):
@@ -306,18 +300,66 @@ def arguments(args):
     return parser.parse_args(args)
 
 
-def init(file: str):
-    """Copy template YAML file to home directory."""
-    ref = importlib.resources.files("export_vn") / "data/evn_template.yaml"
-    with importlib.resources.as_file(ref) as yaml_src:
-        yaml_dst = str(Path.home() / file)
-        logger.info(_("Creating YAML configuration file %s, from %s"), yaml_dst, yaml_src)
-        shutil.copyfile(yaml_src, yaml_dst)
-        logger.info(_("Please edit %s before running the script"), yaml_dst)
+def init(config: str):
+    """Copy template TOML file to home directory."""
+    toml_dst = Path.home() / config
+    if toml_dst.is_file():
+        logger.warning(_("toml configuration file %s exists and is not overwritten"), toml_dst)
+    else:
+        logger.info(_("Creating toml configuration file"))
+        ref = importlib.resources.files(__name__.split(".")[0]) / "data/evn_template.toml"
+        with importlib.resources.as_file(ref) as toml_src:
+            logger.info(_("Creating toml configuration file %s, from %s"), toml_dst, toml_src)
+            shutil.copyfile(toml_src, toml_dst)
+            logger.info(_("Please edit %s before running the script"), toml_dst)
 
 
-def col_table_create(cfg, sql_quiet, client_min_message):
-    """Create the column based tables, by running psql script."""
+def col_table_create(
+    db_host: str,
+    db_port: str,
+    db_name: str,
+    db_user: str,
+    db_pw: str,
+    db_schema_import: str,
+    db_schema_vn: str,
+    db_group: str,
+    db_secret_key: str,
+    db_out_proj: str,
+    sql_quiet: str,
+    client_min_message: str,
+) -> None:
+    """Create the column based tables, by running psql script.
+
+    Parameters
+    ----------
+    db_host: str
+        Hostname of the database.
+    db_port: str
+        Port number of the database.
+    db_name: str
+        Name of the database.
+    db_user: str
+        User name for the database.
+    db_pw: str
+        Password for the database.
+    db_schema_import: str
+        Schema for import tables.
+    db_schema_vn: str
+        Schema for VN tables.
+    db_group: str
+        Group for the database.
+    db_secret_key: str
+        Secret key for the database.
+    db_out_proj: str
+        Output projection for the database.
+    sql_quiet: str
+        SQL quiet option.
+    client_min_message: str
+        Client minimum message level.
+    Return:
+        None
+
+    """
     logger.debug(_("Creating SQL file from template"))
     env = Environment(
         loader=PackageLoader("export_vn", "sql"),
@@ -325,25 +367,37 @@ def col_table_create(cfg, sql_quiet, client_min_message):
         autoescape=True,
     )
     template = env.get_template("create-vn-tables.sql")
-    cmd = template.render(cfg=db_config(cfg))
+    cmd = template.render({
+        "db_host": db_host,
+        "db_port": db_port,
+        "db_name": db_name,
+        "db_schema_import": db_schema_import,
+        "db_schema_vn": db_schema_vn,
+        "db_group": db_group,
+        "db_user": db_user,
+        "db_pw": db_pw,
+        "db_secret_key": db_secret_key,
+        "proj": db_out_proj,
+    })
     tmp_sql = Path.home() / "tmp/create-vn-tables.sql"
     with tmp_sql.open(mode="w") as myfile:
         myfile.write(cmd)
     try:
         subprocess.run(
-            ' PGPASSWORD="' + cfg.db_pw + '" '
-            'env PGOPTIONS="-c client-min-messages='
+            ' PGPASSWORD="'
+            + db_pw
+            + '" PGOPTIONS="-c client-min-messages='
             + client_min_message
             + '" psql '
             + sql_quiet
             + " --host="
-            + cfg.db_host
+            + db_host
             + " --port="
-            + cfg.db_port
+            + db_port
             + " --dbname="
-            + cfg.db_name
+            + db_name
             + " --user="
-            + cfg.db_user
+            + db_user
             + " --file="
             + str(tmp_sql),
             check=True,
@@ -387,85 +441,146 @@ def migrate(cfg, sql_quiet, client_min_message):
     return None
 
 
-def full_download_1(ctrl, cfg_crtl_list, cfg):
+def full_download_1(ctrl: str, settings: dict) -> None:
     """Downloads from a single controler."""
-    logger.debug(_("Enter full_download_1: %s"), ctrl.__name__)
-    with StorePostgresql(cfg) as store_pg, StoreFile(cfg) as store_f:
-        store_all = StoreAll(cfg, db_backend=store_pg, file_backend=store_f)
-        downloader = ctrl(cfg, store_all)
-        if cfg_crtl_list[downloader.name].enabled:
+    logger.debug(_("Enter full_download_1: %s"), ctrl)
+    with (
+        StorePostgresql(
+            settings["SITE"]["name"],
+            settings["DATABASE"]["enabled"],
+            settings["DATABASE"]["db_user"],
+            settings["DATABASE"]["db_pw"],
+            settings["DATABASE"]["db_host"],
+            settings["DATABASE"]["db_port"],
+            settings["DATABASE"]["db_name"],
+            settings["DATABASE"]["db_schema_import"],
+            settings["DATABASE"]["db_schema_vn"],
+            settings["DATABASE"]["db_group"],
+            settings["DATABASE"]["db_out_proj"],
+        ) as store_pg,
+        StoreFile(settings["FILE"]["enabled"], settings["FILE"]["file_store"]) as store_f,
+    ):
+        store_all = StoreAll(
+            settings["DATABASE"]["enabled"], settings["FILE"]["enabled"], db_backend=store_pg, file_backend=store_f
+        )
+        if settings["CONTROLER"][ctrl]["enabled"]:
             logger.info(
-                _("%s => Starting download using controler %s"),
-                cfg.site,
-                downloader.name,
+                _("Starting download using controler %s"),
+                ctrl,
             )
-            if downloader.name == "observations":
-                logger.info(_("%s => Excluded taxo_groups: %s"), cfg.site, cfg.taxo_exclude)
-                downloader.store(
-                    id_taxo_group=None,
-                    method="search",
-                    by_specie=False,
-                    taxo_groups_ex=cfg.taxo_exclude,
-                    territorial_unit_ids=cfg.territorial_unit_ids,
-                    short_version=(1 if cfg.json_format == "short" else 0),
-                )
-            elif (downloader.name == "local_admin_units") or (downloader.name == "places"):
-                logger.info(
-                    _("%s => Included territorial_unit_ids: %s"),
-                    cfg.site,
-                    cfg.territorial_unit_ids,
-                )
-                downloader.store(
-                    territorial_unit_ids=cfg.territorial_unit_ids,
-                )
-            else:
-                downloader.store()
-            logger.info(_("%s => Ending download using controler %s"), cfg.site, downloader.name)
+        if ctrl == "observations":
+            taxo_exclude = list(key for key, value in settings["FILTER"]["taxo_download"].items() if value is False)
+            logger.info(_("Excluded taxo_groups: %s"), taxo_exclude)
+            CTRL_DEFS[ctrl](
+                site=settings["SITE"]["name"],
+                user_email=settings["SITE"]["user_email"],
+                user_pw=settings["SITE"]["user_pw"],
+                base_url=settings["SITE"]["URL"],
+                client_key=settings["SITE"]["client_key"],
+                client_secret=settings["SITE"]["client_secret"],
+                db_enabled=settings["DATABASE"]["enabled"],
+                db_user=settings["DATABASE"]["db_user"],
+                db_pw=settings["DATABASE"]["db_pw"],
+                db_host=settings["DATABASE"]["db_host"],
+                db_port=settings["DATABASE"]["db_port"],
+                db_name=settings["DATABASE"]["db_name"],
+                db_schema_import=settings["DATABASE"]["db_schema_import"],
+                db_schema_vn=settings["DATABASE"]["db_schema_vn"],
+                db_group=settings["DATABASE"]["db_group"],
+                db_out_proj=settings["DATABASE"]["db_out_proj"],
+                backend=store_all,
+                start_date=settings["FILTER"].get("start_date", None),
+                end_date=settings["FILTER"].get("end_date", None),
+                type_date=settings["FILTER"].get("type_date", "sighting"),
+                max_list_length=settings["TUNING"]["max_list_length"],
+                max_retry=settings["TUNING"]["max_retry"],
+                max_requests=settings["TUNING"]["max_requests"],
+                max_chunks=settings["TUNING"]["max_chunks"],
+                unavailable_delay=settings["TUNING"]["unavailable_delay"],
+                retry_delay=settings["TUNING"]["retry_delay"],
+                pid_kp=settings["TUNING"]["pid_kp"],
+                pid_ki=settings["TUNING"]["pid_ki"],
+                pid_kd=settings["TUNING"]["pid_kd"],
+                pid_setpoint=settings["TUNING"]["pid_setpoint"],
+                pid_limit_min=settings["TUNING"]["pid_limit_min"],
+                pid_limit_max=settings["TUNING"]["pid_limit_max"],
+                pid_delta_days=settings["TUNING"]["pid_delta_days"],
+            ).store(
+                taxo_groups_ex=taxo_exclude,
+                territorial_unit_ids=settings["FILTER"]["territorial_unit_ids"],
+            )
+        elif (ctrl == "local_admin_units") or (ctrl == "places"):
+            logger.info(
+                _("Included territorial_unit_ids: %s"),
+                settings["FILTER"]["territorial_unit_ids"],
+            )
+            CTRL_DEFS[ctrl](
+                site=settings["SITE"]["name"],
+                user_email=settings["SITE"]["user_email"],
+                user_pw=settings["SITE"]["user_pw"],
+                base_url=settings["SITE"]["URL"],
+                client_key=settings["SITE"]["client_key"],
+                client_secret=settings["SITE"]["client_secret"],
+                backend=store_all,
+            ).store(
+                territorial_unit_ids=settings["FILTER"]["territorial_unit_ids"],
+            )
+        else:
+            CTRL_DEFS[ctrl](
+                site=settings["SITE"]["name"],
+                user_email=settings["SITE"]["user_email"],
+                user_pw=settings["SITE"]["user_pw"],
+                base_url=settings["SITE"]["URL"],
+                client_key=settings["SITE"]["client_key"],
+                client_secret=settings["SITE"]["client_secret"],
+                backend=store_all,
+            ).store()
+        logger.info(_("Ending download using controler %s"), ctrl)
+
+    return None
 
 
-def full_download(cfg_ctrl):
+def full_download(settings: Dynaconf) -> None:
     """Performs a full download of all sites and controlers,
-    based on configuration file."""
-    cfg_crtl_list = cfg_ctrl.ctrl_list
-    cfg_site_list = cfg_ctrl.site_list
-    cfg = next(iter(cfg_site_list.values()))
+    based on configuration file.
+
+    Parameters
+    ----------
+    settings: Dynaconf
+    """
 
     logger.info(_("Defining full download jobs"))
-    # db_url = {
-    #     "drivername": "postgresql+psycopg2",
-    #     "username": cfg.db_user,
-    #     "password": cfg.db_pw,
-    #     "host": cfg.db_host,
-    #     "port": cfg.db_port,
-    #     "database": "postgres",
-    # }
-    jobs_o = Jobs(nb_executors=cfg.tuning_sched_executors)
+    jobs_o = Jobs(url="sqlite:///" + settings.tuning.sched_sqllite_file, nb_executors=settings.tuning.sched_executors)
     with jobs_o as jobs:
         # Cleanup any existing job
         jobs.start(paused=True)
         jobs.remove_all_jobs()
         jobs.resume()
-        # Download field only once
-        jobs.add_job_once(job_fn=full_download_1, args=[Fields, cfg_crtl_list, cfg])
-        # Looping on sites for other controlers
-        for site, cfg in cfg_site_list.items():
-            if cfg.enabled:
-                logger.info(_("Scheduling work for site %s"), cfg.site)
-                jobs.add_job_once(job_fn=full_download_1, args=[Entities, cfg_crtl_list, cfg])
-                jobs.add_job_once(job_fn=full_download_1, args=[Families, cfg_crtl_list, cfg])
-                jobs.add_job_once(job_fn=full_download_1, args=[LocalAdminUnits, cfg_crtl_list, cfg])
-                jobs.add_job_once(job_fn=full_download_1, args=[Observations, cfg_crtl_list, cfg])
-                jobs.add_job_once(job_fn=full_download_1, args=[Observers, cfg_crtl_list, cfg])
-                jobs.add_job_once(job_fn=full_download_1, args=[Places, cfg_crtl_list, cfg])
-                jobs.add_job_once(job_fn=full_download_1, args=[Species, cfg_crtl_list, cfg])
-                jobs.add_job_once(job_fn=full_download_1, args=[TaxoGroup, cfg_crtl_list, cfg])
-                jobs.add_job_once(job_fn=full_download_1, args=[TerritorialUnits, cfg_crtl_list, cfg])
-                jobs.add_job_once(job_fn=full_download_1, args=[Validations, cfg_crtl_list, cfg])
-            else:
-                logger.info(_("Skipping site %s"), site)
+        # Schedule enabled jobs for immediate execution
+        if settings.controler.entities.enabled:
+            jobs.add_job_once(job_fn=full_download_1, args=["entities", settings.as_dict()])
+        if settings.controler.families.enabled:
+            jobs.add_job_once(job_fn=full_download_1, args=["families", settings.as_dict()])
+        if settings.controler.fields.enabled:
+            jobs.add_job_once(job_fn=full_download_1, args=["fields", settings.as_dict()])
+        if settings.controler.local_admin_units.enabled:
+            jobs.add_job_once(job_fn=full_download_1, args=["local_admin_units", settings.as_dict()])
+        if settings.controler.observations.enabled:
+            jobs.add_job_once(job_fn=full_download_1, args=["observations", settings.as_dict()])
+        if settings.controler.observers.enabled:
+            jobs.add_job_once(job_fn=full_download_1, args=["observers", settings.as_dict()])
+        if settings.controler.places.enabled:
+            jobs.add_job_once(job_fn=full_download_1, args=["places", settings.as_dict()])
+        if settings.controler.species.enabled:
+            jobs.add_job_once(job_fn=full_download_1, args=["species", settings.as_dict()])
+        if settings.controler.taxo_groups.enabled:
+            jobs.add_job_once(job_fn=full_download_1, args=["taxo_groups", settings.as_dict()])
+        if settings.controler.territorial_units.enabled:
+            jobs.add_job_once(job_fn=full_download_1, args=["territorial_units", settings.as_dict()])
+        if settings.controler.validations.enabled:
+            jobs.add_job_once(job_fn=full_download_1, args=["validations", settings.as_dict()])
 
         # Wait for jobs to finish
-        time.sleep(1)
         while jobs.count_jobs() > 0:
             time.sleep(1)
         jobs.shutdown()
@@ -473,61 +588,120 @@ def full_download(cfg_ctrl):
     return None
 
 
-def increment_download_1(ctrl, cfg_crtl_list, cfg):
+def increment_download_1(ctrl: str, settings: dict) -> None:
     """Download incremental updates from one site."""
-    logger.debug(_("Enter increment_download_1: %s"), ctrl.__name__)
-    with StorePostgresql(cfg) as store_pg, StoreFile(cfg) as store_f:
-        store_all = StoreAll(cfg, db_backend=store_pg, file_backend=store_f)
-        downloader = ctrl(cfg, store_all)
-        if cfg_crtl_list[downloader.name].enabled:
+    logger.debug(_("Enter increment_download_1: %s"), ctrl)
+    with (
+        StorePostgresql(
+            settings["SITE"]["name"],
+            settings["DATABASE"]["enabled"],
+            settings["DATABASE"]["db_user"],
+            settings["DATABASE"]["db_pw"],
+            settings["DATABASE"]["db_host"],
+            settings["DATABASE"]["db_port"],
+            settings["DATABASE"]["db_name"],
+            settings["DATABASE"]["db_schema_import"],
+            settings["DATABASE"]["db_schema_vn"],
+            settings["DATABASE"]["db_group"],
+            settings["DATABASE"]["db_out_proj"],
+        ) as store_pg,
+        StoreFile(settings["FILE"]["enabled"], settings["FILE"]["file_store"]) as store_f,
+    ):
+        store_all = StoreAll(
+            settings["DATABASE"]["enabled"], settings["FILE"]["enabled"], db_backend=store_pg, file_backend=store_f
+        )
+        if settings["CONTROLER"][ctrl]["enabled"]:
             logger.info(
                 _("%s => Starting incremental download using controler %s"),
-                cfg.site,
-                downloader.name,
+                settings["SITE"]["name"],
+                ctrl,
             )
-            if downloader.name == "observations":
-                logger.info(_("%s => Excluded taxo_groups: %s"), cfg.site, cfg.taxo_exclude)
-                downloader.update(taxo_groups_ex=cfg.taxo_exclude)
-            elif downloader.name == "places":
-                logger.info(
-                    _("%s => Included territorial_unit_ids: %s"),
-                    cfg.site,
-                    cfg.territorial_unit_ids,
-                )
-                downloader.update(
-                    territorial_unit_ids=cfg.territorial_unit_ids,
-                )
-            elif downloader.name == "local_admin_units":
-                logger.info(
-                    _("%s => Included territorial_unit_ids: %s"),
-                    cfg.site,
-                    cfg.territorial_unit_ids,
-                )
-                downloader.store(
-                    territorial_unit_ids=cfg.territorial_unit_ids,
-                )
-            else:
-                downloader.store()
-            logger.info(_("%s => Ending download using controler %s"), cfg.site, downloader.name)
+
+        if ctrl == "observations":
+            taxo_exclude = list(key for key, value in settings["FILTER"]["taxo_download"].items() if value is False)
+            logger.info(_("Excluded taxo_groups: %s"), taxo_exclude)
+            CTRL_DEFS[ctrl](
+                site=settings["SITE"]["name"],
+                user_email=settings["SITE"]["user_email"],
+                user_pw=settings["SITE"]["user_pw"],
+                base_url=settings["SITE"]["URL"],
+                client_key=settings["SITE"]["client_key"],
+                client_secret=settings["SITE"]["client_secret"],
+                db_enabled=settings["DATABASE"]["enabled"],
+                db_user=settings["DATABASE"]["db_user"],
+                db_pw=settings["DATABASE"]["db_pw"],
+                db_host=settings["DATABASE"]["db_host"],
+                db_port=settings["DATABASE"]["db_port"],
+                db_name=settings["DATABASE"]["db_name"],
+                db_schema_import=settings["DATABASE"]["db_schema_import"],
+                db_schema_vn=settings["DATABASE"]["db_schema_vn"],
+                db_group=settings["DATABASE"]["db_group"],
+                db_out_proj=settings["DATABASE"]["db_out_proj"],
+                backend=store_all,
+                start_date=settings["FILTER"].get("start_date", None),
+                end_date=settings["FILTER"].get("end_date", None),
+                type_date=settings["FILTER"].get("type_date", "sighting"),
+                max_list_length=settings["TUNING"]["max_list_length"],
+                max_retry=settings["TUNING"]["max_retry"],
+                max_requests=settings["TUNING"]["max_requests"],
+                max_chunks=settings["TUNING"]["max_chunks"],
+                unavailable_delay=settings["TUNING"]["unavailable_delay"],
+                retry_delay=settings["TUNING"]["retry_delay"],
+                pid_kp=settings["TUNING"]["pid_kp"],
+                pid_ki=settings["TUNING"]["pid_ki"],
+                pid_kd=settings["TUNING"]["pid_kd"],
+                pid_setpoint=settings["TUNING"]["pid_setpoint"],
+                pid_limit_min=settings["TUNING"]["pid_limit_min"],
+                pid_limit_max=settings["TUNING"]["pid_limit_max"],
+                pid_delta_days=settings["TUNING"]["pid_delta_days"],
+            ).update(
+                taxo_groups_ex=taxo_exclude,
+            )
+        elif ctrl == "places":
+            CTRL_DEFS[ctrl](
+                site=settings["SITE"]["name"],
+                user_email=settings["SITE"]["user_email"],
+                user_pw=settings["SITE"]["user_pw"],
+                base_url=settings["SITE"]["URL"],
+                client_key=settings["SITE"]["client_key"],
+                client_secret=settings["SITE"]["client_secret"],
+                backend=store_all,
+            ).update(
+                territorial_unit_ids=settings["FILTER"]["territorial_unit_ids"],
+            )
+        elif ctrl == "local_admin_units":
+            CTRL_DEFS[ctrl](
+                site=settings["SITE"]["name"],
+                user_email=settings["SITE"]["user_email"],
+                user_pw=settings["SITE"]["user_pw"],
+                base_url=settings["SITE"]["URL"],
+                client_key=settings["SITE"]["client_key"],
+                client_secret=settings["SITE"]["client_secret"],
+                backend=store_all,
+            ).store(
+                territorial_unit_ids=settings["FILTER"]["territorial_unit_ids"],
+            )
+        else:
+            CTRL_DEFS[ctrl](
+                site=settings["SITE"]["name"],
+                user_email=settings["SITE"]["user_email"],
+                user_pw=settings["SITE"]["user_pw"],
+                base_url=settings["SITE"]["URL"],
+                client_key=settings["SITE"]["client_key"],
+                client_secret=settings["SITE"]["client_secret"],
+                backend=store_all,
+            ).store()
+    logger.info(_("Ending download using controler %s"), ctrl)
+    return None
 
 
-def increment_download(cfg_ctrl):
+def increment_download(settings: Dynaconf) -> None:
     """Performs an incremental download of observations from all sites
     and controlers, based on configuration file."""
-    cfg_site_list = cfg_ctrl.site_list
-    cfg = next(iter(cfg_site_list.values()))
 
     logger.info(_("Starting incremental download jobs"))
-    # db_url = {
-    #     "drivername": "postgresql+psycopg2",
-    #     "username": cfg.db_user,
-    #     "password": cfg.db_pw,
-    #     "host": cfg.db_host,
-    #     "port": cfg.db_port,
-    #     "database": "postgres",
-    # }
 
-    jobs_o = Jobs(nb_executors=cfg.tuning_sched_executors)
+    jobs_o = Jobs(url="sqlite:///" + settings.tuning.sched_sqllite_file, nb_executors=settings.tuning.sched_executors)
     with jobs_o as jobs:
         # Start scheduler and wait for jobs to finish
         jobs.start()
@@ -539,44 +713,31 @@ def increment_download(cfg_ctrl):
     return None
 
 
-def increment_schedule(cfg_ctrl):
+def increment_schedule(settings: Dynaconf) -> None:
     """Creates or modify the incremental download schedule,
-    based on YAML controler configuration."""
-    cfg_crtl_list = cfg_ctrl.ctrl_list
-    cfg_site_list = cfg_ctrl.site_list
-    cfg = next(iter(cfg_site_list.values()))
+    based on controler configuration."""
 
-    logger.info(_("Defining incremental download jobs"))
-    # db_url = {
-    #     "drivername": "postgresql+psycopg2",
-    #     "username": cfg.db_user,
-    #     "password": cfg.db_pw,
-    #     "host": cfg.db_host,
-    #     "port": cfg.db_port,
-    #     "database": "postgres",
-    # }
-    jobs = Jobs(nb_executors=cfg.tuning_sched_executors)
+    logger.info(_("Defining incremental download jobs in %s"), settings.tuning.sched_sqllite_file)
+
+    jobs = Jobs(url="sqlite:///" + settings.tuning.sched_sqllite_file, nb_executors=settings.tuning.sched_executors)
     # Looping on sites
-    for site, cfg in cfg_site_list.items():
-        if cfg.enabled:
-            logger.info(_("Scheduling increments on site %s"), site)
-            for ctrl_name, ctrl_props in cfg_crtl_list.items():
-                if ctrl_props.enabled:
-                    logger.debug(_("%s => Adding schedule for controler %s"), site, ctrl_name)
-                    jobs.add_job_schedule(
-                        job_fn=increment_download_1,
-                        args=[CTRL_DEFS[ctrl_name], cfg_crtl_list, cfg],
-                        year=ctrl_props.schedule_year,
-                        month=ctrl_props.schedule_month,
-                        day=ctrl_props.schedule_day,
-                        week=ctrl_props.schedule_week,
-                        day_of_week=ctrl_props.schedule_day_of_week,
-                        hour=ctrl_props.schedule_hour,
-                        minute=ctrl_props.schedule_minute,
-                        second=ctrl_props.schedule_second,
-                    )
-        else:
-            logger.info(_("Skipping site %s"), site)
+    logger.info(_("Scheduling increments on site %s"), settings.site.name)
+    for ctrl_name, ctrl_props in settings.controler.items():
+        if ctrl_props.enabled:
+            logger.debug(_("Adding schedule for controler %s"), ctrl_name)
+            logger.debug(ctrl_props.schedule)
+            jobs.add_job_schedule(
+                job_fn=increment_download_1,
+                args=[ctrl_name, settings.as_dict()],
+                year=ctrl_props.schedule.year if "year" in ctrl_props.schedule else "*",
+                month=ctrl_props.schedule.month if "month" in ctrl_props.schedule else "*",
+                day=ctrl_props.schedule.day if "day" in ctrl_props.schedule else "*",
+                week=ctrl_props.schedule.week if "week" in ctrl_props.schedule else "*",
+                day_of_week=ctrl_props.schedule.day_of_week if "day_of_week" in ctrl_props.schedule else "*",
+                hour=ctrl_props.schedule.hour if "hour" in ctrl_props.schedule else "*",
+                minute=ctrl_props.schedule.minute if "minute" in ctrl_props.schedule else "*",
+                second=ctrl_props.schedule.second if "second" in ctrl_props.schedule else "0",
+            )
 
     # Print status
     jobs.start(paused=True)
@@ -586,22 +747,12 @@ def increment_schedule(cfg_ctrl):
     return None
 
 
-def status(cfg_ctrl):
+def status(settings: Dynaconf):
     """Print download status, using logger."""
-    cfg_site_list = cfg_ctrl.site_list
-    cfg_site_list = cfg_ctrl.site_list
-    cfg = next(iter(cfg_site_list.values()))
 
     logger.info(_("Download jobs status"))
-    # db_url = {
-    #     "drivername": "postgresql+psycopg2",
-    #     "username": cfg.db_user,
-    #     "password": cfg.db_pw,
-    #     "host": cfg.db_host,
-    #     "port": cfg.db_port,
-    #     "database": "postgres",
-    # }
-    jobs = Jobs(nb_executors=cfg.tuning_sched_executors)
+
+    jobs = Jobs(url="sqlite:///" + settings.tuning.sched_sqllite_file, nb_executors=settings.tuning.sched_executors)
     jobs.start(paused=True)
     jobs.print_jobs()
 
@@ -616,7 +767,6 @@ def count_observations(cfg_ctrl):
             if cfg.enabled:
                 if col_counts is None:
                     manage_pg = PostgresqlUtils(cfg)
-                    # print(tabulate(manage_pg.count_json_obs()))
                     col_counts = manage_pg.count_col_obs()
 
                 logger.info(_("Getting counts from %s"), cfg.site)
@@ -667,18 +817,26 @@ def count_observations(cfg_ctrl):
     return None
 
 
-def main(args):
-    """Main entry point allowing external calls
+def main(args) -> None:
+    """Main entry point calling commands.
 
     Args:
       args ([str]): command line parameter list
     """
+    # Get command line arguments
+    args = arguments(args)
+
+    # Start profiling if required
+    if args.profile:
+        yappi.start()
+        logger.info(_("Started yappi"))
+
     # Create $HOME/tmp directory if it does not exist
     (Path.home() / "tmp").mkdir(exist_ok=True)
 
     # create file handler which logs even debug messages
     fh = TimedRotatingFileHandler(
-        str(Path.home()) + "/tmp/transfer_vn.log",
+        Path.home() / "tmp/transfer_vn.log",
         when="midnight",
         interval=1,
         backupCount=100,
@@ -689,34 +847,23 @@ def main(args):
     formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(name)s - %(message)s")
     fh.setFormatter(formatter)
     ch.setFormatter(formatter)
-    # add the handlers to the logger
-    logger.addHandler(fh)
-    logger.addHandler(ch)
+    # add the handlers to the root logger
+    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO, handlers=[fh, ch], force=True)
 
-    # Get command line arguments
-    args = arguments(args)
-
-    # Start profiling if required
-    if args.profile:
-        yappi.start()
-        logger.info(_("Started yappi"))
-
-    # Define verbosity
+    # Define SQL verbosity
     if args.verbose:
-        logger.setLevel(logging.DEBUG)
         sql_quiet = ""
         client_min_message = "debug1"
     else:
-        logger.setLevel(logging.INFO)
         sql_quiet = "--quiet"
         client_min_message = "warning"
 
     logger.info(_("%s, version %s"), sys.argv[0], __version__)
-    logger.info(_("Arguments: %s"), sys.argv[1:])
+    logger.debug(_("Arguments: %s"), sys.argv[1:])
 
     # If required, first create YAML file
     if args.init:
-        logger.info(_("Creating YAML configuration file"))
+        logger.info(_("Creating TOML configuration file"))
         init(args.file)
         return None
 
@@ -725,20 +872,81 @@ def main(args):
         logger.critical(_("File %s does not exist"), str(Path.home() / args.file))
         return None
     logger.info(_("Getting configuration data from %s"), args.file)
+    settings = Dynaconf(
+        settings_files=[args.file],
+    )
+
+    # Validation de tous les paramètres
+
+    settings.validators.register(
+        Validator("SITE.ENABLED", default=True, cast=bool),
+        Validator("SITE.NAME", len_min=1, cast=str),
+        Validator("SITE.URL", len_min=10, startswith="https://", cast=str),
+        Validator("SITE.USER_EMAIL", len_min=5, cont="@", cast=str),
+        Validator("SITE.USER_PW", len_min=5, cast=str),
+        Validator("SITE.CLIENT_KEY", len_min=20, cast=str),
+        Validator("SITE.CLIENT_SECRET", len_min=5, cast=str),
+    )
+    # settings.validators.register(
+    #     Validator("FILTER.START_DATE", cast=datetime),
+    #     Validator("FILTER.END_DATE", cast=datetime),
+    # )
+    settings.validators.register(
+        Validator("FILE.ENABLED", default=True, cast=bool),
+        Validator("FILE.FILE_STORE", len_min=1, cast=str),
+        Validator("DATABASE.ENABLED", default=True, cast=bool),
+        Validator("DATABASE.DB_HOST", len_min=1, cast=str),
+        Validator("DATABASE.DB_PORT", len_min=1, cast=str),
+        Validator("DATABASE.DB_NAME", len_min=1, cast=str),
+        Validator("DATABASE.DB_USER", len_min=1, cast=str),
+        Validator("DATABASE.DB_PW", len_min=6, cast=str),
+        Validator("DATABASE.DB_SCHEMA_IMPORT", len_min=1, cast=str),
+        Validator("DATABASE.DB_SCHEMA_VN", len_min=1, cast=str),
+        Validator("DATABASE.DB_GROUP", len_min=1, cast=str),
+        Validator("DATABASE.DB_SECRET_KEY", len_min=6, cast=str),
+        Validator("DATABASE.DB_OUT_PROJ", len_min=1, cast=str),
+        Validator("TUNING.MAX_LIST_LENGTH", gte=1, default=100, cast=int),
+        Validator("TUNING.MAX_CHUNKS", gte=1, default=1000, cast=int),
+        Validator("TUNING.MAX_RETRY", gte=1, default=5, cast=int),
+        Validator("TUNING.MAX_REQUESTS", gte=0, default=0, cast=int),
+        Validator("TUNING.RETRY_DELAY", gte=1, default=5, cast=int),
+        Validator("TUNING.UNAVAILABLE_DELAY", gte=1, default=600, cast=int),
+        Validator("TUNING.LRU_MAXSIZE", gte=1, default=32, cast=int),
+        Validator("TUNING.PID_KP", gte=0, default=0.0, cast=float),
+        Validator("TUNING.PID_KI", gte=0, default=0.003, cast=float),
+        Validator("TUNING.PID_KD", gte=0, default=0.0, cast=float),
+        Validator("TUNING.SETPOINT", gte=0, default=10000, cast=int),
+        Validator("TUNING.PID_LIMIT_MIN", gte=0, default=5, cast=int),
+        Validator("TUNING.PID_LIMIT_MAX", gte=0, default=2000, cast=int),
+        Validator("TUNING.PID_DELTA_DAYS", gte=0, default=10, cast=int),
+        Validator("TUNING.SCHED_EXECUTORS", gte=1, default=1, cast=int),
+    )
     try:
-        cfg_ctrl = EvnConf(args.file)
-    except YAMLValidationError:
-        logger.critical(_("Incorrect content in YAML configuration %s"), args.file)
-        sys.exit(0)
-    cfg_site_list = cfg_ctrl.site_list
+        settings.validators.validate_all()
+    except ValidationError as e:
+        accumulative_errors = e.details
+        logger.exception(accumulative_errors)
+        raise ValueError(_("Incorrect configuration file")) from e
+
+    cfg_site_list = settings.site
     cfg = next(iter(cfg_site_list.values()))
     # Check configuration consistency
-    if cfg.db_enabled and cfg.json_format != "short":
+    if settings.database.enabled and settings.filter.json_format != "short":
         logger.critical(_("Storing to Postgresql cannot use long json_format."))
         logger.critical(_("Please modify YAML configuration and restart."))
         sys.exit(0)
 
-    manage_pg = PostgresqlUtils(cfg)
+    manage_pg = PostgresqlUtils(
+        settings.database.enabled,
+        settings.database.db_user,
+        settings.database.db_pw,
+        settings.database.db_host,
+        settings.database.db_port,
+        settings.database.db_name,
+        settings.database.db_schema_import,
+        settings.database.db_schema_vn,
+        settings.database.db_group,
+    )
 
     if args.db_drop:
         logger.info(_("Delete if exists database and roles"))
@@ -758,27 +966,41 @@ def main(args):
 
     if args.col_tables_create:
         logger.info(_("Creating or recreating vn columns based tables"))
-        col_table_create(cfg, sql_quiet, client_min_message)
+        col_table_create(
+            db_host=settings.database.db_host,
+            db_port=settings.database.db_port,
+            db_name=settings.database.db_name,
+            db_user=settings.database.db_user,
+            db_pw=settings.database.db_pw,
+            db_schema_import=settings.database.db_schema_import,
+            db_schema_vn=settings.database.db_schema_vn,
+            db_group=settings.database.db_group,
+            db_secret_key=settings.database.db_secret_key,
+            db_out_proj=settings.database.db_out_proj,
+            sql_quiet=sql_quiet,
+            client_min_message=client_min_message,
+        )
 
     if args.full:
         logger.info(_("Performing a full download"))
-        full_download(cfg_ctrl)
+        full_download(settings)
+        logger.info(_("Finished full download"))
 
     if args.schedule:
         logger.info(_("Creating or modifying incremental download schedule"))
-        increment_schedule(cfg_ctrl)
+        increment_schedule(settings)
 
     if args.update:
         logger.info(_("Performing an incremental download"))
-        increment_download(cfg_ctrl)
+        increment_download(settings)
 
     if args.status:
         logger.info(_("Printing download status"))
-        status(cfg_ctrl)
+        status(settings)
 
-    if args.count:
-        logger.info(_("Counting observations"))
-        count_observations(cfg_ctrl)
+    # if args.count:
+    #     logger.info(_("Counting observations"))
+    #     count_observations(cfg_ctrl)
 
     # Stop and output profiling if required
     if args.profile:
@@ -790,8 +1012,8 @@ def main(args):
     return None
 
 
-def run():
-    """Entry point for console_scripts"""
+def run() -> None:
+    """Entry point for console_scripts."""
     main(sys.argv[1:])
 
 

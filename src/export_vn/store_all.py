@@ -14,16 +14,17 @@ Properties
 
 import logging
 
-from . import _, __version__
+from . import __version__
 
-logger = logging.getLogger("transfer_vn.store_all")
+logger = logging.getLogger(__name__)
 
 
 class StoreAll:
     """Provides store to backend storage."""
 
-    def __init__(self, config, file_backend, db_backend):
-        self._config = config
+    def __init__(self, db_enabled, file_enabled, file_backend, db_backend):
+        self._db_enabled = db_enabled
+        self._file_enabled = file_enabled
         self._file_backend = file_backend
         self._db_backend = db_backend
 
@@ -66,9 +67,9 @@ class StoreAll:
         """
         # Call backends if needed
         nb_item = 0
-        if self._config.file_enabled:
+        if self._file_enabled:
             nb_item = self._file_backend.store(controler, seq, items_dict)
-        if self._config.db_enabled:
+        if self._db_enabled:
             nb_item = self._db_backend.store(controler, seq, items_dict)
         return nb_item
 
@@ -87,9 +88,9 @@ class StoreAll:
         """
         # Call backends if needed
         nb_delete = 0
-        if self._config.file_enabled:
+        if self._file_enabled:
             nb_delete = self._file_backend.delete_obs(obs_list)
-        if self._config.db_enabled:
+        if self._db_enabled:
             nb_delete = self._db_backend.delete_obs(obs_list)
         return nb_delete
 
@@ -108,9 +109,9 @@ class StoreAll:
         """
         # Call backends if needed
         nb_delete = 0
-        if self._config.file_enabled:
+        if self._file_enabled:
             nb_delete = self._file_backend.delete_place(place_list)
-        if self._config.db_enabled:
+        if self._db_enabled:
             nb_delete = self._db_backend.delete_place(place_list)
         return nb_delete
 
@@ -144,9 +145,9 @@ class StoreAll:
             Optional duration of data transfer, in ms
         """
         # Call backends if needed
-        if self._config.file_enabled:
+        if self._file_enabled:
             self._file_backend.log(site, controler, error_count, http_status, comment, length, duration)
-        if self._config.db_enabled:
+        if self._db_enabled:
             self._db_backend.log(site, controler, error_count, http_status, comment, length, duration)
         return None
 
@@ -163,9 +164,9 @@ class StoreAll:
             Timestamp of last update of this taxo_group.
         """
         # Call backends if needed
-        if self._config.file_enabled:
+        if self._file_enabled:
             self._file_backend.increment_log(site, taxo_group, last_ts)
-        if self._config.db_enabled:
+        if self._db_enabled:
             self._db_backend.increment_log(site, taxo_group, last_ts)
         return None
 
@@ -186,8 +187,8 @@ class StoreAll:
         """
         # Call backends if needed
         incr = None
-        if self._config.file_enabled:
+        if self._file_enabled:
             incr = self._file_backend.increment_get(site, taxo_group)
-        if self._config.db_enabled:
+        if self._db_enabled:
             incr = self._db_backend.increment_get(site, taxo_group)
         return incr

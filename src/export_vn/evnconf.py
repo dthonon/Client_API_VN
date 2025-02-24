@@ -32,9 +32,9 @@ from strictyaml import (
     load,
 )
 
-from . import _, __version__
+from . import __version__
 
-logger = logging.getLogger("transfer_vn.evn_conf")
+logger = logging.getLogger(__name__)
 
 
 class EvnConfException(Exception):

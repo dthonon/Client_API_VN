@@ -46,11 +46,11 @@ de la manière suivante.
 
 ```bash
 sudo apt -y install postgresql postgresql-contrib
-sudo apt -y install postgis postgresql-13-postgis-3
+sudo apt -y install postgis postgresql-postgis
 ```
 Puis éditez le fichier de configuration :
 ```bash
-sudo nano /etc/postgresql/13/main/postgresql.conf
+sudo nano /etc/postgresql/16/main/postgresql.conf
 ```
 => changer :
 
@@ -60,7 +60,7 @@ listen_addresses='*'
 
 Puis éditez le fichier d'autorisation :
 ```bash
-sudo nano /etc/postgresql/13/main/pg_hba.conf
+sudo nano /etc/postgresql/16/main/pg_hba.conf
 ```
 => ajouter la ligne suivante pour autoriser l'accès exterieur à postgresql.
 `host all all 0.0.0.0/0 md5`

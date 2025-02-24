@@ -3,7 +3,6 @@ Test update_vn main.
 """
 
 import csv
-import importlib.resources
 import logging
 import time
 from pathlib import Path
@@ -20,11 +19,10 @@ SITE = "tff"
 FILE = ".evn_test.toml"
 
 # Get configuration for test site
-ref = str(importlib.resources.files("update_vn") / "data/evn_default.toml")
 settings = Dynaconf(
-    settings_files=[ref, FILE],
+    settings_files=[FILE],
 )
-cfg_site_list = settings.sites
+cfg_site_list = settings.site
 assert len(cfg_site_list) == 1, _("Only one site can be defined in configuration file")
 for site, cfg in cfg_site_list.items():  # noqa: B007
     break
