@@ -28,9 +28,9 @@ plugins:
         python:
           options:
             docstring_style: "numpy"
-          setup_commands:
-            - import sys
-            - sys.path.append('../')
+          # setup_commands:
+          #   - import sys
+          #   - sys.path.append('../')
 theme:
   name: material
   # feature:
