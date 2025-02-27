@@ -29,6 +29,13 @@
                         "type": "string",
                         "format": "number"
                     },
+                    "created_by": {
+                        "type": "string",
+                        "format": "number"
+                    },
+                    "created_date": {
+                        "$ref": "#/definitions/_date"
+                    },
                     "id": {
                         "type": "string",
                         "format": "integer"
@@ -43,6 +50,13 @@
                     },
                     "is_private": {
                         "$ref": "#/definitions/_zero_one"
+                    },
+                    "last_updated_by": {
+                        "type": "string",
+                        "format": "number"
+                    },
+                    "last_updated_date": {
+                        "$ref": "#/definitions/_date"
                     },
                     "loc_precision": {
                         "type": "string",
@@ -60,7 +74,8 @@
                             "polygone",
                             "subplace",
                             "square",
-                            "transect"
+                            "transect",
+                            "water"
                         ]
                     },
                     "wkt": {
@@ -73,6 +88,40 @@
             },
             "title": "_data",
             "description": "Top level element of local_admin_units data."
+        },
+        "_date": {
+            "oneOf": [
+                {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "@timestamp": {
+                            "type": "string",
+                            "pattern": "^-?[0-9]+$"
+                        },
+                        "@notime": {
+                            "type": "string",
+                            "pattern": "^-?[0-9]+$"
+                        },
+                        "@offset": {
+                            "type": "string",
+                            "pattern": "^-?[0-9]+$"
+                        },
+                        "@ISO8601": {
+                            "type": "string",
+                            "format": "date-time"
+                        },
+                        "#text": {
+                            "type": "string"
+                        }
+                    }
+                },
+                {
+                    "type": "string",
+                    "pattern": "^-?[0-9]+$"
+                }
+            ],
+            "title": "_date"
         },
         "_zero_one": {
             "type": "string",

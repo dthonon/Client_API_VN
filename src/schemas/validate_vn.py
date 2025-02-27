@@ -31,11 +31,9 @@ logger = logging.getLogger(__name__)
 def main(
     verbose: bool,
 ) -> None:
-    """Update biolovision database.
+    """Validate JSON file against knwn schema.
 
     CONFIG: configuration filename
-
-    INPUT: CSV file listing modifications to be applied
     """
     # Create $HOME/tmp directory if it does not exist
     (Path.home() / "tmp").mkdir(exist_ok=True)
@@ -66,24 +64,6 @@ def main(
     logger.info(_("%s, version %s"), sys.argv[0], __version__)
 
     return None
-
-
-@main.command()
-@click.argument(
-    "config",
-)
-def init(config: str):
-    """Copy template TOML file to home directory."""
-    toml_dst = Path.home() / config
-    if toml_dst.is_file():
-        logger.warning(_("toml configuration file %s exists and is not overwritten"), toml_dst)
-    else:
-        logger.info(_("Creating toml configuration file"))
-        ref = importlib.resources.files(__name__.split(".")[0]) / "data/evn_template.toml"
-        with importlib.resources.as_file(ref) as toml_src:
-            logger.info(_("Creating toml configuration file %s, from %s"), toml_dst, toml_src)
-            shutil.copyfile(toml_src, toml_dst)
-            logger.info(_("Please edit %s before running the script"), toml_dst)
 
 
 def _get_int_or_float(v):
@@ -156,7 +136,7 @@ def validate(config: str, samples: float) -> None:
                 # Gathering files to validate
                 f_list = []
                 p = Path.home() / settings.file.file_store
-                for tst_f in p.glob(f"*/{schema}*.gz"):
+                for tst_f in p.glob(f"{schema}*.gz"):
                     f_list.append(tst_f)
                 sample_schema = samples
                 if isinstance(sample_schema, float):
@@ -179,7 +159,7 @@ def validate(config: str, samples: float) -> None:
     "config",
 )
 def restore(config: str) -> None:
-    """Restore file names."""
+    """Restore file names changed by validate."""
     # Get configuration from file
     if not (Path.home() / config).is_file():
         logger.critical(_("Configuration file %s does not exist"), str(Path.home() / config))
