@@ -188,7 +188,7 @@ def restore(config: str) -> None:
             # Gathering files to rename
             f_list = []
             p = Path.home() / settings.file.file_store
-            for tst_f in p.glob(f"*/{schema}*.gz.done"):
+            for tst_f in p.glob(f"{schema}*.gz.done"):
                 f_list.append(tst_f)
             for fj in f_list:
                 fjr = str(fj)[:-5]
