@@ -821,6 +821,9 @@ class Observations(DownloadVn):
                         if territorial_unit_ids is None or len(territorial_unit_ids) == 0:
                             t_us = self._t_units
                         else:
+                            territorial_unit_ids = list(
+                                map(lambda t_u: "0" + t_u if len(t_u) == 1 else t_u, territorial_unit_ids)
+                            )
                             t_us = [u for u in self._t_units if u[0]["short_name"] in territorial_unit_ids]
                         for t_u in t_us:
                             logger.debug(
