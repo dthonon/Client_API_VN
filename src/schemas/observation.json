@@ -1493,7 +1493,17 @@
             "rarities_committee": {
                 "type": "object",
                 "additionalProperties": false,
-                "properties": {}
+                "properties": {
+                    "description": {
+                        "type": "string"
+                    },
+                    "experience_with_specie": {
+                        "type": "string"
+                    },
+                    "literature": {
+                        "type": "string"
+                    }
+                }
             },
             "relations": {
                 "type": "array",
@@ -1770,6 +1780,7 @@
             "A2_8",
             "A2_9",
             "A2_10",
+            "A2_11",
             "A3_1",
             "A3_2",
             "A3_3",
@@ -1780,6 +1791,7 @@
             "A3_8",
             "A3_9",
             "A3_10",
+            "A3_11",
             "B0_B",
             "B0_1",
             "B1_1",
@@ -1815,14 +1827,21 @@
             "C1_6",
             "C1_7",
             "C1_8",
+            "C1_9",
             "C2_1",
             "C2_2",
             "C2_3",
             "C2_4",
             "C2_5",
             "C2_6",
+            "C2_7",
             "C3_1",
             "C3_2",
+            "C3_3",
+            "C3_4",
+            "C3_5",
+            "C3_6",
+            "C3_7",
             "D0_D",
             "D1_1",
             "D1_2",
@@ -1846,6 +1865,18 @@
             "D3_7",
             "D3_8",
             "D3_9",
+            "D3_10",
+            "D3_11",
+            "D3_12",
+            "D3_13",
+            "D3_14",
+            "D3_15",
+            "D3_16",
+            "D3_17",
+            "D3_18",
+            "D3_19",
+            "D3_20",
+            "D3_21",
             "E0_E",
             "E1_1",
             "E1_2",
@@ -1856,6 +1887,7 @@
             "E2_4",
             "E2_5",
             "E2_6",
+            "E2_7",
             "E3_1",
             "E3_2",
             "E3_3",
@@ -1899,7 +1931,12 @@
             "G1_1",
             "G1_2",
             "G1_3",
-            "G1_4"
+            "G1_4",
+            "G2_1",
+            "G3_1",
+            "G3_2",
+            "G3_3",
+            "G3_4"
         ]
     },
     "_stoc_transport_id": {
@@ -2489,6 +2526,8 @@
             "garden",
             "imprecise",
             "municipality",
+            "object",
+            "object_precise",
             "place",
             "precise",
             "polygone",
