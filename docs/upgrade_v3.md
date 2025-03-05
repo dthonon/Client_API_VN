@@ -6,12 +6,14 @@ La version 3 comporte des évolutions importantes par rapport à la version 2. L
 
 - Changement du format du fichier de configuration. Le nouveau format utilise la syntaxe TOML, qui est plus lisible. Un utilitaire permet la conversion du fichier YAML actuel vers ce nouveau format.
 - Evolution de la gestion multi-site. En version 2, il était possible de télécharger plusieurs sites vers une même base de données. Mais il n'était pas possible de lancer des transferts distinct depuis le même compte. En version 3, un fichier de configuration permet de télécharger un seul site, mais il est maintenant possible d'utiliser le même compte pour effectuer plusieurs téléchargement simultanément.
-- Modification de la syntaxe des commandes
-- Utilisation de `poetry` pour la gestion des dépendances
+- Modification de la syntaxe des commandes.
+- Utilisation de `poetry` pour la gestion des dépendances.
+
+Outre des évolutions majeurs plusieurs fonctionnalités ont évolué et des anomalies ont été corrigées.
 
 Ces évolutions, ainsi que les démarches à réaliser pour la mise à niveau, sont détaillées dans les sections suivantes :
 
-### Fichier de configuration
+## Fichier de configuration
 
 Le fichier de configuration utilise maintenant le format [TOML](https://toml.io/en/). Il est structuré en sections, par exemple `[controler]` et en sous-sections, par exemple `[controler.entities.schedule]`.
 
@@ -42,10 +44,18 @@ Commands:
   prints   Print TOML configuration, with defaults.
 ```
 
-### Gestion de plusieurs sites
+## Gestion de plusieurs sites
 
-qsdfqsdf
+Il est maintenant possible de faire fonctionner plusieurs instances de transfer_vn depuis le même compte. Il faut créer un fichier de configuration spécifique à chaque instance. Dans ce fichier, il faut décommenter la ligne `# sched_sqllite_file = "jobstore.sqlite"` et fournir un nom de fichier unique.
 
-### Syntaxe des commandes
+## Syntaxe des commandes
 
-qsdfqsf
+TBD
+
+## Utilisation de `poetry`
+
+La gestion des dépendances est maintenant gérée par [poetry](https://python-poetry.org/). L'utilisation de cet outil dans le cadre du développement est décrite dans [Contributing](https://dthonon.github.io/Client_API_VN/contributing/).
+
+## Autres évolutions et corrections
+
+TBD
