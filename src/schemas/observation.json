@@ -49,6 +49,11 @@
                 "title": "FULL_FORM",
                 "description": "Is the form complete?"
             },
+            "has_trace": {
+                "$ref": "#/_zero_one",
+                "title": "HAS_TRACE",
+                "description": "Is the form geolocated?"
+            },
             "id_form_mobile": {
                 "type": "string"
             },
@@ -545,6 +550,11 @@
                 "type": "string",
                 "title": "GRID_NAME",
                 "description": "Atlas grid name of the observation"
+            },
+            "auditory_contact": {
+                "$ref": "#/_zero_one",
+                "title": "AUDITORY_CONTACT",
+                "description": "Is the observation an auditory contact?"
             },
             "behaviours": {
                 "type": "array",
@@ -1759,6 +1769,7 @@
             "A2_7",
             "A2_8",
             "A2_9",
+            "A2_10",
             "A3_1",
             "A3_2",
             "A3_3",
@@ -1774,12 +1785,27 @@
             "B1_1",
             "B1_2",
             "B1_3",
+            "B1_4",
+            "B1_5",
+            "B1_6",
+            "B1_7",
+            "B1_8",
             "B2_1",
             "B2_2",
             "B2_3",
+            "B2_4",
+            "B2_5",
+            "B2_6",
+            "B2_7",
+            "B2_8",
             "B3_1",
             "B3_2",
             "B3_3",
+            "B3_4",
+            "B3_5",
+            "B3_6",
+            "B3_7",
+            "B3_8",
             "C0_C",
             "C1_1",
             "C1_2",
@@ -1789,6 +1815,14 @@
             "C1_6",
             "C1_7",
             "C1_8",
+            "C2_1",
+            "C2_2",
+            "C2_3",
+            "C2_4",
+            "C2_5",
+            "C2_6",
+            "C3_1",
+            "C3_2",
             "D0_D",
             "D1_1",
             "D1_2",
@@ -1807,6 +1841,11 @@
             "D3_2",
             "D3_3",
             "D3_4",
+            "D3_5",
+            "D3_6",
+            "D3_7",
+            "D3_8",
+            "D3_9",
             "E0_E",
             "E1_1",
             "E1_2",
@@ -1814,6 +1853,9 @@
             "E2_1",
             "E2_2",
             "E2_3",
+            "E2_4",
+            "E2_5",
+            "E2_6",
             "E3_1",
             "E3_2",
             "E3_3",
@@ -1822,6 +1864,7 @@
             "E3_6",
             "E3_7",
             "E3_8",
+            "E3_9",
             "F0_F",
             "F1_1",
             "F1_2",
@@ -1829,11 +1872,19 @@
             "F1_4",
             "F1_5",
             "F1_6",
+            "F1_7",
+            "F1_8",
+            "F1_9",
+            "F1_10",
+            "F1_11",
             "F2_1",
             "F2_2",
             "F2_3",
             "F2_4",
             "F2_5",
+            "F2_6",
+            "F2_7",
+            "F2_8",
             "F3_1",
             "F3_2",
             "F3_3",
@@ -1843,6 +1894,7 @@
             "F3_7",
             "F3_8",
             "F3_9",
+            "F3_10",
             "G0_G",
             "G1_1",
             "G1_2",
@@ -1908,6 +1960,42 @@
                         }
                     }
                 ]
+            },
+            "hp1": {
+                "$ref": "#/_habitat_id"
+            },
+            "hp2": {
+                "$ref": "#/_habitat_id"
+            },
+            "hp3a": {
+                "$ref": "#/_habitat_id"
+            },
+            "hp3b": {
+                "$ref": "#/_habitat_id"
+            },
+            "hp4a": {
+                "$ref": "#/_habitat_id"
+            },
+            "hp4b": {
+                "$ref": "#/_habitat_id"
+            },
+            "hs1": {
+                "$ref": "#/_habitat_id"
+            },
+            "hs2": {
+                "$ref": "#/_habitat_id"
+            },
+            "hs3a": {
+                "$ref": "#/_habitat_id"
+            },
+            "hs3b": {
+                "$ref": "#/_habitat_id"
+            },
+            "hs4a": {
+                "$ref": "#/_habitat_id"
+            },
+            "hs4b": {
+                "$ref": "#/_habitat_id"
             },
             "form_comment_additional_observer": {
                 "type": "string"

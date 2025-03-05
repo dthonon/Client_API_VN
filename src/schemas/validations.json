@@ -19,7 +19,7 @@
                 "properties": {
                     "committee": {
                         "type": "string",
-                        "enum": ["CHR", "CHN"]
+                        "enum": ["CHD", "CHN", "CHR"]
                     },
                     "date_start": {
                         "type": "string",

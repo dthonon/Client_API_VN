@@ -95,7 +95,7 @@ class StoreFile:
             return 0
 
     def delete_obs(self, obs_list):
-        """Delete observations stored in database.
+        """Delete observations stored in file store: not implemented.
 
         Parameters
         ----------
@@ -111,7 +111,7 @@ class StoreFile:
         return None
 
     def delete_place(self, place_list):
-        """Delete observations stored in database.
+        """Delete places in file store: not implemented.
 
         Parameters
         ----------
