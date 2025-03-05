@@ -85,7 +85,7 @@ cd Client_API_VN
 ### Installing the application
 Run:
 ```bash
-make install
+poetry install
 ```
 
 ### Code changes

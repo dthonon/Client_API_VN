@@ -9,6 +9,7 @@ copyright: Maintained by <a href="mailto:d.thonon9@outlook.com">Daniel Thonon</a
 
 nav:
   - Home: index.md
+  - Upgrade to V3: upgrade_v3.md
   - Applications:
       - Examples: apps/examples.md
       - transfer_vn: apps/transfer_vn.md
