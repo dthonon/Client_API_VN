@@ -693,7 +693,8 @@
                 "pattern": "^-?[0-9]+$"
             },
             "has_ring": {
-                "$ref": "#/_zero_one",
+                "type": "string",
+                "enum": ["0", "1", "2"],
                 "title": "",
                 "description": ""
             },
@@ -776,6 +777,32 @@
                     "DISTANCE": {
                         "type": "string",
                         "pattern": "^-?[0-9]+$"
+                    },
+                    "GE_TEST_BOOLEEN": {
+                        "type": "string",
+                        "enum": ["true", "false"]
+                    },
+                    "GE_TEST_COMPASS": {
+                        "type": "string",
+                        "enum": ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+                    },
+                    "GE_TEST_ENT2": {
+                        "type": "string",
+                        "pattern": "^-?[0-9]+$"
+                    },
+                    "GE_TEST_ENTIER": {
+                        "type": "string",
+                        "pattern": "^-?[0-9]+$"
+                    },
+                    "GE_TEST_FRACTION": {
+                        "type": "string"
+                    },
+                    "GE_TEST_RQ_TEXTE": {
+                        "type": "string"
+                    },
+                    "GE_TEST_TRISTATE": {
+                        "type": "string",
+                        "enum": ["true", "false"]
                     },
                     "HAUTEUR_D_HERBE": {
                         "type": "string",
@@ -1101,7 +1128,7 @@
                             "type": "array",
                             "items": {
                                 "type": "object",
-                                "additionalProperties": true,
+                                "additionalProperties": false,
                                 "properties": {
                                     "@id": {
                                         "type": "string",
@@ -1121,7 +1148,7 @@
                             "type": "array",
                             "items": {
                                 "type": "object",
-                                "additionalProperties": true,
+                                "additionalProperties": false,
                                 "properties": {
                                     "@id": {
                                         "type": "string",
@@ -1300,6 +1327,7 @@
                             "CAPTURE_ACCIDENT",
                             "OTHER",
                             "SCIENTIFIC_SAMPLE",
+                            "TRAFIC",
                             "UNKNOWN"
                         ],
                         "title": "destruction_capture",
@@ -1493,7 +1521,17 @@
             "rarities_committee": {
                 "type": "object",
                 "additionalProperties": false,
-                "properties": {}
+                "properties": {
+                    "description": {
+                        "type": "string"
+                    },
+                    "experience_with_specie": {
+                        "type": "string"
+                    },
+                    "literature": {
+                        "type": "string"
+                    }
+                }
             },
             "relations": {
                 "type": "array",
@@ -1508,6 +1546,32 @@
                             "type": "string",
                             "pattern": "^-?[0-9]+$"
                         }
+                    }
+                }
+            },
+            "ring": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "inscription": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "type_param": {
+                        "type": "string",
+                        "enum": [
+                            "",
+                            "COLOR",
+                            "COLOR,OTHER",
+                            "METAL",
+                            "METAL,COLOR",
+                            "NASAL",
+                            "OTHER",
+                            "WING_TRACE",
+                            "WING_TRACE,OTHER"
+                        ]
                     }
                 }
             },
@@ -1770,6 +1834,7 @@
             "A2_8",
             "A2_9",
             "A2_10",
+            "A2_11",
             "A3_1",
             "A3_2",
             "A3_3",
@@ -1780,6 +1845,7 @@
             "A3_8",
             "A3_9",
             "A3_10",
+            "A3_11",
             "B0_B",
             "B0_1",
             "B1_1",
@@ -1798,6 +1864,7 @@
             "B2_6",
             "B2_7",
             "B2_8",
+            "B2_9",
             "B3_1",
             "B3_2",
             "B3_3",
@@ -1815,14 +1882,24 @@
             "C1_6",
             "C1_7",
             "C1_8",
+            "C1_9",
+            "C1_10",
             "C2_1",
             "C2_2",
             "C2_3",
             "C2_4",
             "C2_5",
             "C2_6",
+            "C2_7",
+            "C2_8",
+            "C2_9",
             "C3_1",
             "C3_2",
+            "C3_3",
+            "C3_4",
+            "C3_5",
+            "C3_6",
+            "C3_7",
             "D0_D",
             "D1_1",
             "D1_2",
@@ -1846,6 +1923,19 @@
             "D3_7",
             "D3_8",
             "D3_9",
+            "D3_10",
+            "D3_11",
+            "D3_12",
+            "D3_13",
+            "D3_14",
+            "D3_15",
+            "D3_16",
+            "D3_17",
+            "D3_18",
+            "D3_19",
+            "D3_20",
+            "D3_21",
+            "D3_22",
             "E0_E",
             "E1_1",
             "E1_2",
@@ -1856,6 +1946,7 @@
             "E2_4",
             "E2_5",
             "E2_6",
+            "E2_7",
             "E3_1",
             "E3_2",
             "E3_3",
@@ -1877,6 +1968,7 @@
             "F1_9",
             "F1_10",
             "F1_11",
+            "F1_12",
             "F2_1",
             "F2_2",
             "F2_3",
@@ -1899,7 +1991,19 @@
             "G1_1",
             "G1_2",
             "G1_3",
-            "G1_4"
+            "G1_4",
+            "G1_5",
+            "G1_6",
+            "G1_7",
+            "G1_8",
+            "G2_1",
+            "G2_2",
+            "G2_3",
+            "G2_4",
+            "G3_1",
+            "G3_2",
+            "G3_3",
+            "G3_4"
         ]
     },
     "_stoc_transport_id": {
@@ -2017,6 +2121,7 @@
                     "LIMAT",
                     "SHOC",
                     "SHOC_SITE",
+                    "SHOC_SITE_RNF",
                     "STOC_EPS",
                     "STOC_MONTAGNE",
                     "STOC_ONF",
@@ -2489,6 +2594,8 @@
             "garden",
             "imprecise",
             "municipality",
+            "object",
+            "object_precise",
             "place",
             "precise",
             "polygone",
