@@ -323,7 +323,6 @@ def col_table_create(
     db_schema_import: str,
     db_schema_vn: str,
     db_group: str,
-    db_secret_key: str,
     db_out_proj: str,
     sql_quiet: str,
     client_min_message: str,
@@ -348,8 +347,6 @@ def col_table_create(
         Schema for VN tables.
     db_group: str
         Group for the database.
-    db_secret_key: str
-        Secret key for the database.
     db_out_proj: str
         Output projection for the database.
     sql_quiet: str
@@ -376,7 +373,6 @@ def col_table_create(
         "db_group": db_group,
         "db_user": db_user,
         "db_pw": db_pw,
-        "db_secret_key": db_secret_key,
         "proj": db_out_proj,
     })
     tmp_sql = Path.home() / "tmp/create-vn-tables.sql"
@@ -903,7 +899,6 @@ def main(args) -> None:
         Validator("DATABASE.DB_SCHEMA_IMPORT", len_min=1, cast=str),
         Validator("DATABASE.DB_SCHEMA_VN", len_min=1, cast=str),
         Validator("DATABASE.DB_GROUP", len_min=1, cast=str),
-        Validator("DATABASE.DB_SECRET_KEY", len_min=6, cast=str),
         Validator("DATABASE.DB_OUT_PROJ", len_min=1, cast=str),
         Validator("TUNING.MAX_LIST_LENGTH", gte=1, default=100, cast=int),
         Validator("TUNING.MAX_CHUNKS", gte=1, default=1000, cast=int),
@@ -976,7 +971,6 @@ def main(args) -> None:
             db_schema_import=settings.database.db_schema_import,
             db_schema_vn=settings.database.db_schema_vn,
             db_group=settings.database.db_group,
-            db_secret_key=settings.database.db_secret_key,
             db_out_proj=settings.database.db_out_proj,
             sql_quiet=sql_quiet,
             client_min_message=client_min_message,

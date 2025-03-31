@@ -592,7 +592,6 @@ AFTER INSERT OR UPDATE OR DELETE ON {{ db_schema_import }}.local_admin_units_jso
 CREATE TABLE {{ db_schema_vn }}.observations (
     site                TEXT,
     id_sighting         INTEGER,
-    pseudo_id_sighting  TEXT,
     id_universal        TEXT,
     uuid                TEXT,
     id_form_universal   TEXT,
@@ -732,7 +731,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
 
         IF NOT FOUND THEN
             -- Inserting data on src_vn.observations when raw data is inserted
-            INSERT INTO {{ db_schema_vn }}.observations (site, id_sighting, pseudo_id_sighting, id_universal, uuid, id_form_universal,
+            INSERT INTO {{ db_schema_vn }}.observations (site, id_sighting, id_universal, uuid, id_form_universal,
                                              id_species, taxonomy, date, date_year, timing, id_place, place,
                                              coord_lat, coord_lon, coord_x_local, coord_y_local, precision, source, estimation_code,
                                              count, atlas_code, altitude, project_code, hidden, admin_hidden, observer_uid, details,
@@ -740,7 +739,6 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
             VALUES (
                 NEW.site,
                 NEW.id,
-                encode(hmac(NEW.id::text, '{{ db_secret_key }}', 'sha1'), 'hex'),
                 ((NEW.item -> 'observers') -> 0) ->> 'id_universal',
                 ((NEW.item -> 'observers') -> 0) ->> 'uuid',
                 NEW.id_form_universal,
@@ -780,7 +778,7 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
 
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting data on src_vn.observations when raw data is inserted
-        INSERT INTO {{ db_schema_vn }}.observations (site, id_sighting, pseudo_id_sighting, id_universal, uuid, id_form_universal,
+        INSERT INTO {{ db_schema_vn }}.observations (site, id_sighting, id_universal, uuid, id_form_universal,
                                          id_species, taxonomy, date, date_year, timing, id_place, place,
                                          coord_lat, coord_lon, coord_x_local, coord_y_local, source, precision, estimation_code,
                                          count, atlas_code, altitude, project_code, hidden, admin_hidden, observer_uid, details,
@@ -788,7 +786,6 @@ CREATE OR REPLACE FUNCTION update_observations() RETURNS TRIGGER AS $$
         VALUES (
             NEW.site,
             NEW.id,
-            encode(hmac(NEW.id::text, '{{ db_secret_key }}', 'sha1'), 'hex'),
             ((NEW.item -> 'observers') -> 0) ->> 'id_universal',
             ((NEW.item -> 'observers') -> 0) ->> 'uuid',
             NEW.id_form_universal,
@@ -842,7 +839,6 @@ CREATE TABLE {{ db_schema_vn }}.observers(
     site                TEXT,
     id                  INTEGER,
     id_universal        INTEGER,
-    pseudo_observer_uid TEXT,
     id_entity           INTEGER,
     anonymous           BOOLEAN,
     collectif           BOOLEAN,
@@ -886,13 +882,12 @@ CREATE OR REPLACE FUNCTION update_observers() RETURNS TRIGGER AS $$
         WHERE id = OLD.id AND site = OLD.site ;
         IF NOT FOUND THEN
             -- Inserting data in new row, usually after table re-creation
-            INSERT INTO {{ db_schema_vn }}.observers(site, id, id_universal, pseudo_observer_uid, id_entity, anonymous,
+            INSERT INTO {{ db_schema_vn }}.observers(site, id, id_universal, id_entity, anonymous,
                                                   collectif, default_hidden, name, surname)
             VALUES (
                 NEW.site,
                 NEW.id,
                 NEW.id_universal,
-                encode(hmac(CAST(NEW.id_universal AS TEXT), '{{ db_secret_key }}', 'sha1'), 'hex'),
                 CAST(NEW.item->>'id_entity' AS INTEGER),
                 CAST(NEW.item->>'anonymous' AS BOOLEAN),
                 CAST(NEW.item->>'collectif' AS BOOLEAN),
@@ -905,13 +900,12 @@ CREATE OR REPLACE FUNCTION update_observers() RETURNS TRIGGER AS $$
 
     ELSIF (TG_OP = 'INSERT') THEN
         -- Inserting data on src_vn.observations when raw data is inserted
-        INSERT INTO {{ db_schema_vn }}.observers(site, id, id_universal, pseudo_observer_uid, id_entity, anonymous,
+        INSERT INTO {{ db_schema_vn }}.observers(site, id, id_universal, id_entity, anonymous,
                                               collectif, default_hidden, name, surname)
         VALUES (
             NEW.site,
             NEW.id,
             NEW.id_universal,
-            encode(hmac(CAST(NEW.id_universal AS TEXT), '{{ db_secret_key }}', 'sha1'), 'hex'),
             CAST(NEW.item->>'id_entity' AS INTEGER),
             CAST(NEW.item->>'anonymous' AS BOOLEAN),
             CAST(NEW.item->>'collectif' AS BOOLEAN),
