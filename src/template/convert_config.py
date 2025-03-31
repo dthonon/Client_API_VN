@@ -359,8 +359,6 @@ def convert(in_config: str, out_config: str) -> None:
     databases.append("db_user", in_settings["database"]["db_user"])
     databases.add(comment("Postgresql user password."))
     databases.append("db_pw", in_settings["database"]["db_pw"])
-    databases.add(comment("PostgreSQL SecretKey for pseudonymization."))
-    databases.append("db_secret_key", in_settings["database"]["db_secret_key"])
     databases.add(comment("Coordinates systems for local projection, see EPSG."))
     databases.append("db_out_proj", in_settings["database"]["db_out_proj"])
     cfg.append("database", databases)
