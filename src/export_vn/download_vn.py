@@ -124,7 +124,7 @@ class DownloadVn:
     # ---------------
     # Generic methods
     # ---------------
-    def store(self, opt_params_iter=None):
+    def store(self, opt_params_iter=None, file_id: str = ""):
         """Download from VN by API and store json to file.
 
         Calls  biolovision_api, convert to json and call backend to store.
@@ -133,6 +133,8 @@ class DownloadVn:
         ----------
         opt_params_iter : iterable or None
             Provides opt_params values.
+        file_id : str
+            Optional string to append to the file name.
 
         """
         # GET from API
@@ -159,7 +161,7 @@ class DownloadVn:
                     timing,
                 )
                 # Call backend to store results
-                self._backend.store(self._api_instance.controler, str(i), items_dict)
+                self._backend.store(self._api_instance.controler, file_id + str(i), items_dict)
         except HTTPError:
             self._backend.log(
                 self._site,
@@ -774,7 +776,7 @@ class Observations(DownloadVn):
                     )
 
                     # Record end of download interval
-                    end_date = datetime.now() if self._end_date is None else self._end_date
+                    end_date = datetime.now() if self._end_date is None else datetime.combine(self._end_date, time.min)
                     since = self._backend.increment_get(self._site, id_taxo_group)
                     if since is None:
                         since = end_date
@@ -787,6 +789,7 @@ class Observations(DownloadVn):
                         if self._start_date is None
                         else datetime.combine(self._start_date, time.min)
                     )
+
                     seq = 1
                     pid = PID(
                         kp=self._pid_kp,
@@ -799,6 +802,7 @@ class Observations(DownloadVn):
                         ),
                     )
                     delta_days = self._pid_delta_days
+
                     while start_date > min_date:
                         nb_obs = 0
                         start_date = end_date - timedelta(days=delta_days)
@@ -817,6 +821,9 @@ class Observations(DownloadVn):
                         if territorial_unit_ids is None or len(territorial_unit_ids) == 0:
                             t_us = self._t_units
                         else:
+                            territorial_unit_ids = list(
+                                map(lambda t_u: "0" + t_u if len(t_u) == 1 else t_u, territorial_unit_ids)
+                            )
                             t_us = [u for u in self._t_units if u[0]["short_name"] in territorial_unit_ids]
                         for t_u in t_us:
                             logger.debug(
@@ -1236,7 +1243,7 @@ class Places(DownloadVn):
                             l_a_u["id"],
                         )
                         q_param = {"id_commune": l_a_u["id"], "get_hidden": "1"}
-                        super().store([q_param])
+                        super().store(opt_params_iter=[q_param], file_id=(id_canton + "_" + l_a_u["id"] + "_"))
         else:
             for l_a_u in self._l_a_units:
                 logger.info(

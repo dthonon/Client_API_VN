@@ -155,6 +155,8 @@ lint.ignore = [
   "S102",
   # List required
   "C400",
+  # Map required
+  "C417",
   # Complexity: too much refactoring needed
   "C901",
   # lru_cache memory leak is not an issue on time limited scripts

@@ -920,6 +920,7 @@ def main(args) -> None:
         Validator("TUNING.PID_LIMIT_MAX", gte=0, default=2000, cast=int),
         Validator("TUNING.PID_DELTA_DAYS", gte=0, default=10, cast=int),
         Validator("TUNING.SCHED_EXECUTORS", gte=1, default=1, cast=int),
+        Validator("TUNING.SCHED_SQLLITE_FILE", default="jobstore.sqllite", cast=str),
     )
     try:
         settings.validators.validate_all()
