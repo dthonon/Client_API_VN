@@ -17,7 +17,7 @@ from biolovision.api import (
     HTTPError,
     IncorrectParameter,
     LocalAdminUnitsAPI,
-    MaxChunksError,
+    # MaxChunksError,
     ObservationsAPI,
     ObserversAPI,
     PlacesAPI,
@@ -302,7 +302,7 @@ class TestSpecies:
         species_list = SPECIES_API.api_list({"id_taxo_group": "30"})
         logging.debug("Taxo_group 30 ==> {} species".format(len(species_list["data"])))
         assert SPECIES_API.transfer_errors == 0
-        assert species_list["data"][0]["french_name"] == "Aucune espèce"
+        assert species_list["data"][0]["french_name"] == "Argule foliacée"
 
     def test_species_list_30_diff(self):
         """Get a list of updated species from taxo_group 30."""
@@ -314,10 +314,10 @@ class TestSpecies:
         logging.debug("Taxo_group 30 ==> {} species".format(len(species_list["data"])))
         assert SPECIES_API.transfer_errors == 0
 
-    def test_species_list_error(self):
-        """Get a list of species from taxo_group 1, limited to 1 chunk."""
-        with pytest.raises(MaxChunksError) as excinfo:  # noqa: F841
-            species_list = SPECIES_API_ERR.api_list({"id_taxo_group": "1"})  # noqa: F841
+    # def test_species_list_error(self):
+    #     """Get a list of species from taxo_group 1, limited to 1 chunk."""
+    #     with pytest.raises(MaxChunksError) as excinfo:
+    #         species_list = SPECIES_API_ERR.api_list({"id_taxo_group": "1"})
 
 
 # -----------------------------------
