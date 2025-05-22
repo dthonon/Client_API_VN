@@ -258,7 +258,7 @@ def arguments(args):
     out_group = parser.add_mutually_exclusive_group()
     out_group.add_argument("--verbose", help=_("Increase output verbosity"), action="store_true")
     out_group.add_argument("--quiet", help=_("Reduce output verbosity"), action="store_true")
-    parser.add_argument("--init", help=_("Initialize the YAML configuration file"), action="store_true")
+    parser.add_argument("--init", help=_("Initialize the TOML configuration file"), action="store_true")
     parser.add_argument("--db_drop", help=_("Delete if exists database and roles"), action="store_true")
     parser.add_argument("--db_create", help=_("Create database and roles"), action="store_true")
     parser.add_argument(
@@ -857,7 +857,7 @@ def main(args) -> None:
     logger.info(_("%s, version %s"), sys.argv[0], __version__)
     logger.debug(_("Arguments: %s"), sys.argv[1:])
 
-    # If required, first create YAML file
+    # If required, first create TOML file
     if args.init:
         logger.info(_("Creating TOML configuration file"))
         init(args.file)
@@ -929,7 +929,7 @@ def main(args) -> None:
     # Check configuration consistency
     if settings.database.enabled and settings.filter.json_format != "short":
         logger.critical(_("Storing to Postgresql cannot use long json_format."))
-        logger.critical(_("Please modify YAML configuration and restart."))
+        logger.critical(_("Please modify TOML configuration and restart."))
         sys.exit(0)
 
     manage_pg = PostgresqlUtils(
