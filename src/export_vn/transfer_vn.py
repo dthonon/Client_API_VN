@@ -5,7 +5,6 @@ Program managing VisioNature export to Postgresql database
 """
 # ruff: noqa: S602
 
-# import argparse
 import contextlib
 import importlib.resources
 import logging
@@ -17,8 +16,8 @@ from datetime import UTC, datetime
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
+import click
 import psutil
-import yappi
 from apscheduler.events import EVENT_JOB_ERROR, EVENT_JOB_EXECUTED, EVENT_JOB_SUBMITTED
 from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.jobstores.memory import MemoryJobStore
@@ -820,19 +819,23 @@ def increment_download_1(ctrl: str, settings: dict) -> None:
 #     return None
 
 
-def main(args) -> None:
+@click.version_option(package_name="Client_API_VN")
+@click.group()
+@click.option("--verbose/--quiet", default=False, help=_("Increase or decrease output verbosity"))
+def main(
+    verbose: bool,
+) -> None:
     """Main entry point calling commands.
 
     Args:
       args ([str]): command line parameter list
     """
     # # Get command line arguments
-    # args = arguments(args)
 
-    # Start profiling if required
-    if args.profile:
-        yappi.start()
-        logger.info(_("Started yappi"))
+    # # Start profiling if required
+    # if args.profile:
+    #     yappi.start()
+    #     logger.info(_("Started yappi"))
 
     # Create $HOME/tmp directory if it does not exist
     (Path.home() / "tmp").mkdir(exist_ok=True)
@@ -851,7 +854,7 @@ def main(args) -> None:
     fh.setFormatter(formatter)
     ch.setFormatter(formatter)
     # add the handlers to the root logger
-    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO, handlers=[fh, ch], force=True)
+    logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO, handlers=[fh, ch])
 
     # # Define SQL verbosity
     # if args.verbose:
