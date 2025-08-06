@@ -740,29 +740,21 @@ class TestObservations:
         assert OBSERVATIONS_API.transfer_errors == 0
 
     def test_observations_list_1(self):
-        """Get the list of sightings, from taxo_group 18: Mantodea."""
-        obs_list = OBSERVATIONS_API.api_list("18")
+        """Get the list of sightings, from taxo_group 33: Branchiopodes."""
+        obs_list = OBSERVATIONS_API.api_list("33")
         assert OBSERVATIONS_API.transfer_errors == 0
         assert len(obs_list) > 0
 
-    @pytest.mark.slow
-    def test_observations_list_2_1(self):
-        """Get the list of sightings, from taxo_group 1, specie 218."""
-        obs_list = OBSERVATIONS_API.api_list("1", id_species="218", short_version="1")
-        logging.debug(f"local test_observations_list_3_0 unit {len(obs_list)} sightings/forms ")
-        assert OBSERVATIONS_API.transfer_errors == 0
-        assert len(obs_list["data"]) > 1
-
     def test_observations_list_3_0(self):
-        """Get the list of sightings, from taxo_group 1, specie 153."""
-        obs_list = OBSERVATIONS_API.api_list("1", id_species="153")
+        """Get the list of sightings, from taxo_group 1, specie 155 (Aigle impérial), long JSON."""
+        obs_list = OBSERVATIONS_API.api_list("1", id_species="155")
         logging.debug(f"local test_observations_list_3_0 unit {len(obs_list)} sightings/forms ")
         assert OBSERVATIONS_API.transfer_errors == 0
         assert len(obs_list["data"]) > 1
 
     def test_observations_list_3_1(self):
-        """Get the list of sightings, from taxo_group 1, specie 153."""
-        obs_list = OBSERVATIONS_API.api_list("1", id_species="153", short_version="1")
+        """Get the list of sightings, from taxo_group 1, specie 155 (Aigle impérial), short JSON."""
+        obs_list = OBSERVATIONS_API.api_list("1", id_species="155", short_version="1")
         logging.debug(f"local test_observations_list_3_0 unit {len(obs_list)} sightings/forms ")
         assert OBSERVATIONS_API.transfer_errors == 0
         assert len(obs_list["data"]) > 1
@@ -962,8 +954,8 @@ class TestObservations:
                     {
                         "time_start": "06:45:00",
                         "time_stop": "07:00:00",
-                        "lat": "45.18724",
-                        "lon": "5.735458",
+                        "lat": "45.2022",
+                        "lon": "5.7971",
                         "full_form": "1",
                         "sightings": [
                             {
@@ -981,8 +973,8 @@ class TestObservations:
                                         },
                                         "altitude": "230",
                                         "comment": "TEST API !!! à supprimer !!!",
-                                        "coord_lat": "45.18724",
-                                        "coord_lon": "5.735458",
+                                        "coord_lat": "45.2022",
+                                        "coord_lon": "5.7971",
                                         "precision": "precise",
                                         "count": "1",
                                         "estimation_code": "MINIMUM",
@@ -997,7 +989,7 @@ class TestObservations:
         # First creation should succeed
         sighting = OBSERVATIONS_API.api_create(data)
         logging.debug(sighting)
-        assert sighting["status"] == "saved"
+        assert sighting is not None and sighting["status"] == "saved"
         obs_1 = sighting["id"][0]
         assert isinstance(obs_1, int)
         obs_1 = str(obs_1)
