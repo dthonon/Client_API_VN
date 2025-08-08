@@ -231,7 +231,7 @@ def test_version():
 @pytest.mark.order(index=310)
 def test_taxo_groups_store(capsys):
     """Store taxo groups to file."""
-    file_json = Path.home() / settings.file.file_store / "taxo_groups_1.json.gz"
+    file_json = Path.home() / settings["FILE"]["file_store"] / "taxo_groups_1.json.gz"
     if file_json.is_file():
         file_json.unlink()
     TAXO_GROUP.store()
@@ -247,7 +247,7 @@ def test_taxo_groups_store(capsys):
 @pytest.mark.order(index=311)
 def test_families_store(capsys):
     """Store families to file."""
-    file_json = Path.home() / settings.file.file_store / "families_1.json.gz"
+    file_json = Path.home() / settings["FILE"]["file_store"] / "families_1.json.gz"
     if file_json.is_file():
         file_json.unlink()
     FAMILIES.store()
@@ -264,7 +264,7 @@ def test_families_store(capsys):
 @pytest.mark.slow
 def test_species_store(capsys):
     """Store species to file."""
-    file_json = Path.home() / settings.file.file_store / "species_1.json.gz"
+    file_json = Path.home() / settings["FILE"]["file_store"] / "species_1.json.gz"
     if file_json.is_file():
         file_json.unlink()
     SPECIES.store()
@@ -280,7 +280,7 @@ def test_species_store(capsys):
 @pytest.mark.order(index=320)
 def test_territorial_units_store(capsys):
     """Store territorial units to file."""
-    file_json = Path.home() / settings.file.file_store / "territorial_units_1.json.gz"
+    file_json = Path.home() / settings["FILE"]["file_store"] / "territorial_units_1.json.gz"
     if file_json.is_file():
         file_json.unlink()
     TERRITORIAL_UNIT.store()
@@ -296,7 +296,7 @@ def test_territorial_units_store(capsys):
 @pytest.mark.order(index=321)
 def test_local_admin_units_store(capsys):
     """Store local_admin_units to file."""
-    file_json = Path.home() / settings.file.file_store / "local_admin_units_1.json.gz"
+    file_json = Path.home() / settings["FILE"]["file_store"] / "local_admin_units_1.json.gz"
     if file_json.is_file():
         file_json.unlink()
     LOCAL_ADMIN_UNITS.store()
@@ -313,7 +313,7 @@ def test_local_admin_units_store(capsys):
 @pytest.mark.slow
 def test_places_store(capsys):
     """Store places to file."""
-    file_json = Path.home() / settings.file.file_store / "places_1.json.gz"
+    file_json = Path.home() / settings["FILE"]["file_store"] / "places_1.json.gz"
     if file_json.is_file():
         file_json.unlink()
     PLACES.store()
@@ -330,7 +330,7 @@ def test_places_store(capsys):
 @pytest.mark.slow
 def test_fields_store(capsys):
     """Store fields to file."""
-    file_json = Path.home() / settings.file.file_store / "field_details_1.json.gz"
+    file_json = Path.home() / settings["FILE"]["file_store"] / "field_details_1.json.gz"
     if file_json.is_file():
         file_json.unlink()
     FIELDS.store()
@@ -346,7 +346,7 @@ def test_fields_store(capsys):
 @pytest.mark.order(index=331)
 def test_entities_store(capsys):
     """Store entities to file."""
-    file_json = Path.home() / settings.file.file_store / "entities_1.json.gz"
+    file_json = Path.home() / settings["FILE"]["file_store"] / "entities_1.json.gz"
     if file_json.is_file():
         file_json.unlink()
     ENTITIES.store()
@@ -363,7 +363,7 @@ def test_entities_store(capsys):
 @pytest.mark.slow
 def test_observers_store(capsys):
     """Store places to file."""
-    file_json = Path.home() / settings.file.file_store / "observers_1.json.gz"
+    file_json = Path.home() / settings["FILE"]["file_store"] / "observers_1.json.gz"
     if file_json.is_file():
         file_json.unlink()
     OBSERVERS.store()
@@ -380,7 +380,7 @@ def test_observers_store(capsys):
 @pytest.mark.slow
 def test_validations_store(capsys):
     """Store territorial units to file."""
-    file_json = Path.home() / settings.file.file_store / "validations_1.json.gz"
+    file_json = Path.home() / settings["FILE"]["file_store"] / "validations_1.json.gz"
     if file_json.is_file():
         file_json.unlink()
     VALIDATIONS.store()
@@ -395,11 +395,11 @@ def test_validations_store(capsys):
 # -------------
 @pytest.mark.order(index=340)
 def test_observations_store_search_1_1(capsys):
-    """Store observations from taxo_group 2 by specie to file, using search."""
-    file_json = Path.home() / settings.file.file_store / "observations_2_138_1.json.gz"
+    """Store observations from taxo_group 28, territorial_unit 38 to file, using search."""
+    file_json = Path.home() / settings["FILE"]["file_store"] / "observations_28_138_1.json.gz"
     if file_json.is_file():
         file_json.unlink()
-    OBSERVATIONS.store(2, method="search")
+    OBSERVATIONS.store(id_taxo_group=28, territorial_unit_ids=["38"], method="search")
     assert file_json.is_file()
 
 
@@ -407,7 +407,7 @@ def test_observations_store_search_1_1(capsys):
 @pytest.mark.slow
 def test_observations_store_search_1_2(capsys):
     """Store observations from taxo_group 2 by specie to file, using search."""
-    file_json = Path.home() / settings.file.file_store / "observations_2_138_1.json.gz"
+    file_json = Path.home() / settings["FILE"]["file_store"] / "observations_2_138_1.json.gz"
     if file_json.is_file():
         file_json.unlink()
     OBSERVATIONS.store(2, method="search", short_version="1")
