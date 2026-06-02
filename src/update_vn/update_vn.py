@@ -111,7 +111,7 @@ def update(config: str, input_file: str) -> None:
     )
 
     # Validation de tous les paramètres
-    cfg_site_list = settings.site
+    cfg_site_list = settings.sites
     if len(cfg_site_list) > 1:
         raise ValueError(_("Only one site can be defined in configuration file"))
     for site, cfg in cfg_site_list.items():  # noqa: B007
@@ -123,11 +123,11 @@ def update(config: str, input_file: str) -> None:
             len_min=5,
             default="Modification en masse, le {date}, opération {op}, attribut {path}, depuis {old} vers {new}",
         ),
-        Validator(f"SITE.{site_up}.SITE", len_min=10, startswith="https://"),
-        Validator("SITE.{site_up}.USER_EMAIL", len_min=5, cont="@"),
-        Validator("SITE.{site_up}.USER_PW", len_min=5),
-        Validator("SITE.{site_up}.CLIENT_KEY", len_min=20),
-        Validator("SITE.{site_up}.CLIENT_SECRET", len_min=5),
+        Validator(f"SITES.{site_up}.URL", len_min=10, startswith="https://"),
+        Validator("SITES.{site_up}.USER_EMAIL", len_min=5, cont="@"),
+        Validator("SITES.{site_up}.USER_PW", len_min=5),
+        Validator("SITES.{site_up}.CLIENT_KEY", len_min=20),
+        Validator("SITES.{site_up}.CLIENT_SECRET", len_min=5),
         Validator("TUNING.MAX_LIST_LENGTH", gte=1, default=100),
         Validator("TUNING.MAX_CHUNKS", gte=1, default=1000),
         Validator("TUNING.MAX_RETRY", gte=1, default=5),
@@ -147,12 +147,13 @@ def update(config: str, input_file: str) -> None:
         logger.critical(_("Input file %s does not exist"), str(Path(input_file)))
         raise FileNotFoundError
 
+    print(cfg)
     obs_api = {}
     logger.debug(_("Preparing update for site %s"), site)
     obs_api[site] = ObservationsAPI(
         user_email=cfg.user_email,
         user_pw=cfg.user_pw,
-        base_url=cfg.site,
+        base_url=cfg.URL,
         client_key=cfg.client_key,
         client_secret=cfg.client_secret,
         max_retry=settings.tuning.max_retry,
