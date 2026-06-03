@@ -27,6 +27,7 @@ from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
 import click
+import pandas as pd
 from dynaconf import Dynaconf, ValidationError, Validator
 
 from biolovision.api import ObservationsAPI
@@ -112,8 +113,13 @@ def update(config: str, input_file: str) -> None:
 
     # Validation de tous les paramètres
     cfg_site_list = settings.sites
+    if not cfg_site_list:
+        raise ValueError(_("No site defined in configuration file"))
     if len(cfg_site_list) > 1:
         raise ValueError(_("Only one site can be defined in configuration file"))
+    # Get the single site key
+    site = None
+    cfg = None
     for site, cfg in cfg_site_list.items():  # noqa: B007
         break
     site_up = site.upper()
@@ -260,6 +266,87 @@ def update(config: str, input_file: str) -> None:
                         obs_api[row[0].strip()].api_update(row[1].strip(), sighting)
 
     return None
+
+
+@main.command()
+@click.argument(
+    "config",
+)
+@click.argument(
+    "forms_file",
+)
+@click.argument(
+    "data_file",
+)
+def upload_forms(config: str, forms_file: str, data_file: str) -> None:
+    """Upload forms to Biolovision database."""
+    # Get configuration from file
+    if not (Path.home() / config).is_file():
+        logger.critical(_("Configuration file %s does not exist"), str(Path.home() / config))
+        raise FileNotFoundError
+    logger.info(_("Getting configuration data from %s"), config)
+    settings = Dynaconf(
+        settings_files=[config],
+    )
+
+    # Validation de tous les paramètres
+    cfg_site_list = settings.sites
+    if len(cfg_site_list) > 1:
+        raise ValueError(_("Only one site can be defined in configuration file"))
+    site = None
+    cfg = None
+    for site, cfg in cfg_site_list.items():  # noqa: B007
+        break
+    site_up = site.upper()  # pyright: ignore[reportOptionalMemberAccess]
+    settings.validators.register(
+        Validator(
+            "MESSAGE",
+            len_min=5,
+            default="Modification en masse, le {date}, opération {op}, attribut {path}, depuis {old} vers {new}",
+        ),
+        Validator(f"SITES.{site_up}.URL", len_min=10, startswith="https://"),
+        Validator("SITES.{site_up}.USER_EMAIL", len_min=5, cont="@"),
+        Validator("SITES.{site_up}.USER_PW", len_min=5),
+        Validator("SITES.{site_up}.CLIENT_KEY", len_min=20),
+        Validator("SITES.{site_up}.CLIENT_SECRET", len_min=5),
+        Validator("TUNING.MAX_LIST_LENGTH", gte=1, default=100),
+        Validator("TUNING.MAX_CHUNKS", gte=1, default=1000),
+        Validator("TUNING.MAX_RETRY", gte=1, default=5),
+        Validator("TUNING.MAX_REQUESTS", gte=0, default=0),
+        Validator("TUNING.RETRY_DELAY", gte=1, default=5),
+        Validator("TUNING.UNAVAILABLE_DELAY", gte=1, default=600),
+    )
+    try:
+        settings.validators.validate_all()
+    except ValidationError as e:
+        accumulative_errors = e.details
+        logger.exception(accumulative_errors)
+        raise
+
+    # Check forms and data file
+    if not Path(forms_file).is_file():
+        logger.critical(_("Forms file %s does not exist"), str(Path(forms_file)))
+        raise FileNotFoundError
+    if not Path(data_file).is_file():
+        logger.critical(_("Data file %s does not exist"), str(Path(data_file)))
+        raise FileNotFoundError
+
+    # Read forms and data file
+    with open(forms_file, newline="") as csvfile:
+        forms_reader = csv.reader(csvfile, delimiter=",")
+        forms = pd.DataFrame([row for row in forms_reader if len(row) >= 2])
+    forms.columns = forms.iloc[0]
+    forms = forms[1:]
+    forms.set_index("id", inplace=True)
+    with open(data_file, newline="") as csvfile:
+        data_reader = csv.reader(csvfile, delimiter=",")
+        data = pd.DataFrame([row for row in data_reader if len(row) >= 2])
+    data.columns = data.iloc[0]
+    data = data[1:]
+    data.set_index("id", inplace=True)
+
+    print(forms[["item", "id_form_universal"]])
+    print(data[["item", "id_form_universal"]])
 
 
 def run() -> None:

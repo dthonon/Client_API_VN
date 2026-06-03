@@ -49,6 +49,7 @@ yappi = ">=1.6"
 babel = ">=2.16"
 tomlkit = ">=0.13"
 pyyaml = ">=6.0"
+pandas = "^3.0.3"
 
 [tool.poetry.group.dev.dependencies]
 deptry = ">=0.20"
