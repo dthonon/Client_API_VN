@@ -19,7 +19,9 @@ import contextlib
 import csv
 import datetime
 import importlib.resources
+import json
 import logging
+import pprint
 import shutil
 import sys
 from ast import literal_eval
@@ -122,7 +124,7 @@ def update(config: str, input_file: str) -> None:
     cfg = None
     for site, cfg in cfg_site_list.items():  # noqa: B007
         break
-    site_up = site.upper()
+    site_up = site.upper()  # pyright: ignore[reportOptionalMemberAccess]
     settings.validators.register(
         Validator(
             "MESSAGE",
@@ -157,11 +159,11 @@ def update(config: str, input_file: str) -> None:
     obs_api = {}
     logger.debug(_("Preparing update for site %s"), site)
     obs_api[site] = ObservationsAPI(
-        user_email=cfg.user_email,
-        user_pw=cfg.user_pw,
-        base_url=cfg.URL,
-        client_key=cfg.client_key,
-        client_secret=cfg.client_secret,
+        user_email=cfg.user_email,  # pyright: ignore[reportOptionalMemberAccess]
+        user_pw=cfg.user_pw,  # pyright: ignore[reportOptionalMemberAccess]
+        base_url=cfg.URL,  # pyright: ignore[reportOptionalMemberAccess]
+        client_key=cfg.client_key,  # pyright: ignore[reportOptionalMemberAccess]
+        client_secret=cfg.client_secret,  # pyright: ignore[reportOptionalMemberAccess]
         max_retry=settings.tuning.max_retry,
         max_requests=settings.tuning.max_requests,
         max_chunks=settings.tuning.max_chunks,
@@ -345,8 +347,63 @@ def upload_forms(config: str, forms_file: str, data_file: str) -> None:
     data = data[1:]
     data.set_index("id", inplace=True)
 
-    print(forms[["item", "id_form_universal"]])
-    print(data[["item", "id_form_universal"]])
+    jform = None
+    for _form_id, form in forms.iterrows():
+        form_id = form["id_form_universal"]
+        jform = json.loads(str(form["item"]))
+        print(pprint.pformat(jform))
+        jform.pop("@id", None)
+        jform.pop("@uid", None)
+        jform.pop("id_form_universal", None)
+        jform.pop("coord_x_local", None)
+        jform.pop("coord_y_local", None)
+        jform["sightings"] = []
+        for _data_id, dat in data.iterrows():
+            if dat["id_form_universal"] == form_id:
+                jdat = json.loads(str(dat["item"]))
+                for observer in range(len(jdat["observers"])):
+                    jdat["observers"][observer].pop("@id", None)
+                    jdat["observers"][observer].pop("@uid", None)
+                    jdat["observers"][observer].pop("id_form_universal", None)
+                    jdat["observers"][observer].pop("coord_x_local", None)
+                    jdat["observers"][observer].pop("coord_y_local", None)
+                    jdat["observers"][observer].pop("id_form", None)
+                    jdat["observers"][observer].pop("id_sighting", None)
+                    jdat["observers"][observer].pop("id_universal", None)
+                    jdat["observers"][observer].pop("insert_date", None)
+                    jdat["observers"][observer].pop("update_date", None)
+                    jdat["observers"][observer].pop("uuid", None)
+                    jdat["observers"][observer].pop("precision", None)
+                    jdat["observers"][observer].pop("source", None)
+                jdat["place"].pop("id_universal", None)
+                jdat["place"].pop("loc_precision", None)
+                jdat["place"].pop("lat", None)
+                jdat["place"].pop("lon", None)
+                jdat["place"].pop("name", None)
+                jdat["place"].pop("place_type", None)
+                jdat["species"].pop("category", None)
+                jdat["species"].pop("rarity", None)
+                jdat["species"].pop("taxonomy", None)
+                jform["sightings"].append(jdat)
+                break
+        break
+    print(pprint.pformat(jform))
+
+    # print(cfg)
+    obs_api = ObservationsAPI(
+        user_email=cfg.user_email,  # pyright: ignore[reportOptionalMemberAccess]
+        user_pw=cfg.user_pw,  # pyright: ignore[reportOptionalMemberAccess]
+        base_url=cfg.URL,  # pyright: ignore[reportOptionalMemberAccess]
+        client_key=cfg.client_key,  # pyright: ignore[reportOptionalMemberAccess]
+        client_secret=cfg.client_secret,  # pyright: ignore[reportOptionalMemberAccess]
+        max_retry=settings.tuning.max_retry,
+        max_requests=settings.tuning.max_requests,
+        max_chunks=settings.tuning.max_chunks,
+        unavailable_delay=settings.tuning.unavailable_delay,
+        retry_delay=settings.tuning.retry_delay,
+    )
+    formc = obs_api.api_create(jform)  # pyright: ignore[reportOptionalMemberAccess]
+    print(formc)
 
 
 def run() -> None:
