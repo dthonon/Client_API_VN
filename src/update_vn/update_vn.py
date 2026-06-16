@@ -353,52 +353,50 @@ def upload_forms(config: str, forms_file: str, data_file: str) -> None:
         jform = json.loads(f"{form['item']}")
         jform = {"data": {"forms": [jform]}}
         # print(pprint.pformat(jform))
-        jform["data"]["forms"][0].pop("@id", None)
-        jform["data"]["forms"][0].pop("@uid", None)
-        jform["data"]["forms"][0].pop("id_form_universal", None)
-        jform["data"]["forms"][0].pop("coord_x_local", None)
-        jform["data"]["forms"][0].pop("coord_y_local", None)
-        jform["data"]["forms"][0].pop("place_type", None)
-        jform["data"]["forms"][0].pop("id_form", None)
-        jform["data"]["forms"][0].pop("date_start", None)
-        jform["data"]["forms"][0].pop("date_stop", None)
-        jform["data"]["forms"][0].pop("version", None)
-        jform["data"]["forms"][0].pop("protocol", None)
+        # jform["data"]["forms"][0].pop("@id", None)
+        # jform["data"]["forms"][0].pop("@uid", None)
+        # jform["data"]["forms"][0].pop("id_form_universal", None)
+        # jform["data"]["forms"][0].pop("coord_x_local", None)
+        # jform["data"]["forms"][0].pop("coord_y_local", None)
+        # jform["data"]["forms"][0].pop("place_type", None)
+        # jform["data"]["forms"][0].pop("id_form", None)
+        # jform["data"]["forms"][0].pop("date_start", None)
+        # jform["data"]["forms"][0].pop("date_stop", None)
+        # jform["data"]["forms"][0].pop("version", None)
+        # jform["data"]["forms"][0].pop("protocol", None)
         jform["data"]["forms"][0]["sightings"] = []
         for _data_id, dat in data.iterrows():
             if dat["id_form_universal"] == form_id:
                 jdat = json.loads(str(dat["item"]))
-                for observer in range(len(jdat["observers"])):
-                    jdat["observers"][observer].pop("@uid", None)
-                    jdat["observers"][observer].pop("id_form_universal", None)
-                    jdat["observers"][observer].pop("coord_x_local", None)
-                    jdat["observers"][observer].pop("coord_y_local", None)
-                    jdat["observers"][observer].pop("id_form", None)
-                    jdat["observers"][observer].pop("id_sighting", None)
-                    jdat["observers"][observer].pop("id_universal", None)
-                    jdat["observers"][observer].pop("insert_date", None)
-                    jdat["observers"][observer].pop("update_date", None)
-                    jdat["observers"][observer].pop("uuid", None)
-                    jdat["observers"][observer].pop("source", None)
-                    jdat["observers"][observer].pop("version", None)
-                    jdat["observers"][observer].pop("timing", None)
-                    jdat["observers"][observer].pop("traid", None)
-                jdat["place"].pop("id_universal", None)
-                jdat["place"].pop("loc_precision", None)
-                jdat["place"].pop("lat", None)
-                jdat["place"].pop("lon", None)
-                jdat["place"].pop("name", None)
-                jdat["place"].pop("place_type", None)
-                jdat["species"].pop("category", None)
-                jdat["species"].pop("rarity", None)
-                jdat["species"].pop("taxonomy", None)
+                # for observer in range(len(jdat["observers"])):
+                #     jdat["date"].pop("@offset", None)
+                #     jdat["observers"][observer].pop("@uid", None)
+                #     jdat["observers"][observer].pop("id_form_universal", None)
+                #     jdat["observers"][observer].pop("coord_x_local", None)
+                #     jdat["observers"][observer].pop("coord_y_local", None)
+                #     jdat["observers"][observer].pop("id_form", None)
+                #     jdat["observers"][observer].pop("id_sighting", None)
+                #     jdat["observers"][observer].pop("id_universal", None)
+                #     jdat["observers"][observer].pop("insert_date", None)
+                #     jdat["observers"][observer].pop("update_date", None)
+                #     jdat["observers"][observer].pop("uuid", None)
+                #     jdat["observers"][observer].pop("source", None)
+                #     jdat["observers"][observer].pop("version", None)
+                #     jdat["observers"][observer]["timing"].pop("@offset", None)
+                #     jdat["observers"][observer].pop("traid", None)
+                # jdat["place"].pop("id_universal", None)
+                # jdat["place"].pop("loc_precision", None)
+                # jdat["place"].pop("lat", None)
+                # jdat["place"].pop("lon", None)
+                # jdat["place"].pop("name", None)
+                # jdat["place"].pop("place_type", None)
+                # jdat["species"].pop("category", None)
+                # jdat["species"].pop("rarity", None)
+                # jdat["species"].pop("taxonomy", None)
                 jform["data"]["forms"][0]["sightings"].append(jdat)
-                break
         break
     print(pprint.pformat(jform))
 
-    # print(cfg)
-    # return None
     obs_api = ObservationsAPI(
         user_email=cfg.user_email,  # pyright: ignore[reportOptionalMemberAccess]
         user_pw=cfg.user_pw,  # pyright: ignore[reportOptionalMemberAccess]
@@ -413,6 +411,7 @@ def upload_forms(config: str, forms_file: str, data_file: str) -> None:
     )
     formc = obs_api.api_create(jform)  # pyright: ignore[reportOptionalMemberAccess]
     print(formc)
+    return None
 
 
 def run() -> None:
