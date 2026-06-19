@@ -26,7 +26,6 @@ import sys
 from ast import literal_eval
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
-from time import sleep
 
 import click
 import pandas as pd
@@ -285,6 +284,7 @@ def update(config: str, input_file: str) -> None:
 )
 def upload_forms(config: str, forms_file: str, data_file: str, output_file: str) -> None:
     """Upload forms to Biolovision database."""
+    logger.warning(_("This command is intended for developers only, use with caution!"))
     # Get configuration from file
     if not (Path.home() / config).is_file():
         logger.critical(_("Configuration file %s does not exist"), str(Path.home() / config))
@@ -348,40 +348,46 @@ def upload_forms(config: str, forms_file: str, data_file: str, output_file: str)
         data = pd.DataFrame([row for row in data_reader if len(row) >= 2])
     data.columns = data.iloc[0]
     data = data[1:]
-    data.set_index("id", inplace=True)
+    # data.set_index("id", inplace=True)
 
-    # Create ObservationsAPI instance
-    obs_api = ObservationsAPI(
-        user_email=cfg.user_email,  # pyright: ignore[reportOptionalMemberAccess]
-        user_pw=cfg.user_pw,  # pyright: ignore[reportOptionalMemberAccess]
-        base_url=cfg.URL,  # pyright: ignore[reportOptionalMemberAccess]
-        client_key=cfg.client_key,  # pyright: ignore[reportOptionalMemberAccess]
-        client_secret=cfg.client_secret,  # pyright: ignore[reportOptionalMemberAccess]
-        max_retry=settings.tuning.max_retry,
-        max_requests=settings.tuning.max_requests,
-        max_chunks=settings.tuning.max_chunks,
-        unavailable_delay=settings.tuning.unavailable_delay,
-        retry_delay=settings.tuning.retry_delay,
-    )
+    # # Create ObservationsAPI instance
+    # obs_api = ObservationsAPI(
+    #     user_email=cfg.user_email,  # pyright: ignore[reportOptionalMemberAccess]
+    #     user_pw=cfg.user_pw,  # pyright: ignore[reportOptionalMemberAccess]
+    #     base_url=cfg.URL,  # pyright: ignore[reportOptionalMemberAccess]
+    #     client_key=cfg.client_key,  # pyright: ignore[reportOptionalMemberAccess]
+    #     client_secret=cfg.client_secret,  # pyright: ignore[reportOptionalMemberAccess]
+    #     max_retry=settings.tuning.max_retry,
+    #     max_requests=settings.tuning.max_requests,
+    #     max_chunks=settings.tuning.max_chunks,
+    #     unavailable_delay=settings.tuning.unavailable_delay,
+    #     retry_delay=settings.tuning.retry_delay,
+    # )
 
     # Boucle sur la liste des formulaires, pour créer chaque formulaire avec ses données
     obs_list = []
+    forms_list = pd.DataFrame(columns=["id_form_universal", "sightings"])
     for _form_id, form in forms.iterrows():
         form_id = form["id_form_universal"]
         logger.info(_("Création du formulaire %s"), form_id)
         jform = json.loads(f"{form['item']}")
         jform = {"data": {"forms": [jform]}}
         jform["data"]["forms"][0]["sightings"] = []
+        sight_list = []
         for _data_id, dat in data.iterrows():
             if dat["id_form_universal"] == form_id:
                 jdat = json.loads(str(dat["item"]))
                 jform["data"]["forms"][0]["sightings"].append(jdat)
+                sight_list.append(dat["id"])
+        forms_list = pd.concat(
+            [forms_list, pd.DataFrame([{"id_form_universal": form_id, "sightings": sight_list}])], ignore_index=True
+        )
         # print(pprint.pformat(jform))
-        if jform is not None:
-            formc = obs_api.api_create(jform)  # pyright: ignore[reportOptionalMemberAccess]
-            logger.info(_("Form %s created"), formc)
-            obs_list.append(formc["id"])  # pyright: ignore[reportOptionalSubscript]
-        sleep(1)  # Avoid too many requests in a short time
+        # if jform is not None:
+        #     formc = obs_api.api_create(jform)  # pyright: ignore[reportOptionalMemberAccess]
+        #     logger.info(_("Form %s created"), formc)
+        #     obs_list.append(formc["id"])  # pyright: ignore[reportOptionalSubscript]
+        # sleep(1)  # Avoid too many requests in a short time
         # break
 
     # Ecrire la liste des observations créées dans le fichier de sortie
@@ -391,6 +397,9 @@ def upload_forms(config: str, forms_file: str, data_file: str, output_file: str)
         for obs in obs_list:
             writer.writerow([obs])
     print(obs_list)
+
+    print(forms_list)
+    forms_list.to_csv(output_file, index=False)
     return None
 
 
