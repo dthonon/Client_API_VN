@@ -295,6 +295,7 @@ class TestSpecies:
         assert len(species_list["data"]) >= 11150
         assert species_list["data"][0]["french_name"] == "Plongeon catmarin"
 
+    @pytest.mark.faune_france
     def test_species_list_30(self):
         """Get a list of species from taxo_group 30."""
         species_list = SPECIES_API.api_list({"id_taxo_group": "30"})
@@ -337,6 +338,7 @@ class TestTerritorialUnits:
         assert TERRITORIAL_UNITS_API.transfer_errors == 0
         assert territorial_unit["data"][0]["name"] == "Ardèche"
 
+    @pytest.mark.faune_france
     def test_territorial_units_list(self):
         """Get list of territorial_units."""
         # First call, should return from API call if not called before
@@ -422,6 +424,7 @@ class TestPlaces:
         ctrl = PLACES_API.controler
         assert ctrl == "places"
 
+    @pytest.mark.privileged
     def test_places_get(self):
         """Get a single place."""
         p = "930144"
@@ -502,6 +505,7 @@ class TestPlaces:
         }
 
     @pytest.mark.slow
+    @pytest.mark.privileged
     def test_places_list_all(self):
         """Get list of all places."""
         places_list = PLACES_API.api_list()
@@ -603,6 +607,7 @@ class TestObservers:
         ctrl = OBSERVERS_API.controler
         assert ctrl == "observers"
 
+    @pytest.mark.privileged
     def test_observers_get(self):
         """Get a single observer."""
         o = "8583"
@@ -656,6 +661,7 @@ class TestObservers:
         assert "work_phone" in observer["data"][0]
 
     @pytest.mark.slow
+    @pytest.mark.privileged
     def test_observers_list_all(self):
         """Get list of all observers."""
         observers_list = OBSERVERS_API.api_list()
@@ -737,6 +743,7 @@ class TestObservations:
         diff = OBSERVATIONS_API.api_diff("1", since, "only_deleted")
         assert OBSERVATIONS_API.transfer_errors == 0
 
+    @pytest.mark.privileged
     def test_observations_list_1(self):
         """Get the list of sightings, from taxo_group 18: Mantodea."""
         obs_list = OBSERVATIONS_API.api_list("18")
@@ -744,6 +751,7 @@ class TestObservations:
         assert len(obs_list) > 0
 
     @pytest.mark.slow
+    @pytest.mark.privileged
     def test_observations_list_2_1(self):
         """Get the list of sightings, from taxo_group 1, specie 218."""
         obs_list = OBSERVATIONS_API.api_list("1", id_species="218", short_version="1")
@@ -751,6 +759,7 @@ class TestObservations:
         assert OBSERVATIONS_API.transfer_errors == 0
         assert len(obs_list["data"]) > 1
 
+    @pytest.mark.privileged
     def test_observations_list_3_0(self):
         """Get the list of sightings, from taxo_group 1, specie 153."""
         obs_list = OBSERVATIONS_API.api_list("1", id_species="153")
@@ -758,6 +767,7 @@ class TestObservations:
         assert OBSERVATIONS_API.transfer_errors == 0
         assert len(obs_list["data"]) > 1
 
+    @pytest.mark.privileged
     def test_observations_list_3_1(self):
         """Get the list of sightings, from taxo_group 1, specie 153."""
         obs_list = OBSERVATIONS_API.api_list("1", id_species="153", short_version="1")
@@ -765,11 +775,13 @@ class TestObservations:
         assert OBSERVATIONS_API.transfer_errors == 0
         assert len(obs_list["data"]) > 1
 
+    @pytest.mark.privileged
     def test_observations_list_list(self):
         """Get the list of sightings, from taxo_group 1 523219."""
         obs_list = OBSERVATIONS_API.api_list("1", id_sightings_list="523219,523550", short_version="1")
         logging.debug(json.dumps(obs_list, sort_keys=True, indent=4))
 
+    @pytest.mark.privileged
     def test_observations_get(self):
         """Get a specific sighting."""
         sighting = OBSERVATIONS_API.api_get("71846872")
@@ -855,6 +867,7 @@ class TestObservations:
         assert sighting["data"]["sightings"][0]["observers"][0]["anonymous"] == "0"
         assert sighting["data"]["sightings"][0]["observers"][0]["@id"] == "8583"
 
+    @pytest.mark.privileged
     def test_observations_get_short(self):
         """Get a specific sighting."""
         sighting = OBSERVATIONS_API.api_get("71846872", short_version="1")
@@ -903,6 +916,7 @@ class TestObservations:
         assert sighting["data"]["sightings"][0]["observers"][0]["@id"] == "8583"
         assert sighting["data"]["sightings"][0]["observers"][0]["version"] == "0"
 
+    @pytest.mark.privileged
     def test_observations_search_1(self):
         """Query sightings, from taxo_group 18: Mantodea and date range."""
         # Testing incorrect parameter
@@ -921,6 +935,7 @@ class TestObservations:
         assert OBSERVATIONS_API.transfer_errors == 0
         assert len(obs_list["data"]["sightings"]) >= 400
 
+    @pytest.mark.privileged
     def test_observations_search_2(self):
         """Query sightings, from taxo_group 18: Mantodea and date range."""
         q_param = {

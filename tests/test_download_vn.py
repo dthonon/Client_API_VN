@@ -272,6 +272,7 @@ def test_species_store(capsys):
 #  Territorial units
 # ------------------
 @pytest.mark.order(index=320)
+@pytest.mark.faune_france
 def test_territorial_units_store(capsys):
     """Store territorial units to file."""
     file_json = Path.home() / settings.file.file_store / "territorial_units_1.json.gz"
@@ -388,6 +389,7 @@ def test_validations_store(capsys):
 #  Observations
 # -------------
 @pytest.mark.order(index=340)
+@pytest.mark.privileged
 def test_observations_store_search_1_1(capsys):
     """Store observations from taxo_group 2 by specie to file, using search."""
     file_json = Path.home() / settings.file.file_store / "observations_2_138_1.json.gz"
