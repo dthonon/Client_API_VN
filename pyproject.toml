@@ -97,7 +97,10 @@ ignore_errors = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
-markers = ["slow: marks tests as slow (deselect with '-m \"not slow\"')"]
+markers = [
+  "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+  "write: marks tests that create/update/delete data on the live VisioNature site; skipped unless VN_ENABLE_WRITE_TESTS=1",
+]
 
 [tool.flake8]
 builtins = ["_"]

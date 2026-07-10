@@ -131,6 +131,7 @@ def sighting_for_test():
 
 
 @pytest.mark.slow
+@pytest.mark.write
 def test_update(runner, sighting_for_test):
     """Check Biolovision updating."""
     name_toml = ".evn_test.toml"

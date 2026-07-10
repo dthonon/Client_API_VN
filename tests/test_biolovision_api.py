@@ -934,6 +934,7 @@ class TestObservations:
         assert OBSERVATIONS_API.transfer_errors == 0
         assert len(obs_list["data"]["sightings"]) >= 400
 
+    @pytest.mark.write
     def test_observations_update(self):
         """Update a specific sighting."""
         obs = "138181516"
@@ -952,6 +953,7 @@ class TestObservations:
         assert sighting["data"]["sightings"][0]["observers"][0]["id_universal"] == "65_138181516"
         assert int(sighting["data"]["sightings"][0]["observers"][0]["update_date"]) > time.time() - 60
 
+    @pytest.mark.write
     def test_observations_crud_f(self):
         """Create, read, update, delete a forms sighting."""
         data = {
