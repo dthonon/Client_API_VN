@@ -19,11 +19,13 @@ Bugs covered:
                                              -> test_increment_matches_full (DB)
 """
 
+import os
 import re
 from datetime import datetime
 from unittest.mock import Mock
 
 import pytest
+from sqlalchemy import select, text
 
 from biolovision.api import EntitiesAPI, HTTPError
 from export_vn.download_vn import Observations
@@ -175,27 +177,147 @@ def test_empty_response_does_not_abort(requests_mock):
 
 
 # ---------------------------------------------------------------------------
-# Bug 3: deleting the observations of a form must clean up the form. (needs DB)
+# PostGIS harness for the DB-backed regression tests (bugs 3 and 4).
+# Uses a dedicated, throw-away database; no VisioNature account is involved.
 # ---------------------------------------------------------------------------
-@pytest.mark.skip(reason="needs the PostGIS test harness — next step of the plan")
-def test_delete_form_removes_orphan_forms():
-    """Storing a form then deleting all its sightings must leave no orphan.
+DB = {
+    "db_user": os.environ.get("DB_USER", "xfer38"),
+    "db_pw": os.environ.get("DB_PW", "xfer38pw"),
+    "db_host": os.environ.get("DB_HOST", "localhost"),
+    "db_port": os.environ.get("DB_PORT", "5432"),
+    "db_name": "faune_regression",
+    "db_schema_import": "import",
+    "db_schema_vn": "src_vn",
+    "db_group": "lpo_regression",
+    "db_out_proj": "2154",
+}
 
-    To be implemented against a StorePostgresql backend on the local PostGIS:
-    store an observations payload containing a form with 2 sightings, then
-    delete_obs() both sightings, and assert forms_json no longer references the
-    now-empty form.
-    """
+
+@pytest.fixture(scope="module")
+def pg():
+    """A StorePostgresql backed by a fresh, disposable PostGIS database."""
+    from export_vn.store_postgresql import PostgresqlUtils, StorePostgresql
+
+    utils = PostgresqlUtils(
+        True,
+        DB["db_user"],
+        DB["db_pw"],
+        DB["db_host"],
+        DB["db_port"],
+        DB["db_name"],
+        DB["db_schema_import"],
+        DB["db_schema_vn"],
+        DB["db_group"],
+    )
+    try:
+        utils.drop_database()
+        utils.create_database()
+        utils.create_json_tables()
+        store = StorePostgresql(
+            SITE,
+            True,
+            DB["db_user"],
+            DB["db_pw"],
+            DB["db_host"],
+            DB["db_port"],
+            DB["db_name"],
+            DB["db_schema_import"],
+            DB["db_schema_vn"],
+            DB["db_group"],
+            DB["db_out_proj"],
+        )
+    except Exception as e:
+        pytest.skip(f"PostGIS test database unavailable: {e!r}")
+    yield store
+    store._conn.close()
+    utils.drop_database()
+
+
+def _sighting(id_sighting, ts=1700000000, uid="1"):
+    """Minimal well-formed sighting element accepted by store_1_observation."""
+    return {
+        "date": {"@timestamp": str(ts)},
+        "species": {"@id": "1"},
+        "observers": [
+            {
+                "@uid": uid,
+                "id_sighting": str(id_sighting),
+                "id_universal": f"1_{id_sighting}",
+                "update_date": ts,
+                "coord_lon": 5.72,
+                "coord_lat": 45.18,
+            }
+        ],
+    }
+
+
+def _form_payload(form_id, sightings):
+    """An observations payload made of a single form and its sightings."""
+    return {
+        "data": {
+            "sightings": [],
+            "forms": [{"@id": str(form_id), "id_form_universal": f"1_{form_id}", "sightings": sightings}],
+        }
+    }
+
+
+def _reset(store):
+    store._conn.execute(
+        text(f"TRUNCATE {DB['db_schema_import']}.observations_json, {DB['db_schema_import']}.forms_json")
+    )
+
+
+def _obs_ids(store):
+    md = store._table_defs["observations"]["metadata"]
+    rows = store._conn.execute(select([md.c.item]).where(md.c.site == SITE)).fetchall()
+    return {r[0]["observers"][0]["id_sighting"] for r in rows}
+
+
+def _form_ids(store):
+    md = store._table_defs["forms"]["metadata"]
+    rows = store._conn.execute(select([md.c.item]).where(md.c.site == SITE)).fetchall()
+    return {r[0]["@id"] for r in rows}
 
 
 # ---------------------------------------------------------------------------
-# Bug 4: incremental must converge to the same state as a full download. (DB)
+# Bug 3: deleting the observations of a form must clean up the form.
 # ---------------------------------------------------------------------------
-@pytest.mark.skip(reason="needs the PostGIS test harness — next step of the plan")
-def test_increment_matches_full():
+@pytest.mark.xfail(strict=True, reason="bug: delete_obs never cleans forms_json; remove when fixed")
+def test_delete_form_removes_orphan_forms(pg):
+    """Storing a form then deleting all its sightings must leave no orphan form."""
+    store = pg
+    _reset(store)
+    store.store("observations", "f", _form_payload(1000, [_sighting(101), _sighting(102)]))
+    assert _obs_ids(store) == {"101", "102"}
+    assert _form_ids(store) == {"1000"}
+
+    store.delete_obs(["101", "102"])
+
+    assert _obs_ids(store) == set()
+    assert _form_ids(store) == set(), "orphan form left in forms_json after deleting all its sightings"
+
+
+# ---------------------------------------------------------------------------
+# Bug 4: incremental must converge to the same state as a full download.
+# ---------------------------------------------------------------------------
+@pytest.mark.xfail(strict=True, reason="bug: orphan form makes the incremental state diverge; remove when fixed")
+def test_increment_matches_full(pg):
     """A full download and the equivalent incremental run must be identical.
 
-    Golden regression: build state S_full from a canned full payload, build
-    S_incr by replaying the same changes as increments, and assert the
-    observations tables are row-for-row identical.
+    Final server state: form 1000 has been deleted, form 2000 persists.
     """
+    store = pg
+
+    # Full download of the final state (only form 2000 exists).
+    _reset(store)
+    store.store("observations", "full", _form_payload(2000, [_sighting(103)]))
+    full = (_obs_ids(store), _form_ids(store))
+
+    # Incremental path reaching the same final state.
+    _reset(store)
+    store.store("observations", "i1", _form_payload(1000, [_sighting(101), _sighting(102)]))
+    store.store("observations", "i2", _form_payload(2000, [_sighting(103)]))
+    store.delete_obs(["101", "102"])  # form 1000 fully deleted
+    incr = (_obs_ids(store), _form_ids(store))
+
+    assert incr == full, f"incremental diverged from full: {incr} != {full}"
