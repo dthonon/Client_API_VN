@@ -16,4 +16,11 @@ CREATE EXTENSION IF NOT EXISTS postgis_topology;
 ALTER ROLE postgres PASSWORD 'postgres';
 
 -- Application account used by transfer_vn (matches DATABASE.db_user in evn.toml).
-CREATE ROLE xfer38 LOGIN PASSWORD 'xfer38pw' SUPERUSER CREATEDB CREATEROLE;
+-- Created idempotently so the script can be replayed (e.g. `make test-db`).
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'xfer38') THEN
+        CREATE ROLE xfer38 LOGIN PASSWORD 'xfer38pw' SUPERUSER CREATEDB CREATEROLE;
+    END IF;
+END
+$$;

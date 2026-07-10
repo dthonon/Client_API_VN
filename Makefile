@@ -67,6 +67,56 @@ test_slow: ## Test the code with pytest
 	@echo "🚀 Testing code: Running pytest"
 	@poetry run pytest --cov --cov-config=pyproject.toml --cov-report=xml
 
+# Integration tests: live VisioNature API + PostGIS database.
+# Need a running Postgres/PostGIS on $(DB_HOST):$(DB_PORT) (see docker-compose.yml)
+# and the VN_* credentials exported in the environment:
+#   VN_SITE_URL VN_USER_EMAIL VN_USER_PW VN_CLIENT_KEY VN_CLIENT_SECRET
+# Remote-write tests stay disabled unless VN_ENABLE_WRITE_TESTS=1 (tests/conftest.py).
+DB_HOST ?= localhost
+DB_PORT ?= 5432
+DB_NAME ?= faune_test
+DB_GROUP ?= lpo_test
+DB_USER ?= xfer38
+DB_PW ?= xfer38pw
+PGPASSWORD ?= postgres
+PYTEST_MARKERS ?= not slow and not privileged
+export DB_HOST DB_PORT DB_NAME DB_GROUP DB_USER DB_PW
+
+# Variables substituted into the test configuration templates by envsubst.
+ENVSUBST_VARS = $${VN_SITE_URL} $${VN_USER_EMAIL} $${VN_USER_PW} $${VN_CLIENT_KEY} $${VN_CLIENT_SECRET} $${DB_HOST} $${DB_PORT} $${DB_NAME} $${DB_GROUP} $${DB_USER} $${DB_PW}
+
+.PHONY: test-config
+test-config: ## Render ~/.evn_test.{yaml,toml} from templates and VN_*/DB_* env vars
+	@echo "🚀 Rendering test configuration from templates"
+	@envsubst '$(ENVSUBST_VARS)' < tests/data/evn_test.yaml.tmpl > $$HOME/.evn_test.yaml
+	@envsubst '$(ENVSUBST_VARS)' < tests/data/evn_test.toml.tmpl > $$HOME/.evn_test.toml
+
+.PHONY: test-db
+test-db: ## Enable PostGIS extensions + app role, then create the database and tables
+	@echo "🚀 Setting up the test database"
+	@PGPASSWORD=$(PGPASSWORD) psql -h $(DB_HOST) -p $(DB_PORT) -U postgres -d postgres -f docker/init-db.sql
+	@poetry run transfer_vn --db_drop --db_create --json_tables_create --col_tables_create .evn_test.yaml
+
+.PHONY: test-integration
+test-integration: test-config test-db ## Render config, set up DB and run the integration suite
+	@echo "🚀 Running integration tests: pytest -m \"$(PYTEST_MARKERS)\""
+	@poetry run pytest --cov --cov-config=pyproject.toml --cov-report=xml -m "$(PYTEST_MARKERS)"
+
+.PHONY: test-integration-docker
+test-integration-docker: ## Run the integration suite inside the docker compose dev stack
+	@echo "🚀 Running integration tests inside the docker compose stack"
+	@docker compose up -d --build
+	@docker compose exec -w /code \
+		-e VN_SITE_URL="$$VN_SITE_URL" -e VN_USER_EMAIL="$$VN_USER_EMAIL" -e VN_USER_PW="$$VN_USER_PW" \
+		-e VN_CLIENT_KEY="$$VN_CLIENT_KEY" -e VN_CLIENT_SECRET="$$VN_CLIENT_SECRET" \
+		app make test-config DB_HOST=db
+	@docker compose exec -w /code app sh -c 'PGPASSWORD=$(PGPASSWORD) psql -h db -p 5432 -U postgres -d postgres -f docker/init-db.sql'
+	@# transfer_vn and pytest must run from /root: the config file name is passed
+	@# to Dynaconf as a relative path, searched upward from the current directory,
+	@# and /code is not under /root.
+	@docker compose exec -w /root app transfer_vn --db_drop --db_create --json_tables_create --col_tables_create .evn_test.yaml
+	@docker compose exec -w /root app pytest /code/tests -m "$(PYTEST_MARKERS)"
+
 .PHONY: build
 build: clean-build ## Build wheel file using poetry
 	@echo "🚀 Creating wheel file"
