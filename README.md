@@ -37,7 +37,10 @@ The configuration lives in `docker/evn.toml`; its `[database]` section already
 points at the `db` service. Replace the `[site.tff]` values with real Biolovision
 credentials before running `--full` / `--update`. The project source is mounted
 at `/code` and installed in editable mode, so host edits apply live; run
-`cd /code` inside the container for `pytest` / `poetry` tasks.
+`cd /code` inside the container for `poetry` tasks. Do **not** run `pytest` from
+`/code`: the tests look for their configuration upward from the current
+directory, so run `pytest /code/tests` from `/root` instead — or use `make
+test-integration-docker` from the host (see below).
 
 Stop the stack with `docker compose down`, or `docker compose down -v` to also
 drop the database volume (which re-runs `init-db.sql` on the next start).
@@ -59,16 +62,31 @@ make test-integration        # renders the config, sets up the DB, runs pytest
 `make test-integration` renders `~/.evn_test.{yaml,toml}` from the templates in
 `tests/data/*.tmpl`, creates the database and tables, then runs the suite.
 
-Two pytest markers control what runs:
+To run the same suite inside the Docker dev stack instead (no local Poetry,
+`psql` or `envsubst` needed — only the `VN_*` variables exported), use:
+
+```bash
+make test-integration-docker
+```
+
+It starts the stack, renders the config and prepares the database inside the
+`app` container, then runs pytest from `/root` (the tests search for
+`~/.evn_test.*` upward from the working directory, so they cannot be launched
+from `/code`).
+
+Most tests are site-independent (they assert only well-formed responses, or data
+that is identical across VN sites such as the national list of territorial
+units). Two markers control the rest:
 
 - **`write`** — tests that create/update/delete data on the *live* site. They are
   skipped unless `VN_ENABLE_WRITE_TESTS=1` is explicitly set, so they can never run
   by accident.
-- **`faune_france`** — tests asserting data (ids, counts) specific to the
-  faune-france site. Deselected by default (`PYTEST_MARKERS="not slow and not
-  faune_france"`); run them against a faune-france account with
-  `make test-integration PYTEST_MARKERS="not slow"`.
+- **`privileged`** — tests that need a privileged VisioNature account (full
+  access to observations, observers, places — unavailable to a standard
+  account). Deselected by default (`PYTEST_MARKERS="not slow and not
+  privileged"`); run them with a privileged account using `make
+  test-integration PYTEST_MARKERS="not slow"`.
 
-In CI, the `Integration tests` workflow runs the site-agnostic suite on every PR
-using the `VN_AURA_*` secrets, plus a manually-triggered job that runs the
-`faune_france` tests with the `VN_FF_*` secrets.
+In CI, the `Integration tests` workflow runs the standard-account suite on
+every PR using the `VN_STD_*` secrets. The `privileged` tests are never run in
+CI: run them locally with a privileged account.

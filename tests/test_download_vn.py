@@ -281,7 +281,6 @@ def test_species_store(capsys):
 #  Territorial units
 # ------------------
 @pytest.mark.order(index=320)
-@pytest.mark.faune_france
 def test_territorial_units_store(capsys):
     """Store territorial units to file."""
     file_json = Path.home() / settings.file.file_store / "territorial_units_1.json.gz"
@@ -291,7 +290,8 @@ def test_territorial_units_store(capsys):
     assert file_json.is_file()
     with gzip.open(file_json, "rb") as g:
         items_dict = json.loads(g.read().decode("utf-8"))
-    assert len(items_dict["data"]) > 100
+    # National list of departments and seas (100), identical across VN sites.
+    assert len(items_dict["data"]) >= 100
 
 
 # -----------------

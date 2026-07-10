@@ -100,7 +100,7 @@ pythonpath = ["src"]
 markers = [
   "slow: marks tests as slow (deselect with '-m \"not slow\"')",
   "write: marks tests that create/update/delete data on the live VisioNature site; skipped unless VN_ENABLE_WRITE_TESTS=1",
-  "faune_france: marks tests that assert data (ids, counts) specific to the faune-france (tff) site; deselect with '-m \"not faune_france\"' when running against another VisioNature site",
+  "privileged: marks tests that need a privileged VisioNature account (full access to observations/observers/places); deselect with '-m \"not privileged\"' when running with a standard account",
 ]
 
 [tool.flake8]
