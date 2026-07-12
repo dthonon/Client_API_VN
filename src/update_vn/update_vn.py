@@ -21,11 +21,13 @@ import datetime
 import importlib.resources
 import json
 import logging
+import pprint
 import shutil
 import sys
 from ast import literal_eval
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
+from time import sleep
 
 import click
 import pandas as pd
@@ -160,7 +162,7 @@ def update(config: str, input_file: str) -> None:
     obs_api[site] = ObservationsAPI(
         user_email=cfg.user_email,  # pyright: ignore[reportOptionalMemberAccess]
         user_pw=cfg.user_pw,  # pyright: ignore[reportOptionalMemberAccess]
-        base_url=cfg.URL,  # pyright: ignore[reportOptionalMemberAccess]
+        base_url=cfg.site,  # pyright: ignore[reportOptionalMemberAccess]
         client_key=cfg.client_key,  # pyright: ignore[reportOptionalMemberAccess]
         client_secret=cfg.client_secret,  # pyright: ignore[reportOptionalMemberAccess]
         max_retry=settings.tuning.max_retry,
@@ -350,45 +352,64 @@ def upload_forms(config: str, forms_file: str, data_file: str, output_file: str)
     data = data[1:]
     # data.set_index("id", inplace=True)
 
-    # # Create ObservationsAPI instance
-    # obs_api = ObservationsAPI(
-    #     user_email=cfg.user_email,  # pyright: ignore[reportOptionalMemberAccess]
-    #     user_pw=cfg.user_pw,  # pyright: ignore[reportOptionalMemberAccess]
-    #     base_url=cfg.URL,  # pyright: ignore[reportOptionalMemberAccess]
-    #     client_key=cfg.client_key,  # pyright: ignore[reportOptionalMemberAccess]
-    #     client_secret=cfg.client_secret,  # pyright: ignore[reportOptionalMemberAccess]
-    #     max_retry=settings.tuning.max_retry,
-    #     max_requests=settings.tuning.max_requests,
-    #     max_chunks=settings.tuning.max_chunks,
-    #     unavailable_delay=settings.tuning.unavailable_delay,
-    #     retry_delay=settings.tuning.retry_delay,
-    # )
+    # Create ObservationsAPI instance
+    obs_api = ObservationsAPI(
+        user_email=cfg.user_email,  # pyright: ignore[reportOptionalMemberAccess]
+        user_pw=cfg.user_pw,  # pyright: ignore[reportOptionalMemberAccess]
+        base_url=cfg.site,  # pyright: ignore[reportOptionalMemberAccess]
+        client_key=cfg.client_key,  # pyright: ignore[reportOptionalMemberAccess]
+        client_secret=cfg.client_secret,  # pyright: ignore[reportOptionalMemberAccess]
+        max_retry=settings.tuning.max_retry,
+        max_requests=settings.tuning.max_requests,
+        max_chunks=settings.tuning.max_chunks,
+        unavailable_delay=settings.tuning.unavailable_delay,
+        retry_delay=settings.tuning.retry_delay,
+    )
 
     # Boucle sur la liste des formulaires, pour créer chaque formulaire avec ses données
     obs_list = []
     forms_list = pd.DataFrame(columns=["id_form_universal", "sightings"])
     for _form_id, form in forms.iterrows():
         form_id = form["id_form_universal"]
-        logger.info(_("Création du formulaire %s"), form_id)
-        jform = json.loads(f"{form['item']}")
+        logger.info(_("Analyse du formulaire %s"), form_id)
+        try:
+            jform = json.loads(f"{form['item']}")
+        except json.JSONDecodeError:
+            logger.exception(_("Failed to decode JSON for form %s"), form_id)
+            print(form["item"])
+            continue
         jform = {"data": {"forms": [jform]}}
         jform["data"]["forms"][0]["sightings"] = []
         sight_list = []
         for _data_id, dat in data.iterrows():
             if dat["id_form_universal"] == form_id:
-                jdat = json.loads(str(dat["item"]))
+                data_s = ""
+                try:
+                    data_s = f"{dat['item']}".replace("\\\\", "\\")  # Replace \\ by \ for valid JSON
+                    jdat = json.loads(data_s)
+                except json.JSONDecodeError:
+                    logger.exception(_("Failed to decode JSON for data %s"), dat["id"])
+                    print(data_s)
+                    continue
                 jform["data"]["forms"][0]["sightings"].append(jdat)
                 sight_list.append(dat["id"])
-        forms_list = pd.concat(
-            [forms_list, pd.DataFrame([{"id_form_universal": form_id, "sightings": sight_list}])], ignore_index=True
-        )
-        # print(pprint.pformat(jform))
-        # if jform is not None:
-        #     formc = obs_api.api_create(jform)  # pyright: ignore[reportOptionalMemberAccess]
-        #     logger.info(_("Form %s created"), formc)
-        #     obs_list.append(formc["id"])  # pyright: ignore[reportOptionalSubscript]
-        # sleep(1)  # Avoid too many requests in a short time
-        # break
+        if len(sight_list) > 0:
+            logger.info(_("Le formulaire %s contient %d sightings"), form_id, len(sight_list))
+            forms_list = pd.concat(
+                [forms_list, pd.DataFrame([{"id_form_universal": form_id, "sightings": sight_list}])],
+                ignore_index=True,
+            )
+            print(pprint.pformat(jform))
+            if jform is not None:
+                try:
+                    formc = obs_api.api_create(jform)  # pyright: ignore[reportOptionalMemberAccess]
+                except Exception:
+                    logger.exception(_("Erreur lors de la création du formulaire %s"), form_id)
+                    continue
+                logger.info(_("Formulaire %s créé"), formc)
+                obs_list.append(formc["id"])  # pyright: ignore[reportOptionalSubscript]
+            sleep(1)  # Avoid too many requests in a short time
+            # break
 
     # Ecrire la liste des observations créées dans le fichier de sortie
     with open(output_file, "w", newline="") as csvfile:
