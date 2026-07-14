@@ -353,18 +353,18 @@ def upload_forms(config: str, forms_file: str, data_file: str, output_file: str)
     # data.set_index("id", inplace=True)
 
     # Create ObservationsAPI instance
-    obs_api = ObservationsAPI(
-        user_email=cfg.user_email,  # pyright: ignore[reportOptionalMemberAccess]
-        user_pw=cfg.user_pw,  # pyright: ignore[reportOptionalMemberAccess]
-        base_url=cfg.site,  # pyright: ignore[reportOptionalMemberAccess]
-        client_key=cfg.client_key,  # pyright: ignore[reportOptionalMemberAccess]
-        client_secret=cfg.client_secret,  # pyright: ignore[reportOptionalMemberAccess]
-        max_retry=settings.tuning.max_retry,
-        max_requests=settings.tuning.max_requests,
-        max_chunks=settings.tuning.max_chunks,
-        unavailable_delay=settings.tuning.unavailable_delay,
-        retry_delay=settings.tuning.retry_delay,
-    )
+    # obs_api = ObservationsAPI(
+    #     user_email=cfg.user_email,  # pyright: ignore[reportOptionalMemberAccess]
+    #     user_pw=cfg.user_pw,  # pyright: ignore[reportOptionalMemberAccess]
+    #     base_url=cfg.site,  # pyright: ignore[reportOptionalMemberAccess]
+    #     client_key=cfg.client_key,  # pyright: ignore[reportOptionalMemberAccess]
+    #     client_secret=cfg.client_secret,  # pyright: ignore[reportOptionalMemberAccess]
+    #     max_retry=settings.tuning.max_retry,
+    #     max_requests=settings.tuning.max_requests,
+    #     max_chunks=settings.tuning.max_chunks,
+    #     unavailable_delay=settings.tuning.unavailable_delay,
+    #     retry_delay=settings.tuning.retry_delay,
+    # )
 
     # Boucle sur la liste des formulaires, pour créer chaque formulaire avec ses données
     obs_list = []
@@ -417,11 +417,11 @@ def upload_forms(config: str, forms_file: str, data_file: str, output_file: str)
             # print(pprint.pformat(jform))
             if jform is not None:
                 formc = {"id": 0}
-                try:
-                    formc = obs_api.api_create(jform)  # pyright: ignore[reportOptionalMemberAccess]
-                except Exception:
-                    logger.exception(_("Erreur lors de la création du formulaire %s"), form_id)
-                    continue
+                # try:
+                #     formc = obs_api.api_create(jform)  # pyright: ignore[reportOptionalMemberAccess]
+                # except Exception:
+                #     logger.exception(_("Erreur lors de la création du formulaire %s"), form_id)
+                #     continue
                 logger.info(_("Formulaire %s créé"), formc)
                 obs_list.append(formc["id"])  # pyright: ignore[reportOptionalSubscript]
             # sleep(1)  # Avoid too many requests in a short time
