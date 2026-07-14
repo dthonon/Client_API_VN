@@ -368,7 +368,7 @@ def upload_forms(config: str, forms_file: str, data_file: str, output_file: str)
 
     # Boucle sur la liste des formulaires, pour créer chaque formulaire avec ses données
     obs_list = []
-    forms_list = pd.DataFrame(columns=["id_form_universal", "sightings"])
+    forms_list = pd.DataFrame(columns=["id_form_universal", "date", "visit_number", "site_code", "sequence_number"])
     for _form_id, form in forms.iterrows():
         form_id = form["id_form_universal"]
         logger.info(_("Analyse du formulaire %s"), form_id)
@@ -395,12 +395,28 @@ def upload_forms(config: str, forms_file: str, data_file: str, output_file: str)
                 sight_list.append(dat["id"])
         if len(sight_list) > 0:
             logger.info(_("Le formulaire %s contient %d sightings"), form_id, len(sight_list))
+            formj = json.loads(f"{form['item']}")
             forms_list = pd.concat(
-                [forms_list, pd.DataFrame([{"id_form_universal": form_id, "sightings": sight_list}])],
+                [
+                    forms_list,
+                    pd.DataFrame(
+                        [
+                            {
+                                "id_form_universal": form_id,
+                                "date": formj["date_start"],
+                                "visit_number": formj["protocol"]["visit_number"],
+                                "site_code": formj["protocol"]["site_code"],
+                                "sequence_number": formj["protocol"]["sequence_number"],
+                                # "sightings": sight_list,
+                            }
+                        ]
+                    ),
+                ],
                 ignore_index=True,
             )
-            print(pprint.pformat(jform))
+            # print(pprint.pformat(jform))
             if jform is not None:
+                formc = {"id": 0}
                 try:
                     formc = obs_api.api_create(jform)  # pyright: ignore[reportOptionalMemberAccess]
                 except Exception:
@@ -408,8 +424,10 @@ def upload_forms(config: str, forms_file: str, data_file: str, output_file: str)
                     continue
                 logger.info(_("Formulaire %s créé"), formc)
                 obs_list.append(formc["id"])  # pyright: ignore[reportOptionalSubscript]
-            sleep(1)  # Avoid too many requests in a short time
+            # sleep(1)  # Avoid too many requests in a short time
             # break
+
+    print(forms_list)
 
     # Ecrire la liste des observations créées dans le fichier de sortie
     with open(output_file, "w", newline="") as csvfile:
@@ -419,8 +437,6 @@ def upload_forms(config: str, forms_file: str, data_file: str, output_file: str)
             writer.writerow([obs])
     print(obs_list)
 
-    print(forms_list)
-    forms_list.to_csv(output_file, index=False)
     return None
 
 
