@@ -52,7 +52,7 @@ jobs:
       VN_CLIENT_SECRET: ${{ secrets.VN_STD_CLIENT_SECRET }}
     steps:
       - name: Check out
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up the environment
         uses: ./.github/actions/setup-poetry-env
@@ -73,4 +73,4 @@ jobs:
 
       - name: Upload coverage reports to Codecov
         if: steps.creds.outputs.run == 'true'
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v7
