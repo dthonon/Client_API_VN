@@ -1127,14 +1127,13 @@ class StorePostgresql(Postgresql):
         if self._db_enabled:
             logger.info(_("Deleting %d observations from database"), len(obs_list))
             nb_delete = 0
+            obs_table = self._table_defs["observations"]["metadata"]
             for obs in obs_list:
                 nd = self._conn.execute(
-                    self._table_defs["observations"]["metadata"]
-                    .delete()
-                    .where(
+                    obs_table.delete().where(
                         and_(
-                            self._table_defs["observations"]["metadata"].c.id == obs,
-                            self._table_defs["observations"]["metadata"].c.site == self._site,
+                            obs_table.c.id == obs,
+                            obs_table.c.site == self._site,
                         )
                     )
                 )
@@ -1160,14 +1159,13 @@ class StorePostgresql(Postgresql):
         if self._db_enabled:
             logger.info(_("Deleting %d places from database"), len(place_list))
             nb_delete = 0
+            place_table = self._table_defs["places"]["metadata"]
             for obs in place_list:
                 nd = self._conn.execute(
-                    self._table_defs["places"]["metadata"]
-                    .delete()
-                    .where(
+                    place_table.delete().where(
                         and_(
-                            self._table_defs["places"]["metadata"].c.id == obs,
-                            self._table_defs["places"]["metadata"].c.site == self._site,
+                            place_table.c.id == obs,
+                            place_table.c.site == self._site,
                         )
                     )
                 )

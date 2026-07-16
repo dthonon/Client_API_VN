@@ -1,0 +1,39 @@
+# syntax=docker/dockerfile:1
+# Development image for Client_API_VN.
+# Ships the CLI (transfer_vn / update_vn / validate_vn) plus a psql client,
+# which transfer_vn shells out to when building the column based tables.
+FROM python:3.11-slim-bookworm
+
+ENV PYTHONUNBUFFERED=1 \
+    POETRY_VERSION=2.1.3 \
+    POETRY_VIRTUALENVS_CREATE=false \
+    POETRY_NO_INTERACTION=1 \
+    HOME=/root
+
+# System dependencies:
+#  - postgresql-client: `psql`, used by transfer_vn via subprocess
+#  - build-essential/libpq-dev: fallback if a wheel needs compiling
+#  - git: used by pre-commit / poetry in the dev workflow
+#  - gettext-base: `envsubst`, used by `make test-config` to render the test configuration
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        postgresql-client \
+        libpq-dev \
+        build-essential \
+        git \
+        gettext-base \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir "poetry==${POETRY_VERSION}"
+
+WORKDIR /code
+
+# Install dependencies first (cached as long as the lock file is unchanged).
+COPY pyproject.toml poetry.lock ./
+RUN poetry install --no-root
+
+# Install the project itself (editable, resolves to /code/src which is
+# bind-mounted at runtime so source edits are picked up live).
+COPY . .
+RUN poetry install
+
+CMD ["sleep", "infinity"]

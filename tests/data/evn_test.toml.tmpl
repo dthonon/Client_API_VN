@@ -1,0 +1,55 @@
+# Template for the single-site test configuration (~/.evn_test.toml).
+# Read directly via Dynaconf (test_download_vn, test_store_file,
+# test_store_postgresql).
+# Render with envsubst, e.g.:
+#   envsubst < tests/data/evn_test.toml.tmpl > ~/.evn_test.toml
+# Required variables: VN_SITE_URL VN_USER_EMAIL VN_USER_PW VN_CLIENT_KEY
+#   VN_CLIENT_SECRET DB_HOST DB_PORT DB_NAME DB_GROUP DB_USER DB_PW
+
+[filter]
+territorial_unit_ids = []
+json_format = "short"
+type_date = "entry"
+start_date = 2019-08-01
+end_date = 2019-09-01
+
+[site.tff]
+enabled = true
+site = "${VN_SITE_URL}"
+user_email = "${VN_USER_EMAIL}"
+user_pw = "${VN_USER_PW}"
+client_key = "${VN_CLIENT_KEY}"
+client_secret = "${VN_CLIENT_SECRET}"
+
+[file]
+enabled = true
+file_store = "test_files"
+
+[database]
+enabled = true
+db_host = "${DB_HOST}"
+db_port = ${DB_PORT}
+db_name = "${DB_NAME}"
+db_schema_import = "import"
+db_schema_vn = "src_vn"
+db_group = "${DB_GROUP}"
+db_user = "${DB_USER}"
+db_pw = "${DB_PW}"
+db_secret_key = "mySecretKey"
+db_out_proj = 2154
+
+[tuning]
+max_list_length = 100
+max_chunks = 1000
+max_retry = 5
+max_requests = 0
+retry_delay = 5
+unavailable_delay = 600
+lru_maxsize = 32
+pid_kp = 0.0
+pid_ki = 0.003
+pid_kd = 0.0
+pid_setpoint = 10000
+pid_limit_min = 5
+pid_limit_max = 2000
+pid_delta_days = 10

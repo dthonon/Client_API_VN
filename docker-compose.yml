@@ -1,0 +1,64 @@
+# Development stack: the Client_API_VN CLI + a PostGIS database.
+#
+# Usage:
+#   docker compose up -d --build
+#   docker compose exec app transfer_vn --db_create evn.toml     # create db + roles
+#   docker compose exec app transfer_vn --json_tables_create \
+#                                       --col_tables_create evn.toml
+#   docker compose exec app transfer_vn --full evn.toml          # needs real VN creds
+#   docker compose exec app bash                                 # interactive shell
+#
+# The app runs with working_dir=/root (the container's $HOME) because the CLI
+# passes the config file name as a *relative* path to Dynaconf, which searches
+# from the current directory upwards. Keeping $HOME as the working directory is
+# where the config (evn.toml) and the logs ($HOME/tmp) live. The project source
+# is still mounted at /code and installed editable, so host edits apply live;
+# run `cd /code` inside the container for poetry tasks. pytest is cwd-sensitive
+# for the same config-lookup reason: run it from /root as `pytest /code/tests`
+# (or simply `make test-integration-docker` from the host, which does all of it).
+#
+# On first startup, docker/init-db.sql enables the PostGIS extensions and creates
+# the dedicated `xfer38` application superuser, mirroring the manual server setup
+# at https://dthonon.github.io/Client_API_VN/apps/server_install/. transfer_vn
+# then connects as xfer38 (DATABASE.db_user in docker/evn.toml) to create the
+# roles / database / schemas.
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Run once on an empty data volume (see the file header).
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dev
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      # Live source for editing/running from the host (editable install target).
+      - .:/code
+      # Persist $HOME: logs ($HOME/tmp) and downloaded files ($HOME/VN_files).
+      - vnhome:/root
+      # Config file read by the CLI from $HOME. Mounted after vnhome so the host
+      # file wins over the (initially empty) home volume.
+      - ./docker/evn.toml:/root/evn.toml
+    working_dir: /root
+    command: sleep infinity
+
+volumes:
+  pgdata:
+  vnhome:

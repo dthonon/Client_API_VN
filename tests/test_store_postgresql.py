@@ -193,7 +193,8 @@ def test_terr_u_api_pg_store():
 def test_terr_u_api_pg_read():
     """Read territorial units from database."""
     t_u = READ_PG.read("territorial_units")
-    assert len(t_u) > 100
+    # National list of departments and seas (100), identical across VN sites.
+    assert len(t_u) >= 100
 
 
 # -----------------

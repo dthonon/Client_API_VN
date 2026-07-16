@@ -110,6 +110,15 @@ def test_init():
         client_key=cfg.client_key,
         client_secret=cfg.client_secret,
         db_enabled=False,
+        db_user=settings.database.db_user,
+        db_pw=settings.database.db_pw,
+        db_host=settings.database.db_host,
+        db_port=settings.database.db_port,
+        db_name=settings.database.db_name,
+        db_schema_import=settings.database.db_schema_import,
+        db_schema_vn=settings.database.db_schema_vn,
+        db_group=settings.database.db_group,
+        db_out_proj=settings.database.db_out_proj,
         start_date=settings.filter.start_date,
         end_date=settings.filter.end_date,
         type_date=settings.filter.type_date,
@@ -281,7 +290,8 @@ def test_territorial_units_store(capsys):
     assert file_json.is_file()
     with gzip.open(file_json, "rb") as g:
         items_dict = json.loads(g.read().decode("utf-8"))
-    assert len(items_dict["data"]) > 100
+    # National list of departments and seas (100), identical across VN sites.
+    assert len(items_dict["data"]) >= 100
 
 
 # -----------------
@@ -388,6 +398,7 @@ def test_validations_store(capsys):
 #  Observations
 # -------------
 @pytest.mark.order(index=340)
+@pytest.mark.privileged
 def test_observations_store_search_1_1(capsys):
     """Store observations from taxo_group 2 by specie to file, using search."""
     file_json = Path.home() / settings.file.file_store / "observations_2_138_1.json.gz"

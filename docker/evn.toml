@@ -1,0 +1,119 @@
+# Development configuration for Client_API_VN, tuned for docker-compose.
+#
+# The DATABASE section points at the `db` service and its credentials match the
+# Postgres superuser declared in docker-compose.yml, so `transfer_vn --db_create`
+# works out of the box. Replace the [site.tff] values with real Biolovision
+# credentials before running an actual download (--full / --update).
+
+# ------------------- Main section -------------------
+
+[main]
+admin_mail = "nom.prenom@example.net"
+
+# ------------------- Controler section -------------------
+
+[controler]
+
+[controler.entities]
+enabled = false
+[controler.entities.schedule]
+day_of_week = 4
+hour = 22
+
+[controler.families]
+enabled = false
+[controler.families.schedule]
+day_of_week = 4
+hour = 23
+
+[controler.local_admin_units]
+enabled = false
+[controler.local_admin_units.schedule]
+day_of_week = 0
+hour = 5
+
+[controler.observations]
+enabled = true
+[controler.observations.schedule]
+hour = 0
+minute = 0
+
+[controler.observers]
+enabled = false
+[controler.observers.schedule]
+hour = 6
+
+[controler.places]
+enabled = false
+[controler.places.schedule]
+day_of_week = 3
+hour = 23
+
+[controler.taxo_groups]
+enabled = false
+[controler.taxo_groups.schedule]
+day_of_week = 2
+hour = 22
+
+[controler.territorial_units]
+enabled = false
+[controler.territorial_units.schedule]
+day_of_week = 3
+hour = 23
+
+[controler.validations]
+enabled = false
+[controler.validations.schedule]
+day_of_week = 4
+hour = 23
+
+# ------------------- Filter section -------------------
+
+[filter]
+territorial_unit_ids = []
+type_date = "entry"
+# Postgresql storage requires the short json format.
+json_format = "short"
+
+[filter.taxo_download]
+TAXO_GROUP_BIRD = true
+
+# ------------------- Site section -------------------
+
+[site]
+
+[site.tff]
+enabled = true
+site = "https://www.faune-xxx.org/"
+user_email = "nom.prenom@example.net"
+user_pw = "user_pw"
+client_key = "client_key"
+client_secret = "client_secret"
+
+# ------------------- File section -------------------
+
+[file]
+enabled = true
+file_store = "VN_files"
+
+# ------------------- Database section -------------------
+
+[database]
+enabled = true
+# Service name of the Postgres container in docker-compose.yml.
+db_host = "db"
+db_port = 5432
+db_name = "faune_dev"
+db_schema_import = "import"
+db_schema_vn = "src_vn"
+db_group = "lpo_dev"
+# Application superuser created by docker/init-db.sql (mirrors the server_install
+# doc). transfer_vn connects with it to create roles / database / schemas.
+db_user = "xfer38"
+db_pw = "xfer38pw"
+# Local projection (EPSG). 2154 = RGF93 / Lambert-93 (metropolitan France).
+db_out_proj = 2154
+
+# ------------------- Tuning section -------------------
+
+[tuning]

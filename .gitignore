@@ -5,6 +5,8 @@
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
+bin/
+lib64
 __pycache__/
 *.py[cod]
 *$py.class

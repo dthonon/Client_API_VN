@@ -1,0 +1,76 @@
+name: Integration tests
+
+# Live VisioNature API + PostGIS database tests.
+#
+# Credentials are provided as repository secrets and rendered into the test
+# configuration by `make test-integration` (see the Makefile / tests/data/*.tmpl).
+# Remote-write tests are never run here: they stay disabled unless
+# VN_ENABLE_WRITE_TESTS=1 (tests/conftest.py).
+#
+# Tests marked `privileged` (they need a privileged VisioNature account) are
+# never run here: run them locally with
+# `make test-integration PYTEST_MARKERS="not slow"`.
+#
+# Required secrets (standard account):
+#   VN_STD_SITE_URL, VN_STD_USER_EMAIL, VN_STD_USER_PW,
+#   VN_STD_CLIENT_KEY, VN_STD_CLIENT_SECRET
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+
+jobs:
+  standard-account:
+    name: Integration tests (standard account)
+    runs-on: ubuntu-latest
+    # Secrets are unavailable to pull requests from forks; only run for
+    # same-repository events.
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      VN_SITE_URL: ${{ secrets.VN_STD_SITE_URL }}
+      VN_USER_EMAIL: ${{ secrets.VN_STD_USER_EMAIL }}
+      VN_USER_PW: ${{ secrets.VN_STD_USER_PW }}
+      VN_CLIENT_KEY: ${{ secrets.VN_STD_CLIENT_KEY }}
+      VN_CLIENT_SECRET: ${{ secrets.VN_STD_CLIENT_SECRET }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up the environment
+        uses: ./.github/actions/setup-poetry-env
+
+      - name: Check credentials are configured
+        id: creds
+        run: |
+          if [ -z "$VN_SITE_URL" ]; then
+            echo "::warning::VN_STD_* secrets are not configured; skipping integration tests"
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run integration tests
+        if: steps.creds.outputs.run == 'true'
+        run: make test-integration
+
+      - name: Upload coverage reports to Codecov
+        if: steps.creds.outputs.run == 'true'
+        uses: codecov/codecov-action@v4
