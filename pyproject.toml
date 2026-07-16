@@ -59,26 +59,26 @@ packages = [
 
 [tool.poetry.group.dev.dependencies]
 deptry = ">=0.25"
-mypy = ">=2.2"
-ruff = ">=0.15"
+mypy = ">=2.3.0"
+ruff = ">=0.15.22"
 pytest = ">=9"
 pytest-cov = ">=7"
 pytest-order = ">=1.5"
 pre-commit = ">=4"
 tox = ">=4"
-types-requests = ">=2.32"
+types-requests = ">=2.33.0.20260712"
 types-requests-oauthlib = ">=2"
-types-setuptools = ">=75"
+types-setuptools = ">=83.0.0.20260716"
 types-psutil = ">=6.1"
 types-tabulate = ">=0.9"
 types-beautifulsoup4 = ">=4.12"
 types-pytz = ">=2024.2"
-types-psycopg2 = ">=2.9"
+types-psycopg2 = ">=2.9.21.20260712"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = ">=1.6"
 mkdocs-material = ">=9"
-mkdocstrings = { extras = ["python"], version = ">=0.26" }
+mkdocstrings = { extras = ["python"], version = ">=1.0.6" }
 Pygments = ">=2.18"
 
 [build-system]
