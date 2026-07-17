@@ -28,6 +28,7 @@ Start the stack (might need sudo) and create the database and tables:
 
 ```bash
 docker compose up -d --build
+eval $(poetry env activate)
 docker compose exec app transfer_vn --db_create --json_tables_create --col_tables_create evn.toml
 ```
 
