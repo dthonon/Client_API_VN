@@ -18,7 +18,13 @@ A `docker-compose.yml` provides a ready-to-use development stack: the CLI
 enables the PostGIS extensions and creates the `xfer38` application superuser,
 mirroring the [server install guide](https://dthonon.github.io/Client_API_VN/apps/server_install/).
 
-Start the stack and create the database and tables:
+If needed, install docker:
+
+```bash
+s̀udo apt install docker.io docker-compose-v2
+```
+
+Start the stack (might need sudo) and create the database and tables:
 
 ```bash
 docker compose up -d --build
