@@ -186,3 +186,4 @@ docs/_rst/*
 cover/*
 
 .ruff_cache
+jobstore.sqllite

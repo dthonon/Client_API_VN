@@ -3,6 +3,7 @@
 Program managing VisioNature export to Postgresql database
 
 """
+
 # ruff: noqa: S602
 
 import argparse
@@ -364,17 +365,19 @@ def col_table_create(
         autoescape=True,
     )
     template = env.get_template("create-vn-tables.sql")
-    cmd = template.render({
-        "db_host": db_host,
-        "db_port": db_port,
-        "db_name": db_name,
-        "db_schema_import": db_schema_import,
-        "db_schema_vn": db_schema_vn,
-        "db_group": db_group,
-        "db_user": db_user,
-        "db_pw": db_pw,
-        "proj": db_out_proj,
-    })
+    cmd = template.render(
+        {
+            "db_host": db_host,
+            "db_port": db_port,
+            "db_name": db_name,
+            "db_schema_import": db_schema_import,
+            "db_schema_vn": db_schema_vn,
+            "db_group": db_group,
+            "db_user": db_user,
+            "db_pw": db_pw,
+            "proj": db_out_proj,
+        }
+    )
     tmp_sql = Path.home() / "tmp/create-vn-tables.sql"
     with tmp_sql.open(mode="w") as myfile:
         myfile.write(cmd)
@@ -471,7 +474,7 @@ def full_download_1(ctrl: str, settings: dict) -> None:
                 site=settings["SITE"]["name"],
                 user_email=settings["SITE"]["user_email"],
                 user_pw=settings["SITE"]["user_pw"],
-                base_url=settings["SITE"]["URL"],
+                base_url=settings["SITE"]["site_url"],
                 client_key=settings["SITE"]["client_key"],
                 client_secret=settings["SITE"]["client_secret"],
                 db_enabled=settings["DATABASE"]["enabled"],
@@ -514,7 +517,7 @@ def full_download_1(ctrl: str, settings: dict) -> None:
                 site=settings["SITE"]["name"],
                 user_email=settings["SITE"]["user_email"],
                 user_pw=settings["SITE"]["user_pw"],
-                base_url=settings["SITE"]["URL"],
+                base_url=settings["SITE"]["site_url"],
                 client_key=settings["SITE"]["client_key"],
                 client_secret=settings["SITE"]["client_secret"],
                 backend=store_all,
@@ -526,7 +529,7 @@ def full_download_1(ctrl: str, settings: dict) -> None:
                 site=settings["SITE"]["name"],
                 user_email=settings["SITE"]["user_email"],
                 user_pw=settings["SITE"]["user_pw"],
-                base_url=settings["SITE"]["URL"],
+                base_url=settings["SITE"]["site_url"],
                 client_key=settings["SITE"]["client_key"],
                 client_secret=settings["SITE"]["client_secret"],
                 backend=store_all,
@@ -620,7 +623,7 @@ def increment_download_1(ctrl: str, settings: dict) -> None:
                 site=settings["SITE"]["name"],
                 user_email=settings["SITE"]["user_email"],
                 user_pw=settings["SITE"]["user_pw"],
-                base_url=settings["SITE"]["URL"],
+                base_url=settings["SITE"]["site_url"],
                 client_key=settings["SITE"]["client_key"],
                 client_secret=settings["SITE"]["client_secret"],
                 db_enabled=settings["DATABASE"]["enabled"],
@@ -658,7 +661,7 @@ def increment_download_1(ctrl: str, settings: dict) -> None:
                 site=settings["SITE"]["name"],
                 user_email=settings["SITE"]["user_email"],
                 user_pw=settings["SITE"]["user_pw"],
-                base_url=settings["SITE"]["URL"],
+                base_url=settings["SITE"]["site_url"],
                 client_key=settings["SITE"]["client_key"],
                 client_secret=settings["SITE"]["client_secret"],
                 backend=store_all,
@@ -670,7 +673,7 @@ def increment_download_1(ctrl: str, settings: dict) -> None:
                 site=settings["SITE"]["name"],
                 user_email=settings["SITE"]["user_email"],
                 user_pw=settings["SITE"]["user_pw"],
-                base_url=settings["SITE"]["URL"],
+                base_url=settings["SITE"]["site_url"],
                 client_key=settings["SITE"]["client_key"],
                 client_secret=settings["SITE"]["client_secret"],
                 backend=store_all,
@@ -682,7 +685,7 @@ def increment_download_1(ctrl: str, settings: dict) -> None:
                 site=settings["SITE"]["name"],
                 user_email=settings["SITE"]["user_email"],
                 user_pw=settings["SITE"]["user_pw"],
-                base_url=settings["SITE"]["URL"],
+                base_url=settings["SITE"]["site_url"],
                 client_key=settings["SITE"]["client_key"],
                 client_secret=settings["SITE"]["client_secret"],
                 backend=store_all,
@@ -789,12 +792,14 @@ def count_observations(cfg_ctrl):
                             for r in col_counts:
                                 if r[0] == site and r[2] == taxo:
                                     col_c = r[3]
-                            site_counts.append([
-                                cfg.site,
-                                taxo,
-                                int(rows[i].contents[0].contents[0].replace(" ", "")),
-                                col_c,
-                            ])
+                            site_counts.append(
+                                [
+                                    cfg.site,
+                                    taxo,
+                                    int(rows[i].contents[0].contents[0].replace(" ", "")),
+                                    col_c,
+                                ]
+                            )
                 print(
                     tabulate(
                         site_counts,
@@ -877,7 +882,7 @@ def main(args) -> None:
     settings.validators.register(
         Validator("SITE.ENABLED", default=True, cast=bool),
         Validator("SITE.NAME", len_min=1, cast=str),
-        Validator("SITE.URL", len_min=10, startswith="https://", cast=str),
+        Validator("SITE.SITE_URL", len_min=10, startswith="https://", cast=str),
         Validator("SITE.USER_EMAIL", len_min=5, cont="@", cast=str),
         Validator("SITE.USER_PW", len_min=5, cast=str),
         Validator("SITE.CLIENT_KEY", len_min=20, cast=str),

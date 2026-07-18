@@ -27,6 +27,15 @@ enabled = false
 day_of_week = 4
 hour = 23
 
+[controler.fields]
+# Enable/disable download from this controler.
+enabled = false
+
+[controler.fields.schedule]
+# Schedule in year/month/day/week/day_of_week/hour/minute.
+day_of_week = 4
+hour = 23
+
 [controler.local_admin_units]
 # Enable/disable download from this controler.
 enabled = false
@@ -66,6 +75,15 @@ enabled = false
 # Schedule in year/month/day/week/day_of_week/hour/minute.
 day_of_week = 3
 hour = 23
+
+[controler.species]
+# Enable/disable download from this controler.
+enabled = false
+
+[controler.species.schedule]
+# Schedule in year/month/day/week/day_of_week/hour/minute.
+day_of_week = 2
+hour = 22
 
 [controler.taxo_groups]
 # Enable/disable download from this controler.
@@ -172,13 +190,11 @@ TAXO_GROUP_FORMICOIDEA = false
 
 [site]
 # VisioNature site access parameters.
-
-[site.tff]
-# Sites parameters for tff.
+name = "faune-xxx"
 # Enable download from this site.
 enabled = true
 # Site URL.
-site = "https://www.faune-xxx.org/"
+site_url = "https://www.faune-xxx.org/"
 # Username.
 user_email = "nom.prenom@example.net"
 # User password.
@@ -222,7 +238,7 @@ db_user = "xferxx"
 # Postgresql user password.
 db_pw = "db_pw"
 # Coordinates systems for local projection, see EPSG.
-# db_out_proj = 2154
+db_out_proj = 2154
 
 # ------------------- Tuning section -------------------
 
