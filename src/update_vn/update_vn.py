@@ -21,13 +21,11 @@ import datetime
 import importlib.resources
 import json
 import logging
-import pprint
 import shutil
 import sys
 from ast import literal_eval
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
-from time import sleep
 
 import click
 import pandas as pd
