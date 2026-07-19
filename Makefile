@@ -117,6 +117,13 @@ test-integration-docker: ## Run the integration suite inside the docker compose 
 	@docker compose exec -w /root app transfer_vn --db_drop --db_create --json_tables_create --col_tables_create .evn_test.yaml
 	@docker compose exec -w /root app pytest /code/tests -m "$(PYTEST_MARKERS)"
 
+.PHONY: test-regression
+test-regression: ## Run the mocked incremental-download regression tests (PostGIS, no account)
+	@echo "🚀 Enabling extensions and the application role"
+	@PGPASSWORD=$(PGPASSWORD) psql -h $(DB_HOST) -p $(DB_PORT) -U postgres -d postgres -f docker/init-db.sql
+	@echo "🚀 Running regression tests"
+	@poetry run pytest tests/test_increment_regression.py
+
 .PHONY: build
 build: clean-build ## Build wheel file using poetry
 	@echo "🚀 Creating wheel file"
