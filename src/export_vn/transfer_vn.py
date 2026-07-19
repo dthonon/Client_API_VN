@@ -365,19 +365,17 @@ def col_table_create(
         autoescape=True,
     )
     template = env.get_template("create-vn-tables.sql")
-    cmd = template.render(
-        {
-            "db_host": db_host,
-            "db_port": db_port,
-            "db_name": db_name,
-            "db_schema_import": db_schema_import,
-            "db_schema_vn": db_schema_vn,
-            "db_group": db_group,
-            "db_user": db_user,
-            "db_pw": db_pw,
-            "proj": db_out_proj,
-        }
-    )
+    cmd = template.render({
+        "db_host": db_host,
+        "db_port": db_port,
+        "db_name": db_name,
+        "db_schema_import": db_schema_import,
+        "db_schema_vn": db_schema_vn,
+        "db_group": db_group,
+        "db_user": db_user,
+        "db_pw": db_pw,
+        "proj": db_out_proj,
+    })
     tmp_sql = Path.home() / "tmp/create-vn-tables.sql"
     with tmp_sql.open(mode="w") as myfile:
         myfile.write(cmd)
@@ -792,14 +790,12 @@ def count_observations(cfg_ctrl):
                             for r in col_counts:
                                 if r[0] == site and r[2] == taxo:
                                     col_c = r[3]
-                            site_counts.append(
-                                [
-                                    cfg.site,
-                                    taxo,
-                                    int(rows[i].contents[0].contents[0].replace(" ", "")),
-                                    col_c,
-                                ]
-                            )
+                            site_counts.append([
+                                cfg.site,
+                                taxo,
+                                int(rows[i].contents[0].contents[0].replace(" ", "")),
+                                col_c,
+                            ])
                 print(
                     tabulate(
                         site_counts,

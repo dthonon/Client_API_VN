@@ -19,14 +19,18 @@ import contextlib
 import csv
 import datetime
 import importlib.resources
+import json
 import logging
+import pprint
 import shutil
 import sys
 from ast import literal_eval
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
+from time import sleep
 
 import click
+import pandas as pd
 from dynaconf import Dynaconf, ValidationError, Validator
 
 from biolovision.api import ObservationsAPI
@@ -111,23 +115,28 @@ def update(config: str, input_file: str) -> None:
     )
 
     # Validation de tous les paramètres
-    cfg_site_list = settings.site
+    cfg_site_list = settings.sites
+    if not cfg_site_list:
+        raise ValueError(_("No site defined in configuration file"))
     if len(cfg_site_list) > 1:
         raise ValueError(_("Only one site can be defined in configuration file"))
+    # Get the single site key
+    site = None
+    cfg = None
     for site, cfg in cfg_site_list.items():  # noqa: B007
         break
-    site_up = site.upper()
+    site_up = site.upper()  # pyright: ignore[reportOptionalMemberAccess]
     settings.validators.register(
         Validator(
             "MESSAGE",
             len_min=5,
             default="Modification en masse, le {date}, opération {op}, attribut {path}, depuis {old} vers {new}",
         ),
-        Validator(f"SITE.{site_up}.SITE", len_min=10, startswith="https://"),
-        Validator("SITE.{site_up}.USER_EMAIL", len_min=5, cont="@"),
-        Validator("SITE.{site_up}.USER_PW", len_min=5),
-        Validator("SITE.{site_up}.CLIENT_KEY", len_min=20),
-        Validator("SITE.{site_up}.CLIENT_SECRET", len_min=5),
+        Validator(f"SITES.{site_up}.URL", len_min=10, startswith="https://"),
+        Validator("SITES.{site_up}.USER_EMAIL", len_min=5, cont="@"),
+        Validator("SITES.{site_up}.USER_PW", len_min=5),
+        Validator("SITES.{site_up}.CLIENT_KEY", len_min=20),
+        Validator("SITES.{site_up}.CLIENT_SECRET", len_min=5),
         Validator("TUNING.MAX_LIST_LENGTH", gte=1, default=100),
         Validator("TUNING.MAX_CHUNKS", gte=1, default=1000),
         Validator("TUNING.MAX_RETRY", gte=1, default=5),
@@ -147,14 +156,15 @@ def update(config: str, input_file: str) -> None:
         logger.critical(_("Input file %s does not exist"), str(Path(input_file)))
         raise FileNotFoundError
 
+    print(cfg)
     obs_api = {}
     logger.debug(_("Preparing update for site %s"), site)
     obs_api[site] = ObservationsAPI(
-        user_email=cfg.user_email,
-        user_pw=cfg.user_pw,
-        base_url=cfg.site,
-        client_key=cfg.client_key,
-        client_secret=cfg.client_secret,
+        user_email=cfg.user_email,  # pyright: ignore[reportOptionalMemberAccess]
+        user_pw=cfg.user_pw,  # pyright: ignore[reportOptionalMemberAccess]
+        base_url=cfg.site,  # pyright: ignore[reportOptionalMemberAccess]
+        client_key=cfg.client_key,  # pyright: ignore[reportOptionalMemberAccess]
+        client_secret=cfg.client_secret,  # pyright: ignore[reportOptionalMemberAccess]
         max_retry=settings.tuning.max_retry,
         max_requests=settings.tuning.max_requests,
         max_chunks=settings.tuning.max_chunks,
@@ -257,6 +267,173 @@ def update(config: str, input_file: str) -> None:
                         logger.debug(_("After: %s"), sighting["data"])
                         # Update to remote site
                         obs_api[row[0].strip()].api_update(row[1].strip(), sighting)
+
+    return None
+
+
+@main.command()
+@click.argument(
+    "config",
+)
+@click.argument(
+    "forms_file",
+)
+@click.argument(
+    "data_file",
+)
+@click.argument(
+    "output_file",
+)
+def upload_forms(config: str, forms_file: str, data_file: str, output_file: str) -> None:
+    """Upload forms to Biolovision database."""
+    logger.warning(_("This command is intended for developers only, use with caution!"))
+    # Get configuration from file
+    if not (Path.home() / config).is_file():
+        logger.critical(_("Configuration file %s does not exist"), str(Path.home() / config))
+        raise FileNotFoundError
+    logger.info(_("Getting configuration data from %s"), config)
+    settings = Dynaconf(
+        settings_files=[config],
+    )
+
+    # Validation de tous les paramètres
+    cfg_site_list = settings.sites
+    if len(cfg_site_list) > 1:
+        raise ValueError(_("Only one site can be defined in configuration file"))
+    site = None
+    cfg = None
+    for site, cfg in cfg_site_list.items():  # noqa: B007
+        break
+    site_up = site.upper()  # pyright: ignore[reportOptionalMemberAccess]
+    settings.validators.register(
+        Validator(
+            "MESSAGE",
+            len_min=5,
+            default="Modification en masse, le {date}, opération {op}, attribut {path}, depuis {old} vers {new}",
+        ),
+        Validator(f"SITES.{site_up}.URL", len_min=10, startswith="https://"),
+        Validator("SITES.{site_up}.USER_EMAIL", len_min=5, cont="@"),
+        Validator("SITES.{site_up}.USER_PW", len_min=5),
+        Validator("SITES.{site_up}.CLIENT_KEY", len_min=20),
+        Validator("SITES.{site_up}.CLIENT_SECRET", len_min=5),
+        Validator("TUNING.MAX_LIST_LENGTH", gte=1, default=100),
+        Validator("TUNING.MAX_CHUNKS", gte=1, default=1000),
+        Validator("TUNING.MAX_RETRY", gte=1, default=5),
+        Validator("TUNING.MAX_REQUESTS", gte=0, default=0),
+        Validator("TUNING.RETRY_DELAY", gte=1, default=5),
+        Validator("TUNING.UNAVAILABLE_DELAY", gte=1, default=600),
+    )
+    try:
+        settings.validators.validate_all()
+    except ValidationError as e:
+        accumulative_errors = e.details
+        logger.exception(accumulative_errors)
+        raise
+
+    # Check forms and data file
+    if not Path(forms_file).is_file():
+        logger.critical(_("Forms file %s does not exist"), str(Path(forms_file)))
+        raise FileNotFoundError
+    if not Path(data_file).is_file():
+        logger.critical(_("Data file %s does not exist"), str(Path(data_file)))
+        raise FileNotFoundError
+
+    # Read forms and data file
+    with open(forms_file, newline="") as csvfile:
+        forms_reader = csv.reader(csvfile, delimiter=",")
+        forms = pd.DataFrame([row for row in forms_reader if len(row) >= 2])
+    forms.columns = forms.iloc[0]
+    forms = forms[1:]
+    forms.set_index("id", inplace=True)
+    with open(data_file, newline="") as csvfile:
+        data_reader = csv.reader(csvfile, delimiter=",")
+        data = pd.DataFrame([row for row in data_reader if len(row) >= 2])
+    data.columns = data.iloc[0]
+    data = data[1:]
+    # data.set_index("id", inplace=True)
+
+    # Create ObservationsAPI instance
+    # obs_api = ObservationsAPI(
+    #     user_email=cfg.user_email,  # pyright: ignore[reportOptionalMemberAccess]
+    #     user_pw=cfg.user_pw,  # pyright: ignore[reportOptionalMemberAccess]
+    #     base_url=cfg.site,  # pyright: ignore[reportOptionalMemberAccess]
+    #     client_key=cfg.client_key,  # pyright: ignore[reportOptionalMemberAccess]
+    #     client_secret=cfg.client_secret,  # pyright: ignore[reportOptionalMemberAccess]
+    #     max_retry=settings.tuning.max_retry,
+    #     max_requests=settings.tuning.max_requests,
+    #     max_chunks=settings.tuning.max_chunks,
+    #     unavailable_delay=settings.tuning.unavailable_delay,
+    #     retry_delay=settings.tuning.retry_delay,
+    # )
+
+    # Boucle sur la liste des formulaires, pour créer chaque formulaire avec ses données
+    obs_list = []
+    forms_list = pd.DataFrame(columns=["id_form_universal", "date", "visit_number", "site_code", "sequence_number"])
+    for _form_id, form in forms.iterrows():
+        form_id = form["id_form_universal"]
+        logger.info(_("Analyse du formulaire %s"), form_id)
+        try:
+            jform = json.loads(f"{form['item']}")
+        except json.JSONDecodeError:
+            logger.exception(_("Failed to decode JSON for form %s"), form_id)
+            print(form["item"])
+            continue
+        jform = {"data": {"forms": [jform]}}
+        jform["data"]["forms"][0]["sightings"] = []
+        sight_list = []
+        for _data_id, dat in data.iterrows():
+            if dat["id_form_universal"] == form_id:
+                data_s = ""
+                try:
+                    data_s = f"{dat['item']}".replace("\\\\", "\\")  # Replace \\ by \ for valid JSON
+                    jdat = json.loads(data_s)
+                except json.JSONDecodeError:
+                    logger.exception(_("Failed to decode JSON for data %s"), dat["id"])
+                    print(data_s)
+                    continue
+                jform["data"]["forms"][0]["sightings"].append(jdat)
+                sight_list.append(dat["id"])
+        if len(sight_list) > 0:
+            logger.info(_("Le formulaire %s contient %d sightings"), form_id, len(sight_list))
+            formj = json.loads(f"{form['item']}")
+            forms_list = pd.concat(
+                [
+                    forms_list,
+                    pd.DataFrame([
+                        {
+                            "id_form_universal": form_id,
+                            "date": formj["date_start"],
+                            "visit_number": formj["protocol"]["visit_number"],
+                            "site_code": formj["protocol"]["site_code"],
+                            "sequence_number": formj["protocol"]["sequence_number"],
+                            # "sightings": sight_list,
+                        }
+                    ]),
+                ],
+                ignore_index=True,
+            )
+            # print(pprint.pformat(jform))
+            if jform is not None:
+                formc = {"id": 0}
+                # try:
+                #     formc = obs_api.api_create(jform)  # pyright: ignore[reportOptionalMemberAccess]
+                # except Exception:
+                #     logger.exception(_("Erreur lors de la création du formulaire %s"), form_id)
+                #     continue
+                logger.info(_("Formulaire %s créé"), formc)
+                obs_list.append(formc["id"])  # pyright: ignore[reportOptionalSubscript]
+            # sleep(1)  # Avoid too many requests in a short time
+            # break
+
+    print(forms_list)
+
+    # Ecrire la liste des observations créées dans le fichier de sortie
+    with open(output_file, "w", newline="") as csvfile:
+        writer = csv.writer(csvfile, delimiter=",")
+        writer.writerow(["id"])
+        for obs in obs_list:
+            writer.writerow([obs])
+    print(obs_list)
 
     return None
 
