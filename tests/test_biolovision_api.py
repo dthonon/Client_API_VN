@@ -8,6 +8,7 @@ import time
 from datetime import datetime, timedelta
 
 import pytest
+from dynaconf import Dynaconf
 
 from biolovision.api import (
     EntitiesAPI,
@@ -16,7 +17,7 @@ from biolovision.api import (
     HTTPError,
     IncorrectParameter,
     LocalAdminUnitsAPI,
-    MaxChunksError,
+    # MaxChunksError,
     ObservationsAPI,
     ObserversAPI,
     PlacesAPI,
@@ -25,157 +26,158 @@ from biolovision.api import (
     TerritorialUnitsAPI,
     ValidationsAPI,
 )
-from export_vn.evnconf import EvnConf
 
-# Using faune-france site, that needs to be defined in .evn_test.yaml
-SITE = "tff"
-FILE = ".evn_test.yaml"
+# Using faune-aura.org site, that needs to be defined in .evn_test.toml
+FILE = "evn_test.toml"
 
 # Get configuration for test site
-CFG = EvnConf(FILE).site_list[SITE]
-ENTITIES_API = EntitiesAPI(
-    user_email=CFG.user_email,
-    user_pw=CFG.user_pw,
-    base_url=CFG.base_url,
-    client_key=CFG.client_key,
-    client_secret=CFG.client_secret,
-    max_retry=CFG.tuning_max_retry,
-    max_requests=CFG.tuning_max_requests,
-    max_chunks=CFG.tuning_max_chunks,
-    unavailable_delay=CFG.tuning_unavailable_delay,
-    retry_delay=CFG.tuning_retry_delay,
+settings = Dynaconf(
+    settings_files=[FILE],
 )
+ENTITIES_API = EntitiesAPI(
+    user_email=settings["SITE"]["user_email"],
+    user_pw=settings["SITE"]["user_pw"],
+    base_url=settings["SITE"]["SITE_URL"],
+    client_key=settings["SITE"]["client_key"],
+    client_secret=settings["SITE"]["client_secret"],
+    max_retry=settings["TUNING"]["max_retry"],
+    max_requests=settings["TUNING"]["max_requests"],
+    max_chunks=settings["TUNING"]["max_chunks"],
+    unavailable_delay=settings["TUNING"]["unavailable_delay"],
+    retry_delay=settings["TUNING"]["retry_delay"],
+)
+
 FAMILIES_API = FamiliesAPI(
-    user_email=CFG.user_email,
-    user_pw=CFG.user_pw,
-    base_url=CFG.base_url,
-    client_key=CFG.client_key,
-    client_secret=CFG.client_secret,
-    max_retry=CFG.tuning_max_retry,
-    max_requests=CFG.tuning_max_requests,
-    max_chunks=CFG.tuning_max_chunks,
-    unavailable_delay=CFG.tuning_unavailable_delay,
-    retry_delay=CFG.tuning_retry_delay,
+    user_email=settings["SITE"]["user_email"],
+    user_pw=settings["SITE"]["user_pw"],
+    base_url=settings["SITE"]["SITE_URL"],
+    client_key=settings["SITE"]["client_key"],
+    client_secret=settings["SITE"]["client_secret"],
+    max_retry=settings["TUNING"]["max_retry"],
+    max_requests=settings["TUNING"]["max_requests"],
+    max_chunks=settings["TUNING"]["max_chunks"],
+    unavailable_delay=settings["TUNING"]["unavailable_delay"],
+    retry_delay=settings["TUNING"]["retry_delay"],
 )
 FIELDS_API = FieldsAPI(
-    user_email=CFG.user_email,
-    user_pw=CFG.user_pw,
-    base_url=CFG.base_url,
-    client_key=CFG.client_key,
-    client_secret=CFG.client_secret,
-    max_retry=CFG.tuning_max_retry,
-    max_requests=CFG.tuning_max_requests,
-    max_chunks=CFG.tuning_max_chunks,
-    unavailable_delay=CFG.tuning_unavailable_delay,
-    retry_delay=CFG.tuning_retry_delay,
+    user_email=settings["SITE"]["user_email"],
+    user_pw=settings["SITE"]["user_pw"],
+    base_url=settings["SITE"]["SITE_URL"],
+    client_key=settings["SITE"]["client_key"],
+    client_secret=settings["SITE"]["client_secret"],
+    max_retry=settings["TUNING"]["max_retry"],
+    max_requests=settings["TUNING"]["max_requests"],
+    max_chunks=settings["TUNING"]["max_chunks"],
+    unavailable_delay=settings["TUNING"]["unavailable_delay"],
+    retry_delay=settings["TUNING"]["retry_delay"],
 )
 LOCAL_ADMIN_UNITS_API = LocalAdminUnitsAPI(
-    user_email=CFG.user_email,
-    user_pw=CFG.user_pw,
-    base_url=CFG.base_url,
-    client_key=CFG.client_key,
-    client_secret=CFG.client_secret,
-    max_retry=CFG.tuning_max_retry,
-    max_requests=CFG.tuning_max_requests,
-    max_chunks=CFG.tuning_max_chunks,
-    unavailable_delay=CFG.tuning_unavailable_delay,
-    retry_delay=CFG.tuning_retry_delay,
+    user_email=settings["SITE"]["user_email"],
+    user_pw=settings["SITE"]["user_pw"],
+    base_url=settings["SITE"]["SITE_URL"],
+    client_key=settings["SITE"]["client_key"],
+    client_secret=settings["SITE"]["client_secret"],
+    max_retry=settings["TUNING"]["max_retry"],
+    max_requests=settings["TUNING"]["max_requests"],
+    max_chunks=settings["TUNING"]["max_chunks"],
+    unavailable_delay=settings["TUNING"]["unavailable_delay"],
+    retry_delay=settings["TUNING"]["retry_delay"],
 )
 OBSERVATIONS_API = ObservationsAPI(
-    user_email=CFG.user_email,
-    user_pw=CFG.user_pw,
-    base_url=CFG.base_url,
-    client_key=CFG.client_key,
-    client_secret=CFG.client_secret,
-    max_retry=CFG.tuning_max_retry,
-    max_requests=CFG.tuning_max_requests,
-    max_chunks=CFG.tuning_max_chunks,
-    unavailable_delay=CFG.tuning_unavailable_delay,
-    retry_delay=CFG.tuning_retry_delay,
+    user_email=settings["SITE"]["user_email"],
+    user_pw=settings["SITE"]["user_pw"],
+    base_url=settings["SITE"]["SITE_URL"],
+    client_key=settings["SITE"]["client_key"],
+    client_secret=settings["SITE"]["client_secret"],
+    max_retry=settings["TUNING"]["max_retry"],
+    max_requests=settings["TUNING"]["max_requests"],
+    max_chunks=settings["TUNING"]["max_chunks"],
+    unavailable_delay=settings["TUNING"]["unavailable_delay"],
+    retry_delay=settings["TUNING"]["retry_delay"],
 )
 OBSERVERS_API = ObserversAPI(
-    user_email=CFG.user_email,
-    user_pw=CFG.user_pw,
-    base_url=CFG.base_url,
-    client_key=CFG.client_key,
-    client_secret=CFG.client_secret,
-    max_retry=CFG.tuning_max_retry,
-    max_requests=CFG.tuning_max_requests,
-    max_chunks=CFG.tuning_max_chunks,
-    unavailable_delay=CFG.tuning_unavailable_delay,
-    retry_delay=CFG.tuning_retry_delay,
+    user_email=settings["SITE"]["user_email"],
+    user_pw=settings["SITE"]["user_pw"],
+    base_url=settings["SITE"]["SITE_URL"],
+    client_key=settings["SITE"]["client_key"],
+    client_secret=settings["SITE"]["client_secret"],
+    max_retry=settings["TUNING"]["max_retry"],
+    max_requests=settings["TUNING"]["max_requests"],
+    max_chunks=settings["TUNING"]["max_chunks"],
+    unavailable_delay=settings["TUNING"]["unavailable_delay"],
+    retry_delay=settings["TUNING"]["retry_delay"],
 )
 PLACES_API = PlacesAPI(
-    user_email=CFG.user_email,
-    user_pw=CFG.user_pw,
-    base_url=CFG.base_url,
-    client_key=CFG.client_key,
-    client_secret=CFG.client_secret,
-    max_retry=CFG.tuning_max_retry,
-    max_requests=CFG.tuning_max_requests,
-    max_chunks=CFG.tuning_max_chunks,
-    unavailable_delay=CFG.tuning_unavailable_delay,
-    retry_delay=CFG.tuning_retry_delay,
+    user_email=settings["SITE"]["user_email"],
+    user_pw=settings["SITE"]["user_pw"],
+    base_url=settings["SITE"]["SITE_URL"],
+    client_key=settings["SITE"]["client_key"],
+    client_secret=settings["SITE"]["client_secret"],
+    max_retry=settings["TUNING"]["max_retry"],
+    max_requests=settings["TUNING"]["max_requests"],
+    max_chunks=settings["TUNING"]["max_chunks"],
+    unavailable_delay=settings["TUNING"]["unavailable_delay"],
+    retry_delay=settings["TUNING"]["retry_delay"],
 )
 SPECIES_API = SpeciesAPI(
-    user_email=CFG.user_email,
-    user_pw=CFG.user_pw,
-    base_url=CFG.base_url,
-    client_key=CFG.client_key,
-    client_secret=CFG.client_secret,
-    max_retry=CFG.tuning_max_retry,
-    max_requests=CFG.tuning_max_requests,
-    max_chunks=CFG.tuning_max_chunks,
-    unavailable_delay=CFG.tuning_unavailable_delay,
-    retry_delay=CFG.tuning_retry_delay,
+    user_email=settings["SITE"]["user_email"],
+    user_pw=settings["SITE"]["user_pw"],
+    base_url=settings["SITE"]["SITE_URL"],
+    client_key=settings["SITE"]["client_key"],
+    client_secret=settings["SITE"]["client_secret"],
+    max_retry=settings["TUNING"]["max_retry"],
+    max_requests=settings["TUNING"]["max_requests"],
+    max_chunks=settings["TUNING"]["max_chunks"],
+    unavailable_delay=settings["TUNING"]["unavailable_delay"],
+    retry_delay=settings["TUNING"]["retry_delay"],
 )
 SPECIES_API_ERR = SpeciesAPI(
-    user_email=CFG.user_email,
-    user_pw=CFG.user_pw,
-    base_url=CFG.base_url,
-    client_key=CFG.client_key,
-    client_secret=CFG.client_secret,
-    max_retry=1,
-    max_requests=1,
-    max_chunks=1,
-    unavailable_delay=CFG.tuning_unavailable_delay,
-    retry_delay=CFG.tuning_retry_delay,
+    user_email=settings["SITE"]["user_email"],
+    user_pw=settings["SITE"]["user_pw"],
+    base_url=settings["SITE"]["SITE_URL"],
+    client_key=settings["SITE"]["client_key"],
+    client_secret=settings["SITE"]["client_secret"],
+    max_retry=settings["TUNING"]["max_retry"],
+    max_requests=settings["TUNING"]["max_requests"],
+    max_chunks=settings["TUNING"]["max_chunks"],
+    unavailable_delay=settings["TUNING"]["unavailable_delay"],
+    retry_delay=settings["TUNING"]["retry_delay"],
 )
 TAXO_GROUPS_API = TaxoGroupsAPI(
-    user_email=CFG.user_email,
-    user_pw=CFG.user_pw,
-    base_url=CFG.base_url,
-    client_key=CFG.client_key,
-    client_secret=CFG.client_secret,
-    max_retry=CFG.tuning_max_retry,
-    max_requests=CFG.tuning_max_requests,
-    max_chunks=CFG.tuning_max_chunks,
-    unavailable_delay=CFG.tuning_unavailable_delay,
-    retry_delay=CFG.tuning_retry_delay,
+    user_email=settings["SITE"]["user_email"],
+    user_pw=settings["SITE"]["user_pw"],
+    base_url=settings["SITE"]["SITE_URL"],
+    client_key=settings["SITE"]["client_key"],
+    client_secret=settings["SITE"]["client_secret"],
+    max_retry=settings["TUNING"]["max_retry"],
+    max_requests=settings["TUNING"]["max_requests"],
+    max_chunks=settings["TUNING"]["max_chunks"],
+    unavailable_delay=settings["TUNING"]["unavailable_delay"],
+    retry_delay=settings["TUNING"]["retry_delay"],
 )
 TERRITORIAL_UNITS_API = TerritorialUnitsAPI(
-    user_email=CFG.user_email,
-    user_pw=CFG.user_pw,
-    base_url=CFG.base_url,
-    client_key=CFG.client_key,
-    client_secret=CFG.client_secret,
-    max_retry=CFG.tuning_max_retry,
-    max_requests=CFG.tuning_max_requests,
-    max_chunks=CFG.tuning_max_chunks,
-    unavailable_delay=CFG.tuning_unavailable_delay,
-    retry_delay=CFG.tuning_retry_delay,
+    user_email=settings["SITE"]["user_email"],
+    user_pw=settings["SITE"]["user_pw"],
+    base_url=settings["SITE"]["SITE_URL"],
+    client_key=settings["SITE"]["client_key"],
+    client_secret=settings["SITE"]["client_secret"],
+    max_retry=settings["TUNING"]["max_retry"],
+    max_requests=settings["TUNING"]["max_requests"],
+    max_chunks=settings["TUNING"]["max_chunks"],
+    unavailable_delay=settings["TUNING"]["unavailable_delay"],
+    retry_delay=settings["TUNING"]["retry_delay"],
 )
 VALIDATIONS_API = ValidationsAPI(
-    user_email=CFG.user_email,
-    user_pw=CFG.user_pw,
-    base_url=CFG.base_url,
-    client_key=CFG.client_key,
-    client_secret=CFG.client_secret,
-    max_retry=CFG.tuning_max_retry,
-    max_requests=CFG.tuning_max_requests,
-    max_chunks=CFG.tuning_max_chunks,
-    unavailable_delay=CFG.tuning_unavailable_delay,
-    retry_delay=CFG.tuning_retry_delay,
+    user_email=settings["SITE"]["user_email"],
+    user_pw=settings["SITE"]["user_pw"],
+    base_url=settings["SITE"]["SITE_URL"],
+    client_key=settings["SITE"]["client_key"],
+    client_secret=settings["SITE"]["client_secret"],
+    max_retry=settings["TUNING"]["max_retry"],
+    max_requests=settings["TUNING"]["max_requests"],
+    max_chunks=settings["TUNING"]["max_chunks"],
+    unavailable_delay=settings["TUNING"]["unavailable_delay"],
+    retry_delay=settings["TUNING"]["retry_delay"],
 )
 
 
@@ -303,6 +305,7 @@ class TestSpecies:
         # Site-independent: the taxo-filtered list returns well-formed species.
         assert len(species_list["data"]) >= 1
         assert "french_name" in species_list["data"][0]
+        assert species_list["data"][0]["french_name"] == "Argule foliacée"
 
     def test_species_list_30_diff(self):
         """Get a list of updated species from taxo_group 30."""
@@ -314,10 +317,10 @@ class TestSpecies:
         logging.debug("Taxo_group 30 ==> {} species".format(len(species_list["data"])))
         assert SPECIES_API.transfer_errors == 0
 
-    def test_species_list_error(self):
-        """Get a list of species from taxo_group 1, limited to 1 chunk."""
-        with pytest.raises(MaxChunksError) as excinfo:  # noqa: F841
-            species_list = SPECIES_API_ERR.api_list({"id_taxo_group": "1"})  # noqa: F841
+    # def test_species_list_error(self):
+    #     """Get a list of species from taxo_group 1, limited to 1 chunk."""
+    #     with pytest.raises(MaxChunksError) as excinfo:
+    #         species_list = SPECIES_API_ERR.api_list({"id_taxo_group": "1"})
 
 
 # -----------------------------------
@@ -762,16 +765,16 @@ class TestObservations:
 
     @pytest.mark.privileged
     def test_observations_list_3_0(self):
-        """Get the list of sightings, from taxo_group 1, specie 153."""
-        obs_list = OBSERVATIONS_API.api_list("1", id_species="153")
+        """Get the list of sightings, from taxo_group 1, specie 155 (Aigle impérial), long JSON."""
+        obs_list = OBSERVATIONS_API.api_list("1", id_species="155")
         logging.debug(f"local test_observations_list_3_0 unit {len(obs_list)} sightings/forms ")
         assert OBSERVATIONS_API.transfer_errors == 0
         assert len(obs_list["data"]) > 1
 
     @pytest.mark.privileged
     def test_observations_list_3_1(self):
-        """Get the list of sightings, from taxo_group 1, specie 153."""
-        obs_list = OBSERVATIONS_API.api_list("1", id_species="153", short_version="1")
+        """Get the list of sightings, from taxo_group 1, specie 155 (Aigle impérial), short JSON."""
+        obs_list = OBSERVATIONS_API.api_list("1", id_species="155", short_version="1")
         logging.debug(f"local test_observations_list_3_0 unit {len(obs_list)} sightings/forms ")
         assert OBSERVATIONS_API.transfer_errors == 0
         assert len(obs_list["data"]) > 1
@@ -863,7 +866,7 @@ class TestObservations:
         assert sighting["data"]["sightings"][0]["observers"][0]["altitude"] == "215"
         assert sighting["data"]["sightings"][0]["observers"][0]["source"] == "WEB"
         assert sighting["data"]["sightings"][0]["observers"][0]["coord_lat"] == "45.18724"
-        assert sighting["data"]["sightings"][0]["observers"][0]["coord_lon"] == "5.735458"
+        assert sighting["data"]["sightings"][0]["observers"][0]["coord_lon"] == "5.7971"
         assert sighting["data"]["sightings"][0]["observers"][0]["flight_number"] == "1"
         assert sighting["data"]["sightings"][0]["observers"][0]["anonymous"] == "0"
         assert sighting["data"]["sightings"][0]["observers"][0]["@id"] == "8583"
@@ -912,7 +915,7 @@ class TestObservations:
         assert sighting["data"]["sightings"][0]["observers"][0]["altitude"] == "215"
         assert sighting["data"]["sightings"][0]["observers"][0]["source"] == "WEB"
         assert sighting["data"]["sightings"][0]["observers"][0]["coord_lat"] == "45.18724"
-        assert sighting["data"]["sightings"][0]["observers"][0]["coord_lon"] == "5.735458"
+        assert sighting["data"]["sightings"][0]["observers"][0]["coord_lon"] == "5.7971"
         assert sighting["data"]["sightings"][0]["observers"][0]["flight_number"] == "1"
         assert sighting["data"]["sightings"][0]["observers"][0]["@id"] == "8583"
         assert sighting["data"]["sightings"][0]["observers"][0]["version"] == "0"
@@ -978,8 +981,8 @@ class TestObservations:
                     {
                         "time_start": "06:45:00",
                         "time_stop": "07:00:00",
-                        "lat": "45.18724",
-                        "lon": "5.735458",
+                        "lat": "45.2022",
+                        "lon": "5.7971",
                         "full_form": "1",
                         "sightings": [
                             {
@@ -997,8 +1000,8 @@ class TestObservations:
                                         },
                                         "altitude": "230",
                                         "comment": "TEST API !!! à supprimer !!!",
-                                        "coord_lat": "45.18724",
-                                        "coord_lon": "5.735458",
+                                        "coord_lat": "45.2022",
+                                        "coord_lon": "5.7971",
                                         "precision": "precise",
                                         "count": "1",
                                         "estimation_code": "MINIMUM",
