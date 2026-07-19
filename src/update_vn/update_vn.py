@@ -399,18 +399,16 @@ def upload_forms(config: str, forms_file: str, data_file: str, output_file: str)
             forms_list = pd.concat(
                 [
                     forms_list,
-                    pd.DataFrame(
-                        [
-                            {
-                                "id_form_universal": form_id,
-                                "date": formj["date_start"],
-                                "visit_number": formj["protocol"]["visit_number"],
-                                "site_code": formj["protocol"]["site_code"],
-                                "sequence_number": formj["protocol"]["sequence_number"],
-                                # "sightings": sight_list,
-                            }
-                        ]
-                    ),
+                    pd.DataFrame([
+                        {
+                            "id_form_universal": form_id,
+                            "date": formj["date_start"],
+                            "visit_number": formj["protocol"]["visit_number"],
+                            "site_code": formj["protocol"]["site_code"],
+                            "sequence_number": formj["protocol"]["sequence_number"],
+                            # "sightings": sight_list,
+                        }
+                    ]),
                 ],
                 ignore_index=True,
             )
