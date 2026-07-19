@@ -118,7 +118,9 @@ target-version = "py312"
 line-length = 119
 builtins = ["_"]
 fix = true
-lint.select = [
+
+[tool.ruff.lint]
+select = [
   # flake8-2020
   "YTT",
   # flake8-bandit
@@ -151,7 +153,7 @@ lint.select = [
   # tryceratops
   "TRY",
 ]
-lint.ignore = [
+ignore = [
   # LineTooLong
   "E501",
   # DoNotAssignLambda
@@ -170,6 +172,9 @@ lint.ignore = [
   "B019",
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]
+
 [tool.ruff.format]
 preview = true
 
@@ -179,9 +184,6 @@ skip_empty = true
 [tool.coverage.run]
 branch = true
 source = ["src"]
-
-[tool.ruff.lint.per-file-ignores]
-"tests/*" = ["S101"]
 
 [tool.deptry]
 known_first_party = ["biolovision", "export_vn"]
