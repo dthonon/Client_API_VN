@@ -16,28 +16,25 @@ from update_vn import update_vn
 
 # Using faune-france site, that needs to be defined in .evn_test.toml
 SITE = "tff"
-FILE = ".evn_test.toml"
+FILE = "evn_test.toml"
 
 # Get configuration for test site
 settings = Dynaconf(
     settings_files=[FILE],
 )
-cfg_site_list = settings.site
-assert len(cfg_site_list) == 1, _("Only one site can be defined in configuration file")
-for site, cfg in cfg_site_list.items():  # noqa: B007
-    break
+
 
 OBSERVATIONS_API = ObservationsAPI(
-    user_email=cfg.user_email,
-    user_pw=cfg.user_pw,
-    base_url=cfg.site,
-    client_key=cfg.client_key,
-    client_secret=cfg.client_secret,
-    max_retry=settings.tuning.max_retry,
-    max_requests=settings.tuning.max_requests,
-    max_chunks=settings.tuning.max_chunks,
-    unavailable_delay=settings.tuning.unavailable_delay,
-    retry_delay=settings.tuning.retry_delay,
+    user_email=settings["SITE"]["user_email"],
+    user_pw=settings["SITE"]["user_pw"],
+    base_url=settings["SITE"]["site_url"],
+    client_key=settings["SITE"]["client_key"],
+    client_secret=settings["SITE"]["client_secret"],
+    max_retry=settings["TUNING"]["max_retry"],
+    max_requests=settings["TUNING"]["max_requests"],
+    max_chunks=settings["TUNING"]["max_chunks"],
+    unavailable_delay=settings["TUNING"]["unavailable_delay"],
+    retry_delay=settings["TUNING"]["retry_delay"],
 )
 
 

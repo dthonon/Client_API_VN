@@ -14,17 +14,14 @@ from export_vn.store_file import StoreFile
 
 # Using faune-france site, that needs to be defined in .evn_test.yaml
 SITE = "tff"
-FILE = ".evn_test.toml"
+FILE = "evn_test.toml"
 
 # Get configuration for test site
 settings = Dynaconf(
     settings_files=[FILE],
 )
-cfg_site_list = settings.site
-assert len(cfg_site_list) == 1, _("Only one site can be defined in configuration file")
-for site, cfg in cfg_site_list.items():  # noqa: B007
-    break
-STORE_FILE = StoreFile(settings.file.enabled, settings.file.file_store)
+
+STORE_FILE = StoreFile(file_enabled=settings["FILE"]["enabled"], file_store=settings["FILE"]["file_store"])
 
 
 def test_version():
@@ -37,8 +34,8 @@ def test_version():
 # ------------
 def test_general_data_file_store():
     """Store general items_dict to file."""
-    assert len(settings.file.file_store) > 0
-    dir_json = Path.home() / settings.file.file_store
+    assert len(settings["FILE"]["file_store"]) > 0
+    dir_json = Path.home() / settings["FILE"]["file_store"]
     shutil.rmtree(dir_json, ignore_errors=True)
     file_json = dir_json / "general_data_1.json.gz"
     items_dict = {

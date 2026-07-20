@@ -27,27 +27,22 @@ from export_vn.store_postgresql import PostgresqlUtils, ReadPostgresql, StorePos
 
 # Using faune-france site, that needs to be defined in .evn_test.yaml
 SITE = "tff"
-FILE = ".evn_test.toml"
+FILE = "evn_test.toml"
 
 # Get configuration for test site
 settings = Dynaconf(
     settings_files=[FILE],
 )
-cfg_site_list = settings.site
-if len(cfg_site_list) > 1:
-    raise ValueError(_("Only one site can be defined in configuration file"))
-for site, cfg in cfg_site_list.items():  # noqa: B007
-    break
 MANAGE_PG = PostgresqlUtils(
-    settings.database.enabled,
-    settings.database.db_user,
-    settings.database.db_pw,
-    settings.database.db_host,
-    settings.database.db_port,
-    settings.database.db_name,
-    settings.database.db_schema_import,
-    settings.database.db_schema_vn,
-    settings.database.db_group,
+    db_enabled=settings["DATABASE"]["enabled"],
+    db_user=settings["DATABASE"]["db_user"],
+    db_pw=settings["DATABASE"]["db_pw"],
+    db_host=settings["DATABASE"]["db_host"],
+    db_port=settings["DATABASE"]["db_port"],
+    db_name=settings["DATABASE"]["db_name"],
+    db_schema_import=settings["DATABASE"]["db_schema_import"],
+    db_schema_vn=settings["DATABASE"]["db_schema_vn"],
+    db_group=settings["DATABASE"]["db_group"],
 )
 
 
@@ -65,64 +60,156 @@ def test_init():
     global STORE_PG, READ_PG, ENTITIES, FAMILIES, FIELDS, LOCAL_ADMIN_UNITS
     global OBSERVATIONS, OBSERVERS, PLACES, SPECIES, TAXO_GROUP, TERRITORIAL_UNIT, VALIDATIONS
     STORE_PG = StorePostgresql(
-        SITE,
-        settings.database.enabled,
-        settings.database.db_user,
-        settings.database.db_pw,
-        settings.database.db_host,
-        settings.database.db_port,
-        settings.database.db_name,
-        settings.database.db_schema_import,
-        settings.database.db_schema_vn,
-        settings.database.db_group,
-        settings.database.db_out_proj,
+        site=settings["SITE"]["name"],
+        db_enabled=settings["DATABASE"]["enabled"],
+        db_user=settings["DATABASE"]["db_user"],
+        db_pw=settings["DATABASE"]["db_pw"],
+        db_host=settings["DATABASE"]["db_host"],
+        db_port=settings["DATABASE"]["db_port"],
+        db_name=settings["DATABASE"]["db_name"],
+        db_schema_import=settings["DATABASE"]["db_schema_import"],
+        db_schema_vn=settings["DATABASE"]["db_schema_vn"],
+        db_group=settings["DATABASE"]["db_group"],
+        db_out_proj=settings["DATABASE"]["db_out_proj"],
     )
     READ_PG = ReadPostgresql(
-        SITE,
-        settings.database.enabled,
-        settings.database.db_user,
-        settings.database.db_pw,
-        settings.database.db_host,
-        settings.database.db_port,
-        settings.database.db_name,
-        settings.database.db_schema_import,
-        settings.database.db_schema_vn,
-        settings.database.db_group,
-        settings.database.db_out_proj,
+        site=settings["SITE"]["name"],
+        db_enabled=settings["DATABASE"]["enabled"],
+        db_user=settings["DATABASE"]["db_user"],
+        db_pw=settings["DATABASE"]["db_pw"],
+        db_host=settings["DATABASE"]["db_host"],
+        db_port=settings["DATABASE"]["db_port"],
+        db_name=settings["DATABASE"]["db_name"],
+        db_schema_import=settings["DATABASE"]["db_schema_import"],
+        db_schema_vn=settings["DATABASE"]["db_schema_vn"],
+        db_group=settings["DATABASE"]["db_group"],
+        db_out_proj=settings["DATABASE"]["db_out_proj"],
     )
-    ENTITIES = Entities(SITE, cfg.user_email, cfg.user_pw, cfg.site, cfg.client_key, cfg.client_secret, STORE_PG)
-    FAMILIES = Families(SITE, cfg.user_email, cfg.user_pw, cfg.site, cfg.client_key, cfg.client_secret, STORE_PG)
-    FIELDS = Fields(SITE, cfg.user_email, cfg.user_pw, cfg.site, cfg.client_key, cfg.client_secret, STORE_PG)
+    ENTITIES = Entities(
+        site=settings["SITE"]["name"],
+        user_email=settings["SITE"]["user_email"],
+        user_pw=settings["SITE"]["user_pw"],
+        base_url=settings["SITE"]["URL"],
+        client_key=settings["SITE"]["client_key"],
+        client_secret=settings["SITE"]["client_secret"],
+        backend=STORE_PG,
+    )
+    FAMILIES = Families(
+        site=settings["SITE"]["name"],
+        user_email=settings["SITE"]["user_email"],
+        user_pw=settings["SITE"]["user_pw"],
+        base_url=settings["SITE"]["URL"],
+        client_key=settings["SITE"]["client_key"],
+        client_secret=settings["SITE"]["client_secret"],
+        backend=STORE_PG,
+    )
+    FIELDS = Fields(
+        site=settings["SITE"]["name"],
+        user_email=settings["SITE"]["user_email"],
+        user_pw=settings["SITE"]["user_pw"],
+        base_url=settings["SITE"]["URL"],
+        client_key=settings["SITE"]["client_key"],
+        client_secret=settings["SITE"]["client_secret"],
+        backend=STORE_PG,
+    )
     LOCAL_ADMIN_UNITS = LocalAdminUnits(
-        SITE, cfg.user_email, cfg.user_pw, cfg.site, cfg.client_key, cfg.client_secret, STORE_PG
+        site=settings["SITE"]["name"],
+        user_email=settings["SITE"]["user_email"],
+        user_pw=settings["SITE"]["user_pw"],
+        base_url=settings["SITE"]["URL"],
+        client_key=settings["SITE"]["client_key"],
+        client_secret=settings["SITE"]["client_secret"],
+        backend=STORE_PG,
     )
     OBSERVATIONS = Observations(
-        SITE,
-        cfg.user_email,
-        cfg.user_pw,
-        cfg.site,
-        cfg.client_key,
-        cfg.client_secret,
-        settings.database.enabled,
-        settings.database.db_user,
-        settings.database.db_pw,
-        settings.database.db_host,
-        settings.database.db_port,
-        settings.database.db_name,
-        settings.database.db_schema_import,
-        settings.database.db_schema_vn,
-        settings.database.db_group,
-        settings.database.db_out_proj,
-        STORE_PG,
+        site=settings["SITE"]["name"],
+        user_email=settings["SITE"]["user_email"],
+        user_pw=settings["SITE"]["user_pw"],
+        base_url=settings["SITE"]["URL"],
+        client_key=settings["SITE"]["client_key"],
+        client_secret=settings["SITE"]["client_secret"],
+        db_enabled=settings["DATABASE"]["enabled"],
+        db_user=settings["DATABASE"]["db_user"],
+        db_pw=settings["DATABASE"]["db_pw"],
+        db_host=settings["DATABASE"]["db_host"],
+        db_port=settings["DATABASE"]["db_port"],
+        db_name=settings["DATABASE"]["db_name"],
+        db_schema_import=settings["DATABASE"]["db_schema_import"],
+        db_schema_vn=settings["DATABASE"]["db_schema_vn"],
+        db_group=settings["DATABASE"]["db_group"],
+        db_out_proj=settings["DATABASE"]["db_out_proj"],
+        backend=STORE_PG,
+        start_date=settings["FILTER"].get("start_date", None),
+        end_date=settings["FILTER"].get("end_date", None),
+        type_date=settings["FILTER"].get("type_date", "sighting"),
+        max_list_length=settings["TUNING"]["max_list_length"],
+        max_retry=settings["TUNING"]["max_retry"],
+        max_requests=settings["TUNING"]["max_requests"],
+        max_chunks=settings["TUNING"]["max_chunks"],
+        unavailable_delay=settings["TUNING"]["unavailable_delay"],
+        retry_delay=settings["TUNING"]["retry_delay"],
+        pid_kp=settings["TUNING"]["pid_kp"],
+        pid_ki=settings["TUNING"]["pid_ki"],
+        pid_kd=settings["TUNING"]["pid_kd"],
+        pid_setpoint=settings["TUNING"]["pid_setpoint"],
+        pid_limit_min=settings["TUNING"]["pid_limit_min"],
+        pid_limit_max=settings["TUNING"]["pid_limit_max"],
+        pid_delta_days=settings["TUNING"]["pid_delta_days"],
     )
-    OBSERVERS = Observers(SITE, cfg.user_email, cfg.user_pw, cfg.site, cfg.client_key, cfg.client_secret, STORE_PG)
-    PLACES = Places(SITE, cfg.user_email, cfg.user_pw, cfg.site, cfg.client_key, cfg.client_secret, STORE_PG)
-    SPECIES = Species(SITE, cfg.user_email, cfg.user_pw, cfg.site, cfg.client_key, cfg.client_secret, STORE_PG)
-    TAXO_GROUP = TaxoGroup(SITE, cfg.user_email, cfg.user_pw, cfg.site, cfg.client_key, cfg.client_secret, STORE_PG)
+    OBSERVERS = Observers(
+        site=settings["SITE"]["name"],
+        user_email=settings["SITE"]["user_email"],
+        user_pw=settings["SITE"]["user_pw"],
+        base_url=settings["SITE"]["URL"],
+        client_key=settings["SITE"]["client_key"],
+        client_secret=settings["SITE"]["client_secret"],
+        backend=STORE_PG,
+    )
+    PLACES = Places(
+        site=settings["SITE"]["name"],
+        user_email=settings["SITE"]["user_email"],
+        user_pw=settings["SITE"]["user_pw"],
+        base_url=settings["SITE"]["URL"],
+        client_key=settings["SITE"]["client_key"],
+        client_secret=settings["SITE"]["client_secret"],
+        backend=STORE_PG,
+    )
+    SPECIES = Species(
+        site=settings["SITE"]["name"],
+        user_email=settings["SITE"]["user_email"],
+        user_pw=settings["SITE"]["user_pw"],
+        base_url=settings["SITE"]["URL"],
+        client_key=settings["SITE"]["client_key"],
+        client_secret=settings["SITE"]["client_secret"],
+        backend=STORE_PG,
+    )
+    TAXO_GROUP = TaxoGroup(
+        site=settings["SITE"]["name"],
+        user_email=settings["SITE"]["user_email"],
+        user_pw=settings["SITE"]["user_pw"],
+        base_url=settings["SITE"]["URL"],
+        client_key=settings["SITE"]["client_key"],
+        client_secret=settings["SITE"]["client_secret"],
+        backend=STORE_PG,
+    )
     TERRITORIAL_UNIT = TerritorialUnits(
-        SITE, cfg.user_email, cfg.user_pw, cfg.site, cfg.client_key, cfg.client_secret, STORE_PG
+        site=settings["SITE"]["name"],
+        user_email=settings["SITE"]["user_email"],
+        user_pw=settings["SITE"]["user_pw"],
+        base_url=settings["SITE"]["URL"],
+        client_key=settings["SITE"]["client_key"],
+        client_secret=settings["SITE"]["client_secret"],
+        backend=STORE_PG,
     )
-    VALIDATIONS = Validations(SITE, cfg.user_email, cfg.user_pw, cfg.site, cfg.client_key, cfg.client_secret, STORE_PG)
+    VALIDATIONS = Validations(
+        site=settings["SITE"]["name"],
+        user_email=settings["SITE"]["user_email"],
+        user_pw=settings["SITE"]["user_pw"],
+        base_url=settings["SITE"]["URL"],
+        client_key=settings["SITE"]["client_key"],
+        client_secret=settings["SITE"]["client_secret"],
+        backend=STORE_PG,
+    )
 
 
 @pytest.mark.order(index=201)
