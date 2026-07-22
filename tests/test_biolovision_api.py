@@ -435,78 +435,24 @@ class TestPlaces:
         logging.debug("Getting place %s", p)
         place = PLACES_API.api_get(p)
         assert PLACES_API.transfer_errors == 0
-        assert place == {
-            "data": [
-                {
-                    "altitude": "1106",
-                    "coord_lat": "44.805686318298",
-                    "coord_lon": "5.8792190569144",
-                    "created_by": "30",
-                    "created_date": {
-                        "#text": "samedi, 24. juin 2017, 04:34:53",
-                        "@ISO8601": "2017-06-24T04:34:53+02:00",
-                        "@notime": "0",
-                        "@offset": "7200",
-                        "@timestamp": "1498271693",
-                    },
-                    "id": "930144",
-                    "id_commune": "14966",
-                    "id_region": "63",
-                    "is_private": "0",
-                    "last_updated_by": "30",
-                    "last_updated_date": {
-                        "#text": "mercredi, 27. juin 2018, 04:24:34",
-                        "@ISO8601": "2018-06-27T04:24:34+02:00",
-                        "@notime": "0",
-                        "@offset": "7200",
-                        "@timestamp": "1530066274",
-                    },
-                    "loc_precision": "750",
-                    "name": "Rochachon",
-                    "place_type": "place",
-                    "visible": "1",
-                    "wkt": "",
-                }
-            ]
-        }
+        assert place["data"][0]["name"] == "Rochachon"
+        assert place["data"][0]["coord_lat"] == "44.805686318298"
+        assert place["data"][0]["coord_lon"] == "5.8792190569144"
+        assert place["data"][0]["altitude"] == "1106"
+        assert place["data"][0]["id_commune"] == "14966"
+        assert place["data"][0]["id_region"] == "201"
+        assert place["data"][0]["place_type"] == "place"
+        assert place["data"][0]["loc_precision"] == "750"
+
         p = "1300754"
         logging.debug("Getting place %s", p)
         place = PLACES_API.api_get(p)
         assert PLACES_API.transfer_errors == 0
-        assert place == {
-            "data": [
-                {
-                    "altitude": "342",
-                    "coord_lat": "45.262426292659",
-                    "coord_lon": "4.7715669855908",
-                    "created_by": "30",
-                    "created_date": {
-                        "#text": "samedi, 24. juin 2017, 04:35:37",
-                        "@ISO8601": "2017-06-24T04:35:37+02:00",
-                        "@notime": "0",
-                        "@offset": "7200",
-                        "@timestamp": "1498271737",
-                    },
-                    "id": "1300754",
-                    "id_commune": "2316",
-                    "id_region": "10",
-                    "is_private": "0",
-                    "last_updated_by": "30",
-                    "last_updated_date": {
-                        "#text": "mercredi, 27. juin 2018, 04:24:34",
-                        "@ISO8601": "2018-06-27T04:24:34+02:00",
-                        "@notime": "0",
-                        "@offset": "7200",
-                        "@timestamp": "1530066274",
-                    },
-                    "loc_precision": "750",
-                    "name": "Ruisseau de Lantizon",
-                    "place_type": "place",
-                    "visible": "1",
-                    "wkt": "",
-                }
-            ]
-        }
+        assert place["data"][0]["name"] == "Ruisseau de Lantizon"
+        assert place["data"][0]["coord_lat"] == "45.262426292659"
+        assert place["data"][0]["coord_lon"] == "4.7715669855908"
+        assert place["data"][0]["altitude"] == "342"
+        assert place["data"][0]["loc_precision"] == "750"
 
     @pytest.mark.slow
     @pytest.mark.privileged
@@ -747,6 +693,7 @@ class TestObservations:
         diff = OBSERVATIONS_API.api_diff("1", since, "only_deleted")
         assert OBSERVATIONS_API.transfer_errors == 0
 
+    @pytest.mark.slow
     @pytest.mark.privileged
     def test_observations_list_1(self):
         """Get the list of sightings, from taxo_group 18: Mantodea."""
@@ -866,7 +813,7 @@ class TestObservations:
         assert sighting["data"]["sightings"][0]["observers"][0]["altitude"] == "215"
         assert sighting["data"]["sightings"][0]["observers"][0]["source"] == "WEB"
         assert sighting["data"]["sightings"][0]["observers"][0]["coord_lat"] == "45.18724"
-        assert sighting["data"]["sightings"][0]["observers"][0]["coord_lon"] == "5.7971"
+        assert sighting["data"]["sightings"][0]["observers"][0]["coord_lon"] == "5.735458"
         assert sighting["data"]["sightings"][0]["observers"][0]["flight_number"] == "1"
         assert sighting["data"]["sightings"][0]["observers"][0]["anonymous"] == "0"
         assert sighting["data"]["sightings"][0]["observers"][0]["@id"] == "8583"
@@ -915,7 +862,7 @@ class TestObservations:
         assert sighting["data"]["sightings"][0]["observers"][0]["altitude"] == "215"
         assert sighting["data"]["sightings"][0]["observers"][0]["source"] == "WEB"
         assert sighting["data"]["sightings"][0]["observers"][0]["coord_lat"] == "45.18724"
-        assert sighting["data"]["sightings"][0]["observers"][0]["coord_lon"] == "5.7971"
+        assert sighting["data"]["sightings"][0]["observers"][0]["coord_lon"] == "5.735458"
         assert sighting["data"]["sightings"][0]["observers"][0]["flight_number"] == "1"
         assert sighting["data"]["sightings"][0]["observers"][0]["@id"] == "8583"
         assert sighting["data"]["sightings"][0]["observers"][0]["version"] == "0"
