@@ -57,7 +57,7 @@ cc_update_vn:
 	pybabel compile --domain=update_vn --directory=src/update_vn/locale/
 
 .PHONY: test
-test: ## Test the code with pytest
+test: ## Test the code with pytest without slow tests
 	@echo "🚀 Testing code: Running pytest not slow"
 	@poetry run pytest --cov --cov-config=pyproject.toml --cov-report=xml -m "not slow"
 
@@ -65,6 +65,11 @@ test: ## Test the code with pytest
 test_slow: ## Test the code with pytest
 	@echo "🚀 Testing code: Running pytest"
 	@poetry run pytest --cov --cov-config=pyproject.toml --cov-report=xml
+
+.PHONY: test_unprivileged
+test_unprivileged: ## Test the code with pytest, unprivileged account
+	@echo "🚀 Testing code: Running pytest"
+	@poetry run pytest -m "not slow and not privileged"
 
 # Integration tests: live VisioNature API + PostGIS database.
 # Need a running Postgres/PostGIS on $(DB_HOST):$(DB_PORT) (see docker-compose.yml)
