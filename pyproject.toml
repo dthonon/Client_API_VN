@@ -101,6 +101,11 @@ ignore_errors = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+filterwarnings = [
+  # Guard against reintroducing SQLAlchemy 1.x patterns (needs SQLALCHEMY_WARN_20=1,
+  # exported by the Makefile test targets, to be emitted at all)
+  "error::sqlalchemy.exc.RemovedIn20Warning",
+]
 markers = [
   "slow: marks tests as slow (deselect with '-m \"not slow\"')",
   "write: marks tests that create/update/delete data on the live VisioNature site; skipped unless VN_ENABLE_WRITE_TESTS=1",
@@ -190,4 +195,5 @@ source = ["src"]
 known_first_party = ["biolovision", "export_vn"]
 
 [tool.deptry.per_rule_ignores]
-DEP002 = ["babel"]
+# psycopg2-binary: not imported directly, used as the SQLAlchemy driver
+DEP002 = ["babel", "psycopg2-binary"]
