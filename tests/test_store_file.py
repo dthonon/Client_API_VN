@@ -12,7 +12,7 @@ from dynaconf import Dynaconf
 
 from export_vn.store_file import StoreFile
 
-# Using faune-france site, that needs to be defined in .evn_test.yaml
+# Using faune-france site, that needs to be defined in evn_test.yaml
 SITE = "tff"
 FILE = "evn_test.toml"
 

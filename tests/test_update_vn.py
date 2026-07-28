@@ -14,7 +14,7 @@ from dynaconf import Dynaconf
 from biolovision.api import HTTPError, ObservationsAPI
 from update_vn import update_vn
 
-# Using faune-france site, that needs to be defined in .evn_test.toml
+# Using faune-france site, that needs to be defined in evn_test.toml
 SITE = "tff"
 FILE = "evn_test.toml"
 

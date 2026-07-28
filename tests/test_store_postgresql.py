@@ -25,7 +25,7 @@ from export_vn.download_vn import (
 )
 from export_vn.store_postgresql import PostgresqlUtils, ReadPostgresql, StorePostgresql
 
-# Using faune-france site, that needs to be defined in .evn_test.yaml
+# Using faune-france site, that needs to be defined in evn_test.yaml
 SITE = "tff"
 FILE = "evn_test.toml"
 

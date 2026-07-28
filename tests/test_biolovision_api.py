@@ -27,7 +27,7 @@ from biolovision.api import (
     ValidationsAPI,
 )
 
-# Using faune-aura.org site, that needs to be defined in .evn_test.toml
+# Using faune-aura.org site, that needs to be defined in evn_test.toml
 FILE = "evn_test.toml"
 
 # Get configuration for test site
