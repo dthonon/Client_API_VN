@@ -1,0 +1,28 @@
+# Template for the update_vn CLI test configuration (~/.evn_test.toml).
+# Used by test_update_vn.py::test_update, which runs the update_vn CLI
+# against it (same structure as src/update_vn/data/evn_template.toml).
+# Render with envsubst, e.g.:
+#   envsubst < tests/data/evn_test_update.toml.tmpl > ~/.evn_test.toml
+# Required variables: VN_SITE_URL VN_USER_EMAIL VN_USER_PW VN_CLIENT_KEY
+#   VN_CLIENT_SECRET
+
+# Message added to hidden_comment after update
+message = "Modification en masse, le {date}, opération {op}, attribut {path}, depuis {old} vers {new}"
+
+[sites]
+# Connection details for each Biolovision site
+
+[sites.tff]
+site = "${VN_SITE_URL}"
+user_email = "${VN_USER_EMAIL}"
+user_pw = "${VN_USER_PW}"
+client_key = "${VN_CLIENT_KEY}"
+client_secret = "${VN_CLIENT_SECRET}"
+
+[tuning]
+max_list_length = 100
+max_chunks = 1000
+max_retry = 5
+max_requests = 0
+retry_delay = 5
+unavailable_delay = 600

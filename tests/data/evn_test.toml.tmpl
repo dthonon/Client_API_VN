@@ -1,8 +1,9 @@
-# Template for the single-site test configuration (~/.evn_test.toml).
-# Read directly via Dynaconf (test_download_vn, test_store_file,
-# test_store_postgresql).
+# Template for the single-site test configuration (~/evn_test.toml).
+# Read directly via Dynaconf by the test modules (test_biolovision_api,
+# test_download_vn, test_store_file, test_store_postgresql, test_update_vn),
+# which look up "evn_test.toml" from the pytest working directory upwards.
 # Render with envsubst, e.g.:
-#   envsubst < tests/data/evn_test.toml.tmpl > ~/.evn_test.toml
+#   envsubst < tests/data/evn_test.toml.tmpl > ~/evn_test.toml
 # Required variables: VN_SITE_URL VN_USER_EMAIL VN_USER_PW VN_CLIENT_KEY
 #   VN_CLIENT_SECRET DB_HOST DB_PORT DB_NAME DB_GROUP DB_USER DB_PW
 
@@ -13,9 +14,10 @@ type_date = "entry"
 start_date = 2019-08-01
 end_date = 2019-09-01
 
-[site.tff]
+[site]
+name = "tff"
 enabled = true
-site = "${VN_SITE_URL}"
+site_url = "${VN_SITE_URL}"
 user_email = "${VN_USER_EMAIL}"
 user_pw = "${VN_USER_PW}"
 client_key = "${VN_CLIENT_KEY}"
