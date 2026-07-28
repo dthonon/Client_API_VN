@@ -90,10 +90,14 @@ export DB_HOST DB_PORT DB_NAME DB_GROUP DB_USER DB_PW
 ENVSUBST_VARS = $${VN_SITE_URL} $${VN_USER_EMAIL} $${VN_USER_PW} $${VN_CLIENT_KEY} $${VN_CLIENT_SECRET} $${DB_HOST} $${DB_PORT} $${DB_NAME} $${DB_GROUP} $${DB_USER} $${DB_PW}
 
 .PHONY: test-config
-test-config: ## Render ~/.evn_test.{yaml,toml} from templates and VN_*/DB_* env vars
+test-config: ## Render the test configuration files from templates and VN_*/DB_* env vars
 	@echo "🚀 Rendering test configuration from templates"
+	@# ~/.evn_test.yaml: legacy YAML config, used by the transfer_vn CLI (test_transfer_vn).
 	@envsubst '$(ENVSUBST_VARS)' < tests/data/evn_test.yaml.tmpl > $$HOME/.evn_test.yaml
-	@envsubst '$(ENVSUBST_VARS)' < tests/data/evn_test.toml.tmpl > $$HOME/.evn_test.toml
+	@# ~/evn_test.toml: read directly via Dynaconf by the test modules (no leading dot).
+	@envsubst '$(ENVSUBST_VARS)' < tests/data/evn_test.toml.tmpl > $$HOME/evn_test.toml
+	@# ~/.evn_test.toml: update_vn CLI config (test_update_vn write tests).
+	@envsubst '$(ENVSUBST_VARS)' < tests/data/evn_test_update.toml.tmpl > $$HOME/.evn_test.toml
 
 .PHONY: test-db
 test-db: ## Enable PostGIS extensions + app role, then create the database and tables
