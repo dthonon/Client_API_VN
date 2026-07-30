@@ -12,7 +12,7 @@ Notes :
 
 ## 1. Préparer l'installation
 
-Les commandes suivantes permettent de configurer la machine virtuelle
+Les commandes suivantes permettent, si nécessaire de configurer la machine virtuelle
 selon la localisation, ici en France, et de nommer la machine.
 
 ```bash
@@ -48,9 +48,11 @@ de la manière suivante.
 sudo apt -y install postgresql postgresql-contrib
 sudo apt -y install postgis postgresql-postgis
 ```
+
+Notez la version Postgresql installée. Elle sera nommée nn dans les commandes suivantes.
 Puis éditez le fichier de configuration :
 ```bash
-sudo nano /etc/postgresql/16/main/postgresql.conf
+sudo nano /etc/postgresql/nn/main/postgresql.conf
 ```
 => changer :
 
@@ -60,7 +62,7 @@ listen_addresses='*'
 
 Puis éditez le fichier d'autorisation :
 ```bash
-sudo nano /etc/postgresql/16/main/pg_hba.conf
+sudo nano /etc/postgresql/nn/main/pg_hba.conf
 ```
 => ajouter la ligne suivante pour autoriser l'accès exterieur à postgresql.
 `host all all 0.0.0.0/0 md5`
@@ -69,9 +71,9 @@ sudo nano /etc/postgresql/16/main/pg_hba.conf
 sudo systemctl reload postgresql
 sudo -iu postgres
 ```
+Note : avant la version Posgresql 17, l'extension adminpack était disponible.
 ```plpgsql
 psql
-CREATE EXTENSION adminpack;
 CREATE EXTENSION postgis;
 CREATE EXTENSION postgis_topology;
 ALTER ROLE postgres PASSWORD '*whateveryouwant*';
