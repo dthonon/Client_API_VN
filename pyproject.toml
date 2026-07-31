@@ -28,7 +28,7 @@ dependencies = [
   "psutil>=6.1",
   "psycopg2-binary>=2.9",
   "pyproj>=3.7",
-  "pytz>=2024",
+  "pytz>=2026.3.post1",
   "pyyaml>=6.0",
   "requests>=2.32",
   "requests-oauthlib>=2.0",
@@ -70,12 +70,12 @@ pre-commit = ">=4.6.1"
 tox = ">=4.58.0"
 types-requests = ">=2.33.0.20260712"
 types-requests-oauthlib = ">=2"
-types-setuptools = ">=83.0.0.20260716"
+types-setuptools = ">=83.0.0.20260724"
 types-psutil = ">=6.1"
 types-tabulate = ">=0.9"
 types-beautifulsoup4 = ">=4.12"
-types-pytz = ">=2024.2"
-types-psycopg2 = ">=2.9.21.20260712"
+types-pytz = ">=2026.3.1.20260727"
+types-psycopg2 = ">=2.9.21.20260724"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = ">=1.6"
