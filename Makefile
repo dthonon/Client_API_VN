@@ -84,6 +84,9 @@ DB_USER ?= xfer38
 DB_PW ?= xfer38pw
 PGPASSWORD ?= postgres
 PYTEST_MARKERS ?= not slow and not privileged
+# Surface SQLAlchemy 2.0 deprecations; pytest escalates them to errors
+# (filterwarnings in pyproject.toml) to prevent 1.x-pattern regressions.
+export SQLALCHEMY_WARN_20 = 1
 export DB_HOST DB_PORT DB_NAME DB_GROUP DB_USER DB_PW
 
 # Variables substituted into the test configuration templates by envsubst.

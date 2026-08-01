@@ -14,7 +14,6 @@ Properties
 import logging
 from datetime import date
 
-from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from pyproj import Transformer
 from sqlalchemy import (
     BigInteger,
@@ -29,6 +28,7 @@ from sqlalchemy import (
     exc,
     func,
     select,
+    text,
 )
 from sqlalchemy.dialects.postgresql import JSONB, insert
 from sqlalchemy.engine.url import URL
@@ -394,39 +394,39 @@ class PostgresqlUtils:
                 "port": self._db_port,
                 "database": "postgres",
             }
-            db = create_engine(URL.create(**db_url), echo=False)
-            conn = db.connect()
-            conn.connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+            db = create_engine(URL.create(**db_url), echo=False, future=True)
+            # CREATE/DROP DATABASE cannot run inside a transaction block
+            conn = db.connect().execution_options(isolation_level="AUTOCOMMIT")
 
             # Group role:
             logger.debug(_("Creating roles"))
-            text = f"""
+            sql = f"""
                 SELECT FROM pg_catalog.pg_roles WHERE rolname = '{self._db_group}'
                 """
-            result = conn.execute(text)
+            result = conn.execute(text(sql))
             row = result.fetchone()
             if row is None:
-                text = f"""
+                sql = f"""
                     CREATE ROLE {self._db_group} NOLOGIN NOSUPERUSER INHERIT NOCREATEDB
                     NOCREATEROLE NOREPLICATION
                     """
             else:
-                text = f"""
+                sql = f"""
                     ALTER ROLE {self._db_group} NOLOGIN NOSUPERUSER INHERIT NOCREATEDB
                     NOCREATEROLE NOREPLICATION
                     """
-            conn.execute(text)
+            conn.execute(text(sql))
 
             # Import role:
-            text = f"GRANT {self._db_group} TO {self._db_user}"
-            conn.execute(text)
+            sql = f"GRANT {self._db_group} TO {self._db_user}"
+            conn.execute(text(sql))
 
             # Create database:
             logger.debug(_("Creating database"))
-            text = f"CREATE DATABASE {self._db_name} WITH OWNER = {self._db_group}"
-            conn.execute(text)
-            text = f"GRANT ALL ON DATABASE {self._db_name} TO {self._db_group}"
-            conn.execute(text)
+            sql = f"CREATE DATABASE {self._db_name} WITH OWNER = {self._db_group}"
+            conn.execute(text(sql))
+            sql = f"GRANT ALL ON DATABASE {self._db_name} TO {self._db_group}"
+            conn.execute(text(sql))
             conn.close()
             db.dispose()
 
@@ -448,28 +448,28 @@ class PostgresqlUtils:
                 "port": self._db_port,
                 "database": "postgres",
             }
-            db = create_engine(URL.create(**db_url), echo=False)
-            conn = db.connect()
-            conn.connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+            db = create_engine(URL.create(**db_url), echo=False, future=True)
+            # CREATE/DROP DATABASE cannot run inside a transaction block
+            conn = db.connect().execution_options(isolation_level="AUTOCOMMIT")
 
             version = conn.dialect.server_version_info
             pid_column = "pid" if (version >= (9, 2)) else "procpid"
 
-            text = f"""
+            sql = f"""
             SELECT pg_terminate_backend(pg_stat_activity.{pid_column})
             FROM pg_stat_activity
             WHERE pg_stat_activity.datname = '{self._db_name}'
             AND {pid_column} <> pg_backend_pid();
             """  # noqa: S608
-            logger.debug(_("Dropping tables: %s"), text)
-            conn.execute(text)
-            text = f"DROP DATABASE IF EXISTS {self._db_name}"
-            logger.debug(_("Dropping database: %s"), text)
-            conn.execute(text)
+            logger.debug(_("Dropping tables: %s"), sql)
+            conn.execute(text(sql))
+            sql = f"DROP DATABASE IF EXISTS {self._db_name}"
+            logger.debug(_("Dropping database: %s"), sql)
+            conn.execute(text(sql))
             try:
-                text = f"DROP ROLE IF EXISTS {self._db_group}"
-                logger.debug(_("Dropping role: %s"), text)
-                conn.execute(text)
+                sql = f"DROP ROLE IF EXISTS {self._db_group}"
+                logger.debug(_("Dropping role: %s"), sql)
+                conn.execute(text(sql))
             except exc.SQLAlchemyError as e:
                 logger.warning(_("Error %s ignored when dropping role"), repr(e))
 
@@ -497,38 +497,32 @@ class PostgresqlUtils:
                 _("Connecting to %s database, to finalize creation"),
                 self._db_name,
             )
-            self._db = create_engine(URL.create(**db_url), echo=False)
-            conn = self._db.connect()
+            self._db = create_engine(URL.create(**db_url), echo=False, future=True)
+            with self._db.begin() as conn:
+                # Add extensions
+                logger.debug(_("Creating extensions"))
+                conn.execute(text("CREATE EXTENSION IF NOT EXISTS pgcrypto"))
+                conn.execute(text("CREATE EXTENSION IF NOT EXISTS adminpack"))
+                conn.execute(text('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"'))
+                conn.execute(text("CREATE EXTENSION IF NOT EXISTS postgis"))
+                conn.execute(text("CREATE EXTENSION IF NOT EXISTS postgis_topology"))
 
-            # Add extensions
-            logger.debug(_("Creating extensions"))
-            text = "CREATE EXTENSION IF NOT EXISTS pgcrypto"
-            conn.execute(text)
-            text = "CREATE EXTENSION IF NOT EXISTS adminpack"
-            conn.execute(text)
-            text = 'CREATE EXTENSION IF NOT EXISTS "uuid-ossp"'
-            conn.execute(text)
-            text = "CREATE EXTENSION IF NOT EXISTS postgis"
-            conn.execute(text)
-            text = "CREATE EXTENSION IF NOT EXISTS postgis_topology"
-            conn.execute(text)
+                # Create import schema
+                logger.debug(_("Creating import schema"))
+                sql = f"CREATE SCHEMA IF NOT EXISTS {self._db_schema_import} AUTHORIZATION {self._db_group}"
+                conn.execute(text(sql))
 
-            # Create import schema
-            logger.debug(_("Creating import schema"))
-            text = f"CREATE SCHEMA IF NOT EXISTS {self._db_schema_import} AUTHORIZATION {self._db_group}"
-            conn.execute(text)
-
-            # Enable privileges
-            text = """
-            ALTER DEFAULT PRIVILEGES
-            GRANT INSERT, SELECT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON TABLES
-            TO postgres"""
-            conn.execute(text)
-            text = f"""
-            ALTER DEFAULT PRIVILEGES
-            GRANT INSERT, SELECT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON TABLES
-            TO {self._db_group}"""
-            conn.execute(text)
+                # Enable privileges
+                sql = """
+                ALTER DEFAULT PRIVILEGES
+                GRANT INSERT, SELECT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON TABLES
+                TO postgres"""
+                conn.execute(text(sql))
+                sql = f"""
+                ALTER DEFAULT PRIVILEGES
+                GRANT INSERT, SELECT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON TABLES
+                TO {self._db_group}"""
+                conn.execute(text(sql))
 
             # Set path to include VN import schema
             dbschema = self._db_schema_import
@@ -553,7 +547,6 @@ class PostgresqlUtils:
             self._create_territorial_units_json()
             self._create_validations_json()
 
-            conn.close()
             self._db.dispose()
 
         return None
@@ -581,19 +574,19 @@ class PostgresqlUtils:
 
             # Connect and set path to include VN import schema
             logger.info(_("Connecting to database %s"), self._db_name)
-            self._db = create_engine(URL.create(**db_url), echo=False)
-            conn = self._db.connect()
+            self._db = create_engine(URL.create(**db_url), echo=False, future=True)
             dbschema = self._db_schema_import
             self._metadata = MetaData(schema=dbschema)
             # self._metadata.reflect(self._db)
 
-            text = f"""
+            sql = f"""
             SELECT site, ((item->>0)::json->'species') ->> 'taxonomy' AS taxonomy, COUNT(id)
                 FROM {dbschema}.observations_json
                 GROUP BY site, ((item->>0)::json->'species') ->> 'taxonomy';
             """  # noqa: S608
 
-            result = conn.execute(text).fetchall()
+            with self._db.connect() as conn:
+                result = conn.execute(text(sql)).fetchall()
 
         return result
 
@@ -620,13 +613,12 @@ class PostgresqlUtils:
 
             # Connect and set path to include VN import schema
             logger.info(_("Connecting to database %s"), self._db_name)
-            self._db = create_engine(URL.create(**db_url), echo=False)
-            conn = self._db.connect()
+            self._db = create_engine(URL.create(**db_url), echo=False, future=True)
             dbschema = self._db_schema_vn
             self._metadata = MetaData(schema=dbschema)
             # self._metadata.reflect(self._db)
 
-            text = f"""
+            sql = f"""
             SELECT o.site, o.taxonomy, t.name, COUNT(o.id_sighting)
                 FROM {dbschema}.observations AS o
                     LEFT JOIN {dbschema}.taxo_groups AS t
@@ -634,7 +626,8 @@ class PostgresqlUtils:
                 GROUP BY o.site, o.taxonomy, t.name
             """  # noqa: S608
 
-            result = conn.execute(text).fetchall()
+            with self._db.connect() as conn:
+                result = conn.execute(text(sql)).fetchall()
 
         return result
 
@@ -684,7 +677,7 @@ class Postgresql:
             logger.info(_("Connecting to database %s"), self._db_name)
 
             # Connect and set path to include VN import schema
-            self._db = create_engine(URL.create(**db_url), echo=False)
+            self._db = create_engine(URL.create(**db_url), echo=False, future=True)
             self._conn = self._db.connect()
 
             # Get dbtable definition
@@ -772,8 +765,11 @@ class ReadPostgresql(Postgresql):
             self._site,
         )
         metadata = self._table_defs[controler]["metadata"]
-        stmt = select([metadata.c.item]).where(metadata.c.site == self._site)
-        return self._conn.execute(stmt).fetchall()
+        stmt = select(metadata.c.item).where(metadata.c.site == self._site)
+        result = self._conn.execute(stmt).fetchall()
+        # Release the transaction implicitly started by the SELECT
+        self._conn.rollback()
+        return result
 
 
 class StorePostgresql(Postgresql):
@@ -1093,19 +1089,26 @@ class StorePostgresql(Postgresql):
         nb_item = 0
         # Store to database, if enabled
         if self._db_enabled:
-            if self._table_defs[controler]["type"] == "observation":
-                nb_item = self._store_observation(controler, items_dict)
-            elif self._table_defs[controler]["type"] == "simple":
-                nb_item = self._store_simple(controler, items_dict)
-            elif self._table_defs[controler]["type"] == "geometry":
-                nb_item = self._store_geometry(controler, items_dict)
-            elif self._table_defs[controler]["type"] == "observers":
-                nb_item = self._store_observers(controler, items_dict)
-            elif self._table_defs[controler]["type"] == "fields":
-                nb_item = self._store_fields(controler, items_dict)
-
-            else:
+            controler_type = self._table_defs[controler]["type"]
+            if controler_type not in {"observation", "simple", "geometry", "observers", "fields"}:
                 raise StorePostgresqlException(_("Not implemented"))
+            # The whole sequence is committed at once: on error, the partial
+            # batch is rolled back instead of leaving half-stored data behind.
+            try:
+                if controler_type == "observation":
+                    nb_item = self._store_observation(controler, items_dict)
+                elif controler_type == "simple":
+                    nb_item = self._store_simple(controler, items_dict)
+                elif controler_type == "geometry":
+                    nb_item = self._store_geometry(controler, items_dict)
+                elif controler_type == "observers":
+                    nb_item = self._store_observers(controler, items_dict)
+                elif controler_type == "fields":
+                    nb_item = self._store_fields(controler, items_dict)
+                self._conn.commit()
+            except Exception:
+                self._conn.rollback()
+                raise
 
         return nb_item
 
@@ -1128,16 +1131,21 @@ class StorePostgresql(Postgresql):
             logger.info(_("Deleting %d observations from database"), len(obs_list))
             nb_delete = 0
             obs_table = self._table_defs["observations"]["metadata"]
-            for obs in obs_list:
-                nd = self._conn.execute(
-                    obs_table.delete().where(
-                        and_(
-                            obs_table.c.id == obs,
-                            obs_table.c.site == self._site,
+            try:
+                for obs in obs_list:
+                    nd = self._conn.execute(
+                        obs_table.delete().where(
+                            and_(
+                                obs_table.c.id == obs,
+                                obs_table.c.site == self._site,
+                            )
                         )
                     )
-                )
-                nb_delete += nd.rowcount
+                    nb_delete += nd.rowcount
+                self._conn.commit()
+            except Exception:
+                self._conn.rollback()
+                raise
 
         return nb_delete
 
@@ -1160,16 +1168,21 @@ class StorePostgresql(Postgresql):
             logger.info(_("Deleting %d places from database"), len(place_list))
             nb_delete = 0
             place_table = self._table_defs["places"]["metadata"]
-            for obs in place_list:
-                nd = self._conn.execute(
-                    place_table.delete().where(
-                        and_(
-                            place_table.c.id == obs,
-                            place_table.c.site == self._site,
+            try:
+                for obs in place_list:
+                    nd = self._conn.execute(
+                        place_table.delete().where(
+                            and_(
+                                place_table.c.id == obs,
+                                place_table.c.site == self._site,
+                            )
                         )
                     )
-                )
-                nb_delete += nd.rowcount
+                    nb_delete += nd.rowcount
+                self._conn.commit()
+            except Exception:
+                self._conn.rollback()
+                raise
 
         return nb_delete
 
@@ -1214,7 +1227,12 @@ class StorePostgresql(Postgresql):
                 length=length,
                 duration=duration,
             )
-            self._conn.execute(stmt)
+            try:
+                self._conn.execute(stmt)
+                self._conn.commit()
+            except Exception:
+                self._conn.rollback()
+                raise
 
         return None
 
@@ -1239,7 +1257,12 @@ class StorePostgresql(Postgresql):
                 constraint=metadata.primary_key,
                 set_=dict(last_ts=last_ts),  # noqa: C408
             )
-            self._conn.execute(do_update_stmt)
+            try:
+                self._conn.execute(do_update_stmt)
+                self._conn.commit()
+            except Exception:
+                self._conn.rollback()
+                raise
 
         return None
 
@@ -1262,11 +1285,11 @@ class StorePostgresql(Postgresql):
         # Store to database, if enabled
         if self._db_enabled:
             metadata = self._metadata.tables[self._db_schema_import + "." + "increment_log"]
-            stmt = select([metadata.c.last_ts]).where(
-                and_(metadata.c.taxo_group == taxo_group, metadata.c.site == site)
-            )
+            stmt = select(metadata.c.last_ts).where(and_(metadata.c.taxo_group == taxo_group, metadata.c.site == site))
             result = self._conn.execute(stmt)
             row = result.fetchone()
+            # Release the transaction implicitly started by the SELECT
+            self._conn.rollback()
 
         if row is None:
             return None
