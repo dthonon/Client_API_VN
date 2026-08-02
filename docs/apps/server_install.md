@@ -45,7 +45,7 @@ L'installation depuis le dépôt debian standard est réalisée
 de la manière suivante.
 
 ```bash
-sudo apt -y install postgresql postgresql-contrib
+sudo apt -y install postgresql
 sudo apt -y install postgis postgresql-postgis
 ```
 
@@ -71,7 +71,7 @@ sudo nano /etc/postgresql/nn/main/pg_hba.conf
 sudo systemctl reload postgresql
 sudo -iu postgres
 ```
-Note : avant la version Posgresql 17, l'extension adminpack était disponible.
+
 ```plpgsql
 psql
 CREATE EXTENSION postgis;
