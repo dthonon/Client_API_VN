@@ -32,7 +32,7 @@ dependencies = [
   "pyyaml>=6.0",
   "requests>=2.32",
   "requests-oauthlib>=2.0",
-  "SQLAlchemy<2",
+  "SQLAlchemy>=2",
   "strictyaml>=1.7",
   "tabulate>=0.9",
   "yappi>=1.6",
@@ -101,11 +101,11 @@ ignore_errors = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
-filterwarnings = [
-  # Guard against reintroducing SQLAlchemy 1.x patterns (needs SQLALCHEMY_WARN_20=1,
-  # exported by the Makefile test targets, to be emitted at all)
-  "error::sqlalchemy.exc.RemovedIn20Warning",
-]
+# filterwarnings = [
+#   # Guard against reintroducing SQLAlchemy 1.x patterns (needs SQLALCHEMY_WARN_20=1,
+#   # exported by the Makefile test targets, to be emitted at all)
+#   "error::sqlalchemy.exc.RemovedIn20Warning",
+# ]
 markers = [
   "slow: marks tests as slow (deselect with '-m \"not slow\"')",
   "write: marks tests that create/update/delete data on the live VisioNature site; skipped unless VN_ENABLE_WRITE_TESTS=1",
