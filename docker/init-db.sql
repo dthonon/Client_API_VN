@@ -8,7 +8,6 @@
 -- dedicated application superuser (xfer38) is created. transfer_vn then connects
 -- as xfer38 to create the roles/databases/schemas.
 
-CREATE EXTENSION IF NOT EXISTS adminpack;
 CREATE EXTENSION IF NOT EXISTS postgis;
 CREATE EXTENSION IF NOT EXISTS postgis_topology;
 
