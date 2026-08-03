@@ -501,8 +501,6 @@ class PostgresqlUtils:
             with self._db.begin() as conn:
                 # Add extensions
                 logger.debug(_("Creating extensions"))
-                conn.execute(text("CREATE EXTENSION IF NOT EXISTS pgcrypto"))
-                conn.execute(text('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"'))
                 conn.execute(text("CREATE EXTENSION IF NOT EXISTS postgis"))
                 conn.execute(text("CREATE EXTENSION IF NOT EXISTS postgis_topology"))
 
