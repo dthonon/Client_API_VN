@@ -1413,5 +1413,4 @@ VACUUM FULL ANALYZE {{ db_schema_import }}.places_json, {{ db_schema_vn }}.place
 VACUUM FULL ANALYZE {{ db_schema_import }}.species_json, {{ db_schema_vn }}.species;
 VACUUM FULL ANALYZE {{ db_schema_import }}.taxo_groups_json, {{ db_schema_vn }}.taxo_groups;
 VACUUM FULL ANALYZE {{ db_schema_import }}.territorial_units_json, {{ db_schema_vn }}.territorial_units;
--- VACUUM FULL ANALYZE {{ db_schema_import }}.uuid_xref;
 VACUUM FULL ANALYZE {{ db_schema_import }}.validations_json, {{ db_schema_vn }}.validations;
