@@ -61,7 +61,7 @@ packages = [
 [tool.poetry.group.dev.dependencies]
 deptry = ">=0.25"
 mypy = ">=2.3.0"
-ruff = ">=0.16.0"
+ruff = ">=0.16.1"
 pytest = ">=9"
 pytest-cov = ">=7"
 pytest-order = ">=1.5"
