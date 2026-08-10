@@ -24,14 +24,14 @@ Start the stack (might need sudo) and create the database and tables:
 
 ```bash
 docker compose up -d --build
-docker compose exec app transfer_vn --db_create --json_tables_create --col_tables_create evn.toml
+docker compose exec app transfer_vn --db_create --json_tables_create --col_tables_create $HOME/evn.toml
 ```
 
 Then run a download (requires real VN credentials, see below) or open a shell:
 
 ```bash
-docker compose exec app transfer_vn --full evn.toml   # full download
-docker compose exec app transfer_vn --status evn.toml # scheduling / status
+docker compose exec app transfer_vn --full $HOME/evn.toml   # full download
+docker compose exec app transfer_vn --status $HOME/evn.toml # scheduling / status
 docker compose exec app bash                          # interactive shell
 ```
 
@@ -61,7 +61,7 @@ export VN_USER_EMAIL=... VN_USER_PW=... VN_CLIENT_KEY=... VN_CLIENT_SECRET=...
 make test-integration        # renders the config, sets up the DB, runs pytest
 ```
 
-`make test-integration` renders `~/.evn_test.{yaml,toml}` from the templates in
+`make test-integration` renders `$HOME/.evn_test.toml` from the templates in
 `tests/data/*.tmpl`, creates the database and tables, then runs the suite.
 
 To run the same suite inside the Docker dev stack instead (no local Poetry,

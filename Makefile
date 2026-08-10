@@ -95,18 +95,14 @@ ENVSUBST_VARS = $${VN_SITE_URL} $${VN_USER_EMAIL} $${VN_USER_PW} $${VN_CLIENT_KE
 .PHONY: test-config
 test-config: ## Render the test configuration files from templates and VN_*/DB_* env vars
 	@echo "🚀 Rendering test configuration from templates"
-	@# ~/.evn_test.yaml: legacy YAML config, used by the transfer_vn CLI (test_transfer_vn).
-	@envsubst '$(ENVSUBST_VARS)' < tests/data/evn_test.yaml.tmpl > $$HOME/.evn_test.yaml
 	@# ~/evn_test.toml: read directly via Dynaconf by the test modules (no leading dot).
 	@envsubst '$(ENVSUBST_VARS)' < tests/data/evn_test.toml.tmpl > $$HOME/evn_test.toml
-	@# ~/.evn_test.toml: update_vn CLI config (test_update_vn write tests).
-	@envsubst '$(ENVSUBST_VARS)' < tests/data/evn_test_update.toml.tmpl > $$HOME/.evn_test.toml
 
 .PHONY: test-db
 test-db: ## Enable PostGIS extensions + app role, then create the database and tables
 	@echo "🚀 Setting up the test database"
 	@PGPASSWORD=$(PGPASSWORD) psql -h $(DB_HOST) -p $(DB_PORT) -U postgres -d postgres -f docker/init-db.sql
-	@poetry run transfer_vn --db_drop --db_create --json_tables_create --col_tables_create .evn_test.yaml
+	@poetry run transfer_vn --db_drop --db_create --json_tables_create --col_tables_create $$HOME/evn_test.toml
 
 .PHONY: test-integration
 test-integration: test-config test-db ## Render config, set up DB and run the integration suite
@@ -125,7 +121,7 @@ test-integration-docker: ## Run the integration suite inside the docker compose 
 	@# transfer_vn and pytest must run from /root: the config file name is passed
 	@# to Dynaconf as a relative path, searched upward from the current directory,
 	@# and /code is not under /root.
-	@docker compose exec -w /root app transfer_vn --db_drop --db_create --json_tables_create --col_tables_create .evn_test.yaml
+	@docker compose exec -w /root app transfer_vn --db_drop --db_create --json_tables_create --col_tables_create $$HOME/evn_test.toml
 	@docker compose exec -w /root app pytest /code/tests -m "$(PYTEST_MARKERS)"
 
 .PHONY: test-regression

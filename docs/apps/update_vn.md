@@ -16,8 +16,8 @@ Initialize the sample TOML file in your HOME directory and edit with
 your local details. The TOML file is self documented:
 
 ```bash
-update_vn init .evn_your_site.toml
-editor $HOME/.evn_your_site.toml
+update_vn init $HOME/evn_your_site.toml
+editor $HOME/evn_your_site.toml
 ```
 
 ### CSV file content
@@ -59,7 +59,7 @@ Isère;2246086;;delete_observation;
 The application runs as:
 
 ```bash
-update_vn update .evn_your_site.toml modifications.csv
+update_vn update $HOME/evn_your_site.toml modifications.csv
 ```
 
 ## Reference
