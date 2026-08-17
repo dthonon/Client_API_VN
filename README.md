@@ -17,10 +17,11 @@ A `docker-compose.yml` provides a ready-to-use development stack: the CLI
 (`transfer_vn`) plus a PostGIS database. On first startup, `docker/init-db.sql`
 enables the PostGIS extensions and creates the `xfer38` application superuser,
 mirroring the [server install guide](https://dthonon.github.io/Client_API_VN/apps/server_install/).
+The postgresql container binds to port 5432. Any native postgresql service must run on different ports.
 
 If needed, install docker, as described here : https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository.
 
-Start the stack (might need sudo) and create the database and tables:
+Start the stack (add user to docker group to avoid using sudo) and create the database and tables:
 
 ```bash
 docker compose up -d --build
