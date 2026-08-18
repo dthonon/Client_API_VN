@@ -25,7 +25,7 @@ from export_vn.download_vn import (
 )
 from export_vn.store_postgresql import PostgresqlUtils, ReadPostgresql, StorePostgresql
 
-# Using faune-france site, that needs to be defined in evn_test.yaml
+# Using faune-france site, that needs to be defined in evn_test.toml
 SITE = "tff"
 FILE = "evn_test.toml"
 
@@ -49,12 +49,12 @@ MANAGE_PG = PostgresqlUtils(
 @pytest.mark.order(index=200)
 def test_init():
     """Initialize test database"""
-    # with patch("sys.argv", ["py.test", "--db_drop", ".evn_test.yaml"]):
+    # with patch("sys.argv", ["py.test", "--db_drop", "evn_test.toml"]):
     #     transfer_vn.run()
-    # with patch("sys.argv", ["py.test", "--db_create", ".evn_test.yaml"]):
+    # with patch("sys.argv", ["py.test", "--db_create", "evn_test.toml"]):
     #     transfer_vn.run()
     # MANAGE_PG.create_json_tables()
-    # with patch("sys.argv", ["py.test", "--col_tables_create", ".evn_test.yaml"]):
+    # with patch("sys.argv", ["py.test", "--col_tables_create", "evn_test.toml"]):
     #     transfer_vn.run()
     # Instantiate stores.
     global STORE_PG, READ_PG, ENTITIES, FAMILIES, FIELDS, LOCAL_ADMIN_UNITS
