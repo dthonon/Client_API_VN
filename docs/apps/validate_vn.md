@@ -17,13 +17,13 @@ validate_vn options config
 where:
 
     options  command line options described below
-    config   YAML file, located in $HOME directory, described in sample file
+    config   toml file, located in $HOME directory, described in sample file
 
     -h, --help Prints help and exits
     --version Print version number
     --verbose Increase output verbosity
     --quiet Reduce output verbosity
-    --init Initialize the YAML configuration file
+    --init Initialize the toml configuration file
     --validate Validation des schémas avec les fichier JSON téléchargés
     --report Rapport des propriétes des schémas
     --restore Rename a rendu leur nom d'origine aux fichiers

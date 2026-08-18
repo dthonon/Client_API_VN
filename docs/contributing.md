@@ -111,7 +111,7 @@ Don't forget to add test cases for your added functionality to the `tests` direc
 
 Create .evn_test.toml file in your root directory:
 ```bash
-transfer_vn --init .evn_test.toml
+transfer_vn --init $HOME/evn_test.toml
 ```
 Replace template text with actual data (site, user, password...).
 The tests access the active production site of biolovision and requires admin rights.
@@ -122,7 +122,7 @@ tff: https://www.faune-aura.org/
 ```
 Create the test database::
 ```bash
-transfer_vn --db_create .evn_test.yaml
+transfer_vn --db_create $HOME/evn_test.toml
 ```
 
 Now, validate that all unit tests are passing:
