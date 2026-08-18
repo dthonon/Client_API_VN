@@ -1,14 +1,14 @@
 # French (France) translations for Client_API_VN.
-# Copyright (C) 2024 Daniel Thonon
+# Copyright (C) 2026 Daniel Thonon
 # This file is distributed under the same license as the Client_API_VN
 # project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2024.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Client_API_VN VERSION\n"
 "Report-Msgid-Bugs-To: d.thonon9@outlook.com\n"
-"POT-Creation-Date: 2024-12-06 23:49+0100\n"
+"POT-Creation-Date: 2026-08-18 22:39+0200\n"
 "PO-Revision-Date: 2024-12-05 23:59+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr_FR\n"
@@ -17,110 +17,69 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.16.0\n"
+"Generated-By: Babel 2.17.0\n"
 
-#: src/schemas/validate.py:45
-msgid "Print version number"
+#: src/schemas/validate_vn.py:30
+msgid "Increase or decrease output verbosity"
 msgstr ""
 
-#: src/schemas/validate.py:50
-msgid "Increase output verbosity"
+#: src/schemas/validate_vn.py:64
+#, python-format
+msgid "%s, version %s"
 msgstr ""
 
-#: src/schemas/validate.py:51
-msgid "Reduce output verbosity"
-msgstr ""
-
-#: src/schemas/validate.py:54
-msgid "Validate the schemas against downloaded JSON files"
-msgstr ""
-
-#: src/schemas/validate.py:59
-msgid "Report of the properties in the schemas"
-msgstr ""
-
-#: src/schemas/validate.py:64
-msgid "Rename processed files back to their original name"
-msgstr ""
-
-#: src/schemas/validate.py:69
+#: src/schemas/validate_vn.py:81
 msgid ""
 "If float in range [0.0, 1.0], the parameter represents a proportion of "
 "files, else integer absolute counts."
 msgstr ""
 
-#: src/schemas/validate.py:75
-msgid "Configuration file name"
-msgstr ""
-
-#: src/schemas/validate.py:95 src/schemas/validate.py:152
+#: src/schemas/validate_vn.py:92 src/schemas/validate_vn.py:165
 #, python-format
-msgid "Validating schema %s, in file %s"
+msgid "Configuration file %s does not exist"
 msgstr ""
 
-#: src/schemas/validate.py:111
-#, python-format
-msgid "Sampling %s out of %i files"
-msgstr ""
-
-#: src/schemas/validate.py:114
-#, python-format
-msgid "Validating %s schema with %s"
-msgstr ""
-
-#: src/schemas/validate.py:129
-#, python-format
-msgid "Restoring files for schema %s"
-msgstr ""
-
-#: src/schemas/validate.py:138
-#, python-format
-msgid "Renaming %s to %s"
-msgstr ""
-
-#: src/schemas/validate.py:199
-#, python-format
-msgid "%s, version %s"
-msgstr ""
-
-#: src/schemas/validate.py:200
-#, python-format
-msgid "Arguments: %s"
-msgstr ""
-
-#: src/schemas/validate.py:204
-#, python-format
-msgid "File %s does not exist"
-msgstr ""
-
-#: src/schemas/validate.py:206
+#: src/schemas/validate_vn.py:94 src/schemas/validate_vn.py:167
 #, python-format
 msgid "Getting configuration data from %s"
 msgstr ""
 
-#: src/schemas/validate.py:210
+#: src/schemas/validate_vn.py:111
 #, python-format
-msgid "Incorrect content in YAML configuration %s"
+msgid "Validating schemas with %s"
 msgstr ""
 
-#: src/schemas/validate.py:216
-msgid "Validating schemas"
-msgstr ""
-
-#: src/schemas/validate.py:220
+#: src/schemas/validate_vn.py:115
 #, python-format
 msgid "--samples float parameter: %s must be between 0.0 and 1.0. Coerced to 0.1"
 msgstr ""
 
-#: src/schemas/validate.py:226
+#: src/schemas/validate_vn.py:121
 #, python-format
 msgid "--samples int parameter: %s must be positive. Coerced to 0.1"
 msgstr ""
 
-#: src/schemas/validate.py:235
-msgid "Restoring file names"
+#: src/schemas/validate_vn.py:130
+#, python-format
+msgid "Validating schema %s, in file %s"
 msgstr ""
 
-#: src/schemas/validate.py:240
-msgid "Reporting on schemas"
+#: src/schemas/validate_vn.py:145
+#, python-format
+msgid "Sampling %s out of %i files"
+msgstr ""
+
+#: src/schemas/validate_vn.py:148
+#, python-format
+msgid "Validating %s schema with %s"
+msgstr ""
+
+#: src/schemas/validate_vn.py:187
+#, python-format
+msgid "Restoring files for schema %s"
+msgstr ""
+
+#: src/schemas/validate_vn.py:195
+#, python-format
+msgid "Renaming %s to %s"
 msgstr ""

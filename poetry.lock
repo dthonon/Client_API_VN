@@ -2368,21 +2368,6 @@ pymysql = ["pymysql"]
 sqlcipher = ["sqlcipher3_binary"]
 
 [[package]]
-name = "strictyaml"
-version = "1.7.3"
-description = "Strict, typed YAML parser"
-optional = false
-python-versions = ">=3.7.0"
-groups = ["main"]
-files = [
-    {file = "strictyaml-1.7.3-py3-none-any.whl", hash = "sha256:fb5c8a4edb43bebb765959e420f9b3978d7f1af88c80606c03fb420888f5d1c7"},
-    {file = "strictyaml-1.7.3.tar.gz", hash = "sha256:22f854a5fcab42b5ddba8030a0e4be51ca89af0267961c8d6cfa86395586c407"},
-]
-
-[package.dependencies]
-python-dateutil = ">=2.6.0"
-
-[[package]]
 name = "tabulate"
 version = "0.10.0"
 description = "Pretty-print tabular data"
@@ -2854,4 +2839,4 @@ test = ["gevent (>=20.6.2)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<4.0"
-content-hash = "a0fb1dea15d9195b7d9350cf269bc90fa477888f94256e694d90981cd6ed8a2e"
+content-hash = "fdcc608d3a22d9b4c82731ad2c6a41be9d2a377bef0763866bc824a9c4d5e37b"

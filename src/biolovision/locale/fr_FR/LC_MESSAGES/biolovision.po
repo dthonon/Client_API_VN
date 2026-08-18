@@ -1,14 +1,14 @@
 # French (France) translations for Client_API_VN.
-# Copyright (C) 2024 Daniel Thonon
+# Copyright (C) 2026 Daniel Thonon
 # This file is distributed under the same license as the Client_API_VN
 # project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2024.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Client_API_VN VERSION\n"
 "Report-Msgid-Bugs-To: d.thonon9@outlook.com\n"
-"POT-Creation-Date: 2024-12-06 23:49+0100\n"
+"POT-Creation-Date: 2026-08-18 22:39+0200\n"
 "PO-Revision-Date: 2024-11-22 22:40+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr_FR\n"
@@ -17,155 +17,163 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.16.0\n"
+"Generated-By: Babel 2.17.0\n"
 
-#: src/biolovision/api.py:79
+#: src/biolovision/api.py:78
+msgid "Initializing API"
+msgstr ""
+
+#: src/biolovision/api.py:80
 msgid "controler must be defined"
 msgstr "controler doit être défini"
 
-#: src/biolovision/api.py:84
+#: src/biolovision/api.py:85
 msgid "user_email must be defined"
 msgstr "user_email doit être défini"
 
-#: src/biolovision/api.py:89
+#: src/biolovision/api.py:90
 msgid "user_pw must be defined"
 msgstr "user_pw doit être défini"
 
-#: src/biolovision/api.py:94
+#: src/biolovision/api.py:95
 msgid "base_url must be defined"
 msgstr "base_url doit être défini"
 
-#: src/biolovision/api.py:97
+#: src/biolovision/api.py:98
 msgid "client_key must be defined"
 msgstr "client_key doit être défini"
 
-#: src/biolovision/api.py:100
+#: src/biolovision/api.py:101
 msgid "client_secret must be defined"
 msgstr "client_secret doit être défini"
 
-#: src/biolovision/api.py:204
+#: src/biolovision/api.py:203
 #, python-format
 msgid "Params: %s"
 msgstr "Paramètres : %s"
 
-#: src/biolovision/api.py:255
+#: src/biolovision/api.py:254
 #, python-format
 msgid "%s status code = %s, for URL %s"
 msgstr "%s code statut = %s, pour l'URL %s"
 
-#: src/biolovision/api.py:265
+#: src/biolovision/api.py:264
 #, python-format
 msgid "%s status code: %s, text: %s, for URL %s"
 msgstr "%s code statut: %s, texte: %s, URL %s"
 
-#: src/biolovision/api.py:276
+#: src/biolovision/api.py:275
 #, python-format
 msgid "Unreceverable error %s, raising exception"
 msgstr "Erreur irrecupérable %s, exception levée"
 
-#: src/biolovision/api.py:290
+#: src/biolovision/api.py:289
 #, python-format
 msgid "Too many error %s, raising exception"
 msgstr "Trop d'erreur %s, exception levée"
 
-#: src/biolovision/api.py:301
+#: src/biolovision/api.py:300
 #, python-format
 msgid "Response content: %s, text: %s"
 msgstr "Contenu de la réponse : %s, texte : %s"
 
-#: src/biolovision/api.py:312
+#: src/biolovision/api.py:311
 #, python-format
 msgid "Incorrect response content: %s"
 msgstr "Contenu de la réponse incorrect : %s"
 
-#: src/biolovision/api.py:314
+#: src/biolovision/api.py:313
 #, python-format
 msgid "Response text causing exception: %s"
 msgstr "Texte de la réponse causant l'exception : %s"
 
-#: src/biolovision/api.py:323
+#: src/biolovision/api.py:322
 #, python-format
 msgid "Received %d sightings in chunk %d"
 msgstr "Reçu %d observations dans le morceau %d"
 
-#: src/biolovision/api.py:340
+#: src/biolovision/api.py:339
 #, python-format
 msgid "Received %d forms in chunk %d"
 msgstr "Reçu %d formulaires dans le morceau %d"
 
-#: src/biolovision/api.py:359
+#: src/biolovision/api.py:358
 #, python-format
 msgid "Received %d data items in chunk %d"
 msgstr "Reçu %d éléments avec données dans le morceau %d"
 
-#: src/biolovision/api.py:368
+#: src/biolovision/api.py:367
 #, python-format
 msgid "Received non-data response: %s"
 msgstr "Réception d'une réponse sans données : %s"
 
-#: src/biolovision/api.py:381
+#: src/biolovision/api.py:380
 #, python-format
 msgid "Chunked transfer => requesting for more, with key: %s"
 msgstr "Transfert par morceau => demande du suivant, avec la clé %s"
 
-#: src/biolovision/api.py:388
+#: src/biolovision/api.py:387
 msgid "Non-chunked transfer => finished requests"
 msgstr "Transfert sans morceau => fin de la requête"
 
-#: src/biolovision/api.py:393
+#: src/biolovision/api.py:392
 #, python-format
 msgid "Received %d chunks"
 msgstr "Reçu %d morceaux"
 
-#: src/biolovision/api.py:425
-#, python-format
-msgid "List from:%s, with options:%s, optional_headers:%s"
+#: src/biolovision/api.py:424
+#, fuzzy, python-format
+msgid "List from: %s, with options:%s, optional_headers:%s"
 msgstr "Liste depuis:%s, avec options:%s, optional_headers:%s"
 
-#: src/biolovision/api.py:432
+#: src/biolovision/api.py:431
 #, python-format
 msgid "Number of entities = %i"
 msgstr "Nombre d'entités = %i"
 
-#: src/biolovision/api.py:465
-#, python-format
-msgid "In api_get for controler:%s, entity: %s, with parameters:%s"
+#: src/biolovision/api.py:464
+#, fuzzy, python-format
+msgid "In api_get for controler: %s, entity: %s, with parameters:%s"
 msgstr "Dans api_get du controleur:%s, entité: %s, paramètres:%s"
 
-#: src/biolovision/api.py:491
-msgid "Calling api_list is deprecated. Please use api_search only."
-msgstr "L'appel à api_list est obsolète. Utilisez api_search."
+#: src/biolovision/api.py:493
+#, fuzzy, python-format
+msgid "In api_list for controler: %s, header: %s, with parameters:%s"
+msgstr "Dans api_get du controleur:%s, entité: %s, paramètres:%s"
 
-#: src/biolovision/api.py:751
+#: src/biolovision/api.py:750
 #, python-format
 msgid "In api_list, with parameters %s"
 msgstr "Dans api_list, avec les paramètres %s"
 
-#: src/biolovision/api.py:819
+#: src/biolovision/api.py:818
 #, python-format
 msgid "Search from %s, with option %s and body %s"
 msgstr "Dans api_search depuis %s, avec les options %s et le corps %s"
 
-#: src/biolovision/api.py:842
+#: src/biolovision/api.py:841
 #, python-format
 msgid "Create observation, with data %s"
 msgstr "Création d'une observation, avec data %s"
 
-#: src/biolovision/api.py:868
+#: src/biolovision/api.py:867
 #, python-format
 msgid "Update observation %s, with data %s"
 msgstr "Mise à jour de l'observation %s, avec data %s"
 
-#: src/biolovision/api.py:887
+#: src/biolovision/api.py:886
 #, python-format
 msgid "Delete observation %s"
 msgstr "Suppression de l'observation %s"
 
-#: src/biolovision/api.py:906
+#: src/biolovision/api.py:905
 #, fuzzy, python-format
 msgid "Delete list/form %s"
 msgstr "Suppression de l'observation %s"
 
-#: src/biolovision/api.py:911
+#: src/biolovision/api.py:910
 msgid "No parameter passed: call ignored"
 msgstr "Pas de paramètre transmis : appel ignoré"
+
+#~ msgid "Calling api_list is deprecated. Please use api_search only."
+#~ msgstr "L'appel à api_list est obsolète. Utilisez api_search."
