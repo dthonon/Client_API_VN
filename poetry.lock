@@ -2839,4 +2839,4 @@ test = ["gevent (>=20.6.2)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<4.0"
-content-hash = "6eb1da644ec103183ff96a6b80f775eff72389367969f67deeba486627e9a6ca"
+content-hash = "b6c53cfa5a2d7420e7eb0b9afbce15e202eccde9ec62c5a242bb79168737beac"
