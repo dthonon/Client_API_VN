@@ -92,7 +92,6 @@ def _make_observations(backend):
 # ---------------------------------------------------------------------------
 # Bug 1: the watermark must not advance past data that was not persisted.
 # ---------------------------------------------------------------------------
-@pytest.mark.xfail(strict=True, reason="bug: increment_log(now) is called before store(); remove when fixed")
 def test_increment_watermark_not_advanced_on_failure():
     """If fetching/persisting the updates fails, the watermark must stay put.
 
