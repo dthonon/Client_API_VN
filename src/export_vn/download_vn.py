@@ -875,7 +875,7 @@ class Observations(DownloadVn):
                         seq += 1
                         end_date = start_date
                         delta_days = int(pid(nb_obs))
-                    self._backend.increment_log(self._site, id_taxo_group, since)
+                    self._backend.increment_log(self._site, id_taxo_group, end_date)
         except HTTPError:
             self._backend.log(
                 self._site,
