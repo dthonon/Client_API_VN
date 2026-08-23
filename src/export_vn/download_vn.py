@@ -851,7 +851,7 @@ class Observations(DownloadVn):
                             # Throttle on max size downloaded during each interval
                             nb_obs = max(nb_o, nb_obs)
                             log_msg = _(
-                                "{} => Iter: {}, {} obs, taxo_group: {}, territorial_unit: {}, date: {}, interval: {}"
+                                "{} => Iter: {}, {} obs, taxo_group: {}, territorial_unit: {}, start_date: {}, end_date : {}, interval: {}"
                             ).format(
                                 self._site,
                                 seq,
@@ -859,6 +859,7 @@ class Observations(DownloadVn):
                                 id_taxo_group,
                                 t_u[0]["id_country"] + t_u[0]["short_name"],
                                 start_date.strftime("%d/%m/%Y"),
+                                end_date.strftime("%d/%m/%Y"),
                                 str(delta_days),
                             )
                             # Call backend to store log
@@ -875,7 +876,7 @@ class Observations(DownloadVn):
                         seq += 1
                         end_date = start_date
                         delta_days = int(pid(nb_obs))
-                    self._backend.increment_log(self._site, id_taxo_group, end_date)
+                    self._backend.increment_log(self._site, id_taxo_group, since)
         except HTTPError:
             self._backend.log(
                 self._site,
