@@ -610,7 +610,7 @@ class Observations(DownloadVn):
             for taxo in taxo_groups:
                 if taxo["access_mode"] != "none":
                     id_taxo_group = taxo["id"]
-                    self._backend.increment_log(self._site, id_taxo_group, datetime.now())
+                    update_ts = datetime.now()
                     logger.info(
                         _("Getting observations from taxo_group %s, in _store_list"),
                         id_taxo_group,
@@ -682,6 +682,7 @@ class Observations(DownloadVn):
                             str(id_taxo_group) + "_1",
                             items_dict,
                         )
+                    self._backend.increment_log(self._site, id_taxo_group, update_ts)
         except HTTPError:
             self._backend.log(
                 self._site,
@@ -780,7 +781,6 @@ class Observations(DownloadVn):
                     since = self._backend.increment_get(self._site, id_taxo_group)
                     if since is None:
                         since = end_date
-                    self._backend.increment_log(self._site, id_taxo_group, since)
 
                     # When to start download interval
                     start_date = end_date
@@ -851,7 +851,7 @@ class Observations(DownloadVn):
                             # Throttle on max size downloaded during each interval
                             nb_obs = max(nb_o, nb_obs)
                             log_msg = _(
-                                "{} => Iter: {}, {} obs, taxo_group: {}, territorial_unit: {}, date: {}, interval: {}"
+                                "{} => Iter: {}, {} obs, taxo_group: {}, territorial_unit: {}, start_date: {}, end_date : {}, interval: {}"
                             ).format(
                                 self._site,
                                 seq,
@@ -859,6 +859,7 @@ class Observations(DownloadVn):
                                 id_taxo_group,
                                 t_u[0]["id_country"] + t_u[0]["short_name"],
                                 start_date.strftime("%d/%m/%Y"),
+                                end_date.strftime("%d/%m/%Y"),
                                 str(delta_days),
                             )
                             # Call backend to store log
@@ -875,6 +876,7 @@ class Observations(DownloadVn):
                         seq += 1
                         end_date = start_date
                         delta_days = int(pid(nb_obs))
+                    self._backend.increment_log(self._site, id_taxo_group, since)
         except HTTPError:
             self._backend.log(
                 self._site,
@@ -1007,7 +1009,7 @@ class Observations(DownloadVn):
                 since = self._backend.increment_get(self._site, taxo)
             if since is not None:
                 # Valid since date provided or found in database
-                self._backend.increment_log(self._site, taxo, datetime.now())
+                update_ts = datetime.now()
                 logger.info(_("Getting updates for taxo_group %s since %s"), taxo, since)
                 items_dict = self._api_instance.api_diff(taxo, since, modification_type="all")
 
@@ -1070,6 +1072,7 @@ class Observations(DownloadVn):
                             total_size(items_dict),
                             timing,
                         )
+                self._backend.increment_log(self._site, taxo, update_ts)
             except HTTPError:
                 self._backend.log(
                     self._site,
@@ -1230,7 +1233,7 @@ class Places(DownloadVn):
                     ).api_list()["data"]
                 ]
 
-        self._backend.increment_log(self._site, self._place_id, datetime.now())
+        update_ts = datetime.now()
         if territorial_unit_ids is not None and len(territorial_unit_ids) > 0:
             # Get local_admin_units
             for id_canton in territorial_unit_ids:
@@ -1252,6 +1255,7 @@ class Places(DownloadVn):
                 )
                 q_param = {"id_commune": l_a_u[0]["id"], "get_hidden": "1"}
                 super().store([q_param])
+        self._backend.increment_log(self._site, self._place_id, update_ts)
 
     def update(self, territorial_unit_ids=None, since=None):
         """Download increment from VN by API and store json to file.
@@ -1276,7 +1280,7 @@ class Places(DownloadVn):
             since = self._backend.increment_get(self._site, self._place_id)
         if since is not None:
             # Valid since date provided or found in database
-            self._backend.increment_log(self._site, self._place_id, datetime.now())
+            update_ts = datetime.now()
             logger.info(_("Getting updates for places since %s"), since)
             items_dict = self._api_instance.api_diff(since, modification_type="all")
 
@@ -1333,6 +1337,7 @@ class Places(DownloadVn):
                     total_size(items_dict),
                     timing,
                 )
+            self._backend.increment_log(self._site, self._place_id, update_ts)
 
         # Process deletes
         if len(deleted) > 0:

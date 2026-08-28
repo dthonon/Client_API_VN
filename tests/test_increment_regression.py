@@ -22,12 +22,12 @@ Bugs covered:
 import os
 import re
 from datetime import datetime
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
 from sqlalchemy import select, text
 
-from biolovision.api import EntitiesAPI, HTTPError
+from biolovision.api import EntitiesAPI, HTTPError, TaxoGroupsAPI, TerritorialUnitsAPI
 from export_vn.download_vn import Observations
 
 SITE = "tst"
@@ -53,6 +53,7 @@ class FakeBackend:
         return self._ts.get((site, str(taxo_group)))
 
     def increment_log(self, site, taxo_group, last_ts):
+        print(f"FakeBackend.increment_log({site}, {taxo_group}, {last_ts})")
         self._ts[(site, str(taxo_group))] = last_ts
 
     def store(self, controler, seq, items_dict):
@@ -92,8 +93,7 @@ def _make_observations(backend):
 # ---------------------------------------------------------------------------
 # Bug 1: the watermark must not advance past data that was not persisted.
 # ---------------------------------------------------------------------------
-@pytest.mark.xfail(strict=True, reason="bug: increment_log(now) is called before store(); remove when fixed")
-def test_increment_watermark_not_advanced_on_failure():
+def test_increment_watermark_not_advanced_on_failure_update():
     """If fetching/persisting the updates fails, the watermark must stay put.
 
     Reproduces the core data-loss bug: Observations.update() calls
@@ -123,7 +123,69 @@ def test_increment_watermark_not_advanced_on_failure():
     )
 
 
-def test_increment_watermark_advances_on_success():
+def test_increment_watermark_not_advanced_on_failure_search():
+    """If fetching/persisting the updates fails, the watermark must stay put.
+
+    Reproduces the core data-loss bug: Observations.store_search() calls
+    increment_log(now) *before* store(). If the download then
+    fails, the next run starts from `now` and never re-downloads the
+    observations in between.
+    """
+    t0 = datetime(2024, 1, 1, 0, 0, 0)
+    backend = FakeBackend(initial_ts=t0)
+    obs = _make_observations(backend)
+
+    api = Mock()
+    api.controler = "observations"
+    api.transfer_errors = 0
+    api.http_status = 504
+    date_creation = "1780300800"  # lundi 1 juin 2026 à 8:00:00
+    api.api_search.return_value = [
+        {
+            "date": {"@timestamp": date_creation},
+            "species": {"@id": "408"},  # Merle noir
+            "place": {
+                "@id": "917071",
+            },
+            "observers": [
+                {
+                    "@id": "270994",
+                    "timing": {
+                        "@timestamp": date_creation,
+                        "@notime": "0",
+                    },
+                    "altitude": "230",
+                    "comment": "TEST API !!! à supprimer !!!",
+                    "coord_lat": "45.2022",
+                    "coord_lon": "5.7971",
+                    "precision": "precise",
+                    "count": "1",
+                    "estimation_code": "MINIMUM",
+                }
+            ],
+        },
+    ]
+    # Fetching the full observation fails mid-sync (e.g. Gateway Timeout).
+
+    api.api_search.side_effect = HTTPError(504)
+    obs._api_instance = api
+
+    with (
+        patch.object(
+            TerritorialUnitsAPI,
+            "api_list",
+            return_value={"data": [{"id": "1", "name": "Ain", "id_country": "1", "short_name": "01"}]},
+        ),
+        patch.object(TaxoGroupsAPI, "api_list", return_value={"data": [{"@id": "1", "name": "Oiseaux"}]}),
+    ):
+        obs.store(id_taxo_group="1", method="search")
+
+    assert backend.increment_get(SITE, "1") == t0, (
+        f"watermark advanced past observations that were never stored: {backend.increment_get(SITE, '1')} != {t0}"
+    )
+
+
+def test_increment_watermark_advances_on_success_update():
     """On a successful run the watermark *does* move forward (guards the fix)."""
     t0 = datetime(2024, 1, 1, 0, 0, 0)
     backend = FakeBackend(initial_ts=t0)
@@ -143,6 +205,64 @@ def test_increment_watermark_advances_on_success():
 
     assert backend.stored, "a successful update must have stored something"
     assert backend.increment_get(SITE, "1") > t0
+
+
+def test_increment_watermark_advances_on_success_search():
+    """On a successful run the watermark *does* move forward (guards the fix)."""
+    t0 = datetime(2024, 1, 1, 0, 0, 0)
+    backend = FakeBackend(initial_ts=t0)
+    obs = _make_observations(backend)
+
+    api = Mock()
+    api.controler = "observations"
+    api.transfer_errors = 0
+    api.http_status = 200
+    date_creation = "1780300800"  # lundi 1 juin 2026 à 8:00:00
+    api.api_search.return_value = {
+        "data": {
+            "sightings": [
+                {
+                    "date": {"@timestamp": date_creation},
+                    "species": {"@id": "408"},  # Merle noir
+                    "place": {
+                        "@id": "917071",
+                    },
+                    "observers": [
+                        {
+                            "@id": "270994",
+                            "timing": {
+                                "@timestamp": date_creation,
+                                "@notime": "0",
+                            },
+                            "altitude": "230",
+                            "comment": "TEST API !!! à supprimer !!!",
+                            "coord_lat": "45.2022",
+                            "coord_lon": "5.7971",
+                            "precision": "precise",
+                            "count": "1",
+                            "estimation_code": "MINIMUM",
+                        }
+                    ],
+                },
+            ]
+        }
+    }
+
+    api.api_list.return_value = {"data": {"sightings": [{"observers": [{"id_sighting": "42"}]}]}}
+    obs._api_instance = api
+
+    with (
+        patch.object(
+            TerritorialUnitsAPI,
+            "api_list",
+            return_value={"data": [{"id": "1", "name": "Ain", "id_country": "1", "short_name": "01"}]},
+        ),
+        patch.object(TaxoGroupsAPI, "api_list", return_value={"data": [{"@id": "1", "name": "Oiseaux"}]}),
+    ):
+        obs.store(id_taxo_group="1", method="search")
+
+    assert backend.stored, "a successful update must have stored something"
+    assert backend.increment_get(SITE, "1") != t0
 
 
 # ---------------------------------------------------------------------------
