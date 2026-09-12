@@ -16,7 +16,7 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 dependencies = [
-  "alembic>=1.19.1",
+  "alembic>=1.19.2",
   "apscheduler<4",
   "babel>=2.16",
   "beautifulsoup4>=4.12",
@@ -60,17 +60,17 @@ packages = [
 [tool.poetry.group.dev.dependencies]
 deptry = ">=0.25"
 mypy = ">=2.3.1"
-ruff = ">=0.16.4"
+ruff = ">=0.16.6"
 pytest = ">=9"
 pytest-cov = ">=7"
 pytest-order = ">=1.5"
 requests-mock = ">=1.12"
 pre-commit = ">=4.6.2"
-tox = ">=4.60.0"
-types-requests = ">=2.33.0.20260712"
-types-requests-oauthlib = ">=2"
+tox = ">=4.61.2"
+types-requests = ">=2.33.0.20260906"
+types-requests-oauthlib = ">=2.0.0.20260907"
 types-setuptools = ">=84.0.0.20260812"
-types-psutil = ">=6.1"
+types-psutil = ">=7.2.2.20260906"
 types-tabulate = ">=0.9"
 types-beautifulsoup4 = ">=4.12"
 types-pytz = ">=2026.3.1.20260727"
