@@ -16,7 +16,7 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 dependencies = [
-  "alembic>=1.19.2",
+  "alembic>=1.20.0",
   "apscheduler<4",
   "babel>=2.16",
   "beautifulsoup4>=4.12",
@@ -26,12 +26,12 @@ dependencies = [
   "jsonschema>=4.23",
   "pandas>=3.0.5",
   "psutil>=6.1",
-  "psycopg2-binary>=2.9",
+  "psycopg2-binary>=2.9.13",
   "pyproj>=3.7",
   "pytz>=2026.3.post1",
   "requests>=2.32",
   "requests-oauthlib>=2.0",
-  "SQLAlchemy>=2.0.52",
+  "SQLAlchemy>=2.0.54",
   "tabulate>=0.9",
   "yappi>=1.6",
   "tomlkit>=0.15.1",
@@ -60,13 +60,13 @@ packages = [
 [tool.poetry.group.dev.dependencies]
 deptry = ">=0.25"
 mypy = ">=2.3.1"
-ruff = ">=0.16.6"
+ruff = ">=0.16.7"
 pytest = ">=9"
 pytest-cov = ">=7"
 pytest-order = ">=1.5"
 requests-mock = ">=1.12"
 pre-commit = ">=4.6.2"
-tox = ">=4.61.2"
+tox = ">=4.61.4"
 types-requests = ">=2.33.0.20260906"
 types-requests-oauthlib = ">=2.0.0.20260907"
 types-setuptools = ">=84.0.0.20260812"
@@ -74,7 +74,7 @@ types-psutil = ">=7.2.2.20260906"
 types-tabulate = ">=0.9"
 types-beautifulsoup4 = ">=4.12"
 types-pytz = ">=2026.3.1.20260727"
-types-psycopg2 = ">=2.9.21.20260724"
+types-psycopg2 = ">=2.9.21.20260911"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = ">=1.6"
