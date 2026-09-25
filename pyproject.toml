@@ -24,7 +24,7 @@ dependencies = [
   "dynaconf>=3.2",
   "jinja2>=3.1",
   "jsonschema>=4.23",
-  "pandas>=3.0.5",
+  "pandas>=3.0.6",
   "psutil>=6.1",
   "psycopg2-binary>=2.9.13",
   "pyproj>=3.7",
@@ -60,13 +60,13 @@ packages = [
 [tool.poetry.group.dev.dependencies]
 deptry = ">=0.25"
 mypy = ">=2.3.1"
-ruff = ">=0.16.7"
+ruff = ">=0.16.8"
 pytest = ">=9"
 pytest-cov = ">=7"
 pytest-order = ">=1.5"
 requests-mock = ">=1.12"
 pre-commit = ">=4.6.2"
-tox = ">=4.61.4"
+tox = ">=4.63.0"
 types-requests = ">=2.33.0.20260906"
 types-requests-oauthlib = ">=2.0.0.20260907"
 types-setuptools = ">=84.0.0.20260812"
