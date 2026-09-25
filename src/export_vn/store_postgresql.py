@@ -12,7 +12,7 @@ Properties
 """
 
 import logging
-from datetime import date
+from datetime import date, datetime
 
 from pyproj import Transformer
 from sqlalchemy import (
@@ -119,7 +119,6 @@ def store_1_observation(item):
     # Insert simple sightings,
     # each row contains id, update timestamp and full json body
     elem = item.elem
-    logger.debug(_("Storing observation %s to database"), elem["observers"][0]["id_sighting"])
     # Find last update timestamp
     if "update_date" in elem["observers"][0]:
         # update_date = elem['observers'][0]['update_date']['@timestamp']
@@ -127,6 +126,12 @@ def store_1_observation(item):
     else:
         # update_date = elem['observers'][0]['insert_date']['@timestamp']
         update_date = elem["observers"][0]["insert_date"]
+    logger.debug(
+        _("Storing observation %s to database, insert_date: %s, observation date: %s"),
+        elem["observers"][0]["id_sighting"],
+        datetime.fromtimestamp(int(elem["observers"][0]["insert_date"])).date(),
+        datetime.fromtimestamp(int(elem["date"]["@timestamp"])).date(),
+    )
 
     # Add Lambert x, y transform to local coordinates
     (

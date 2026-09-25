@@ -441,7 +441,7 @@ class Observations(DownloadVn):
 
     Methods
     - store               - Download (by date interval) and store to json
-    - update              - Download (by date interval) and store to json
+    - update              - Download increment from VN by API and store json to file
 
     """
 
@@ -778,9 +778,9 @@ class Observations(DownloadVn):
 
                     # Record end of download interval
                     end_date = datetime.now() if self._end_date is None else datetime.combine(self._end_date, time.min)
-                    since = self._backend.increment_get(self._site, id_taxo_group)
-                    if since is None:
-                        since = end_date
+                    # since = self._backend.increment_get(self._site, id_taxo_group)
+                    # if since is None:
+                    #     since = end_date
 
                     # When to start download interval
                     start_date = end_date
@@ -851,7 +851,7 @@ class Observations(DownloadVn):
                             # Throttle on max size downloaded during each interval
                             nb_obs = max(nb_o, nb_obs)
                             log_msg = _(
-                                "{} => Iter: {}, {} obs, taxo_group: {}, territorial_unit: {}, start_date: {}, end_date : {}, interval: {}"
+                                "{} => Iter: {}, {} obs, taxo_group: {}, territorial_unit: {}, start_date: {}, end_date: {}, interval: {}"
                             ).format(
                                 self._site,
                                 seq,
@@ -873,10 +873,10 @@ class Observations(DownloadVn):
                                 timing,
                             )
                             logger.info(log_msg)
+                        self._backend.increment_log(self._site, id_taxo_group, start_date)
                         seq += 1
                         end_date = start_date
                         delta_days = int(pid(nb_obs))
-                    self._backend.increment_log(self._site, id_taxo_group, since)
         except HTTPError:
             self._backend.log(
                 self._site,

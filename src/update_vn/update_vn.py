@@ -15,6 +15,7 @@ Modification are tracked in hidden_comment.
 
 """
 
+import ast
 import contextlib
 import csv
 import datetime
@@ -23,7 +24,6 @@ import json
 import logging
 import shutil
 import sys
-from ast import literal_eval
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
@@ -154,13 +154,12 @@ def update(config: str, input_file: str) -> None:
         logger.critical(_("Input file %s does not exist"), str(Path(input_file)))
         raise FileNotFoundError
 
-    print(cfg)
     obs_api = {}
     logger.debug(_("Preparing update for site %s"), site)
     obs_api[site] = ObservationsAPI(
         user_email=cfg.user_email,  # pyright: ignore[reportOptionalMemberAccess]
         user_pw=cfg.user_pw,  # pyright: ignore[reportOptionalMemberAccess]
-        base_url=cfg.site,  # pyright: ignore[reportOptionalMemberAccess]
+        base_url=cfg.URL,  # pyright: ignore[reportOptionalMemberAccess]
         client_key=cfg.client_key,  # pyright: ignore[reportOptionalMemberAccess]
         client_secret=cfg.client_secret,  # pyright: ignore[reportOptionalMemberAccess]
         max_retry=settings.tuning.max_retry,
@@ -227,7 +226,7 @@ def update(config: str, input_file: str) -> None:
                         repl = row[2].strip().replace("$", "sighting")
                         # Get current value, if exists
                         try:
-                            old_attr = literal_eval(repl)
+                            old_attr = ast.literal_eval(repl)
                         except ValueError:
                             old_attr = None
                         # Get current hidden_comment, if exists
@@ -251,6 +250,7 @@ def update(config: str, input_file: str) -> None:
                                 new=row[4].strip(),
                             )
                         )
+
                         if row[3].strip() == "replace":
                             exec("{} = {}".format(repl, "row[4].strip()"))
                         else:  # delete_attribute
