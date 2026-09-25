@@ -874,31 +874,57 @@ class TestObservations:
         q_param = None
         with pytest.raises(IncorrectParameter) as excinfo:  # noqa: F841
             obs_list = OBSERVATIONS_API.api_search(q_param)
-        # Testing real search
+        # Testing real search on a date range with no sightings entered
+        q_param = {
+            "period_choice": "range",
+            "date_from": "01.01.2000",
+            "date_to": "31.12.2000",
+            "species_choice": "all",
+            "taxonomic_group": "18",
+            "entry_date": "1",
+        }
+        obs_list = OBSERVATIONS_API.api_search(q_param)
+        assert OBSERVATIONS_API.transfer_errors == 0
+        assert len(obs_list["data"]["sightings"]) == 0
+
+        # Testing real search on a date range with sightings observed
+        q_param = {
+            "period_choice": "range",
+            "date_from": "01.01.2000",
+            "date_to": "31.12.2000",
+            "species_choice": "all",
+            "taxonomic_group": "18",
+            "entry_date": "0",
+        }
+        obs_list = OBSERVATIONS_API.api_search(q_param)
+        assert OBSERVATIONS_API.transfer_errors == 0
+        assert len(obs_list["data"]["sightings"]) > 0
+
+        # Testing real search on a date range with sightings observed
         q_param = {
             "period_choice": "range",
             "date_from": "01.09.2017",
             "date_to": "15.09.2017",
             "species_choice": "all",
             "taxonomic_group": "18",
-        }
-        obs_list = OBSERVATIONS_API.api_search(q_param)
-        assert OBSERVATIONS_API.transfer_errors == 0
-        assert len(obs_list["data"]["sightings"]) >= 400
-
-    @pytest.mark.privileged
-    def test_observations_search_2(self):
-        """Query sightings, from taxo_group 18: Mantodea and date range."""
-        q_param = {
-            "period_choice": "range",
-            "date_from": "01.09.2017",
-            "date_to": "30.09.2017",
-            "species_choice": "all",
-            "taxonomic_group": "18",
+            "entry_date": "0",
         }
         obs_list = OBSERVATIONS_API.api_search(q_param, short_version="1")
         assert OBSERVATIONS_API.transfer_errors == 0
-        assert len(obs_list["data"]["sightings"]) >= 400
+        assert len(obs_list["data"]["sightings"]) > 400
+
+        # Testing real search on a date range with sightings entered
+        q_param = {
+            "period_choice": "range",
+            "date_from": "01.09.2017",
+            "date_to": "15.09.2017",
+            "species_choice": "all",
+            "taxonomic_group": "18",
+            "entry_date": "1",
+        }
+        obs_list = OBSERVATIONS_API.api_search(q_param, short_version="1")
+        assert OBSERVATIONS_API.transfer_errors == 0
+        assert len(obs_list["data"]["sightings"]) > 400
 
     @pytest.mark.write
     def test_observations_update(self):
