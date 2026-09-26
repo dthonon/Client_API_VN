@@ -441,7 +441,7 @@ class Observations(DownloadVn):
 
     Methods
     - store               - Download (by date interval) and store to json
-    - update              - Download (by date interval) and store to json
+    - update              - Download increment from VN by API and store json to file
 
     """
 
@@ -851,7 +851,7 @@ class Observations(DownloadVn):
                             # Throttle on max size downloaded during each interval
                             nb_obs = max(nb_o, nb_obs)
                             log_msg = _(
-                                "{} => Iter: {}, {} obs, taxo_group: {}, territorial_unit: {}, start_date: {}, end_date : {}, interval: {}"
+                                "{} => Iter: {}, {} obs, taxo_group: {}, territorial_unit: {}, start_date: {}, end_date: {}, interval: {}"
                             ).format(
                                 self._site,
                                 seq,
