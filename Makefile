@@ -66,6 +66,12 @@ test_slow: ## Test the code with pytest
 	@echo "🚀 Testing code: Running pytest"
 	@poetry run pytest --cov --cov-config=pyproject.toml --cov-report=xml
 
+.PHONY: test_timing
+test_timing: ## Test the code with pytest and timing
+	@echo "🚀 Testing code: Running pytest with timing"
+	@poetry run pytest --durations=50 -v
+
+
 .PHONY: test_unprivileged
 test_unprivileged: ## Test the code with pytest, unprivileged account
 	@echo "🚀 Testing code: Running pytest"

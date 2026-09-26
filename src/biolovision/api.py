@@ -191,9 +191,9 @@ class BiolovisionAPI:
         """
         # Loop on chunks
         nb_chunks = 0
-        data_rec = None
+        data_rec = json.loads("{}")
         while nb_chunks < self._limits["max_chunks"]:
-            # Remove DEBUG logging level to avoid too many details
+            # Remove DEBUG logging level to avoid too many details in requests
             level = logging.getLogger().level
             logging.getLogger().setLevel(logging.INFO)
 
@@ -297,13 +297,13 @@ class BiolovisionAPI:
                     resp_chunk = json.loads("{}")
                 else:
                     try:
-                        self._logger.debug(_("Response content: %s, text: %s"), resp, resp.text[:1000])
+                        self._logger.debug(_("Response content: %s, text: '%s'"), resp, resp.text[:100])
                         # TWEAK: remove extra text outside JSON response
                         if len(resp.text) > 1:
                             rsp = re.findall(r"([\[{].*[}\]])", resp.text)
                             resp_chunk = json.loads(rsp[0]) if len(rsp) > 0 else {}
                         else:
-                            resp_chunk = resp.json("{}")
+                            resp_chunk = json.loads("{}")
                     except json.decoder.JSONDecodeError:  # pragma: no cover
                         # Error during JSON decoding =>
                         # Logging error and no further processing of empty chunk
@@ -326,12 +326,9 @@ class BiolovisionAPI:
                         if nb_chunks == 0:
                             data_rec = resp_chunk
                         else:
-                            if "sightings" in data_rec["data"]:
+                            if "data" in data_rec and "sightings" in data_rec["data"]:
                                 data_rec["data"]["sightings"] += resp_chunk["data"]["sightings"]
                             else:
-                                # self._logger.error(_("No 'sightings' in previous data"))
-                                # self._logger.error(data_rec)
-                                # self._logger.error(resp_chunk)
                                 data_rec["data"]["sightings"] = resp_chunk["data"]["sightings"]
                     if "forms" in resp_chunk["data"]:
                         observations = True
@@ -343,14 +340,9 @@ class BiolovisionAPI:
                         if nb_chunks == 0:
                             data_rec = resp_chunk
                         else:
-                            if "forms" in data_rec["data"]:
+                            if "data" in data_rec and "forms" in data_rec["data"]:
                                 data_rec["data"]["forms"] += resp_chunk["data"]["forms"]
                             else:  # pragma: no cover
-                                # self._logger.error(
-                                #     _("Trying to add 'forms' to another data stream")
-                                # )
-                                # self._logger.error(data_rec)
-                                # self._logger.error(resp_chunk)
                                 data_rec["data"]["forms"] = resp_chunk["data"]["forms"]
 
                     if not observations:
@@ -427,7 +419,7 @@ class BiolovisionAPI:
             optional_headers,
         )
         # GET from API
-        entities = self._url_get(params, self._ctrl, optional_headers=optional_headers)["data"]
+        entities = self._url_get(params, self._ctrl, optional_headers=optional_headers).get("data", {})
         self._logger.debug(_("Number of entities = %i"), len(entities))
         return {"data": entities}
 

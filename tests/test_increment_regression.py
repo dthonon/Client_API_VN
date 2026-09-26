@@ -53,7 +53,6 @@ class FakeBackend:
         return self._ts.get((site, str(taxo_group)))
 
     def increment_log(self, site, taxo_group, last_ts):
-        print(f"FakeBackend.increment_log({site}, {taxo_group}, {last_ts})")
         self._ts[(site, str(taxo_group))] = last_ts
 
     def store(self, controler, seq, items_dict):
@@ -268,7 +267,7 @@ def test_increment_watermark_advances_on_success_search():
 # ---------------------------------------------------------------------------
 # Bug 2: an empty server response must be absorbed, not abort the download.
 # ---------------------------------------------------------------------------
-@pytest.mark.xfail(strict=True, reason='bug: resp.json("{}") raises TypeError on empty body; remove when fixed')
+# @pytest.mark.xfail(strict=True, reason='bug: resp.json("{}") raises TypeError on empty body; remove when fixed')
 def test_empty_response_does_not_abort(requests_mock):
     """A 200 response with an empty body must not raise.
 
