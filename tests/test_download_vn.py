@@ -396,6 +396,7 @@ def test_validations_store(capsys):
 # -------------
 @pytest.mark.order(index=340)
 @pytest.mark.privileged
+@pytest.mark.slow
 def test_observations_store_search_1_1(capsys):
     """Store observations from taxo_group 2 by specie to file, using search."""
     file_json = Path.home() / settings["FILE"]["file_store"] / "observations_2_138_1.json.gz"
