@@ -28,10 +28,10 @@ dependencies = [
   "psutil>=6.1",
   "psycopg2-binary>=2.9.13",
   "pyproj>=3.7",
-  "pytz>=2026.4",
+  "pytz>=2026.5",
   "requests>=2.32",
   "requests-oauthlib>=2.0",
-  "SQLAlchemy>=2.1.1",
+  "SQLAlchemy>=2.1.4",
   "tabulate>=0.9",
   "yappi>=1.6",
   "tomlkit>=0.15.1",
@@ -59,14 +59,14 @@ packages = [
 
 [tool.poetry.group.dev.dependencies]
 deptry = ">=0.25"
-mypy = ">=2.3.1"
-ruff = ">=0.16.9"
+mypy = ">=2.4.0"
+ruff = ">=0.16.10"
 pytest = ">=9"
 pytest-cov = ">=7"
 pytest-order = ">=1.5"
 requests-mock = ">=1.12"
 pre-commit = ">=4.6.2"
-tox = ">=4.64.4"
+tox = ">=4.64.9"
 types-requests = ">=2.33.0.20260906"
 types-requests-oauthlib = ">=2.0.0.20260907"
 types-setuptools = ">=84.0.0.20260812"
