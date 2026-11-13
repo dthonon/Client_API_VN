@@ -20,7 +20,7 @@ dependencies = [
   "apscheduler<4",
   "babel>=2.16",
   "beautifulsoup4>=4.12",
-  "click>=8.1",
+  "click>=8.5.1",
   "dynaconf>=3.2",
   "jinja2>=3.1",
   "jsonschema>=4.23",
@@ -60,16 +60,16 @@ packages = [
 [tool.poetry.group.dev.dependencies]
 deptry = ">=0.25"
 mypy = ">=2.4.1"
-ruff = ">=0.17.3"
+ruff = ">=0.17.4"
 pytest = ">=9.2.0"
 pytest-cov = ">=7"
 pytest-order = ">=1.5"
 requests-mock = ">=1.12"
 pre-commit = ">=4.7.0"
-tox = ">=4.67.7"
+tox = ">=4.67.13"
 types-requests = ">=2.33.0.20261030"
 types-requests-oauthlib = ">=2.0.0.20261006"
-types-setuptools = ">=84.0.0.20261006"
+types-setuptools = ">=84.2.0.20261104"
 types-psutil = ">=7.2.2.20260906"
 types-tabulate = ">=0.10.0.20261006"
 types-beautifulsoup4 = ">=4.12"
@@ -78,7 +78,7 @@ types-psycopg2 = ">=2.9.21.20261030"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = ">=1.6"
-mkdocs-material = ">=9.8.0"
+mkdocs-material = ">=9.8.1"
 mkdocstrings = { extras = ["python"], version = ">=1.0.8" }
 Pygments = ">=2.21.0"
 
