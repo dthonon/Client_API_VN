@@ -61,13 +61,18 @@ test: ## Test the code with pytest without slow tests
 	@echo "🚀 Testing code: Running pytest not slow"
 	@poetry run pytest --cov --cov-config=pyproject.toml --cov-report=xml -m "not slow"
 
+.PHONY: test_timing
+test_timing: ## Test the code with pytest and timing without slow tests
+	@echo "🚀 Testing code: Running pytest with timing not slow"
+	@poetry run pytest --durations=50 -v -m "not slow"
+
 .PHONY: test_slow
 test_slow: ## Test the code with pytest
 	@echo "🚀 Testing code: Running pytest"
 	@poetry run pytest --cov --cov-config=pyproject.toml --cov-report=xml
 
-.PHONY: test_timing
-test_timing: ## Test the code with pytest and timing
+.PHONY: test_timing_slow
+test_timing_slow: ## Test the code with pytest and timing
 	@echo "🚀 Testing code: Running pytest with timing"
 	@poetry run pytest --durations=50 -v
 
